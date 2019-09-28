@@ -3,7 +3,7 @@ $(function() {
         $(this).closest('form').submit();
     })
     
-    $('#delete_current_file').click(function() {
-        $('#delete_current_file_form').submit();
+    $('#file_delete').click(function() {
+        $('#file_delete_form').submit();
     }).css('cursor', 'pointer');
 })

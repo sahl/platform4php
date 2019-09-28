@@ -1107,25 +1107,25 @@ class Datarecord {
                         // Get object
                         $file = new File();
                         $file->loadForWrite($this->values[$field]);
-                        $file->filename = $value['originalfile'];
+                        $file->filename = $value['original_file'];
                         $file->folder = static::$structure[$field]['folder'];
                         $file->mimetype = $value['mimetype'];
                         $folder = File::getFullFolderPath('temp');
-                        $file->attachFile($folder.$value['tempfile']);
+                        $file->attachFile($folder.$value['temp_file']);
                         $file->save();
                     } else {
                         // We need to create a new file
                         $file = new File();
-                        $file->filename = $value['originalfile'];
+                        $file->filename = $value['original_file'];
                         $file->folder = static::$structure[$field]['folder'];
                         $file->mimetype = $value['mimetype'];
                         $folder = File::getFullFolderPath('temp');
-                        $file->attachFile($folder.$value['tempfile']);
+                        $file->attachFile($folder.$value['temp_file']);
                         $file->save();
-                        $this->values[$field] = $file->fileid;
+                        $this->values[$field] = $file->file_id;
                     }
                 } elseif ($value instanceof File) {
-                    $this->values[$field] = $value->fileid;
+                    $this->values[$field] = $value->file_id;
                 } else {
                     $this->values[$field] = $value;
                 }

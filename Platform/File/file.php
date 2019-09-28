@@ -55,7 +55,7 @@ class File extends Datarecord {
     }
     
     public function getCompleteFilename() {
-        return $this->getFolder().'data'.$this->fileid.'.blob';
+        return $this->getFolder().'data'.$this->file_id.'.blob';
     }
 
     public function getFolder() {
@@ -81,7 +81,7 @@ class File extends Datarecord {
     }
     
     public function getTitle() {
-        return '<a href="/Platform/file.php/'.Instance::getActiveInstanceID().'/'.$this->fileid.'/'.$this->filename.'" target="_blank">'.$this->filename.'</a>';
+        return '<a href="/Platform/file.php/'.Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename.'" target="_blank">'.$this->filename.'</a>';
     }
     
     public static function getTempFilename() {
@@ -89,8 +89,8 @@ class File extends Datarecord {
         self::ensureFolder($path);
         if (!Semaphore::wait('tempfilename')) trigger_error('Couldn\'t grab tempfile semaphore!', E_USER_ERROR);
         do {
-            $fileid = rand(1,999999999);
-            $filename = 'file'.$fileid.'.blob';
+            $file_id = rand(1,999999999);
+            $filename = 'file'.$file_id.'.blob';
         } while (file_exists($path.$filename));
         touch($path.$filename);
         Semaphore::release('tempfilename');

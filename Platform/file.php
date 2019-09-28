@@ -6,13 +6,13 @@ $error = 'File not found (invalid URL)';
 
 if (preg_match('/^\\/Platform\\/file\\.php\\/(\\d+?)\\/(\\d+?)\\//i', $_SERVER['PHP_SELF'], $matches)) {
     $instanceid = $matches[1];
-    $fileid = $matches[2];
+    $file_id = $matches[2];
     if ($instanceid != \Platform\Instance::getActiveInstanceID()) {
         $code = 403;
         $error = 'Not logged into requested instance.';
     } else {
         $file = new \Platform\File();
-        $file->loadForRead($fileid);
+        $file->loadForRead($file_id);
         if ($file->isInDatabase()) {
             if (! $file->canAccess()) {
                 $code = 403;
