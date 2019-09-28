@@ -1,0 +1,13 @@
+.formfield_container {
+    padding: 10px;
+}
+
+.formfield_error {
+    background-color: #FFDDDD;
+}
+
+.formfield_error_container {
+    font-size: 0.7em;
+    color: red;
+    display: none;
+}
