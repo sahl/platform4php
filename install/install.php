@@ -7,7 +7,7 @@ echo '<div class="w3-container w3-teal">';
 echo '<h1>Installer</h1>';
 echo '</div>';
 
-App\Instance::ensureInDatabase();
+\Platform\Instance::ensureInDatabase();
 
 echo '<div class="w3-container w3-padding-16 w3-text-gray">';
 echo 'Done.';
