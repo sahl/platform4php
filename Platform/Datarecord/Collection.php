@@ -59,6 +59,40 @@ class DatarecordCollection {
     }
     
     /**
+     * Get the raw value from the given field from all objects in this collection.
+     * @param string $field Field to read from
+     * @param int $limit Max number of values to retrieve. -1 = get all
+     * @return array Array of raw values
+     */
+    public function getAllRawValues($field, $limit = -1) {
+        $result = array();
+        foreach ($this->datarecords as $datarecord) {
+            if ($limit > -1 && count($result) >= $limit) break;
+            $result[] = $datarecord->getRawValue($field);
+        }
+        return $result;
+    }
+    
+    /**
+     * Get the full value from the given field from all objects in this collection.
+     * @param string $field Field to read from
+     * @param int $limit Max number of values to retrieve. -1 = get all
+     * @return array Array of full values sorted alfabetically
+     */
+    public function getAllFullValues($field, $limit = -1) {
+        $result = array(); $sort_array = array();
+        foreach ($this->datarecords as $datarecord) {
+            if ($limit > -1 && count($result) >= $limit) break;
+            $value = $datarecord->getFullValue($field);
+            $result[] = $value;
+            // Strip HTML from the sorting array
+            $sort_array[] = strip_tags($value);
+        }
+        array_multisort($sort_array, SORT_ASC, $result);
+        return $result;
+    }
+    
+    /**
      * Get the type of objects in this collection
      * @return string Class name
      */

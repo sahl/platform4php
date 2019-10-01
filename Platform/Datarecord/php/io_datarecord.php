@@ -39,7 +39,7 @@ else {
             if ($deleteresult !== true) {
                 $result = array(
                     'status' => 0,
-                    'errormessage' => $deleteresult
+                    'errormessage' => $datarecord->getTitle().': '.$deleteresult
                 );
                 break;
             }
