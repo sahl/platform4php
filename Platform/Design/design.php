@@ -38,6 +38,13 @@ class Design {
         if (! in_array($js_file, self::$js_files_to_load)) self::$js_files_to_load[] = $js_file;
     }    
     
+    public static function renderContentBox($box_id, $source, $parameters = array(), $prepare_function = '', $reveal = '') {
+        echo '<div class="platform_content_box" id="'.$box_id.'" data-source="'.$source.'" data-parameters="'.http_build_query($parameters).'"';
+        if ($prepare_function) echo ' data-prepare_function="'.$prepare_function.'"';
+        if ($reveal) echo ' data-reveal="'.$reveal.'"';
+        echo '></div>';
+    }
+    
     /**
      * Render the page start including html, head and body tag
      * @param string $title Page title
@@ -57,6 +64,7 @@ class Design {
             'https://www.w3schools.com/w3css/4/w3.css',
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
             '/Platform/Jquery/css/jquery-ui.css',
+            '/Platform/Design/css/platform.css',
             '/Platform/Form/css/form.css'
         ), self::$css_files_to_load, $css_files);
         foreach ($css_files as $css_file) {
@@ -68,6 +76,7 @@ class Design {
             '/Platform/Jquery/js/jquery.js',
             '/Platform/Jquery/js/jquery-ui.min.js',
             '/Platform/Design/js/general.js',
+            '/Platform/Design/js/contentbox.js',
             '/Platform/Design/js/dialogs.js'
         ),self::$js_files_to_load, $js_files);
         foreach ($js_files as $js_file) {

@@ -1,5 +1,5 @@
-$(function() {
-     $('.platform_form').submit(function(e) {
+addCustomPlatformFunction(function(item) {
+     $('.platform_form',item).submit(function(e) {
          var allowsubmit = true;
          
          // Check required fields
@@ -26,15 +26,15 @@ $(function() {
          return allowsubmit;
      });
      
-     $('.form_required_field').change(function() {
+     $('.form_required_field',item).change(function() {
          $(this).clearError();
      })
      
-     $('.platform-password').change(function() {
+     $('.platform-password',item).change(function() {
          $(this).closest('.formfield_container').find('input[type="hidden"]').val(1);
          return true;
      });
-})
+});
 
 
 $.fn.setError = function(text) {
