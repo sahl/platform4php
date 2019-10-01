@@ -4,20 +4,40 @@ addCustomPlatformFunction(function(item) {
     $('.platform_table', item).each(function() {
         var element = $(this);
         
-        var tableconfig = {
+        var table_configuration = {
             columnResized: function() {saveTableLayout(element.prop('id'));},
             columnMoved: function() {saveTableLayout(element.prop('id'));}
         }
         
         $.each(JSON.parse($(this).html()), function(key, element) {
-            tableconfig[key] = element;
+            table_configuration[key] = element;
         })
         
-        console.log(tableconfig);
+        var action_buttons = [];
+        if (table_configuration['action_buttons']) {
+            action_buttons = table_configuration['action_buttons'];
+            delete table_configuration['action_buttons'];
+        }
         
-        var table = new Tabulator('#'+$(this).prop('id'), tableconfig);
+        console.log(table_configuration);
+        
+        var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
+        
+        $.each(action_buttons, function(key, element) {
+            table.addColumn({
+                formatter: function(cell, formatterParams) {
+                    return '<i class="fa '+key+'"></i>';
+                },
+                width: 40,
+                headerSort:false,
+                align: 'center',
+                cellClick: function(e, cell) {
+                    eval(element)(cell.getRow().getIndex());
+                }
+            }, true)
+        });
         table.addColumn({
-            formatter:"rowSelection", titleFormatter:"rowSelection", headerSort:false, width: 15, cellClick:function(e, cell){
+            formatter:"rowSelection", titleFormatter:"rowSelection", align: 'center', headerSort:false, width: 15, cellClick:function(e, cell){
                 cell.getRow().toggleSelect();
             }
         }, true);

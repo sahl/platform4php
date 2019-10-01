@@ -899,14 +899,19 @@ class Datarecord {
     /**
      * Render an edit complex for this object type showing a table with all objects,
      * and an option to create, edit, delete them.
+     * @param array $parameters Additional params to the table
      */
-    public static function renderEditComplex() {
+    public static function renderEditComplex($parameters = array()) {
         // Get base class name
         $name = static::getObjectName();
         // Create table
         $datarecord_table = new Table($name.'_table');
         $datarecord_table->setDefinitionFromDatarecord(get_called_class());
         $datarecord_table->setOption('ajaxURL', '/Platform/Datarecord/php/table_datarecord.php?class='.get_called_class());
+        
+        foreach ($parameters as $key => $parameter) {
+            $datarecord_table->setOption($key, $parameter);
+        }
         
         // Get form
         $form = static::getForm();
