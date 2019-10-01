@@ -1,7 +1,7 @@
 <?php
-namespace Platform;
+// namespace NAMESPACE;
 
-class Templateclass extends Datarecord {
+class Templateclass extends \Platform\Datarecord {
     
     /**
      * Name of table in database
@@ -35,7 +35,21 @@ class Templateclass extends Datarecord {
 
     protected static function buildStructure() {
         // Todo: Define the object structure in this array
-        $structure = array();
+        $structure = array(
+            'object_id' => array(
+                'invisible' => true,
+                'fieldtype' => self::FIELDTYPE_KEY
+            ),
+            'property1' => array(
+                'label' => 'Required property',
+                'required' => true,
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'property2' => array(
+                'label' => 'Optional property',
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+        );
         self::addStructure($structure);
         // Remember to call parent
         parent::buildStructure();
