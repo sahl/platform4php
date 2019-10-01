@@ -55,6 +55,11 @@ class Templateclass extends \Platform\Datarecord {
         parent::buildStructure();
     }
     
+    public function getTitle() {
+        // Override to get a meaningfull title of this object
+        return $this->property1;
+    }
+    
     // Todo: Remember to add the ::ensureInDatabase to either the instance or
     // globally
 }

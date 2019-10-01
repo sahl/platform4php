@@ -40,6 +40,7 @@ class Table {
     public static function getDataFromDatarecordCollection($collection) {
         $result = array();
         $classname = $collection->getCollectionType();
+        if ($classname === false) return array();
         $structure = $classname::getStructure();
         foreach ($collection->getAll() as $object) {
             $columns = array();

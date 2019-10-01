@@ -395,6 +395,7 @@ class Datarecord {
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 return '\''.esc(json_encode($value)).'\'';
             case self::FIELDTYPE_DATETIME:
+            case self::FIELDTYPE_DATE:
                 $datetime = new Timestamp($value);
                 return $datetime->getTimestamp() !== null ? '\''.$datetime->getTime().'\'' : 'NULL';
             default:
@@ -445,6 +446,8 @@ class Datarecord {
                 return new FieldCheckbox($definition['label'], $name, $options);
             case self::FIELDTYPE_DATETIME:
                 return new FieldDatetime($definition['label'], $name, $options);
+            case self::FIELDTYPE_DATE:
+                return new FieldDate($definition['label'], $name, $options);
             case self::FIELDTYPE_FILE:
                 return new FieldFile($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
@@ -492,6 +495,8 @@ class Datarecord {
                 return $value;
             case self::FIELDTYPE_DATETIME:
                 return str_replace(' ', 'T', $this->getRawValue($field)->getReadable('Y-m-d H:i'));
+            case self::FIELDTYPE_DATE:
+                return $this->getRawValue($field)->getReadable('Y-m-d');
             default:
                 return $this->getTextValue($field);
         }
@@ -515,6 +520,8 @@ class Datarecord {
                 return implode(', ', $result);
             case self::FIELDTYPE_DATETIME:
                 return $this->getRawValue($field)->getReadable();
+            case self::FIELDTYPE_DATE:
+                return $this->getRawValue($field)->getReadable('d-m-Y');
             case self::FIELDTYPE_PASSWORD:
                 return $this->getRawValue($field) ? '---' : '';
             default:
@@ -593,6 +600,7 @@ class Datarecord {
      */
     private static function getSQLFieldType($fieldtype) {
         switch ($fieldtype) {
+            case self::FIELDTYPE_DATE:
             case self::FIELDTYPE_DATETIME:
                 return 'DATETIME';
             case self::FIELDTYPE_ARRAY:
@@ -1084,6 +1092,7 @@ class Datarecord {
                 $this->values[$field] = is_array($value) ? $value : null;
                 break;
             case self::FIELDTYPE_DATETIME:
+            case self::FIELDTYPE_DATE:
                 $this->values[$field] = new Timestamp($value);
                 break;
             case self::FIELDTYPE_FILE:
@@ -1160,6 +1169,7 @@ class Datarecord {
     const FIELDTYPE_BOOLEAN = 4;
     
     const FIELDTYPE_DATETIME = 10;
+    const FIELDTYPE_DATE = 11;
     
     const FIELDTYPE_ARRAY = 100;
     const FIELDTYPE_OBJECT = 101;
