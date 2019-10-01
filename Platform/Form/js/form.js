@@ -71,7 +71,7 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
                     }
                 } else {
                     // Try for multicheckbox
-                    var el = element.find('#'+element.prop('id')+'_'+key+'.multicheckboxcontainer');
+                    var el = element.find('#'+element.prop('id')+'_'+key+'.multi_checkbox_container');
                     if (el.length) {
                         $.each(value, function(key, val) {
                             el.find('input[value="'+val+'"]').prop('checked', true);

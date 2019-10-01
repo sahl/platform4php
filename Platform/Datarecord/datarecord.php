@@ -214,7 +214,7 @@ class Datarecord {
             $fielddefinitions = array();
             foreach (static::$structure as $key => $element) {
                 // Don't create fields for items we want to store in metadata
-                if ($element['storeinmetadata']) continue;
+                if ($element['store_in_metadata']) continue;
                 $fielddefinition = $key.' '.self::getSQLFieldType($element['fieldtype']);
                 if ($element['fieldtype'] == self::FIELDTYPE_KEY) $fielddefinition .= ' PRIMARY KEY AUTO_INCREMENT';
                 $fielddefinitions[] = $fielddefinition;
@@ -241,7 +241,7 @@ class Datarecord {
             
             // Check for new fields
             foreach (static::$structure as $key => $element) {
-                if (! isset($fields_in_database[$key]) && !$element['storeinmetadata']) {
+                if (! isset($fields_in_database[$key]) && !$element['store_in_metadata']) {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
@@ -265,8 +265,8 @@ class Datarecord {
             }
             // Check for changed and removed fields
             foreach ($fields_in_database as $field_in_database) {
-                if (! isset(static::$structure[$field_in_database['Field']]) || static::$structure[$field_in_database['Field']]['storeinmetadata']) {
-                    if (static::$structure[$field_in_database['Field']]['storeinmetadata']) {
+                if (! isset(static::$structure[$field_in_database['Field']]) || static::$structure[$field_in_database['Field']]['store_in_metadata']) {
+                    if (static::$structure[$field_in_database['Field']]['store_in_metadata']) {
                         // We asked to store this field in the metadata instead
                         // so copy it.
                         $resultset = self::query("SELECT ".static::getKeyField().", ".$field_in_database['Field'].", metadata FROM ".static::$database_table);
@@ -490,6 +490,8 @@ class Datarecord {
                 $value = $this->getRawValue($field);
                 if (! is_array($value)) $value = array();
                 return $value;
+            case self::FIELDTYPE_DATETIME:
+                return str_replace(' ', 'T', $this->getRawValue($field)->getReadable('Y-m-d H:i'));
             default:
                 return $this->getTextValue($field);
         }
@@ -800,7 +802,7 @@ class Datarecord {
     private function packMetadata() {
         $metadata = array();
         foreach (static::$structure as $key => $definition) {
-            if (! $definition['storeinmetadata']) continue;
+            if (! $definition['store_in_metadata']) continue;
             $metadata[$key] = $this->values[$key];
         }
         $this->setValue('metadata', $metadata);
@@ -921,7 +923,6 @@ class Datarecord {
         $form->render();
         echo '</div>';
         
-        $elements = array();
         $fields = static::getTableFields();
 
         $table_configuration = UserProperty::getPropertyForCurrentUser('table_configuration', $name.'_table');
@@ -979,7 +980,7 @@ class Datarecord {
             // Check if anything have changed?
             $change = false;
             foreach (static::$structure as $key => $definition) {
-                if ($this->values[$key] != $this->values_on_load[$key]) {
+                if ($definition['store_in_database'] !== false && $this->values[$key] != $this->values_on_load[$key]) {
                     $change = true;
                     break;
                 }
@@ -992,7 +993,7 @@ class Datarecord {
             // Prepare update.
             $fielddefinitions = array();
             foreach (static::$structure as $key => $definition) {
-                if (! $definition['storeinmetadata']) {
+                if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
                     $fielddefinitions[] = self::getAssignmentForDatabase($key, $this->values[$key]);
                 }
             }
@@ -1004,7 +1005,7 @@ class Datarecord {
             $this->setValue('create_date', new Timestamp('now'));
             $fieldlist = array(); $fieldvalues = array();
             foreach (static::$structure as $key => $definition) {
-                if (! $definition['storeinmetadata']) {
+                if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
                     $fieldlist[] = $key; 
                     $fieldvalues[] = ($definition['fieldtype'] == self::FIELDTYPE_KEY) ? 'NULL' : self::getFieldForDatabase($key, $this->values[$key]);
                 }

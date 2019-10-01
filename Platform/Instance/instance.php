@@ -15,7 +15,7 @@ class Instance extends Datarecord {
             ),
             'title' => array(
                 'label' => 'Instance title',
-                'storeinmetadata' => false,
+                'store_in_metadata' => false,
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
             'is_initiated' => array(
