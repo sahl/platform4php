@@ -107,5 +107,16 @@ class DatarecordCollection {
     public function getCount() {
         return count($this->datarecords);
     }
-    
+
+    /**
+     * Sort this datacollection according to the given field
+     * @param string $field Field to sort by.
+     */
+    public function sort($field) {
+        $sort_array = array();
+        foreach ($this->datarecords as $datarecord) {
+            $sort_array[] = $datarecord->getTextValue($field);
+        }
+        array_multisort($sort_array, SORT_ASC, $this->datarecords);
+    }
 }

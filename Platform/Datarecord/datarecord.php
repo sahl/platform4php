@@ -113,7 +113,11 @@ class Datarecord {
     public function __set($field, $value) {
         $this->setValue($field, $value);
     }
-    
+
+    /**
+     * Add the given array to the structure of this datarecord
+     * @param array $structure Array of field definitions to add
+     */
     public static function addStructure($structure) {
         foreach ($structure as $field => $data) {
             static::$structure[$field] = $data;
@@ -383,6 +387,7 @@ class Datarecord {
     public static function getFieldForDatabase($field, $value) {
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_INTEGER:
+            case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 return $value == null ? 'NULL' : (int)$value;
@@ -434,6 +439,7 @@ class Datarecord {
         if ($definition['required']) $options['required'] = true;
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_TEXT:
+            case self::FIELDTYPE_BIGTEXT:
                 return new FieldText($definition['label'], $name, $options);
             case self::FIELDTYPE_PASSWORD:
                 return new FieldPassword($definition['label'], $name, $options);
@@ -461,6 +467,8 @@ class Datarecord {
                 asort($fieldoptions);
                 $options['options'] = $fieldoptions;
                 return new FieldSelect($definition['label'], $name, $options);
+            case self::FIELDTYPE_ENUMERATION:
+                return new FieldSelect($definition['label'], $name, array('options' => $definition['enumeration']));
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 $fieldoptions = array();
                 // Get possibilities
@@ -488,6 +496,7 @@ class Datarecord {
                 return $this->getRawValue($field) ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 $value = $this->getRawValue($field);
@@ -518,6 +527,8 @@ class Datarecord {
                 $result = $this->resolveForeignReferences($field);
                 sort($result);
                 return implode(', ', $result);
+            case self::FIELDTYPE_ENUMERATION:
+                return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
             case self::FIELDTYPE_DATETIME:
                 return $this->getRawValue($field)->getReadable();
             case self::FIELDTYPE_DATE:
@@ -606,11 +617,13 @@ class Datarecord {
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+            case self::FIELDTYPE_BIGTEXT:
                 return 'MEDIUMTEXT';
             case self::FIELDTYPE_INTEGER:
             case self::FIELDTYPE_KEY:
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_REFERENCE_SINGLE:
+            case self::FIELDTYPE_ENUMERATION:
                 return 'INT(11)';
             case self::FIELDTYPE_BOOLEAN:
                 return 'INT(1)';
@@ -1066,7 +1079,13 @@ class Datarecord {
                 break;
             case self::FIELDTYPE_TEXT:
             case self::FIELDTYPE_OBJECT:
+            case self::FIELDTYPE_BIGTEXT:
                 $this->values[$field] = $value;
+                break;
+            case self::FIELDTYPE_ENUMERATION:
+                // Fail if trying to set invalid value.
+                if ($value && ! isset(static::$structure[$field]['enumeration'][$value])) trigger_error('Tried to set invalid ENUMERATION value '.$value.' in field: '.$field, E_USER_ERROR);
+                $this->values[$field] = (int)$value;
                 break;
             case self::FIELDTYPE_INTEGER:
                 $this->values[$field] = is_numeric($value) ? (int)$value : null;
@@ -1172,12 +1191,14 @@ class Datarecord {
     const FIELDTYPE_INTEGER = 2;
     const FIELDTYPE_FLOAT = 3;
     const FIELDTYPE_BOOLEAN = 4;
+    const FIELDTYPE_BIGTEXT = 5;
     
     const FIELDTYPE_DATETIME = 10;
     const FIELDTYPE_DATE = 11;
     
     const FIELDTYPE_ARRAY = 100;
     const FIELDTYPE_OBJECT = 101;
+    const FIELDTYPE_ENUMERATION = 101;
     
     const FIELDTYPE_PASSWORD = 300;
     
