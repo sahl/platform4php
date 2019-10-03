@@ -19,9 +19,9 @@ addCustomPlatformFunction(function(item) {
             delete table_configuration['action_buttons'];
         }
         
-        console.log(table_configuration);
-        
         var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
+        
+        element.removeClass('platform_invisible');
         
         $.each(action_buttons, function(key, element) {
             table.addColumn({

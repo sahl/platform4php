@@ -535,6 +535,9 @@ class Datarecord {
                 return $this->getRawValue($field)->getReadable('d-m-Y');
             case self::FIELDTYPE_PASSWORD:
                 return $this->getRawValue($field) ? '---' : '';
+            case self::FIELDTYPE_TEXT:
+            case self::FIELDTYPE_BIGTEXT:
+                return str_replace('\\n', '<br>', htmlentities($this->getRawValue($field)));
             default:
                 return $this->getRawValue($field);
         }
@@ -675,7 +678,7 @@ class Datarecord {
         if (! isset(static::$structure[$field])) return null;
         switch (static::$structure[$field]['fieldtype']) {
             default:
-                return strip_tags($this->getFullValue($field));
+                return strip_tags(html_entity_decode($this->getFullValue($field)));
         }
     }
 
@@ -945,7 +948,7 @@ class Datarecord {
         
         echo '</div>';
 
-        echo '<div id="'.$name.'_edit_dialog" title="Edit '.$name.'">';
+        echo '<div id="'.$name.'_edit_dialog" title="Edit '.$name.'" class="platform_invisible">';
         $form->render();
         echo '</div>';
         
@@ -960,7 +963,7 @@ class Datarecord {
             }
         }
         
-        echo '<div id="'.$name.'_column_dialog" title="'.$name.' columns">';
+        echo '<div id="'.$name.'_column_dialog" title="'.$name.' columns" class="platform_invisible">';
         $datarecord_table->renderColumnSelector();
         echo '</div>';
         

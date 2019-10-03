@@ -1,12 +1,16 @@
-.platform_content_box {
-    display: none;
-}
-
 .platform_action {
     cursor: pointer;
+}
+
+.platform_content_box {
+    display: none;
 }
 
 .platform_disabled {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+.platform_invisible {
+    display: none;
 }
