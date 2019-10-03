@@ -10,7 +10,12 @@ class FieldMultiplier extends Field {
     public function __construct($label = '', $name = '', $options = array()) {
         parent::__construct('', $name, $options);
         $this->classes[] = 'w3-input';
+        $this->container_classes[] = 'platform_form_multiplier';
         $this->value = array();
+        if ($options['sortable']) {
+            $this->container_classes[] = 'platform_sortable';
+            unset($options['sortable']);
+        }
     }
 
     /**
@@ -73,7 +78,7 @@ class FieldMultiplier extends Field {
     }
     
     public function render() {
-        echo '<div class="platform_form_multiplier" id="'.$this->getName().'">';
+        echo '<div id="'.$this->getName().'" class="'.implode(' ',$this->container_classes).'">';
         for ($i = 0; $i < count($this->value)+1; $i++) {
             echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {
