@@ -18,7 +18,7 @@ class FieldMulticheckbox extends Field {
         if (! $this->value) $this->value = array();
         echo '<div class="multi_checkbox_container" id="'.$this->getFieldIdForHTML().'">';
         foreach ($this->options as $key => $option) {
-            $checked = in_array($key, $this->value);
+            $checked = in_array($key, $this->value) ? ' checked' : '';
             echo '<input class="'.$this->getClassString().'" style="vertical-align: -1px;" type="checkbox" name="'.$this->name.'[]" value="'.$key.'"'.$this->additional_attributes.$checked.'> '.$option.'<br>';
         }
         echo '</div>';

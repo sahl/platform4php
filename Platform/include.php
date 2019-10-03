@@ -34,6 +34,7 @@ function platformAutoLoad($class) {
 Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.4.0/dist/js/tabulator.min.js');
 Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
 Platform\Design::queueJSFile('/Platform/Form/js/form.js');
+Platform\Design::queueJSFile('/Platform/Form/js/multiplier.js');
 Platform\Design::queueJSFile('/Platform/Table/js/table.js');
 
 Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.4.0/dist/css/tabulator.min.css');
@@ -77,6 +78,12 @@ function pageend() {
 }
 
 // Helper functions
+
+/**
+ * Removes an element from an array
+ * @param array $array Array to check
+ * @param mixed $element Element to remove
+ */
 function array_remove(&$array, $element) {
     $array = array_diff($array, array($element));
 }

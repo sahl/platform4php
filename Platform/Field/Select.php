@@ -10,7 +10,7 @@ class FieldSelect extends Field {
     
     public function renderInput() {
         echo '<select class="'.$this->getClassString().'" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
-        echo '<option>'.$this->heading;
+        echo '<option value="">'.$this->heading;
         foreach ($this->options as $key => $option) {
             $selected = $key == $this->value ? ' selected' : '';
             echo '<option value="'.$key.'"'.$selected.'>'.$option;

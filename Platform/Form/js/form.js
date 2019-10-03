@@ -1,29 +1,35 @@
 addCustomPlatformFunction(function(item) {
      $('.platform_form',item).submit(function(e) {
-         var allowsubmit = true;
+        var allowsubmit = true;
+
+        // Hide last item of multipliers as these should always be empty and not submitted or validated.
+        $('.platform_form_multiplier_element:last-child', $(this)).hide();
+
+        // Check required fields
+        $('.form_required_field', $(this)).each(function() {
+            if ($(this).val().length == 0 && $(this).is(':visible')) {
+                $(this).setError('This is a required field');
+                allowsubmit = false;
+            }
+            return true;
+        });
+
+        // Gather hidden fields
+        var hiddenfields = [];
+
+        $('.form_field:hidden', $(this)).each(function() {
+            hiddenfields.push($(this).prop('name'));
+        });
+        if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
+
+        if (! allowsubmit) {
+            e.stopImmediatePropagation();
+        }
+
+         // Show multipliers again
+        $('.platform_form_multiplier_element:last-child', $(this)).show();
          
-         // Check required fields
-         $('.form_required_field', $(this)).each(function() {
-             if ($(this).val().length == 0) {
-                 $(this).setError('This is a required field');
-                 allowsubmit = false;
-             }
-             return true;
-         });
-         
-         // Gather hidden fields
-         var hiddenfields = [];
-         
-         $('.form_field:hidden', $(this)).each(function() {
-             hiddenfields.push($(this).prop('name'));
-         });
-         if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
-         
-         if (! allowsubmit) {
-             e.stopImmediatePropagation();
-         }
-         
-         return allowsubmit;
+        return allowsubmit;
      });
      
      $('.form_required_field',item).change(function() {

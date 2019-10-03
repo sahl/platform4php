@@ -8,6 +8,12 @@ class Field {
      * @var array 
      */
     protected $classes = array('platform_form_field');
+    
+    /**
+     * Classes to add to form field container
+     * @var array
+     */
+    protected $container_classes = array('formfield_container');
 
     /**
      * Field error message
@@ -99,6 +105,10 @@ class Field {
             foreach (explode(' ',$options['class']) as $class) $this->classes[] = $class;
             unset($options['class']);
         }
+        if ($options['containerclass']) {
+            foreach (explode(' ',$options['containerclass']) as $class) $this->container_classes[] = $class;
+            unset($options['containerclass']);
+        }        
         
         if ($this->is_required) $this->classes[] = 'form_required_field';
         
@@ -117,6 +127,16 @@ class Field {
     }
     
     /**
+     * Clear any error from this field
+     */
+    public function ClearError() {
+        if (! $this->is_error) return;
+        $this->is_error = false;
+        array_remove($this->classes, 'formfield_error');
+        $this->errortext = '';
+    }
+    
+    /**
      * Get a string with all classes.
      * @return string
      */
@@ -124,6 +144,22 @@ class Field {
         return implode(' ',$this->classes);
     }
     
+    /**
+     * Get a string with all classes for container.
+     * @return string
+     */
+    public function getContainerClassString() {
+        return implode(' ',$this->container_classes);
+    }    
+    
+    /**
+     * Get error text (if any)
+     * @return string
+     */
+    public function getErrorText() {
+        return $this->errortext;
+    }
+
     /**
      * Get a unique html ID for the field.
      * @return string
@@ -175,7 +211,7 @@ class Field {
      * Render the field
      */
     public function render() {
-        echo '<div class="formfield_container" id="'.$this->getFieldIdForHTML().'_container">';
+        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container">';
         $this->renderLabel();
         $this->renderInput();
         $this->renderErrorContainer($this->errortext);
@@ -214,6 +250,15 @@ class Field {
     public function setHeading($heading) {
         $this->heading = $heading;
     }
+    
+    /**
+     * Set field name
+     * @param string $new_name New field name
+     */
+    public function setName($new_name) {
+        $this->name = $new_name;
+    }
+    
     
     /**
      * Set the options of the field

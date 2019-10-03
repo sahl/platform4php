@@ -31,7 +31,23 @@ class Form {
         $this->addField(new FieldHTML($html));
     }
     
+    /**
+     * Get a field from the form by name. If a multiplier is present in the form
+     * a field from that can be found by using a name on the following form:
+     * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER
+     * @param string $fieldname Field name to find
+     * @return boolean|\Platform\Field The field or false if no field was found
+     */
     public function getFieldByName($fieldname) {
+        if (strpos($fieldname,'/')) {
+            $segments = explode('/',$fieldname);
+            if (count($segments) != 2) return false;
+            $field = $this->getFieldByName($segments[0]);
+            if ($field instanceof FieldMultiplier) {
+                return $field->getFieldByName($segments[1]);
+            }
+            return false;
+        }
         /* @var $field Field */
         foreach ($this->fields as $field) {
             if ($fieldname == $field->getName()) return $field;
@@ -42,7 +58,9 @@ class Form {
     public function getFromFile($filename) {
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
-        $this->parseFromText($text);
+        foreach (self::parseFieldsFromText($text) as $field) {
+            $this->addField($field);
+        }
     }
     
     public function getId() {
@@ -64,11 +82,12 @@ class Form {
         return ($_POST['form_name'] == $this->formid);
     }
     
-    public function parseFromText($text) {
+    public static function parseFieldsFromText($text) {
+        $fields = array(); $storedfields = array();
         // Explode on tags
         $elements = explode('<', $text);
         // The first element is not a tag
-        $this->addHTML(array_shift($elements));
+        $fields[] = new FieldHTML(array_shift($elements));
         // Rest of elements are tags and text
         foreach ($elements as $element) {
             $tag = self::parseTag($element);
@@ -80,15 +99,28 @@ class Form {
                     $name = $tag['properties']['name'];
                     unset($tag['properties']['label']);
                     unset($tag['properties']['name']);
-                    $this->addField(new $class($label, $name, $tag['properties']));
-                    $this->addHTML($tag['text']);
+                    $fields[] = new $class($label, $name, $tag['properties']);
+                    // If we encounter a multiplier, we want to direct the following fields into that
+                    if (strtolower($tag['tag']) == 'multiplier') {
+                        $storedfields = $fields;
+                        $fields = array();
+                    }
+                    $fields[] = new FieldHTML($tag['text']);
                 } else {
-                    $this->addHTML('<'.$element);
+                    $fields[] = new FieldHTML('<'.$element);
                 }
             } else {
-                $this->addHTML('<'.$element);
+                if (strtolower($tag['tag']) == '/multiplier') {
+                    // If we encounter a multiplier end, then we put all the stored fields into that, and resumes normal operation
+                    $multiplier = end($storedfields);
+                    $multiplier->addFields($fields);
+                    $fields = $storedfields;
+                    $fields[] = new FieldHTML($tag['text']);
+                }
+                $fields[] = new FieldHTML('<'.$element);
             }
         }
+        return $fields;
     }
     
     private static function parseTag($tagtext) {
