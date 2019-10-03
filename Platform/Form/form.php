@@ -114,6 +114,7 @@ class Form {
                     // If we encounter a multiplier end, then we put all the stored fields into that, and resumes normal operation
                     $multiplier = end($storedfields);
                     $multiplier->addFields($fields);
+                    reset($storedfields);
                     $fields = $storedfields;
                     $fields[] = new FieldHTML($tag['text']);
                 }

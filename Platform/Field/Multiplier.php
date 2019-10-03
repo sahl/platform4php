@@ -73,7 +73,7 @@ class FieldMultiplier extends Field {
     }
     
     public function render() {
-        echo '<div class="platform_form_multiplier" id="#'.$this->getName().'">';
+        echo '<div class="platform_form_multiplier" id="'.$this->getName().'">';
         for ($i = 0; $i < count($this->value)+1; $i++) {
             echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {
@@ -82,10 +82,12 @@ class FieldMultiplier extends Field {
                 // Generate new field name
                 $field->setName($this->getName().'['.$i.']['.$old_field_name.']');
                 // Set value and trigger error if any
-                if (isset($this->value[$i][$old_field_name])) {
-                    $field->setValue($this->value[$i][$old_field_name]);
-                } else {
-                    $field->setValue('');
+                if (! $field instanceof FieldHTML) {
+                    if (isset($this->value[$i][$old_field_name])) {
+                        $field->setValue($this->value[$i][$old_field_name]);
+                    } else {
+                        $field->setValue('');
+                    }
                 }
                 if (isset($this->error_cache[$i][$old_field_name])) {
                     $field->triggerError($this->error_cache[$i][$old_field_name]);

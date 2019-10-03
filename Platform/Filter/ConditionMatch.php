@@ -4,6 +4,8 @@ namespace Platform;
 class FilterConditionMatch extends FilterCondition {
     
     public function __construct($fieldname, $value) {
+        // Resolve datarecord to its ID
+        if ($value instanceof Datarecord) $value = $value->getRawValue($value->getKeyField ());
         $this->fieldname = $fieldname;
         $this->value = $value;
     }
