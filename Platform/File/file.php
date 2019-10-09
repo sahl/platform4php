@@ -43,8 +43,9 @@ class File extends Datarecord {
     public function delete() {
         // Remove file
         $file = $this->getCompleteFilename();
-        unlink($file);
-        parent::delete();
+        $result = parent::delete();
+        if ($result) unlink($file);
+        return $result;
     }
     
     public static function ensureFolder($folder) {

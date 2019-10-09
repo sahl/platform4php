@@ -59,12 +59,12 @@ class Instance extends Datarecord {
      * @return boolean
      */
     public function delete() {
-        $this->lock();
-        if ($this->is_initiated) {
-            $result = gq("DROP DATABASE ".$this->getDatabaseName(), false);
-            if ($result === false) return false;
+        $databasename = $this->getDatabaseName();
+        $result = parent::delete();
+        if ($result && $this->is_initiated) {
+            gq("DROP DATABASE ".$this->getDatabaseName(), false);
         }
-        return parent::delete();
+        return $result;
     }
     
     /**

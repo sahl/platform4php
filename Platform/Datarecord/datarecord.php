@@ -175,8 +175,8 @@ class Datarecord {
      * @return boolean True if something was actually deleted.
      */
     public function delete() {
+        if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
-        $this->lock();
         self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
         unset($this->values[static::getKeyField()]);
         $this->access_mode = self::MODE_READ;
