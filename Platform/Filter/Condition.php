@@ -35,13 +35,11 @@ class FilterCondition {
      * @global array $platform_configuration
      * @return string SQL statement
      */
-    protected function getSQLFieldValue() {
+    protected function getSQLFieldValue($value) {
         global $platform_configuration;
         
         if (! $this->filter instanceof Filter) trigger_error('No filter attached', E_USER_ERROR);
         if (! $this->fieldname) return '';
-        
-        $value = $this->value;
         
         // We need to do something extra for password fields
         if ($this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'] == Datarecord::FIELDTYPE_PASSWORD) $value = md5($value.$platform_configuration['password_salt']);

@@ -90,7 +90,7 @@ class Field {
             unset($options['required']);
         }
         if ($options['value']) {
-            $this->value = $options['value'];
+            $this->setValue($options['value']);
             unset($options['value']);
         }
         if ($options['options']) {

@@ -21,6 +21,10 @@ class Datarecord {
     const COLUMN_UNSELECTABLE = 1;
     const COLUMN_DEFAULTHIDDEN = 2;
     const COLUMN_DEFAULTSHOWN = 0;
+    
+    // Search fields
+    const SEARCH_TOPIC = 1;
+    const SEARCH_ADDITIONAL = 2;
 
     /**
      * Indicate what mode this object is in
@@ -303,6 +307,52 @@ class Datarecord {
         if (is_array(static::$structure)) return;
         static::buildStructure();
     }
+
+    /**
+     * 
+     * @param string $keywords Keywords to search for
+     * @param string $output Output format. Either "DatarecordCollection" (default)
+     * "array" or "autocomplete"
+     * @return type
+     */
+    public static function findByKeywords($keywords, $output = 'DatarecordCollection') {
+        $main_field = false; $search_fields = array();
+        // Locate search fields
+        foreach (static::getStructure() as $field => $definition) {
+            if (in_array($definition['search'], array(self::SEARCH_TOPIC, self::SEARCH_ADDITIONAL))) {
+                $search_fields[] = $field;
+                if ($definition['search'] == self::SEARCH_TOPIC) $main_field = $field;
+            }
+        }
+        if (! count($search_fields)) return array();
+        $filter = new Filter(get_called_class());
+        $parsed_keywords = self::parseKeywords($keywords);
+        foreach ($parsed_keywords as $keyword) {
+            $previouscondition = false;
+            foreach ($search_fields as $fieldname) {
+                $condition = new FilterConditionLike($fieldname, $keyword);
+                if ($previouscondition) $condition = new FilterConditionOR($condition, $previouscondition);
+                $previouscondition = $condition;
+            }
+            $filter->addCondition($condition);
+        }
+        $results = $filter->execute();
+        if ($output == 'autocomplete') {
+            $final_results = array();
+            foreach ($results->getAll() as $result) {
+                $final_results[] = array('value' => $result->getTitle(), 'label' => $result->getTitle(), 'real_id' => $result->getRawValue(static::getKeyField()));
+            }
+            return $final_results;
+        } elseif ($output == 'array') {
+            $final_results = array();
+            foreach ($results->getAll() as $result) {
+                $final_results[$result->getRawValue(static::getKeyField())] = $result->getTitle();
+            }
+            return $final_results;
+        }
+        return $results;
+    }
+    
     
     /**
      * Force write mode. As another process can have modified the database, this
@@ -311,6 +361,20 @@ class Datarecord {
     public function forceWritemode() {
         $this->lock();
         $this->access_mode = self::MODE_WRITE;
+    }
+    
+    /**
+     * Get all objects of this type as an array of title hashed by key
+     * @return array
+     */
+    public static function getAllAsArray() {
+        $filter = new Filter(get_called_class());
+        $datacollection = $filter->execute();
+        foreach ($datacollection->getAll() as $element) {
+            $fieldoptions[$element->getRawValue(static::getKeyField())] = strip_tags($element->getTitle());
+        }
+        asort($fieldoptions);
+        return $fieldoptions;
     }
     
     /**
@@ -855,6 +919,27 @@ class Datarecord {
             }
         }
     }
+    
+    /**
+     * Parse keywords by splitting into arrays at space, but "preserving phrases"
+     * @param string $keywords String to split
+     * @return array Individual words and phrases.
+     */
+    private static function parseKeywords($keywords) {
+        $parsed_keywords = array(); $inside = false; $wordbuffer = '';
+        for ($i = 0; $i < strlen($keywords); $i++) {
+            $character = substr($keywords,$i,1);
+            if ($character == '"') $inside = ! $inside;
+            elseif ($character == ' ' && ! $inside) {
+                $word = trim($wordbuffer);
+                if ($word) $parsed_keywords[] = $word;
+                $wordbuffer = '';
+            } else $wordbuffer .= $character;
+        }
+        $word = trim($wordbuffer);
+        if ($word) $parsed_keywords[] = $word;
+        return $parsed_keywords;
+    }
 
     /**
      * This function will populate the foreign reference buffer trying to find
@@ -910,6 +995,23 @@ class Datarecord {
     public static function query($query, $failonerror = true) {
         if (static::$location == self::LOCATION_GLOBAL) return Database::globalQuery ($query, $failonerror);
         else return Database::instanceQuery ($query,$failonerror);
+    }
+    
+    /**
+     * Reloads a current object for writing.
+     */
+    public function reloadForWrite() {
+        if ($this->access_mode == self::MODE_WRITE) return;
+        // Lock
+        $this->lock();
+        $this->access_mode = self::MODE_WRITE;
+        if (! $this->loadFromDatabase($this->getRawValue($this->getKeyField()))) {
+            // Unlock if we couldn't read
+            $this->values[static::getKeyField()] = 0;
+            $this->unlock();
+            return false;
+        }
+        return true;
     }
     
     /**

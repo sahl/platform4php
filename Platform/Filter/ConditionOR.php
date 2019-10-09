@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionAND extends FilterCondition {
+class FilterConditionOR extends FilterCondition {
     
     private $condition1 = null, $condition2 = null;
     
@@ -25,6 +25,6 @@ class FilterConditionAND extends FilterCondition {
     
     
     public function getSQLFragment() {
-        return '('.$this->condition1->getSQLFragment().' AND '.$this->condition2->getSQLFragment().')';
+        return '('.$this->condition1->getSQLFragment().' OR '.$this->condition2->getSQLFragment().')';
     }
 }

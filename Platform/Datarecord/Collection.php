@@ -41,6 +41,17 @@ class DatarecordCollection {
     }
     
     /**
+     * Delete all contained records from the database
+     */
+    public function deleteAll() {
+        foreach ($this->datarecords as $datarecord) {
+            if ($datarecord->reloadForWrite()) $datarecord->delete();
+        }
+        $this->collectiontype = false;
+        $this->datarecords = [];
+    }
+    
+    /**
      * Extract a Datarecord from the collection
      * @param int $i Index to retrieve
      * @return Datarecord

@@ -1,11 +1,11 @@
 addCustomPlatformFunction(function(item) {
     platform_add_multiplier_functionality($('.platform_form_multiplier_element', item));
     
-    $('.platform_sortable').sortable({
+    $('.platform_sortable', item).sortable({
         stop: function() {
             platform_multiplier_fixnames($(this));
         },
-        items: "div:not(:last-child)"
+        items: "div.platform_form_multiplier_element:not(:last-child)"
     }).find('.platform_form_multiplier_element').css('cursor', 'move');
 });
 
@@ -43,6 +43,7 @@ function platform_handle_multiplier_expand() {
         new_row.appendTo($(this).closest('.platform_form_multiplier'));
         new_row.find('textarea,input[type!="checkbox"]').val('');
         new_row.find('input[type="checkbox"]').attr('checked', false);
+        new_row.applyPlatformFunctions();
         platform_add_multiplier_functionality(new_row);
         row.closest('.platform_form_multiplier').trigger('row_added');
         platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));

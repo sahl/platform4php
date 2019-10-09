@@ -35,6 +35,7 @@ Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.4.0/dist/js/t
 Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
 Platform\Design::queueJSFile('/Platform/Form/js/form.js');
 Platform\Design::queueJSFile('/Platform/Field/js/multiplier.js');
+Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');
 Platform\Design::queueJSFile('/Platform/Table/js/table.js');
 
 Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.4.0/dist/css/tabulator.min.css');
