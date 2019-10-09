@@ -55,6 +55,9 @@ $.fn.clearForm = function() {
     this.find('input[type!="hidden"][type!="checkbox"],input[type="hidden"][name!="form_action"][name!="form_name"]').val('');
     this.find('[type="checkbox"]').prop('checked', false);
     this.find('select option:first-child').prop('selected', true);
+    this.find('.platform_form_multiplier').each(function() {
+        $(this).find('.platform_form_multiplier_element:not(:first)').remove();
+    });
     this.find('.formfield_error').clearError();
     this.find('iframe').each(function() {
         $(this).prop('src', $(this).prop('src'));
@@ -83,11 +86,20 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
                             el.find('input[value="'+val+'"]').prop('checked', true);
                         });
                     } else {
-                        // Try for file field
-                        var el = element.find('#'+element.prop('id')+'_'+key+'.file_select_frame');
+                        // Try for multiplier
+                        var el = element.find('#'+element.prop('id')+'_'+key+'_container.platform_form_multiplier');
                         if (el.length) {
-                            // Recode url
-                            el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').prop('id')+'&field_name='+key+'&file_id='+value);
+                            $.each(value, function(key, val) {
+                                el.find('input[type="hidden"]:last').val(val.id);
+                                el.find('input[type="text"]:last').val(val.visual).trigger('keyup');
+                            });
+                        } else {
+                            // Try for file field
+                            var el = element.find('#'+element.prop('id')+'_'+key+'.file_select_frame');
+                            if (el.length) {
+                                // Recode url
+                                el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').prop('id')+'&field_name='+key+'&file_id='+value);
+                            }
                         }
                     }
                 }

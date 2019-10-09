@@ -521,6 +521,8 @@ class Datarecord {
             case self::FIELDTYPE_FILE:
                 return new FieldFile($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
+                return new FieldDatarecordcombobox($definition['label'], $name, array('class' => $definition['foreignclass']));
+                /*
                 $fieldoptions = array();
                 // Get possibilities
                 $filter = new Filter($definition['foreignclass']);
@@ -531,9 +533,13 @@ class Datarecord {
                 asort($fieldoptions);
                 $options['options'] = $fieldoptions;
                 return new FieldSelect($definition['label'], $name, $options);
+                 * /
+                 */
             case self::FIELDTYPE_ENUMERATION:
                 return new FieldSelect($definition['label'], $name, array('options' => $definition['enumeration']));
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+                return new FieldMultidatarecordcombobox($definition['label'], $name, array('class' => $definition['foreignclass']));
+                /*
                 $fieldoptions = array();
                 // Get possibilities
                 $filter = new Filter($definition['foreignclass']);
@@ -544,6 +550,7 @@ class Datarecord {
                 asort($fieldoptions);
                 $options['options'] = $fieldoptions;
                 return new FieldMulticheckbox($definition['label'], $name, $options);
+                 */
         }
         return null;
     }
@@ -559,13 +566,20 @@ class Datarecord {
             case self::FIELDTYPE_PASSWORD:
                 return $this->getRawValue($field) ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
+                return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                $value = $this->getRawValue($field);
-                if (! is_array($value)) $value = array();
-                return $value;
+                // We need to retrieve all the referred values
+                $class = static::$structure[$field]['foreignclass'];
+                $filter = new Filter($class);
+                $filter->addCondition(new FilterConditionOneOf($class::getKeyField(), $this->getRawValue($field)));
+                $values = array();
+                foreach ($filter->execute()->getAll() as $foreignobject) {
+                    $values[] = array('id' => $foreignobject->getRawValue($class::getKeyField()), 'visual' => $foreignobject->getTitle());
+                }
+                return $values;
             case self::FIELDTYPE_DATETIME:
                 return str_replace(' ', 'T', $this->getRawValue($field)->getReadable('Y-m-d H:i'));
             case self::FIELDTYPE_DATE:

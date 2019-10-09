@@ -72,13 +72,7 @@ class Design {
         }
         
         if (! is_array($js_files)) $js_files = array($js_files);
-        $js_files = array_merge(array(
-            '/Platform/Jquery/js/jquery.js',
-            '/Platform/Jquery/js/jquery-ui.min.js',
-            '/Platform/Design/js/general.js',
-            '/Platform/Design/js/contentbox.js',
-            '/Platform/Design/js/dialogs.js'
-        ),self::$js_files_to_load, $js_files);
+        $js_files = array_merge(self::$js_files_to_load, $js_files);
         foreach ($js_files as $js_file) {
             echo '<script src="'.$js_file.'" type="text/javascript"></script>';
         }

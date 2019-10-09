@@ -79,7 +79,7 @@ class FieldMultiplier extends Field {
     
     public function renderInput() {
         for ($i = 0; $i < count($this->value)+1; $i++) {
-            echo '<div class="platform_form_multiplier_element">';
+            echo '<div class="platform_form_multiplier_element" id="'.$this->getFieldIdForHTML().'">';
             foreach ($this->contained_fields as $field) {
                 // Store old field name
                 $old_field_name = $field->getName();

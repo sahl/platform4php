@@ -20,6 +20,8 @@ $.fn.platformDialog = function(buttons, opts) {
             buttons: buttons,
             open: function() {
                 $(this).dialog("moveToTop");
+                // Fix auto completers append
+                $(this).find('.platform_combobox').autocomplete('option', 'appendTo', '.ui-focused');
             },
         };
         var opts2 = $.extend(standard_options, opts);
