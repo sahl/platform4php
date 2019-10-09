@@ -156,10 +156,12 @@ class Instance extends Datarecord {
     
     /**
      * Save the instance initializing it if not already initialized
-     * @param boolean $forcesave
+     * @param boolean $force_save Set true to always save object
+     * @param boolean $keep_open_for_write Set to true to keep object open for write after saving
+     * @return boolean True if we actually saved the object
      */
-    public function save($forcesave = false) {
-        parent::save($forcesave);
+    public function save($force_save = false, $keep_open_for_write = false) {
+        parent::save($force_save, $keep_open_for_write);
         if (! $this->is_initiated) {
             if ($this->createDatabase()) parent::save($forcesave);
         }

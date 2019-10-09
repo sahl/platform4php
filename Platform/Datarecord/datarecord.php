@@ -250,7 +250,7 @@ class Datarecord {
             
             // Check for new fields
             foreach (static::$structure as $key => $element) {
-                if (! isset($fields_in_database[$key]) && $element['store_in_metadata'] === false) {
+                if (! isset($fields_in_database[$key]) && $element['store_in_metadata'] === false && ! $element['store_in_database'] === false) {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
@@ -320,9 +320,8 @@ class Datarecord {
         $main_field = false; $search_fields = array();
         // Locate search fields
         foreach (static::getStructure() as $field => $definition) {
-            if (in_array($definition['search'], array(self::SEARCH_TOPIC, self::SEARCH_ADDITIONAL))) {
+            if ($definition['searchable']) {
                 $search_fields[] = $field;
-                if ($definition['search'] == self::SEARCH_TOPIC) $main_field = $field;
             }
         }
         if (! count($search_fields)) return array();
@@ -1119,9 +1118,10 @@ class Datarecord {
     /**
      * Save the object to the database, if it have changed.
      * @param boolean $force_save Set true to always save object
+     * @param boolean $keep_open_for_write Set to true to keep object open for write after saving
      * @return boolean True if we actually saved the object
      */
-    public function save($force_save = false) {
+    public function save($force_save = false, $keep_open_for_write = false) {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to save object '.static::$database_table.' in read mode', E_USER_ERROR);
         
         if (! $force_save && $this->isInDatabase()) {
@@ -1133,7 +1133,10 @@ class Datarecord {
                     break;
                 }
             }
-            if (! $change) return false;
+            if (! $change) {
+                if (! $keep_open_for_write) $this->unlock();
+                return false;
+            }
         }
         $this->packMetadata();
         $this->setValue('change_date', new Timestamp('now'));
@@ -1148,6 +1151,7 @@ class Datarecord {
             $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
             self::query($sql);
             $this->values_on_load = $this->values;
+            if (! $keep_open_for_write) $this->unlock();
             return true;
         } else {
             $this->setValue('create_date', new Timestamp('now'));
@@ -1160,12 +1164,14 @@ class Datarecord {
             }
             $sql = 'INSERT INTO '.static::$database_table.' ('.implode(',',$fieldlist).') VALUES ('.implode(',',$fieldvalues).')';
             self::query($sql);
-            // Lock the new object
-            $this->unlock();
-            $this->values[static::getKeyField()] = static::$location == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
-            $this->lock();
-            $this->forceWritemode();
             $this->values_on_load = $this->values;
+            $this->unlock();
+            if ($keep_open_for_write) {
+                // Lock the new object
+                $this->values[static::getKeyField()] = static::$location == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
+                $this->lock();
+                $this->forceWritemode();
+            }
             return true;
         }
     }

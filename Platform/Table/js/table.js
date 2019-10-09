@@ -37,7 +37,7 @@ addCustomPlatformFunction(function(item) {
             }, true)
         });
         table.addColumn({
-            formatter:"rowSelection", titleFormatter:"rowSelection", align: 'center', headerSort:false, width: 15, cellClick:function(e, cell){
+            formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerSort:false, width: 15, cellClick:function(e, cell){
                 cell.getRow().toggleSelect();
             }
         }, true);

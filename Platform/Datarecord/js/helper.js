@@ -17,7 +17,45 @@ $(function() {
 function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, column_dialog, create_button, edit_button, delete_button, column_select_button) {
     var script = '/Platform/Datarecord/php/io_datarecord.php';
     var table = getTableByID(list_view);
-
+    
+    // Additional data rows
+    table.addColumn({
+        formatter: function(cell, formatterParams) {
+            return '<i class="fa fa-trash"></i>';
+        },
+        width: 40,
+        headerSort:false,
+        align: 'center',
+        cellClick: function(e, cell) {
+            confirmDialog('Delete '+name, 'You are about to delete the selected '+name+'(s)', function() {
+                $.post(script, {action: 'datarecord_delete', ids: [cell.getRow().getIndex()], __class: classname}, function(data) {
+                    if (data.status == 0) {
+                        warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
+                    }
+                    if (table) {
+                        table.replaceData();
+                    } 
+                }, 'json');
+            })
+        }
+    }, false, 'checkboxcolumn');
+    table.addColumn({
+        formatter: function(cell, formatterParams) {
+            return '<i class="fa fa-pencil"></i>';
+        },
+        width: 40,
+        headerSort:false,
+        align: 'center',
+        cellClick: function(e, cell) {
+            $(form).clearForm();
+            $(form).loadValues(script, {action: 'datarecord_load', id: cell.getRow().getIndex(), __class: classname}, function() {
+                $(edit_dialog).dialog('option', 'title', 'Edit '+name).dialog('open');
+            });        
+        }
+    }, false, 'checkboxcolumn');
+    
+    console.log(table.getColumns());
+    
     // Capture edit form
     var form = $(edit_dialog).find('form');
     // Set objective
