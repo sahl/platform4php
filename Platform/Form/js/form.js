@@ -3,7 +3,9 @@ addCustomPlatformFunction(function(item) {
         var allowsubmit = true;
 
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
-        $('.platform_form_multiplier_element:last-child', $(this)).hide();
+        $('.platform_form_multiplier_element', $(this)).each(function() {
+            if ($(this).next().is(':last-child')) $(this).hide();
+        });
 
         // Check required fields
         $('.form_required_field', $(this)).each(function() {
@@ -27,7 +29,7 @@ addCustomPlatformFunction(function(item) {
         }
 
          // Show multipliers again
-        $('.platform_form_multiplier_element:last-child', $(this)).show();
+        $('.platform_form_multiplier_element', $(this)).show();
          
         return allowsubmit;
      });

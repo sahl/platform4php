@@ -43,6 +43,8 @@ function platform_handle_multiplier_expand() {
         new_row.insertAfter(row);
         new_row.find('textarea,input[type!="checkbox"]').val('');
         new_row.find('input[type="checkbox"]').attr('checked', false);
+        new_row.find('.formfield_error').removeClass('formfield_error');
+        new_row.find('.formfield_error_container').hide();
         new_row.applyPlatformFunctions();
         platform_add_multiplier_functionality(new_row);
         row.closest('.platform_form_multiplier').trigger('row_added');

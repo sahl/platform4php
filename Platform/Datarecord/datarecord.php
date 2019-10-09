@@ -221,8 +221,9 @@ class Datarecord {
             // Build field definitions
             $fielddefinitions = array();
             foreach (static::$structure as $key => $element) {
-                // Don't create fields for items we want to store in metadata
-                if ($element['store_in_metadata']) continue;
+                // Don't create fields for items we want to store in metadata or
+                // which shouldn't be stored in DB
+                if ($element['store_in_metadata'] || $element['store_in_database'] === false) continue;
                 $fielddefinition = $key.' '.self::getSQLFieldType($element['fieldtype']);
                 if ($element['fieldtype'] == self::FIELDTYPE_KEY) $fielddefinition .= ' PRIMARY KEY AUTO_INCREMENT';
                 $fielddefinitions[] = $fielddefinition;
@@ -249,7 +250,7 @@ class Datarecord {
             
             // Check for new fields
             foreach (static::$structure as $key => $element) {
-                if (! isset($fields_in_database[$key]) && !$element['store_in_metadata']) {
+                if (! isset($fields_in_database[$key]) && $element['store_in_metadata'] === false) {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
@@ -273,7 +274,7 @@ class Datarecord {
             }
             // Check for changed and removed fields
             foreach ($fields_in_database as $field_in_database) {
-                if (! isset(static::$structure[$field_in_database['Field']]) || static::$structure[$field_in_database['Field']]['store_in_metadata']) {
+                if (! isset(static::$structure[$field_in_database['Field']]) || static::$structure[$field_in_database['Field']]['store_in_metadata'] || static::$structure[$field_in_database['Field']]['store_in_database'] === false) {
                     if (static::$structure[$field_in_database['Field']]['store_in_metadata']) {
                         // We asked to store this field in the metadata instead
                         // so copy it.
@@ -571,6 +572,8 @@ class Datarecord {
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+                // Bail of no values
+                if (! count($this->getRawValue($field))) return array();
                 // We need to retrieve all the referred values
                 $class = static::$structure[$field]['foreignclass'];
                 $filter = new Filter($class);
