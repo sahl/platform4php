@@ -3,12 +3,11 @@ namespace Platform;
 
 class FieldMultiplier extends Field {
     
-    private $contained_fields = array();
+    protected $contained_fields = array();
     
     private $error_cache = array();
     
     public function __construct($label = '', $name = '', $options = array()) {
-        parent::__construct('', $name, $options);
         $this->classes[] = 'w3-input';
         $this->container_classes[] = 'platform_form_multiplier';
         $this->value = array();
@@ -16,6 +15,7 @@ class FieldMultiplier extends Field {
             $this->container_classes[] = 'platform_sortable';
             unset($options['sortable']);
         }
+        parent::__construct($label, $name, $options);
     }
 
     /**
@@ -25,7 +25,7 @@ class FieldMultiplier extends Field {
     public function addFields($fields) {
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
-            if ($field instanceof FieldMultiplier) trigger_error('You cannot add a multiplier to another multiplier!', E_USER_ERROR);
+            //if ($field instanceof FieldMultiplier) trigger_error('You cannot add a multiplier to another multiplier!', E_USER_ERROR);
             $this->contained_fields[] = $field;
         }
     }
@@ -77,8 +77,7 @@ class FieldMultiplier extends Field {
         return $totalresult;
     }
     
-    public function render() {
-        echo '<div id="'.$this->getName().'" class="'.implode(' ',$this->container_classes).'">';
+    public function renderInput() {
         for ($i = 0; $i < count($this->value)+1; $i++) {
             echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {
@@ -91,7 +90,7 @@ class FieldMultiplier extends Field {
                     if (isset($this->value[$i][$old_field_name])) {
                         $field->setValue($this->value[$i][$old_field_name]);
                     } else {
-                        $field->setValue('');
+                        $field->setValue($field instanceof FieldMultiplier ? array() : '');
                     }
                 }
                 if (isset($this->error_cache[$i][$old_field_name])) {
@@ -105,7 +104,6 @@ class FieldMultiplier extends Field {
             }
             echo '</div>';
         }
-        echo '</div>';
     }
     
     public function setValue($value) {

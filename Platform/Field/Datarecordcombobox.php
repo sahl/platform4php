@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FieldDatarecordCombobox extends FieldCombobox {
+class FieldDatarecordcombobox extends FieldCombobox {
     
     private $connected_class = false;
     

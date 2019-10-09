@@ -102,7 +102,7 @@ class Form {
                     $fields[] = new $class($label, $name, $tag['properties']);
                     // If we encounter a multiplier, we want to direct the following fields into that
                     if (strtolower($tag['tag']) == 'multiplier') {
-                        $storedfields = $fields;
+                        $storedfields[] = $fields;
                         $fields = array();
                     }
                     $fields[] = new FieldHTML($tag['text']);
@@ -112,10 +112,11 @@ class Form {
             } else {
                 if (strtolower($tag['tag']) == '/multiplier') {
                     // If we encounter a multiplier end, then we put all the stored fields into that, and resumes normal operation
-                    $multiplier = end($storedfields);
+                    $restorefields = array_pop($storedfields);
+                    $multiplier = end($restorefields);
                     $multiplier->addFields($fields);
-                    reset($storedfields);
-                    $fields = $storedfields;
+                    reset($restorefields);
+                    $fields = $restorefields;
                     $fields[] = new FieldHTML($tag['text']);
                 }
                 $fields[] = new FieldHTML('<'.$element);

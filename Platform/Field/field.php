@@ -242,6 +242,10 @@ class Field {
         echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label.'</label>';
         if ($this->is_required) echo ' (<span style="color:red">*</span>)';
     }
+    
+    public function setContainerClasses($classes) {
+        $this->container_classes = $classes;
+    }
 
     /**
      * Set the heading of the field
