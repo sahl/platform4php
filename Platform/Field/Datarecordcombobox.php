@@ -66,6 +66,10 @@ class FieldDatarecordcombobox extends FieldCombobox {
     
     public function setValue($value) {
         if (! is_array($value)) {
+            if (! $value) {
+                $this->value = array();
+                return;
+            }
             $object = new $this->connected_class();
             $object->loadForRead($value);
             $visual_value = strip_tags($object->getTitle());

@@ -98,9 +98,15 @@ class File extends Datarecord {
         return $path.$filename;
     }
     
-    public function save($forcesave = false) {
-        $forcesave |= $this->content_source != '';
-        $result = parent::save($forcesave);
+     /**
+     * Save the object to the database, if it have changed.
+     * @param boolean $force_save Set true to always save object
+     * @param boolean $keep_open_for_write Set to true to keep object open for write after saving
+     * @return boolean True if we actually saved the object
+     */
+    public function save($force_save = false, $keep_open_for_write = false) {
+       $force_save |= $this->content_source != '';
+        $result = parent::save($force_save, $keep_open_for_write);
         // Handle file content
         switch ($this->content_source) {
             case 'file':

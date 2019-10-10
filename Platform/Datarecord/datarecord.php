@@ -1166,9 +1166,9 @@ class Datarecord {
             self::query($sql);
             $this->values_on_load = $this->values;
             $this->unlock();
+            $this->values[static::getKeyField()] = static::$location == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
             if ($keep_open_for_write) {
                 // Lock the new object
-                $this->values[static::getKeyField()] = static::$location == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
                 $this->lock();
                 $this->forceWritemode();
             }
