@@ -70,6 +70,20 @@ class DatarecordCollection {
     }
     
     /**
+     * Get all Datarecords from this collection in an array hashed by the object
+     * id.
+     * @return array
+     */
+    public function getAllWithKeys() {
+        if (! count($this->datarecords)) return array();
+        $result = array();
+        foreach ($this->datarecords as $object) {
+            $result[$object->getRawValue($object->getKeyField())] = $object;
+        }
+        return $result;
+    }
+    
+    /**
      * Get the raw value from the given field from all objects in this collection.
      * @param string $field Field to read from
      * @param int $limit Max number of values to retrieve. -1 = get all
@@ -102,6 +116,30 @@ class DatarecordCollection {
         array_multisort($sort_array, SORT_ASC, $result);
         return $result;
     }
+
+    /**
+     * Get all associated objects which are object pointed to, by a relation field
+     * in this collection
+     * @param string $field Field name to consider
+     * @return Datacollection All associated objects
+     */
+    public function getAssociatedObjects($field) {
+        $foreign_ids = array();
+        foreach ($this->getAllRawValues($field) as $value) {
+            if (is_array($value)) {
+                foreach ($value as $v) if (! in_array($v, $foreign_ids) && $v) $foreign_ids[] = $v;
+            } else {
+                if (! in_array($value, $foreign_ids) && $value) $foreign_ids[] = $value;
+            }
+        }
+        if (! count($foreign_ids)) return new DatarecordCollection();
+        $structure = $this->collectiontype::getStructure();
+        $foreign_class = $structure[$field]['foreignclass'];
+        if (!class_exists($foreign_class)) return new DatarecordCollection();
+        $filter = new Filter($foreign_class);
+        $filter->addCondition(new FilterConditionOneOf($foreign_class::getKeyfield(), $foreign_ids));
+        return $filter->execute();
+    }
     
     /**
      * Get the type of objects in this collection
@@ -121,12 +159,16 @@ class DatarecordCollection {
 
     /**
      * Sort this datacollection according to the given field
-     * @param string $field Field to sort by.
+     * @param string $fields Fields to sort by. If several fields are given use comma as a separator.
      */
-    public function sort($field) {
+    public function sort($fields) {
         $sort_array = array();
         foreach ($this->datarecords as $datarecord) {
-            $sort_array[] = $datarecord->getTextValue($field);
+            $finalvalue = '';
+            foreach (explode(',',$fields) as $field) {
+                $finalvalue .= $datarecord->getTextValue($field);
+            }
+            $sort_array[] = $finalvalue;
         }
         array_multisort($sort_array, SORT_ASC, $this->datarecords);
     }

@@ -124,6 +124,7 @@ class Datarecord {
      */
     public static function addStructure($structure) {
         foreach ($structure as $field => $data) {
+            if (isset($data['foreignclass']) && substr($data['foreignclass'],0,1) == '\\') $data['foreignclass'] = substr($data['foreignclass'],1);
             static::$structure[$field] = $data;
         }
     }
@@ -247,10 +248,10 @@ class Datarecord {
                 self::query('DROP TABLE '.static::$database_table);
                 return static::ensureInDatabase($type);
             }
-            
+
             // Check for new fields
             foreach (static::$structure as $key => $element) {
-                if (! isset($fields_in_database[$key]) && $element['store_in_metadata'] === false && ! $element['store_in_database'] === false) {
+                if (! isset($fields_in_database[$key]) && ! $element['store_in_metadata'] && $element['store_in_database'] !== false) {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
@@ -934,6 +935,7 @@ class Datarecord {
                     $this->setValue($key, $value);
             }
         }
+        self::$foreign_reference_buffer[get_called_class()][$databaserow[static::getKeyField()]] = $this->getTitle();
     }
     
     /**
@@ -1152,7 +1154,6 @@ class Datarecord {
             self::query($sql);
             $this->values_on_load = $this->values;
             if (! $keep_open_for_write) $this->unlock();
-            return true;
         } else {
             $this->setValue('create_date', new Timestamp('now'));
             $fieldlist = array(); $fieldvalues = array();
@@ -1172,8 +1173,9 @@ class Datarecord {
                 $this->lock();
                 $this->forceWritemode();
             }
-            return true;
         }
+        self::$foreign_reference_buffer[get_called_class()][$this->values[static::getKeyField()]] = $this->getTitle();
+        return true;
     }
     
     /**
