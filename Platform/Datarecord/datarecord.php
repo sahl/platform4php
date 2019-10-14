@@ -184,23 +184,7 @@ class Datarecord {
     public function canDelete() {
         if (! $this->isInDatabase()) return 'Not saved yet';
         if (static::$delete_strategy == self::DELETE_STRATEGY_BLOCK) {
-            // Find all objects referring this
-            $referring_titles = array();
-            foreach (static::$referring_classes as $referring_class) {
-                // Build a filter to find all referers
-                $referer_found = false;
-                $filter = new Filter($referring_class);
-                foreach ($referring_class::getStructure() as $key => $definition) {
-                    if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
-                        $filter->addConditionOR(new FilterConditionMatch($key, $this->getRawValue($this->getKeyField())));
-                        $referer_found = true;
-                    }
-                }
-                if (! $referer_found) continue;
-                // Get all objects referring this
-                $referring_objects = $filter->execute();
-                foreach ($referring_objects->getAll() as $referring_object) $referring_titles[] = $referring_object->getTitle();
-            }
+            $referring_titles = $this->getReferringObjectTitles();
             if (count($referring_titles)) {
                 $CUT = 5;
                 $total = count($referring_titles);
@@ -215,18 +199,22 @@ class Datarecord {
     
     /**
      * Delete this record from the database.
+     * @param boolean $force_purge Force a deletion and purging of references no matter how object is configured.
      * @return boolean True if something was actually deleted.
      */
-    public function delete() {
+    public function delete($force_purge = false) {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
+        
+        if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
+        
         self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
         $deleted_id = $this->values[static::getKeyField()];
         unset($this->values[static::getKeyField()]);
         $this->access_mode = self::MODE_READ;
         $this->unlock();
         
-        if (static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
+        if ($force_purge || static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
             // Find all objects referring this and remove references
             foreach (static::$referring_classes as $referring_class) {
                 // Build a filter to find all referers
@@ -758,6 +746,31 @@ class Datarecord {
         $class = strtolower(get_called_class());
         if (strpos($class, '\\')) $class = substr($class,strrpos($class,'\\')+1);
         return $class;
+    }
+    
+    /**
+     * Get titles of all objects referring this object
+     * @return array
+     */
+    public static function getReferringObjectTitles() {
+        // Find all objects referring this
+        $referring_titles = array();
+        foreach (static::$referring_classes as $referring_class) {
+            // Build a filter to find all referers
+            $referer_found = false;
+            $filter = new Filter($referring_class);
+            foreach ($referring_class::getStructure() as $key => $definition) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                    $filter->addConditionOR(new FilterConditionMatch($key, $this->getRawValue($this->getKeyField())));
+                    $referer_found = true;
+                }
+            }
+            if (! $referer_found) continue;
+            // Get all objects referring this
+            $referring_objects = $filter->execute();
+            foreach ($referring_objects->getAll() as $referring_object) $referring_titles[] = $referring_object->getTitle();
+        }
+        return $referring_titles;
     }
     
     /**
