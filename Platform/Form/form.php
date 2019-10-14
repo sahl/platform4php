@@ -16,19 +16,97 @@ class Form {
         if ($filename) $this->getFromFile ($filename);
     }
     
-    public function addField($field) {
-        if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
-        $this->fields[] = $field;
+    /**
+     * Add one or more fields to a form
+     * @param \Platform\Field|array<\Platform\Field> $fields Field(s) to add
+     */
+    public function addField($fields) {
+        if (! is_array($fields)) $fields = array($fields);
+        foreach ($fields as $field) {
+            if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+            $this->fields[] = $field;
+        }
         $field->attachToForm($this);
     }
     
+    /**
+     * Add fields after another field in this form. If no match the field are
+     * inserted last in form
+     * @param \Platform\Field|array<\Platform\Field> $fields Field(s) to add
+     * @param string $fieldname Field name to insert this field after.
+     */
+    public function addFieldAfter($fields, $fieldname = '') {
+        if (! is_array($fields)) $fields = array($fields);
+        $newfields = array(); $inserted = false;
+        foreach ($this->fields as $formfield) {
+            $newfields[] = $formfield;
+            if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
+                foreach ($fields as $field) {
+                    if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                    $newfields[] = $formfield;
+                }
+                $inserted = true;
+            }
+        }
+        if (! $inserted) {
+            foreach ($fields as $field) {
+                if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                $newfields[] = $formfield;
+            }
+        }
+        $this->fields = $newfields;
+    }
+    
+    /**
+     * Add fields before another field in this form. If no match field are inserted
+     * first in form
+     * @param \Platform\Field|array<\Platform\Field> $fields Field(s) to add
+     * @param string $fieldname Field name to insert this field before.
+     */
+    public function addFieldBefore($fields, $fieldname = '') {
+        if (! is_array($fields)) $fields = array($fields);
+        $newfields = array(); $inserted = false;
+        foreach ($this->fields as $formfield) {
+            if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
+                foreach ($fields as $field) {
+                    if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                    $newfields[] = $formfield;
+                }
+                $inserted = true;
+            }
+            $newfields[] = $formfield;
+        }
+        if (! $inserted) {
+            foreach (array_reverse($fields) as $field) {
+                if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                array_unshift($newfields, $field);
+            }
+        }
+        $this->fields = $newfields;
+    }    
+    
+    /**
+     * Add a validation function to this form.
+     * @param function $function
+     */
     public function addValidationFunction($function) {
         if (!is_callable($function)) trigger_error('Added invalid validation function to form', E_USER_ERROR);
         $this->validationfunctions[] = $function;
     }
     
+    /**
+     * Add a HTML-section to this form
+     * @param string $html HTML to add
+     */
     public function addHTML($html) {
         $this->addField(new FieldHTML($html));
+    }
+    
+    private static function extractValue($fieldname, &$fragment) {
+        if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
+            return self::extractValue($matches[2].$matches[3], $fragment[$matches[1]]);
+        }
+        return $fragment[$fieldname];
     }
     
     /**
@@ -55,6 +133,10 @@ class Form {
         return false;
     }
     
+    /**
+     * Get form fields from a file
+     * @param string $filename
+     */
     public function getFromFile($filename) {
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
@@ -63,25 +145,51 @@ class Form {
         }
     }
     
+    /**
+     * Get the ID of the form
+     * @return int
+     */
     public function getId() {
         return $this->formid;
     }
     
+    /**
+     * Get all values from the form
+     * @return array
+     */
     public function getValues() {
        $result = array();
        foreach ($this->fields as $field) {
             /* @var $field Field */
             if ($field instanceof FieldHTML) continue;
             $value = $field->getValue();
-            if ($value !== null) $result[$field->getName()] = $value;
+            if ($value !== null) self::injectValue($field->getName(), $result, $value);
        }
        return $result;
     }
     
+    private static function injectValue($fieldname, &$target, $value) {
+        if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
+            self::injectValue($matches[2].$matches[3], $target[$matches[1]], $value);
+            return;
+        }
+        $target[$fieldname] = $value;
+    }
+    
+    
+    /**
+     * Return true if this form was submitted
+     * @return boolean
+     */
     public function isSubmitted() {
         return ($_POST['form_name'] == $this->formid);
     }
     
+    /**
+     * Parse form fields from a text string
+     * @param string $text
+     * @return array<\Platform\Field> The parsed form fields.
+     */
     public static function parseFieldsFromText($text) {
         $fields = array(); $storedfields = array();
         // Explode on tags
@@ -125,6 +233,11 @@ class Form {
         return $fields;
     }
     
+    /**
+     * Parse a HTML tag into an understandable format
+     * @param string $tagtext Tag
+     * @return array Parsed format
+     */
     private static function parseTag($tagtext) {
         $tagname = '';
         $properties = array();
@@ -205,6 +318,9 @@ class Form {
         return array('tag' => $tagname, 'properties' => $properties, 'text' => $currentvalue);
     }
     
+    /**
+     * Render the form
+     */
     public function render() {
         echo '<form id="'.$this->formid.'" method="post" class="platform_form">';
         echo '<input type="hidden" name="form_name" value="'.$this->formid.'">';
@@ -218,10 +334,18 @@ class Form {
         echo '</form>';
     }
     
+    /**
+     * Set the base action of the form
+     * @param type $action
+     */
     public function setAction($action) {
         $this->action = $action;
     }
     
+    /**
+     * Add values to this form
+     * @param array $values Values hashed by their field name
+     */
     public function setValues($values) {
         if (! is_array($values)) return;
         foreach ($values as $fieldname => $value) {
@@ -231,7 +355,11 @@ class Form {
             }
         }
     }
-    
+
+    /**
+     * Validates this form
+     * @return boolean True if valid input
+     */
     public function validate() {
         $result = true;
         
@@ -241,7 +369,7 @@ class Form {
         foreach ($this->fields as $field) {
             /* @var $field Field */
             if ($field instanceof FieldHTML || in_array($field->getName(), $hiddenfields) && ! $field instanceof FieldHidden) continue;
-            $result = $field->parse($_POST[$field->getName()]) && $result;
+            $result = $field->parse(self::extractValue($field->getName(), $_POST)) && $result;
         }
         foreach ($this->validationfunctions as $validationfunction) {
             $result = $result && call_user_func($validationfunction, $this);
