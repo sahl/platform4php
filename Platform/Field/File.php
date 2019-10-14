@@ -26,7 +26,7 @@ class FieldFile extends Field {
         echo '<input type="hidden" name="'.$this->getName().'__status" value="'.$value['status'].'">';
         echo '<input type="hidden" name="'.$this->getName().'__original_file" value="'.$value['original_file'].'">';
         echo '<input type="hidden" name="'.$this->getName().'__temp_file" value="'.$value['temp_file'].'">';
-        echo '<br><iframe id="'.$this->getFieldIdForHTML().'" class="file_select_frame" src="/Platform/Field/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 width=400 height=70 style="vertical-align: top;"></iframe>';    
+        echo '<br><iframe id="'.$this->getFieldIdForHTML().'" class="'.Design::getClass('file_input_frame', 'file_select_frame').'" src="/Platform/Field/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 width=400 height=70 style="vertical-align: top;"></iframe>';    
     }
     
     public function setValue($value) {

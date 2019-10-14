@@ -58,9 +58,9 @@ class Instance extends Datarecord {
      * Delete this instance
      * @return boolean
      */
-    public function delete() {
+    public function delete($force_purge = false) {
         $databasename = $this->getDatabaseName();
-        $result = parent::delete();
+        $result = parent::delete($force_purge);
         if ($result && $this->is_initiated) {
             gq("DROP DATABASE ".$this->getDatabaseName(), false);
         }

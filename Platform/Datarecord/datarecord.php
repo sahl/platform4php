@@ -1161,7 +1161,7 @@ class Datarecord {
         // Get form
         $form = static::getForm();
         
-        echo '<div class="w3-container platform_render_edit_complex w3-section" data-name="'.$name.'" data-class="'.get_called_class().'">';
+        echo '<div class="'.Design::getClass('datarecord_editcomplex', 'platform_render_edit_complex').'" data-name="'.$name.'" data-class="'.get_called_class().'">';
         
         $menu = array(
             $name.'_new_button' => 'Create new '.$name,

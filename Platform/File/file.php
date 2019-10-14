@@ -40,10 +40,10 @@ class File extends Datarecord {
         $this->content = $filename;
     }
     
-    public function delete() {
+    public function delete($force_purge = false) {
         // Remove file
         $file = $this->getCompleteFilename();
-        $result = parent::delete();
+        $result = parent::delete($force_purge);
         if ($result) unlink($file);
         return $result;
     }

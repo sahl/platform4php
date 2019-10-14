@@ -21,6 +21,16 @@ class Design {
     private static $page_started = false;
     
     /**
+     * Get classes from the style array
+     * @param string $keyword Class keyword
+     * @param string $additional_classes Additional classes to return.
+     * @return string Combined class string
+     */
+    public static function getClass($keyword, $additional_classes = '') {
+        return trim(self::$style_array[$keyword].' '.$additional_classes);
+    }
+    
+    /**
      * Queue a css file to load when page renders
      * @param string $css_file css file to load
      */
@@ -39,7 +49,7 @@ class Design {
     }    
     
     public static function renderContentBox($box_id, $source, $parameters = array(), $prepare_function = '', $reveal = '') {
-        echo '<div class="platform_content_box" id="'.$box_id.'" data-source="'.$source.'" data-parameters="'.http_build_query($parameters).'"';
+        echo '<div class="'.Design::getClass('content_box', 'platform_content_box').'" id="'.$box_id.'" data-source="'.$source.'" data-parameters="'.http_build_query($parameters).'"';
         if ($prepare_function) echo ' data-prepare_function="'.$prepare_function.'"';
         if ($reveal) echo ' data-reveal="'.$reveal.'"';
         echo '></div>';
@@ -85,5 +95,22 @@ class Design {
     public static function renderPageend() {
         echo '</body></html>';
     }
+    
+    /**
+     * Set another style array.
+     * @param type $array
+     */
+    public static function setStyleArray($array) {
+        self::$style_array = $array;
+    }
+    
+    
+    private static $style_array = array(
+        'datarecord_editcomplex' => 'w3-container w3-section',
+        'formfield' => 'w3-input',
+        'file_input_frame' => '',
+        'platform_table' => '',
+        
+    );
     
 }

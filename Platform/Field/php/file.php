@@ -1,4 +1,6 @@
 <?php
+namespace Platform;
+
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
 pagestart('File upload', '/Platform/Field/js/file.js');
@@ -8,7 +10,7 @@ $current_file_name = '';
 if ($_POST['action'] == 'send_file') {
     foreach ($_FILES as $file) {
         // Get a temp file name
-        if (! $_POST['temp_file_name']) $_POST['temp_file_name'] = Platform\File::getTempFilename();
+        if (! $_POST['temp_file_name']) $_POST['temp_file_name'] = File::getTempFilename();
         $file_name_only = substr($_POST['temp_file_name'], strrpos($_POST['temp_file_name'], '/')+1);
         // Move file here
         move_uploaded_file($file['tmp_name'], $_POST['temp_file_name']);
@@ -32,7 +34,7 @@ if ($_POST['action'] == 'send_file') {
     echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'__status"]\', window.parent.document).val(\'removed\');';
     echo '</script>';
 } elseif ($_GET['file_id']) {
-    $file = new Platform\File();
+    $file = new File();
     $file->loadForRead($_GET['file_id']);
     $current_file_name = $file->filename;
 } elseif ($_GET['original_file']) {
@@ -52,7 +54,7 @@ echo '<form method="post" enctype="multipart/form-data">';
 echo '<input type="hidden" name="action" value="send_file">';
 // TODO: Don't expose local path in HTML
 echo '<input type="hidden" name="temp_file_name" value="'.$_POST['temp_file_name'].'">';
-echo '<input name="file" type="file" class="w3-input">';
+echo '<input name="file" type="file" class="'.Design::getClass('formfield', '').'">';
 echo '</form>';
 
 pageend();

@@ -113,7 +113,7 @@ class Table {
     }
     
     public function renderTable() {
-        echo '<div id="'.$this->id.'" class="platform_table platform_invisible">'.json_encode($this->options).'</div>';
+        echo '<div id="'.$this->id.'" class="'.Design::getClass('platform_table', 'platform_table platform_invisible').'">'.json_encode($this->options).'</div>';
     }
     
     public function setDefinitionFromDatarecord($classname) {

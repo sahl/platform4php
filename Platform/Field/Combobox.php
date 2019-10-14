@@ -6,7 +6,7 @@ class FieldCombobox extends Field {
     protected $datasource = false;
     
     public function __construct($label, $name, $options = array()) {
-        $this->classes[] = 'w3-input platform_combobox';
+        $this->classes[] = Design::getClass('formfield', 'platform_combobox');
         if ($options['datasource']) {
             $this->setDatasource($options['datasource']);
             unset($options['datasource']);
