@@ -17,6 +17,7 @@ class FilterConditionOneOf extends FilterCondition {
     public function getSQLFragment() {
         $sql = array();
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
+        if (! count($this->value)) return 'FALSE';
         foreach ($this->value as $value) {
             switch ($fieldtype) {
                 case Datarecord::FIELDTYPE_ARRAY:

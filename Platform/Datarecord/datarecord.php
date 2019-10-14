@@ -935,7 +935,6 @@ class Datarecord {
                     $this->setValue($key, $value);
             }
         }
-        self::$foreign_reference_buffer[get_called_class()][$databaserow[static::getKeyField()]] = $this->getTitle();
     }
     
     /**
@@ -1243,7 +1242,7 @@ class Datarecord {
                 }
                 // Runthrough intended
             case self::FIELDTYPE_ARRAY:
-                $this->values[$field] = is_array($value) ? $value : null;
+                $this->values[$field] = is_array($value) ? $value : array();
                 break;
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
