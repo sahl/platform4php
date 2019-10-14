@@ -7,6 +7,10 @@ class User extends Datarecord {
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_INSTANCE;
+    protected static $referring_classes = array(
+        'Platform\\Accesstoken',
+        'Platform\\UserProperty',
+    );
     
     public function canDelete() {
         if ($this->isInDatabase() && $this->user_id == Accesstoken::getCurrentUserID()) return 'Cannot delete current user';

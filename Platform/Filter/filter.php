@@ -40,8 +40,24 @@ class Filter {
     }
     
     /**
+     * Add a condition to the filter. Several conditions can be added, and will
+     * be OR'ed together
+     * @param \Platform\FilterCondition $condition Condition to add
+     */
+    public function addConditionOR($condition) {
+        if (! $condition instanceof FilterCondition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
+        $condition->attachFilter($this);
+        if ($this->base_condition == null) {
+            $this->base_condition = $condition;
+        } else {
+            $this->base_condition = new FilterConditionOR($this->base_condition, $condition);
+        }
+    }
+    
+    
+    /**
      * Execute this filter
-     * @return DatarecordCollection The result of the filter.
+     * @return \Platform\DatarecordCollection The result of the filter.
      */
     public function execute() {
         return $this->base_object->getCollectionFromSQL($this->getSQL());

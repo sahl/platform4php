@@ -3,6 +3,18 @@ namespace Platform;
 
 class Datarecord {
 
+    // Column visibilities
+    const COLUMN_UNSELECTABLE = 1;
+    const COLUMN_DEFAULTHIDDEN = 2;
+    const COLUMN_DEFAULTSHOWN = 0;
+    
+    const DELETE_STRATEGY_BLOCK = 0;
+    const DELETE_STRATEGY_PURGE_REFERERS = 1;
+    
+    // Object locations
+    const LOCATION_GLOBAL = 0;
+    const LOCATION_INSTANCE = 1;
+
     // Read/write mode
     const MODE_READ = 0;
     const MODE_WRITE = 1;
@@ -12,15 +24,6 @@ class Datarecord {
     const RENDER_TEXT = 1;
     const RENDER_FULL = 2;
     const RENDER_FORM = 3;
-    
-    // Object locations
-    const LOCATION_GLOBAL = 0;
-    const LOCATION_INSTANCE = 1;
-    
-    // Column visibilities
-    const COLUMN_UNSELECTABLE = 1;
-    const COLUMN_DEFAULTHIDDEN = 2;
-    const COLUMN_DEFAULTSHOWN = 0;
     
     // Search fields
     const SEARCH_TOPIC = 1;
@@ -39,6 +42,24 @@ class Datarecord {
     public $collection = false;
     
     /**
+     * Database table to store records of this type.
+     * @var string
+     */
+    protected static $database_table = '';
+    
+    /**
+     * Set a delete strategy for this object
+     * @var int Delete strategy 
+     */
+    protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
+
+    /**
+     * Set the default render mode, when getting values
+     * @var int 
+     */
+    private $default_rendermode = self::RENDER_RAW;
+
+    /**
      * Convenience to store keyfield
      * @var boolean|string 
      */
@@ -55,18 +76,18 @@ class Datarecord {
      * @var boolean|string
      */
     protected $lockname = false;
+    
+    /**
+     * Names of all classes referring this class
+     * @var array 
+     */
+    protected static $referring_classes = array();
 
     /**
      * Is populated with the structure of the data record
      * @var array|boolean Array of structure or false if isn't loaded.
      */
     protected static $structure = false;
-
-    /**
-     * Database table to store records of this type.
-     * @var string
-     */
-    protected static $database_table = '';
     
     /**
      * All values of the object
@@ -79,12 +100,6 @@ class Datarecord {
      * @var array
      */
     private $values_on_load = array();
-    
-    /**
-     * Set the default render mode, when getting values
-     * @var int 
-     */
-    private $default_rendermode = self::RENDER_RAW;
     
     /**
      * Buffer for foreign references
@@ -168,6 +183,33 @@ class Datarecord {
      */
     public function canDelete() {
         if (! $this->isInDatabase()) return 'Not saved yet';
+        if (static::$delete_strategy == self::DELETE_STRATEGY_BLOCK) {
+            // Find all objects referring this
+            $referring_titles = array();
+            foreach (static::$referring_classes as $referring_class) {
+                // Build a filter to find all referers
+                $referer_found = false;
+                $filter = new Filter($referring_class);
+                foreach ($referring_class::getStructure() as $key => $definition) {
+                    if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                        $filter->addConditionOR(new FilterConditionMatch($key, $this->getRawValue($this->getKeyField())));
+                        $referer_found = true;
+                    }
+                }
+                if (! $referer_found) continue;
+                // Get all objects referring this
+                $referring_objects = $filter->execute();
+                foreach ($referring_objects->getAll() as $referring_object) $referring_titles[] = $referring_object->getTitle();
+            }
+            if (count($referring_titles)) {
+                $CUT = 5;
+                $total = count($referring_titles);
+                $display_titles = array_slice($referring_titles, 0, $cut);
+                $return = implode(', ',$display_titles);
+                if ($total > $CUT) $return .= ' and '.($total-$CUT).' more.';
+                return 'This is referred by: '.$return;
+            }
+        }
         return true;
     }
     
@@ -179,9 +221,44 @@ class Datarecord {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
         self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
+        $deleted_id = $this->values[static::getKeyField()];
         unset($this->values[static::getKeyField()]);
         $this->access_mode = self::MODE_READ;
         $this->unlock();
+        
+        if (static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
+            // Find all objects referring this and remove references
+            foreach (static::$referring_classes as $referring_class) {
+                // Build a filter to find all referers
+                $referer_found = false;
+                $filter = new Filter($referring_class);
+                foreach ($referring_class::getStructure() as $key => $definition) {
+                    if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                        $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
+                        $referer_found = true;
+                    }
+                }
+                if (! $referer_found) continue;
+                // Get all objects referring this
+                $referring_objects = $filter->execute();
+                foreach ($referring_objects->getAll() as $referring_object) {
+                    $referring_object->reloadForWrite();
+                    foreach ($referring_class::getStructure() as $key => $definition) {
+                        if ($definition['foreignclass'] == get_called_class()) {
+                            if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
+                                if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
+                            } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
+                                $values = $referring_object->getRawValue($key);
+                                array_remove($values, $deleted_id);
+                                $referring_object->setValue($key, $values);
+                            }
+                        }
+                    }
+                    $referring_object->save();
+                }
+            }
+        }
+        
         return (static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected()) > 0;
     }
     
@@ -1106,6 +1183,43 @@ class Datarecord {
         $datarecord_table->renderColumnSelector();
         echo '</div>';
         
+    }
+    
+    /**
+     * Render an integrity check of this class.
+     */
+    public static function renderIntegrityCheck() {
+        echo '<h1>'.get_called_class().'</h1>';
+        $errors = array();
+        $warnings = array();
+        foreach (static::getStructure() as $field => $definition) {
+            switch ($definition['fieldtype']) {
+                case self::FIELDTYPE_REFERENCE_SINGLE:
+                case self::FIELDTYPE_REFERENCE_MULTIPLE:
+                    if (! $definition['foreignclass']) $errors[] = $field.': Reference without foreign class';
+                    elseif (!class_exists($definition['foreignclass'])) $errors[] = $field.': Reference to class which doesn\'t exists.';
+                    elseif (! in_array(get_called_class(), $definition['foreignclass']::$referring_classes)) $errors[] = 'Remote class '.$definition['foreignclass'].' doesn\'t list this as a referer, even though we refer in field: <i>'.$field.'</i>';
+                    break;
+            }
+        }
+        foreach (static::$referring_classes as $foreign_class) {
+            if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a foreign class, but the class doesn\'t exist.';
+            else {
+                $hit = false;
+                foreach ($foreign_class::getStructure() as $field => $definition) {
+                    if ($definition['foreignclass'] == get_called_class()) {
+                        $hit = true;
+                        break;
+                    }
+                }
+                if (! $hit) $errors[] = 'Have <i>'.$foreign_class.'</i> as a foreign class, but that class doesn\'t refer this class.';
+            }
+        }
+        echo '<ul>';
+        if (! count($errors) && ! count($warnings)) echo '<li><span style="color: green;">All OK</span>';
+        foreach ($errors as $error) echo '<li><span style="color: red;">'.$error.'</span>';
+        foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$error.'</span>';
+        echo '</ul>';
     }
     
     /**

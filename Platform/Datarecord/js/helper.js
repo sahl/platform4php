@@ -28,7 +28,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
         align: 'center',
         cellClick: function(e, cell) {
             confirmDialog('Delete '+name, 'You are about to delete the selected '+name+'(s)', function() {
-                $.post(script, {action: 'datarecord_delete', ids: [cell.getRow().getIndex()], __class: classname}, function(data) {
+                $.post(script, {action: 'datarecord_delete', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
                     if (data.status == 0) {
                         warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
                     }

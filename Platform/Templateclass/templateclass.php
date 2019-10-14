@@ -8,31 +8,30 @@ class Templateclass extends \Platform\Datarecord {
      * @var string 
      */
     protected static $database_table = 'DATABASE TABLE';
+    
     /**
-     * Used for object structure. Modify with buildStructure
-     * @var array|boolean 
+     * Set a delete strategy for this object
+     * @var int Delete strategy 
      */
-    protected static $structure = false;
+    protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
+    
     /**
-     * Indicate the key field in the database. Is set automatic.
-     * @var int|boolean 
+     * Names of all classes referring this class
+     * @var array 
      */
-    protected static $key_field = false;
+    protected static $referring_classes = array(
+        
+    );
+
     /**
      * Indicate if this object is relevant for an instance or globally
      * @var int 
      */
     protected static $location = self::LOCATION_INSTANCE;
-    
-    /**
-     * Can this object be deleted.
-     * @return boolean|string True if it can be deleted otherwise an error text
-     */
-    public function canDelete() {
-        // Todo: Implement check if this object can savely be deleted
-        return true;
-    }
 
+    protected static $structure = false;
+    protected static $key_field = false;
+    
     protected static function buildStructure() {
         // Todo: Define the object structure in this array
         $structure = array(
