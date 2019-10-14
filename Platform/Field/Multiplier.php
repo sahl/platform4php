@@ -58,6 +58,7 @@ class FieldMultiplier extends Field {
         $totalresult = true;
         // Always remove last entry as it is empty
         array_pop($values);
+        $this->value = array();
         // Validate section fields
         for ($i = 0; $i < count($values); $i++) {
             foreach ($this->contained_fields as $field) {

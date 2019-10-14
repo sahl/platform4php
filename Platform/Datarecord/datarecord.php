@@ -372,7 +372,10 @@ class Datarecord {
         $filter = new Filter(get_called_class());
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
-            $fieldoptions[$element->getRawValue(static::getKeyField())] = strip_tags($element->getTitle());
+            $id = $element->getRawValue(static::getKeyField());
+            $title = strip_tags($element->getTitle());
+            self::$foreign_reference_buffer[get_called_class()][$id] = $title;
+            $fieldoptions[$id] = strip_tags($title);
         }
         asort($fieldoptions);
         return $fieldoptions;
@@ -686,6 +689,23 @@ class Datarecord {
      */
     public function getTitle() {
         return get_called_class().' (#'.$this->getValue(static::getKeyField(), self::RENDER_RAW).')';
+    }
+    
+    /**
+     * Get the title of an object of this type by ID.
+     * @param int $id Object id
+     * @return string Title
+     */
+    public static function getTitleById($id) {
+        $class = get_called_class();
+        // Try the buffer
+        if (! isset(self::$foreign_reference_buffer[$class][$id])) {
+            // Resolve (and add to buffer)
+            $object = new $class();
+            $object->loadForRead($id);
+            self::$foreign_reference_buffer[$class][$id] = $object->getTitle();
+        }
+        return self::$foreign_reference_buffer[$class][$id];        
     }
     
     /**
