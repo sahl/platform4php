@@ -44,6 +44,9 @@ class FilterCondition {
         // We need to do something extra for password fields
         if ($this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'] == Datarecord::FIELDTYPE_PASSWORD) $value = md5($value.$platform_configuration['password_salt']);
         
+        // Handle timestamps
+        if ($value instanceof Timestamp) $value = $value->getTime();
+        
         return $this->filter->getBaseObject()->getFieldForDatabase($this->fieldname, $value);
     }
     
