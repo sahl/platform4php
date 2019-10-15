@@ -1,0 +1,163 @@
+<?php
+namespace Platform;
+
+class Mail extends \Platform\Datarecord {
+    
+    /**
+     * Name of table in database
+     * @var string 
+     */
+    protected static $database_table = 'mails';
+    
+    /**
+     * Set a delete strategy for this object
+     * @var int Delete strategy 
+     */
+    protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
+    
+    /**
+     * Names of all classes referring this class
+     * @var array 
+     */
+    protected static $referring_classes = array(
+        
+    );
+
+    /**
+     * Indicate if this object is relevant for an instance or globally
+     * @var int 
+     */
+    protected static $location = self::LOCATION_INSTANCE;
+
+    protected static $structure = false;
+    protected static $key_field = false;
+    
+    protected static function buildStructure() {
+        // Todo: Define the object structure in this array
+        $structure = array(
+            'mail_id' => array(
+                'invisible' => true,
+                'fieldtype' => self::FIELDTYPE_KEY
+            ),
+            'from_name' => array(
+                'label' => 'From (name)',
+                'required' => true,
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'from_email' => array(
+                'label' => 'From (email)',
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'to_name' => array(
+                'label' => 'To (name)',
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'to_email' => array(
+                'label' => 'To (email)',
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'subject' => array(
+                'label' => 'Subject',
+                'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'body' => array(
+                'label' => 'Mail text',
+                'table' => self::COLUMN_UNSELECTABLE,
+                'fieldtype' => self::FIELDTYPE_BIGTEXT
+            ),
+            'file_ref' => array(
+                'label' => 'Attachments',
+                'invisible' => true,
+                'fieldtype' => self::FIELDTYPE_REFERENCE_MULTIPLE,
+                'foreignclass' => 'Platform\\File'
+            ),
+            'format' => array(
+                'label' => 'Mail format',
+                'fieldtype' => self::FIELDTYPE_ENUMERATION,
+                'enumeration' => array('text' => 'Text', 'html' => 'Html')
+            ),
+            'is_sent' => array(
+                'label' => 'Is sent?',
+                'fieldtype' => self::FIELDTYPE_BOOLEAN
+            ),
+            'scheduled_for' => array(
+                'label' => 'Scheduled for',
+                'fieldtype' => self::FIELDTYPE_DATETIME
+            ),
+            'sent_date' => array(
+                'label' => 'Sent',
+                'fieldtype' => self::FIELDTYPE_DATETIME
+            )
+        );
+        self::addStructure($structure);
+        // Remember to call parent
+        parent::buildStructure();
+    }
+    
+    public function getTitle() {
+        // Override to get a meaningfull title of this object
+        return $this->subject;
+    }
+    
+    public static function initPhpmailer() {
+        require_once __DIR__.'/src/Exception.php';
+        require_once __DIR__.'/src/SMTP.php';
+        require_once __DIR__.'/src/PHPMailer.php';
+        
+    }    
+    
+    public static function processQueue() {
+        global $platform_configuration;
+        $filter = new Filter('\Platform\Mail');
+        $filter->addCondition(new FilterConditionMatch('is_sent', 0));
+        $filter->addCondition(new FilterConditionLesserEqual('scheduled_for', new Timestamp('now')));
+        $mails = $filter->execute();
+        echo $filter->getSQL();
+        if ($mails->getCount()) {
+            self::initPhpmailer();
+            if (!Semaphore::wait('mailqueue_process')) return;
+            foreach ($mails->getAll() as $mail) {
+                $mailer = new \PHPMailer\PHPMailer\PHPMailer();
+                
+                switch ($platform_configuration['mail_type']) {
+                    case 'smtp':
+                        $mailer->isSMTP();
+                        $mailer->Host = $platform_configuration['smtp_server'];
+                        $mailer->Port = 587;
+                        if ($platform_configuration['smtp_user']) {
+                            $mailer->SMTPAuth = true;
+                            $mailer->Username = $platform_configuration['smtp_user'];
+                            $mailer->Password = $platform_configuration['smtp_password'];
+                        }
+                    break;
+                }
+                
+                $mailer->CharSet = 'UTF-8';
+                $mailer->isHTML($mail->format == 'html');
+                $mailer->setFrom($mail->from_email, $mail->from_name);
+                $mailer->addAddress($mail->to_email, $mail->to_name);
+                $mailer->Subject = $mail->subject;
+                $mailer->Body = $mail->body;
+                $result = $mailer->send();
+                var_dump($result);
+            }
+            Semaphore::release('mailqueue_process');
+        }
+    }
+    
+    public static function queueMail($from_name, $from_email, $to_name, $to_email, $subject, $body, $attachments = array()) {
+        $mail = new Mail(array(
+            'from_name' => $from_name,
+            'from_email' => $from_email,
+            'to_name' => $to_name,
+            'to_email' => $to_email,
+            'subject' => $subject,
+            'body' => $body,
+            'file_ref' => $attachments,
+            'is_sent' => false,
+            'format' => 'html',
+            'scheduled_for' => new Timestamp('now')
+        ));
+        $mail->save();
+    }
+}
