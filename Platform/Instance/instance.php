@@ -6,6 +6,11 @@ class Instance extends Datarecord {
     protected static $database_table = 'platform_instances';
     protected static $structure = false;
     protected static $key_field = false;
+    
+    protected static $referring_classes = array(
+        'Platform\Job'
+    );
+    
 
     protected static function buildStructure() {
         static::addStructure(array(

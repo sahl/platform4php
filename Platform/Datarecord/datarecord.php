@@ -1375,7 +1375,7 @@ class Datarecord {
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 if (is_object($value) && get_class($value) == static::$structure[$field]['foreignclass']) {
                     // An object of the desired class was passed. Extract ID and set it.
-                    $this->values[$field] = $value->getValue($value::$key_field);
+                    $this->values[$field] = $value->getValue($value->getKeyField());
                 } else {
                     if (is_object($value) && $value instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreignclass'].' but got '.get_class($value), E_USER_ERROR);
                     // We expect an ID
@@ -1383,11 +1383,15 @@ class Datarecord {
                 }
                 break;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                if (! is_array($value) && is_numeric($value)) {
-                    $this->values[$field] = array($value);
-                    break;
+                if (! is_array($value)) $value = array($value);
+                $final = array();
+                foreach ($value as $v) {
+                    if (is_numeric($v)) $final[] = $v;
+                    elseif (get_class($v) == static::$structure[$field]['foreignclass']) $final[] = $v->getValue($value->getKeyField());
+                    elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreignclass'].' but got '.get_class($v), E_USER_ERROR);
                 }
-                // Runthrough intended
+                $this->values[$field] = $final;
+                break;
             case self::FIELDTYPE_ARRAY:
                 $this->values[$field] = is_array($value) ? $value : array();
                 break;

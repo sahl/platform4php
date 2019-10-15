@@ -12,8 +12,8 @@ class Timestamp {
         elseif ($ts) $this->timestamp = strtotime($ts);
     }
     
-    public function add($seconds) {
-        $this->timestamp += $seconds;
+    public function add($seconds, $minutes = 0, $hours = 0) {
+        $this->timestamp += $seconds + $minutes*60 + $hours*3600;
         return $this;
     }
     
