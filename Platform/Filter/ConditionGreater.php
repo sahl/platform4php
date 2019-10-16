@@ -17,7 +17,7 @@ class FilterConditionGreater extends FilterCondition {
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
                 return 'FALSE';
             default:
-                return $this->fieldname.' >= '.$this->getSQLFieldValue($this->value);
+                return $this->fieldname.' > '.$this->getSQLFieldValue($this->value);
         }
     }
 }
