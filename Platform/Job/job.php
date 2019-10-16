@@ -78,7 +78,7 @@ class Job extends \Platform\Datarecord {
             ),
             'last_error_message' => array(
                 'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
+                'fieldtype' => self::FIELDTYPE_BIGTEXT
             ),
             'run_count' => array(
                 'invisible' => true,
@@ -198,7 +198,6 @@ class Job extends \Platform\Datarecord {
         $this->reloadForWrite();
         $this->kill_count = $this->kill_count + 1;
         $this->save(false, true);
-        $this->cleanUp();
     }
     
     public static function log($event, $text = '', $job = false) {
@@ -223,6 +222,7 @@ class Job extends \Platform\Datarecord {
                 if ($running_job->isRunning()) {
                     if ($running_job->isOverdue()) {
                         $running_job->kill();
+                        $running_job->cleanUp();
                     } else {
                         $used_slots += $running_job->slot_size;
                     }

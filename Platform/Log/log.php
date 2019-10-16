@@ -6,6 +6,8 @@ class Log {
     private $in_instance = false;
     
     private $lineformat = array();
+    
+    private $linealign = array();
 
     private $logname = '';
     
@@ -15,7 +17,15 @@ class Log {
     public function __construct($logname, $lineformat = array(), $in_instance = 'autodetect') {
         global $platform_configuration;
         $this->logname = $logname;
-        $this->lineformat = $lineformat;
+        foreach ($lineformat as $format) {
+            if (substr($format,-1) == 'r') {
+                $this->linealign[] = 'r';
+                $this->lineformat[] = substr($format,0,-1);
+            } else {
+                $this->linealign[] = 'l';
+                $this->lineformat[] = $format;
+            }
+        }
         $this->in_instance = $in_instance == 'autodetect' ? Instance::getActiveInstanceID() > 0 : $in_instance;
         
         // Ensure we have a proper directory
@@ -30,14 +40,26 @@ class Log {
     
     public function log() {
         umask(002);
-        $fh = fopen($this->logdir.'/'.date('Y-m-d').'-'.$this->logname.'.log', 'a');
-        $line = date('H:i:s');
+        // Sort log items into columns
+        $columns = array();
+        $columns[0][-1] = date('H:i:s');
         for ($i = 0; $i < func_num_args(); $i++) {
-            $string = func_get_arg($i);
-            if ($i >= count($this->lineformat)) $line .= ' '.$string;
-            else $line .= ' '.str_pad($string, $this->lineformat[$i], ' ', STR_PAD_LEFT);
+            $full_text = func_get_arg($i);
+            if ($i < count($this->lineformat)) $full_text = wordwrap($full_text, $this->lineformat[$i]-1, "\n", true);
+            $j = 0;
+            foreach (explode("\n", $full_text) as $line) $columns[$j++][$i] = $line;
         }
-        fwrite($fh, $line."\n");
+        // Render to file
+        $fh = fopen($this->logdir.'/'.date('Y-m-d').'-'.$this->logname.'.log', 'a');
+        foreach ($columns as $line) {
+            for ($i = -1; $i < func_num_args(); $i++) {
+                $string = $line[$i];
+                if ($i == -1) $output_line = str_pad($string,9,' ').' ';
+                elseif ($i >= count($this->lineformat)) $output_line .= ' '.$string;
+                else $output_line .= ' '.str_pad($string, $this->lineformat[$i], ' ', $this->linealign[$i] == 'r' ? STR_PAD_LEFT : STR_PAD_RIGHT);
+            }
+            fwrite($fh, $output_line."\n");
+        }
         fclose($fh);
     }
 }

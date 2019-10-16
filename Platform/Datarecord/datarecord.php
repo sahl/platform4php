@@ -847,6 +847,9 @@ class Datarecord {
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_ARRAY:
                 return is_array($this->values[$field]) ? $this->values[$field] : array();
+            case self::FIELDTYPE_DATETIME:
+            case self::FIELDTYPE_DATE:
+                return $this->values[$field] instanceof Timestamp ? $this->values[$field] : new Timestamp();
             default:
                 return $this->values[$field];
         }
