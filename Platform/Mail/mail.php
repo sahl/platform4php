@@ -80,6 +80,10 @@ class Mail extends \Platform\Datarecord {
                 'label' => 'Is sent?',
                 'fieldtype' => self::FIELDTYPE_BOOLEAN
             ),
+            'error_count' => array(
+                'label' => 'Error count',
+                'fieldtype' => self::FIELDTYPE_INTEGER
+            ),
             'scheduled_for' => array(
                 'label' => 'Scheduled for',
                 'fieldtype' => self::FIELDTYPE_DATETIME
@@ -112,13 +116,11 @@ class Mail extends \Platform\Datarecord {
         $filter->addCondition(new FilterConditionMatch('is_sent', 0));
         $filter->addCondition(new FilterConditionLesserEqual('scheduled_for', new Timestamp('now')));
         $mails = $filter->execute();
-        echo $filter->getSQL();
         if ($mails->getCount()) {
             self::initPhpmailer();
             if (!Semaphore::wait('mailqueue_process')) return;
             foreach ($mails->getAll() as $mail) {
                 $mailer = new \PHPMailer\PHPMailer\PHPMailer();
-                
                 switch ($platform_configuration['mail_type']) {
                     case 'smtp':
                         $mailer->isSMTP();
@@ -139,9 +141,19 @@ class Mail extends \Platform\Datarecord {
                 $mailer->Subject = $mail->subject;
                 $mailer->Body = $mail->body;
                 $result = $mailer->send();
-                var_dump($result);
+                $mail->reloadForWrite();
+                if (! $result) {
+                    $mail->error_count = $this->error_count + 1;
+                    // Postpone for an hour
+                    $mail->scheduled_for = $this->scheduled_for->add(0,0,1);
+                } else {
+                    $mail->is_sent = 1;
+                    $mail->sent_date = Timestamp::now();
+                }
+                $mail->save();
             }
             Semaphore::release('mailqueue_process');
+            self::setupQueue();
         }
     }
     
@@ -155,9 +167,22 @@ class Mail extends \Platform\Datarecord {
             'body' => $body,
             'file_ref' => $attachments,
             'is_sent' => false,
+            'error_count' => 0,
             'format' => 'html',
             'scheduled_for' => new Timestamp('now')
         ));
         $mail->save();
+        self::setupQueue();
+    }
+    
+    public static function setupQueue() {
+        $job = Job::getJob('Platform\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
+        // Check for next run time
+        $qr = fq("SELECT MIN(scheduled_for) as next_start FROM mails WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
+        if ($qr) {
+            $job->next_start = new Timestamp($qr['next_start']);
+            $job->frequency = Job::FREQUENCY_ONCE;
+        }
+        $job->save();
     }
 }

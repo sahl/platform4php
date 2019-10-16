@@ -17,18 +17,24 @@ class Timestamp {
         return $this;
     }
     
-    public function isAfter($othertimestamp) {
-        $othertimestamp = new Timestamp($othertimestamp);
-        return $this->timestamp > $othertimestamp->getTimestamp();
+    /**
+     * Check if this timestamp is equal to another timestamp
+     * @param Timestamp $ts Other timestamp
+     * @return boolean
+     */
+    public function equalTo($ts) {
+        if (! $ts instanceof Timestamp) return false;
+        return $this->timestamp == $ts->getTimestamp();
     }
-    
-    public function isBefore($othertimestamp) {
-        $othertimestamp = new Timestamp($othertimestamp);
-        return $this->timestamp < $othertimestamp->getTimestamp();
-    }
-    
+
     public function getReadable($format = 'd-m-Y H:i') {
         return $this->timestamp !== null ? date($format, $this->timestamp) : '';
+    }
+    
+    public function getMinutesUntil($other_timestamp) {
+        $other_timestamp = new Timestamp($other_timestamp);
+        if ($other_timestamp->getTimestamp() === null || $this->getTimestamp() === null) return false;
+        return floor(($other_timestamp->getTimestamp()-$this->getTimestamp())/60);
     }
     
     public function getTimestamp() {
@@ -39,13 +45,18 @@ class Timestamp {
         return $this->timestamp !== null ? date($format, $this->timestamp) : null;
     }
     
-    /**
-     * Check if this timestamp is equal to another timestamp
-     * @param Timestamp $ts Other timestamp
-     * @return boolean
-     */
-    public function equalTo($ts) {
-        if (! $ts instanceof Timestamp) return false;
-        return $this->timestamp == $ts->getTimestamp();
+    public function isAfter($othertimestamp) {
+        $othertimestamp = new Timestamp($othertimestamp);
+        return $this->timestamp > $othertimestamp->getTimestamp();
     }
+    
+    public function isBefore($othertimestamp) {
+        $othertimestamp = new Timestamp($othertimestamp);
+        return $this->timestamp < $othertimestamp->getTimestamp();
+    }
+    
+    public static function now() {
+        return new Timestamp('now');
+    }
+    
 }

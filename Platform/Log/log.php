@@ -12,11 +12,11 @@ class Log {
     private $logdir = false;
     
     
-    public function __construct($logname, $lineformat = array()) {
+    public function __construct($logname, $lineformat = array(), $in_instance = 'autodetect') {
         global $platform_configuration;
         $this->logname = $logname;
         $this->lineformat = $lineformat;
-        $this->in_instance = Instance::getActiveInstanceID() > 0;
+        $this->in_instance = $in_instance == 'autodetect' ? Instance::getActiveInstanceID() > 0 : $in_instance;
         
         // Ensure we have a proper directory
         if ($this->in_instance) {
@@ -29,6 +29,7 @@ class Log {
     }
     
     public function log() {
+        umask(002);
         $fh = fopen($this->logdir.'/'.date('Y-m-d').'-'.$this->logname.'.log', 'a');
         $line = date('H:i:s');
         for ($i = 0; $i < func_num_args(); $i++) {

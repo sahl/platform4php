@@ -523,11 +523,11 @@ class Datarecord {
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                return $value == null ? 'NULL' : (int)$value;
+                return $value === null ? 'NULL' : (int)$value;
             case self::FIELDTYPE_BOOLEAN:
                 return $value ? 1 : 0;
             case self::FIELDTYPE_FLOAT:
-                return $value == null ? 'NULL' : (double)$value;
+                return $value === null ? 'NULL' : (double)$value;
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
