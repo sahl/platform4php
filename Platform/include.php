@@ -17,6 +17,8 @@ register_shutdown_function('Platform\\Errorhandler::shutdown');
 // Register error handler
 set_error_handler('Platform\\Errorhandler::handler');
 
+umask(002);
+
 function platformAutoLoad($class) {
     global $platform_configuration;
     

@@ -55,10 +55,9 @@ class Job extends \Platform\Datarecord {
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_INTEGER
             ),            
-            'frequency_offset' => array(
+            'frequency_offset_fromend' => array(
                 'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_ENUMERATION,
-                'enumeration' => array('from_start' => 'From start', 'from_end' => 'From end')
+                'fieldtype' => self::FIELDTYPE_BOOLEAN
             ),
             'last_start' => array(
                 'invisible' => true,
@@ -113,12 +112,13 @@ class Job extends \Platform\Datarecord {
                 $this->error_count = $this->error_count + 1;
                 $this->last_error_message = $content;
             }
+            unlink($file);
         }
         $this->process_id = 0;
         $this->run_count = $this->run_count + 1;
         $this->last_run_time = $this->last_start->getMinutesUntil(Timestamp::now());
         $this->average_run_time = (($this->run_count-1)*$this->average_run_time + $this->last_run_time)/$this->run_count;
-        if ($this->frequency_offset == 'from_end' && $this->freqency > 0) {
+        if ($this->frequency_offset_fromend && $this->freqency > 0) {
             $this->next_start = Timestamp::now()->add(0, $this->frequency);
         }
         $this->save();
@@ -129,7 +129,7 @@ class Job extends \Platform\Datarecord {
         parent::delete($force_purge);
     }
     
-    public static function getJob($class, $function = '', $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset = '', $slot_size = -1) {
+    public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_fromend = -1, $slot_size = -1, $max_runtime = -1) {
         if (! $function && strpos($class, '::')) {
             $elements = explode('::', $class);
             $class = $elements[0]; $elements = $split[1];
@@ -141,8 +141,9 @@ class Job extends \Platform\Datarecord {
         if ($qr) {
             $job->loadForWrite($qr['job_id']);
             if ($frequency != self::FREQUENCY_NOCHANGE) $job->frequency = $frequency;
-            if ($frequency_offset) $job->frequency_offset = $frequency_offset;
+            if ($frequency_offset_fromend !== -1) $job->frequency_offset_fromend = $frequency_offset_fromend;
             if ($slot_size != -1) $job->slot_size = $slot_size;
+            if ($max_runtime != -1) $job->max_runtime = $max_runtime;
         } else {
             // Populate basic fields
             $job->instance_ref = $instance_id;
@@ -154,8 +155,9 @@ class Job extends \Platform\Datarecord {
             $job->average_run_time = 0.0;
             $job->kill_count = 0;
             $job->frequency = $frequency == self::FREQUENCY_NOCHANGE ? self::FREQUENCY_PAUSED : $frequency;
-            $job->frequency_offset = $frequency_offset ?: 'from_start';
+            $job->frequency_offset_fromend = $frequency_offset_fromend !== -1 ? $frequency_offset_fromend : false;
             $job->slot_size = $slot_size != -1 ? $slot_size : 10;
+            $job->max_runtime = $max_runtime != -1 ? $max_runtime : 10;
             $job->process_id = 0;
         }
         return $job;
@@ -217,7 +219,7 @@ class Job extends \Platform\Datarecord {
             // Get running jobs
             $running_jobs = self::getRunningJobs();
             // Go over jobs to check if finished or overdue
-            $used_slots = 0;
+            $used_slots = 0; $current_job_count = 0;
             foreach ($running_jobs as $running_job) {
                 if ($running_job->isRunning()) {
                     if ($running_job->isOverdue()) {
@@ -225,6 +227,7 @@ class Job extends \Platform\Datarecord {
                         $running_job->cleanUp();
                     } else {
                         $used_slots += $running_job->slot_size;
+                        $current_job_count++;
                     }
                 } else {
                     $running_job->cleanUp();
@@ -239,9 +242,11 @@ class Job extends \Platform\Datarecord {
                         break;
                     }
                     $pending_job->start();
-                    $used_slots += $job->slot_size;
+                    $current_job_count++;
+                    $used_slots += $pending_job->slot_size;
                 }
             }
+            if ($current_job_count) self::log('capacity', 'Slot use '.$used_slots.'/'.self::SLOT_CAPACITY.' on '.$current_job_count.' jobs. ('.(count($pending_jobs)-$current_job_count).' waiting for free slots)');
             // Sleep a little
             sleep(4);
         }
@@ -263,7 +268,7 @@ class Job extends \Platform\Datarecord {
         self::log('start', 'Starting job scheduled at '.$this->getFullValue('next_start'), $this);
         $this->last_start = Timestamp::now();
         if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
-        if ($this->frequency > 0 && $this->frequency_offset == 'from_start') $this->next_start = Timestamp::now()->add(0, $this->frequency);
+        if ($this->frequency > 0 && ! $this->frequency_offset_fromend) $this->next_start = Timestamp::now()->add(0, $this->frequency);
         $result = (int)shell_exec('php '.__DIR__.'/php/runjob.php '.$this->job_id.' > '.$this->getOutputFile().' & echo $!');
         if ($result) {
             self::log('started', 'Running with PID: '.$result, $this);

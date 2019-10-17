@@ -89,6 +89,9 @@ class Datarecord {
      */
     protected static $structure = false;
     
+    
+    protected static $recalculate_buffer = array();
+    
     /**
      * All values of the object
      * @var array
@@ -269,6 +272,114 @@ class Datarecord {
             Semaphore::release($lockfile);
         }
     }
+    
+    public function doCalculation($calculationtype) {
+        return true;
+    }
+    
+    public static function doCalculationOnObjects($calculationtype, $ids) {
+        $class = get_called_class();
+        foreach ($ids as $id) {
+            $object = new $class();
+            $object->loadForWrite($id);
+            $object->doCalculation($calculationtype);
+            $object->save();
+        }
+    }
+    
+    public static function doRecalculation($job) {
+        global $platform_configuration;
+        
+        $MAX_LINES = 250000;
+        $MAX_RUNTIME = ini_get('max_execution_time') ? min(ini_get("max_execution_time")-10, 60*10) : 60*10;
+        
+        $run_again = false;
+        
+        if (! Semaphore::wait('platform_recalculation')) trigger_error('Could not obtain recalculation semaphore', E_USER_ERROR);
+        if (! Semaphore::wait('platform_recalculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
+
+        $starttime = time();
+        
+        // Read lines from file
+        $queue = array(); $lineno = 0;
+        $fh_in = fopen($platform_configuration['dir_temp'].'recalculation.current', 'r');
+        $fh_out = false;
+        while ($line = fgets($fh_in)) {
+            // If we exceed max number of lines, write the rest of the lines to a new file
+            if ($lineno == $MAX_LINES) $fh_out = fopen($platform_configuration['dir_temp'].'recalculation.new', 'w');
+            if ($lineno >= $MAX_LINES) fwrite($fh_out, $line);
+            else {
+                // Read line into array
+                $line_elements = explode(' ',trim($line));
+                if (count($line_elements) <> 3) continue;
+                foreach (explode(',',$line_elements[2]) as $id)
+                    $queue[$line_elements[0]][$line_elements[1]][$id] = true;
+            }
+            $lineno++;
+        }
+        fclose($fh_in);
+        // Log
+        $text = $lineno.' calculations in file.';
+        if ($lineno > $MAX_LINES) $text .= ' '.($lineno-$MAX_LINES).' saved until next time as limit of '.$MAX_LINES.' was exceeded.';
+        $job->log('info', $text, $job);
+        // Remove read file
+        unlink($platform_configuration['dir_temp'].'recalculation.current');
+        if ($fh_out !== false) {
+            $run_again = true;
+            fclose($fh_out);
+            // If we exceeded the number of lines, then move the rest of the lines back.
+            rename($platform_configuration['dir_temp'].'recalculation.new', $platform_configuration['dir_temp'].'recalculation.current');
+        }
+        Semaphore::release('platform_recalculation_file');
+        
+        include_once '/var/www/platform/application/test/classes.php';
+        
+        // Now start on some recalculation
+        $flush_rest = false; $flush_count = 0;
+        foreach ($queue as $class => $calculations) {
+            foreach ($calculations as $calculation => $ids) {
+                $ids = array_keys($ids);
+                if (! $flush_rest && time() > $starttime + $MAX_RUNTIME) {
+                    $fh_out = fopen($platform_configuration['dir_temp'].'recalculation.new', 'w');
+                    $flush_rest = true;
+                }
+                if ($flush_rest) {
+                    fwrite($fh_out, $class.' '.$calculation.' '.implode(',',$ids)."\n");
+                    $flush_count ++;
+                } else {
+                    if (! class_exists($class)) continue;
+                    $job->log('info', 'Doing calculation \''.$calculation.'\' in class '.$class.' on ('.implode(',', $ids).')', $job);
+                    $class::doCalculationOnObjects($calculation, $ids);
+                }
+            }
+        }
+        if ($flush_rest) {
+            // We need to add the entries we didn't made to the file
+            if (! Semaphore::wait('platform_recalculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
+            if (file_exists($platform_configuration['dir_temp'].'recalculation.current')) {
+                $fh_in = fopen($platform_configuration['dir_temp'].'recalculation.current', 'r');
+                while ($line = fgets($fh_in)) {
+                    fwrite($fh_out, $line);
+                }
+                fclose($fh_in);
+                unlink($platform_configuration['dir_temp'].'recalculation.current');
+            }
+            fclose($fh_out);
+            // Move new file in place of old file
+            rename($platform_configuration['dir_temp'].'recalculation.new', $platform_configuration['dir_temp'].'recalculation.current');
+            Semaphore::release('platform_recalculation_file');
+            $job->log('info', 'We flushed '.$flush_count.' lines back in the file, as we didn\'t have time to process them!', $job);
+            $run_again = true;
+        }
+        Semaphore::release('platform_recalculation');
+        if ($run_again) {
+            // Reschedule to run again
+            $job = Job::getJob('Platform\\Datarecord', 'doRecalculation', Job::FREQUENCY_ONCE);
+            $job->save();
+        }
+    }
+    
+    
     
     /**
      * Ensure that the database can store this object
@@ -1275,6 +1386,7 @@ class Datarecord {
     public function save($force_save = false, $keep_open_for_write = false) {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to save object '.static::$database_table.' in read mode', E_USER_ERROR);
         
+        $change = true;
         if (! $force_save && $this->isInDatabase()) {
             // Check if anything have changed?
             $change = false;
@@ -1289,6 +1401,30 @@ class Datarecord {
                 return false;
             }
         }
+        // See if we should recalculate anything
+        if ($change) {
+            foreach(static::$structure as $key => $definition) {
+                if ($definition['calculations']) {
+                    if (! is_array($definition['calculations'])) $definition['calculations'] = array($definition['calculations']);
+                    $foreign_ids = array();
+                    if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
+                        $foreign_ids[] = $this->values[$key];
+                        $foreign_ids[] = $this->values_on_load[$key];
+                    } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
+                        if (is_array($this->values[$key])) foreach ($this->values[$key] as $v) $foreign_ids[] = $v;
+                        if (is_array($this->values_on_load[$key])) foreach ($this->values_on_load[$key] as $v) $foreign_ids[] = $v;
+                    }
+                    $foreign_ids = array_unique($foreign_ids);
+                    foreach ($definition['calculations'] as $calculation) {
+                        foreach ($foreign_ids as $foreign_id) {
+                            if (! $foreign_id) continue;
+                            self::$recalculate_buffer[$definition['foreignclass']][$calculation][$foreign_id] = true;
+                        }
+                    }
+                }
+            }
+        }
+        
         $this->packMetadata();
         $this->setValue('change_date', new Timestamp('now'));
         if ($this->isInDatabase()) {
@@ -1323,8 +1459,25 @@ class Datarecord {
                 $this->forceWritemode();
             }
         }
+        // Update reference buffer
         self::$foreign_reference_buffer[get_called_class()][$this->values[static::getKeyField()]] = $this->getTitle();
         return true;
+    }
+    
+    public static function saveRecalculation() {
+        global $platform_configuration;
+        if (! count(self::$recalculate_buffer)) return;
+        if (! Semaphore::wait('platform_recalculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
+        $fh = fopen($platform_configuration['dir_temp'].'recalculation.current', 'a');
+        foreach (self::$recalculate_buffer as $class => $calculations) {
+            foreach ($calculations as $calculation => $ids) {
+                fwrite($fh, $class.' '.$calculation.' '.implode(',',array_keys($ids))."\n");
+            }
+        }
+        fclose($fh);
+        Semaphore::release('platform_recalculation_file');
+        $job = Job::getJob('Platform\\Datarecord', 'doRecalculation', Job::FREQUENCY_ONCE, false, 10, 15);
+        $job->save();
     }
     
     /**

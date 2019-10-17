@@ -10,7 +10,7 @@ sleep(2);
 $job = new \Platform\Job();
 $job->loadForRead($id);
 if ($job->isInDatabase()) {
-    $job->log('RUNNING', 'Job is running', $this);
+    $job->log('RUNNING', 'Job is running', $job);
     // Activate instance
     $instance = new \Platform\Instance();
     $instance->loadForRead($job->instance_ref);

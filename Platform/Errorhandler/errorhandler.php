@@ -73,5 +73,7 @@ class Errorhandler {
         if (class_exists('Platform\\Semaphore')) {
             Semaphore::releaseAll();
         }
+        // Check if we should add to the recalculation file
+        Datarecord::saveRecalculation();
     }
 }
