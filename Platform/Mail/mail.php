@@ -13,7 +13,7 @@ class Mail extends \Platform\Datarecord {
      * Set a delete strategy for this object
      * @var int Delete strategy 
      */
-    protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
+    protected static $delete_strategy = self::DELETE_STRATEGY_REMOVE_REFERENCES;
     
     /**
      * Names of all classes referring this class

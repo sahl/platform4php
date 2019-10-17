@@ -4,7 +4,7 @@ namespace Platform;
 class Job extends \Platform\Datarecord {
     
     protected static $database_table = 'jobs';
-    protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
+    protected static $delete_strategy = self::DELETE_STRATEGY_REMOVE_REFERENCES;
     protected static $referring_classes = array(
         
     );
@@ -124,9 +124,9 @@ class Job extends \Platform\Datarecord {
         $this->save();
     }
     
-    public function delete($force_purge = false) {
+    public function delete($force_remove = false) {
         $this->kill();
-        parent::delete($force_purge);
+        parent::delete($force_remove);
     }
     
     public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_fromend = -1, $slot_size = -1, $max_runtime = -1) {

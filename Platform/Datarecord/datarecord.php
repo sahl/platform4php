@@ -9,7 +9,8 @@ class Datarecord {
     const COLUMN_DEFAULTSHOWN = 0;
     
     const DELETE_STRATEGY_BLOCK = 0;
-    const DELETE_STRATEGY_PURGE_REFERERS = 1;
+    const DELETE_STRATEGY_REMOVE_REFERENCES = 1;
+    const DELETE_STRATEGY_PURGE_REFERERS = 2;
     
     // Object locations
     const LOCATION_GLOBAL = 0;
@@ -90,7 +91,7 @@ class Datarecord {
     protected static $structure = false;
     
     
-    protected static $recalculate_buffer = array();
+    protected static $requested_calculation_buffer = array();
     
     /**
      * All values of the object
@@ -202,14 +203,14 @@ class Datarecord {
     
     /**
      * Delete this record from the database.
-     * @param boolean $force_purge Force a deletion and purging of references no matter how object is configured.
+     * @param boolean $force_remove Force a removal of references if object is configured for blocking only.
      * @return boolean True if something was actually deleted.
      */
-    public function delete($force_purge = false) {
+    public function delete($force_remove = false) {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
         
-        if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
+        if (! $force_remove && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
         
         self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
         $deleted_id = $this->values[static::getKeyField()];
@@ -217,35 +218,40 @@ class Datarecord {
         $this->access_mode = self::MODE_READ;
         $this->unlock();
         
-        if ($force_purge || static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
-            // Find all objects referring this and remove references
+        if ($force_remove || static::$delete_strategy == self::DELETE_STRATEGY_REMOVE_REFERENCES || static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
+            // Find all objects referring this
             foreach (static::$referring_classes as $referring_class) {
                 // Build a filter to find all referers
-                $referer_found = false;
+                $referer_field_found = false;
                 $filter = new Filter($referring_class);
                 foreach ($referring_class::getStructure() as $key => $definition) {
                     if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
                         $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
-                        $referer_found = true;
+                        $referer_field_found = true;
                     }
                 }
-                if (! $referer_found) continue;
+                // Bail if remote object doesn't have fields pointing at us.
+                if (! $referer_field_found) continue;
                 // Get all objects referring this
                 $referring_objects = $filter->execute();
-                foreach ($referring_objects->getAll() as $referring_object) {
-                    $referring_object->reloadForWrite();
-                    foreach ($referring_class::getStructure() as $key => $definition) {
-                        if ($definition['foreignclass'] == get_called_class()) {
-                            if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
-                                if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
-                            } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
-                                $values = $referring_object->getRawValue($key);
-                                array_remove($values, $deleted_id);
-                                $referring_object->setValue($key, $values);
+                if (static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
+                    $referring_objects->deleteAll();
+                } else {
+                    foreach ($referring_objects->getAll() as $referring_object) {
+                        $referring_object->reloadForWrite();
+                        foreach ($referring_class::getStructure() as $key => $definition) {
+                            if ($definition['foreignclass'] == get_called_class()) {
+                                if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
+                                    if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
+                                } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
+                                    $values = $referring_object->getRawValue($key);
+                                    array_remove($values, $deleted_id);
+                                    $referring_object->setValue($key, $values);
+                                }
                             }
                         }
+                        $referring_object->save();
                     }
-                    $referring_object->save();
                 }
             }
         }
@@ -273,30 +279,44 @@ class Datarecord {
         }
     }
     
-    public function doCalculation($calculationtype) {
-        return true;
+    /**
+     * Do a calculation on this specific object
+     * @param string $calculation Calculation to do
+     */
+    public function doCalculation($calculation) {
     }
-    
-    public static function doCalculationOnObjects($calculationtype, $ids) {
+
+    /**
+     * Do a calculation on all objects with the given ids.
+     * @param string $calculation Calculations to do
+     * @param array $ids Object IDs
+     */
+    public static function doCalculationOnObjects($calculation, $ids) {
         $class = get_called_class();
         foreach ($ids as $id) {
             $object = new $class();
             $object->loadForWrite($id);
-            $object->doCalculation($calculationtype);
-            $object->save();
+            if ($object->isInDatabase()) {
+                $object->doCalculation($calculation);
+                $object->save();
+            }
         }
     }
     
-    public static function doRecalculation($job) {
+    /**
+     * The job to handle calculations
+     * @param Job $job
+     */
+    public static function calculationJob($job) {
         global $platform_configuration;
         
-        $MAX_LINES = 250000;
-        $MAX_RUNTIME = ini_get('max_execution_time') ? min(ini_get("max_execution_time")-10, 60*10) : 60*10;
+        $MAX_LINES = 250000; // Max number of lines to read at once.
+        $MAX_RUNTIME = ini_get('max_execution_time') ? min(ini_get("max_execution_time")-10, 60*10) : 60*10; // Max time to spend calculating in each run.
         
         $run_again = false;
         
-        if (! Semaphore::wait('platform_recalculation')) trigger_error('Could not obtain recalculation semaphore', E_USER_ERROR);
-        if (! Semaphore::wait('platform_recalculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
+        if (! Semaphore::wait('platform_calculation')) trigger_error('Could not obtain recalculation semaphore', E_USER_ERROR);
+        if (! Semaphore::wait('platform_calculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
 
         $starttime = time();
         
@@ -330,7 +350,7 @@ class Datarecord {
             // If we exceeded the number of lines, then move the rest of the lines back.
             rename($platform_configuration['dir_temp'].'recalculation.new', $platform_configuration['dir_temp'].'recalculation.current');
         }
-        Semaphore::release('platform_recalculation_file');
+        Semaphore::release('platform_calculation_file');
         
         include_once '/var/www/platform/application/test/classes.php';
         
@@ -355,7 +375,7 @@ class Datarecord {
         }
         if ($flush_rest) {
             // We need to add the entries we didn't made to the file
-            if (! Semaphore::wait('platform_recalculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
+            if (! Semaphore::wait('platform_calculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
             if (file_exists($platform_configuration['dir_temp'].'recalculation.current')) {
                 $fh_in = fopen($platform_configuration['dir_temp'].'recalculation.current', 'r');
                 while ($line = fgets($fh_in)) {
@@ -367,14 +387,14 @@ class Datarecord {
             fclose($fh_out);
             // Move new file in place of old file
             rename($platform_configuration['dir_temp'].'recalculation.new', $platform_configuration['dir_temp'].'recalculation.current');
-            Semaphore::release('platform_recalculation_file');
+            Semaphore::release('platform_calculation_file');
             $job->log('info', 'We flushed '.$flush_count.' lines back in the file, as we didn\'t have time to process them!', $job);
             $run_again = true;
         }
-        Semaphore::release('platform_recalculation');
+        Semaphore::release('platform_calculation');
         if ($run_again) {
             // Reschedule to run again
-            $job = Job::getJob('Platform\\Datarecord', 'doRecalculation', Job::FREQUENCY_ONCE);
+            $job = Job::getJob('Platform\\Datarecord', 'calculationJob', Job::FREQUENCY_ONCE);
             $job->save();
         }
     }
@@ -1008,8 +1028,8 @@ class Datarecord {
     }
     
     /**
-     * 
-     * @return type
+     * Get fields to use in a Table
+     * @return array
      */
     public static function getTableFields() {
         static::ensureStructure();
@@ -1348,6 +1368,17 @@ class Datarecord {
         foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$error.'</span>';
         echo '</ul>';
     }
+
+    /**
+     * Request a calculation
+     * @param string $calculation Calculation to request
+     * @return boolean True if calculation was requested.
+     */
+    public function requestCalculation($calculation) {
+        if (! $this->isInDatabase()) return false;
+        self::$requested_calculation_buffer[get_called_class()][$calculation][$this->getRawValue($this->getKeyField())] = true;
+        return true;
+    }
     
     /**
      * Resolve several foreign references (using caching)
@@ -1401,7 +1432,7 @@ class Datarecord {
                 return false;
             }
         }
-        // See if we should recalculate anything
+        // See if we should calculate anything
         if ($change) {
             foreach(static::$structure as $key => $definition) {
                 if ($definition['calculations']) {
@@ -1418,7 +1449,7 @@ class Datarecord {
                     foreach ($definition['calculations'] as $calculation) {
                         foreach ($foreign_ids as $foreign_id) {
                             if (! $foreign_id) continue;
-                            self::$recalculate_buffer[$definition['foreignclass']][$calculation][$foreign_id] = true;
+                            self::$requested_calculation_buffer[$definition['foreignclass']][$calculation][$foreign_id] = true;
                         }
                     }
                 }
@@ -1464,19 +1495,22 @@ class Datarecord {
         return true;
     }
     
-    public static function saveRecalculation() {
+    /**
+     * Save all requested calculations
+     */
+    public static function saveRequestedCalculations() {
         global $platform_configuration;
-        if (! count(self::$recalculate_buffer)) return;
-        if (! Semaphore::wait('platform_recalculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
+        if (! count(self::$requested_calculation_buffer)) return;
+        if (! Semaphore::wait('platform_calculation_file')) trigger_error('Could not obtain recalculation file semaphore', E_USER_ERROR);
         $fh = fopen($platform_configuration['dir_temp'].'recalculation.current', 'a');
-        foreach (self::$recalculate_buffer as $class => $calculations) {
+        foreach (self::$requested_calculation_buffer as $class => $calculations) {
             foreach ($calculations as $calculation => $ids) {
                 fwrite($fh, $class.' '.$calculation.' '.implode(',',array_keys($ids))."\n");
             }
         }
         fclose($fh);
-        Semaphore::release('platform_recalculation_file');
-        $job = Job::getJob('Platform\\Datarecord', 'doRecalculation', Job::FREQUENCY_ONCE, false, 10, 15);
+        Semaphore::release('platform_calculation_file');
+        $job = Job::getJob('Platform\\Datarecord', 'calculationJob', Job::FREQUENCY_ONCE, false, 10, 15);
         $job->save();
     }
     

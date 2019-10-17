@@ -74,6 +74,6 @@ class Errorhandler {
             Semaphore::releaseAll();
         }
         // Check if we should add to the recalculation file
-        Datarecord::saveRecalculation();
+        Datarecord::saveRequestedCalculations();
     }
 }

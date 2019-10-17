@@ -41,11 +41,11 @@ class DatarecordCollection {
     }
     
     /**
-     * Delete all contained records from the database
+     * Delete all contained records from the database. This overrides blocking.
      */
     public function deleteAll() {
         foreach ($this->datarecords as $datarecord) {
-            if ($datarecord->reloadForWrite()) $datarecord->delete();
+            if ($datarecord->reloadForWrite()) $datarecord->delete(true);
         }
         $this->collectiontype = false;
         $this->datarecords = [];
