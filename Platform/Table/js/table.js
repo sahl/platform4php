@@ -5,8 +5,20 @@ addCustomPlatformFunction(function(item) {
         var element = $(this);
         
         var table_configuration = {
-            columnResized: function() {saveTableLayout(element.prop('id'));},
-            columnMoved: function() {saveTableLayout(element.prop('id'));}
+            columnResized: function() {
+                saveTableLayout(element.prop('id'));
+                sizeTableContainer(element);
+            },
+            columnMoved: function() {
+                saveTableLayout(element.prop('id'));
+                sizeTableContainer(element);
+            },
+            renderComplete: function() {
+                sizeTableContainer(element);
+            },
+            dataLoaded: function() {
+                sizeTableContainer(element);
+            }
         }
         
         $.each(JSON.parse($(this).html()), function(key, element) {
@@ -55,6 +67,7 @@ addCustomPlatformFunction(function(item) {
             else table.hideColumn($(this).val());
             visible[$(this).val()] = $(this).is(':checked') ? 1 : 0;
         });
+        sizeTableContainer($('#'+id));
         // Save it
         $.post('/Platform/Table/php/save_table_properties.php', {action: 'savevisibility', id: id, visible: visible});
         return false;
@@ -87,4 +100,18 @@ function saveTableLayout(tableid) {
         }
     })
     $.post('/Platform/Table/php/save_table_properties.php', {id: tableid, action: 'saveorderandwidth', properties: columns});
+}
+
+function sizeTableContainer(table_container) {
+    // Find table width
+    var width = $(table_container).find('.tabulator-table').width();
+    // Check if we are inside an edit complex
+    if ($(table_container).parent().hasClass('platform_render_edit_complex')) {
+        var container_width = $(table_container).parent().parent().width();
+        $(table_container).width(Math.min(width, container_width));
+        $(table_container).parent().width(Math.min(width, container_width));
+    } else {
+        var container_width = $(table_container).parent().width();
+        $(table_container).width(Math.min(width, container_width));
+    }
 }

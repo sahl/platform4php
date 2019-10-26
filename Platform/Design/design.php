@@ -106,10 +106,10 @@ class Design {
     
     
     private static $style_array = array(
-        'datarecord_editcomplex' => 'w3-container w3-section',
+        'datarecord_editcomplex' => 'platform_autocenter',
         'formfield' => 'w3-input',
         'file_input_frame' => '',
-        'platform_table' => '',
+        'platform_table' => 'platform_autocenter',
         
     );
     
