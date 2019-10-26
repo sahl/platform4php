@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+// Todo: Better handling of I/O 
+
 class FieldDate extends Field {
     
     public function __construct($label, $name, $options = array()) {

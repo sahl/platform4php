@@ -32,6 +32,7 @@ class Table {
         // Sort into place
         $columns = array();
         foreach (array_keys($savedconfiguration) as $field) {
+            if (! isset($sortcolumns[$field])) continue;
             $columns[] = $sortcolumns[$field];
         }
         $this->options['columns'] = $columns;

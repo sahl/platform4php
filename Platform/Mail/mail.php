@@ -33,7 +33,6 @@ class Mail extends \Platform\Datarecord {
     protected static $key_field = false;
     
     protected static function buildStructure() {
-        // Todo: Define the object structure in this array
         $structure = array(
             'mail_id' => array(
                 'invisible' => true,

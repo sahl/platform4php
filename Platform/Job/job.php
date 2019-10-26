@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+// TODO: Handle daemons
+
 class Job extends \Platform\Datarecord {
     
     protected static $database_table = 'jobs';
@@ -24,7 +26,6 @@ class Job extends \Platform\Datarecord {
     const SLOT_CAPACITY = 100;
     
     protected static function buildStructure() {
-        // Todo: Define the object structure in this array
         $structure = array(
             'job_id' => array(
                 'invisible' => true,
@@ -55,7 +56,7 @@ class Job extends \Platform\Datarecord {
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_INTEGER
             ),            
-            'frequency_offset_fromend' => array(
+            'frequency_offset_from_end' => array(
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_BOOLEAN
             ),
@@ -101,6 +102,10 @@ class Job extends \Platform\Datarecord {
         parent::buildStructure();
     }
     
+    /**
+     * Clean up after a job by reading output, resetting the job object and 
+     * take statistics.
+     */
     public function cleanUp() {
         $this->log('cleanup', 'Cleaning up', $this);
         $this->reloadForWrite();
@@ -118,18 +123,32 @@ class Job extends \Platform\Datarecord {
         $this->run_count = $this->run_count + 1;
         $this->last_run_time = $this->last_start->getMinutesUntil(Timestamp::now());
         $this->average_run_time = (($this->run_count-1)*$this->average_run_time + $this->last_run_time)/$this->run_count;
-        if ($this->frequency_offset_fromend && $this->freqency > 0) {
+        if ($this->frequency_offset_from_end && $this->freqency > 0) {
             $this->next_start = Timestamp::now()->add(0, $this->frequency);
         }
         $this->save();
     }
     
+    /**
+     * Delete a job, while also killing it.
+     * @param type $force_remove
+     */
     public function delete($force_remove = false) {
         $this->kill();
         parent::delete($force_remove);
     }
     
-    public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_fromend = -1, $slot_size = -1, $max_runtime = -1) {
+    /**
+     * Get a new or existing job matching class and function
+     * @param string $class Class to call
+     * @param string $function Function to call in the class.
+     * @param int $frequency Job frequency
+     * @param boolean $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
+     * @param int $slot_size Slot size of the job
+     * @param int $max_runtime Max allowed run time in realtime minutes.
+     * @return \Platform\Job The job
+     */
+    public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, $slot_size = -1, $max_runtime = -1) {
         if (! $function && strpos($class, '::')) {
             $elements = explode('::', $class);
             $class = $elements[0]; $elements = $split[1];
@@ -141,7 +160,7 @@ class Job extends \Platform\Datarecord {
         if ($qr) {
             $job->loadForWrite($qr['job_id']);
             if ($frequency != self::FREQUENCY_NOCHANGE) $job->frequency = $frequency;
-            if ($frequency_offset_fromend !== -1) $job->frequency_offset_fromend = $frequency_offset_fromend;
+            if ($frequency_offset_from_end !== -1) $job->frequency_offset_from_end = $frequency_offset_from_end;
             if ($slot_size != -1) $job->slot_size = $slot_size;
             if ($max_runtime != -1) $job->max_runtime = $max_runtime;
         } else {
@@ -155,7 +174,7 @@ class Job extends \Platform\Datarecord {
             $job->average_run_time = 0.0;
             $job->kill_count = 0;
             $job->frequency = $frequency == self::FREQUENCY_NOCHANGE ? self::FREQUENCY_PAUSED : $frequency;
-            $job->frequency_offset_fromend = $frequency_offset_fromend !== -1 ? $frequency_offset_fromend : false;
+            $job->frequency_offset_from_end = $frequency_offset_from_end !== -1 ? $frequency_offset_from_end : false;
             $job->slot_size = $slot_size != -1 ? $slot_size : 10;
             $job->max_runtime = $max_runtime != -1 ? $max_runtime : 10;
             $job->process_id = 0;
@@ -163,17 +182,30 @@ class Job extends \Platform\Datarecord {
         return $job;
     }
     
+    /**
+     * Get the name for the output file for this job
+     * @global type $platform_configuration
+     * @return string Path and file name
+     */
     public function getOutputFile() {
         global $platform_configuration;
         return $platform_configuration['dir_temp'].'job_output_'.$this->job_id;
     }
     
+    /**
+     * Get all jobs registered as running
+     * @return array<Job>
+     */
     public static function getRunningJobs() {
         $filter = new Filter('Platform\Job');
         $filter->addCondition(new FilterConditionGreater('process_id', 0));
         return $filter->execute()->getAll();
     }
     
+    /**
+     * Get all jobs pending to run
+     * @return array<Job>
+     */
     public static function getPendingJobs() {
         $filter = new Filter('Platform\Job');
         $filter->addCondition(new FilterConditionMatch('process_id', 0));
@@ -182,10 +214,18 @@ class Job extends \Platform\Datarecord {
         return $filter->execute()->getAll();
     }
     
+    /**
+     * Check if a job has ran for too long.
+     * @return boolean
+     */
     public function isOverdue() {
         return $this->last_start->add(0,$this->max_runtime)->isBefore(new Timestamp('now'));
     }
     
+    /**
+     * Check if a given job is actually running using the ps command
+     * @return boolean True if running
+     */
     public function isRunning() {
         if (! $this->process_id) return false;
         $result = shell_exec('ps '.((int)$this->process_id));
@@ -193,6 +233,9 @@ class Job extends \Platform\Datarecord {
         return $isrunning;
     }
     
+    /**
+     * Kill job
+     */
     public function kill() {
         if (! $this->process_id) return;
         $this->log('kill', 'Killed because '.$this->max_runtime.' minutes was exceeded!', $this);
@@ -202,6 +245,12 @@ class Job extends \Platform\Datarecord {
         $this->save(false, true);
     }
     
+    /**
+     * Write job system log events
+     * @param string $event Short string for event type
+     * @param string $text Longer event text
+     * @param \Platform\Job $job The job the event is about
+     */
     public static function log($event, $text = '', $job = false) {
         if (! self::$log) self::$log = new Log('job_scheduler', array(8, 15, 30), false);
         $event = strtoupper($event);
@@ -209,6 +258,9 @@ class Job extends \Platform\Datarecord {
         else self::$log->log('global', $event, '-', $text);
     }
     
+    /**
+     * Process the job queue
+     */
     public static function process() {
         if (!Semaphore::grab('process_jobs',2)) return;
         
@@ -253,7 +305,13 @@ class Job extends \Platform\Datarecord {
         self::log('', 'Exiting');
         Semaphore::release('process_jobs');
     }
-    
+
+    /**
+     * Save a job
+     * @param type $force_save
+     * @param type $keep_open_for_write
+     * @return type
+     */
     public function save($force_save = false, $keep_open_for_write = false) {
         // Ensure that we have a run time
         if ($this->frequency != self::FREQUENCY_PAUSED && $this->next_start->getTimestamp() === null) $this->next_start = Timestamp::now();
@@ -263,12 +321,15 @@ class Job extends \Platform\Datarecord {
         return $result;
     }
     
+    /**
+     * Start a job
+     */
     public function start() {
         $this->reloadForWrite();
         self::log('start', 'Starting job scheduled at '.$this->getFullValue('next_start'), $this);
         $this->last_start = Timestamp::now();
         if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
-        if ($this->frequency > 0 && ! $this->frequency_offset_fromend) $this->next_start = Timestamp::now()->add(0, $this->frequency);
+        if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Timestamp::now()->add(0, $this->frequency);
         $result = (int)shell_exec('php '.__DIR__.'/php/runjob.php '.$this->job_id.' > '.$this->getOutputFile().' & echo $!');
         if ($result) {
             self::log('started', 'Running with PID: '.$result, $this);

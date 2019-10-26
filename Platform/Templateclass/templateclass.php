@@ -33,7 +33,6 @@ class Templateclass extends \Platform\Datarecord {
     protected static $key_field = false;
     
     protected static function buildStructure() {
-        // Todo: Define the object structure in this array
         $structure = array(
             'object_id' => array(
                 'invisible' => true,
@@ -59,6 +58,6 @@ class Templateclass extends \Platform\Datarecord {
         return $this->property1;
     }
     
-    // Todo: Remember to add the ::ensureInDatabase to either the instance or
+    // Remember to add the ::ensureInDatabase to either the instance or
     // globally
 }

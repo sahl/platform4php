@@ -16,6 +16,7 @@ class FieldFile extends Field {
             'temp_file' => $_POST[$this->getName().'__temp_file'],
             'file_id' => 0
         );
+        // Todo: We should be able to also return a file_id the other way.
         return true;
     }
     

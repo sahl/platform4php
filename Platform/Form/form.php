@@ -3,7 +3,7 @@ namespace Platform;
 
 class Form {
     
-    private $formid = array();
+    private $form_id = array();
 
     private $fields = array();
     
@@ -11,8 +11,8 @@ class Form {
     
     private $action = 'submit';
     
-    public function __construct($formid, $filename = '') {
-        $this->formid = $formid;
+    public function __construct($form_id, $filename = '') {
+        $this->form_id = $form_id;
         if ($filename) $this->getFromFile ($filename);
     }
     
@@ -113,6 +113,7 @@ class Form {
      * Get a field from the form by name. If a multiplier is present in the form
      * a field from that can be found by using a name on the following form:
      * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER
+     * TODO: Handle nested multipliers
      * @param string $fieldname Field name to find
      * @return boolean|\Platform\Field The field or false if no field was found
      */
@@ -150,7 +151,7 @@ class Form {
      * @return int
      */
     public function getId() {
-        return $this->formid;
+        return $this->form_id;
     }
     
     /**
@@ -182,7 +183,7 @@ class Form {
      * @return boolean
      */
     public function isSubmitted() {
-        return ($_POST['form_name'] == $this->formid);
+        return ($_POST['form_name'] == $this->form_id);
     }
     
     /**
@@ -322,8 +323,8 @@ class Form {
      * Render the form
      */
     public function render() {
-        echo '<form id="'.$this->formid.'" method="post" class="platform_form">';
-        echo '<input type="hidden" name="form_name" value="'.$this->formid.'">';
+        echo '<form id="'.$this->form_id.'" method="post" class="platform_form">';
+        echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
         echo '<input type="hidden" name="form_action" value="submit">';
         echo '<input type="hidden" name="form_hiddenfields" value="">';
            

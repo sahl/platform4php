@@ -129,7 +129,7 @@ class Field {
     /**
      * Clear any error from this field
      */
-    public function ClearError() {
+    public function clearError() {
         if (! $this->is_error) return;
         $this->is_error = false;
         array_remove($this->classes, 'formfield_error');
