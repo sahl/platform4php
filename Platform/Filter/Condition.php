@@ -41,8 +41,13 @@ class FilterCondition {
         if (! $this->filter instanceof Filter) trigger_error('No filter attached', E_USER_ERROR);
         if (! $this->fieldname) return '';
         
+        $field_definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
+        
+        // Fail on metadata fields or fields not in database
+        if ($field_definition['store_in_database'] === false || $field_definition['store_in_metadata'] === true) trigger_error('Can only filter on fields in database (yet!). And '.$this->fieldname.' is not in the database!', E_USER_ERROR);
+        
         // We need to do something extra for password fields
-        if ($this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'] == Datarecord::FIELDTYPE_PASSWORD) $value = md5($value.$platform_configuration['password_salt']);
+        if ($field_definition['fieldtype'] == Datarecord::FIELDTYPE_PASSWORD) $value = md5($value.$platform_configuration['password_salt']);
         
         // Handle timestamps
         if ($value instanceof Timestamp) $value = $value->getTime();
