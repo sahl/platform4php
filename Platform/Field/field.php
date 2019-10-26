@@ -14,6 +14,12 @@ class Field {
      * @var array
      */
     protected $container_classes = array('formfield_container');
+    
+    /**
+     * Special styles for the container
+     * @var array
+     */
+    protected $container_styles = array();
 
     /**
      * Field error message
@@ -102,11 +108,11 @@ class Field {
             unset($options['heading']);
         }
         if ($options['class']) {
-            foreach (explode(' ',$options['class']) as $class) $this->classes[] = $class;
+            $this->addClass($options['class']);
             unset($options['class']);
         }
         if ($options['containerclass']) {
-            foreach (explode(' ',$options['containerclass']) as $class) $this->container_classes[] = $class;
+            $this->addContainerClass($options['containerclass']);
             unset($options['containerclass']);
         }        
         
@@ -115,6 +121,33 @@ class Field {
         foreach ($options as $key => $val) {
             $this->additional_attributes .= ' '.$key.'="'.$val.'"';
         }
+    }
+    
+    /**
+     * Add one or more class to the field
+     * @param string|array $classes Class name or array of class names
+     */
+    public function addClass($classes) {
+        if (! is_array($classes)) $classes = array($classes);
+        foreach ($classes as $class) $this->classes[] = $class;
+    }
+    
+    /**
+     * Add one or more class to the container of the field
+     * @param string|array $classes Class name or array of class names
+     */
+    public function addContainerClass($classes) {
+        if (! is_array($classes)) $classes = array($classes);
+        foreach ($classes as $class) $this->container_classes[] = $class;
+    }
+    
+    /**
+     * Add a style to the container of this field
+     * @param string|array $styles Style or array of styles
+     */
+    public function addContainerStyle($styles) {
+        if (! is_array($styles)) $styles = array($styles);
+        foreach ($styles as $style) $this->container_styles[] = $style;
     }
     
     /**
@@ -151,6 +184,10 @@ class Field {
     public function getContainerClassString() {
         return implode(' ',$this->container_classes);
     }    
+    
+    public function getStyleString() {
+        return implode(';',$this->container_styles);
+    }
     
     /**
      * Get error text (if any)
@@ -211,7 +248,7 @@ class Field {
      * Render the field
      */
     public function render() {
-        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container">';
+        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
         $this->renderLabel();
         $this->renderInput();
         $this->renderErrorContainer($this->errortext);

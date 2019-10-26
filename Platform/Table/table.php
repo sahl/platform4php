@@ -2,15 +2,12 @@
 namespace Platform;
 
 class Table {
-    
-    
     private $id = '';
 
     private $options = array();
     
     public function __construct($id) {
         $this->id = $id;
-//        $this->setOption('height', '400px');
         $this->setOption('layout', 'fitColumns');
         $this->setOption('placeholder', 'No data');
         $this->setOption('movableColumns', true);

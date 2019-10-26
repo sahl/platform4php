@@ -683,12 +683,32 @@ class Datarecord {
         $form = new Form($baseclass.'_form');
         $form->setAction('save_'.$baseclass);
         $form->addField(new FieldHidden('', static::getKeyField()));
+        $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
             if ($definition['readonly'] || $definition['invisible']) continue;
             $field = static::getFormFieldFromDefinition($key, $definition);
             if ($field === null) continue;
+            // Check for additional rendering
+            if ($definition['form_size']) $size = (int)$definition['form_size'];
+            else $size = 100;
+            if ($size < 1 || $size > 100) $size = 100;
+            // Check if we need to end a row in progress
+            if ($percentleft < $size) {
+                $form->addHTML('</div>');
+                $percentleft = 100;
+            }
+            // Check if we need to start a new row
+            if ($percentleft == 100) {
+                $form->addHTML('<div class="w3-row-padding w3-margin-top">');
+            }
+            $field->addContainerClass('w3-col');
+            $field->addContainerStyle('width: '.$size.'%');
+            $percentleft -= $size;
+
             $form->addField($field);
         }
+        // End row in progress
+        $form->addHTML('</div>');
         return $form;
     }
     
@@ -883,7 +903,7 @@ class Datarecord {
      * Get titles of all objects referring this object
      * @return array
      */
-    public static function getReferringObjectTitles() {
+    public function getReferringObjectTitles() {
         // Find all objects referring this
         $referring_titles = array();
         foreach (static::$referring_classes as $referring_class) {
@@ -1339,6 +1359,12 @@ class Datarecord {
         echo '<h1>'.get_called_class().'</h1>';
         $errors = array();
         $warnings = array();
+        // Ensure newest version and test that we don't upgrade the database in excess.
+        static::ensureInDatabase();
+        $changed = static::ensureInDatabase();
+        if ($changed) $errors[] = 'Database was changed even though there should be no changes. This is probably a problem with Platform.';
+        
+        // Check references
         foreach (static::getStructure() as $field => $definition) {
             switch ($definition['fieldtype']) {
                 case self::FIELDTYPE_REFERENCE_SINGLE:
@@ -1349,6 +1375,7 @@ class Datarecord {
                     break;
             }
         }
+        // Check foreign classes
         foreach (static::$referring_classes as $foreign_class) {
             if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a foreign class, but the class doesn\'t exist.';
             else {

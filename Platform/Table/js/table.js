@@ -31,9 +31,9 @@ addCustomPlatformFunction(function(item) {
             delete table_configuration['action_buttons'];
         }
         
-        var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
-        
         element.removeClass('platform_invisible');
+        
+        var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
         
         $.each(action_buttons, function(key, element) {
             table.addColumn({
@@ -114,4 +114,14 @@ function sizeTableContainer(table_container) {
         var container_width = $(table_container).parent().width();
         $(table_container).width(Math.min(width, container_width));
     }
+    var id = table_container.prop('id');
+    var table = getTableByID('#'+id);
+    var number_of_rows = table.getDataCount(true);
+    var header_height = table_container.find('.tabulator-headers').height();
+    var row_height = table_container.find('.tabulator-row').height();
+    var max_height = parseInt(table_container.css('max-height'));
+    if (! max_height) max_height = 500;
+    console.log('We have '+number_of_rows+' rows available and they are '+row_height+'px high.');
+    console.log('Max allowed height is: '+max_height);
+    table_container.css('height', Math.min(max_height, number_of_rows*row_height+header_height+3));
 }
