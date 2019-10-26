@@ -1667,7 +1667,7 @@ class Datarecord {
     const FIELDTYPE_DATE = 11;
     
     const FIELDTYPE_ARRAY = 100;
-    const FIELDTYPE_OBJECT = 101;
+    const FIELDTYPE_OBJECT = 103;
     const FIELDTYPE_ENUMERATION = 101;
     
     const FIELDTYPE_PASSWORD = 300;
