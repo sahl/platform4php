@@ -97,13 +97,13 @@ class Datarecord {
      * All values of the object
      * @var array
      */
-    private $values = array();
+    protected $values = array();
     
     /**
      * The values of the object on load
      * @var array
      */
-    private $values_on_load = array();
+    protected $values_on_load = array();
     
     /**
      * Buffer for foreign references

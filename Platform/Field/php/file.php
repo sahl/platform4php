@@ -48,13 +48,13 @@ if ($current_file_name) {
     echo '<input type="hidden" name="temp_file_name" value="'.$_POST['temp_file_name'].'">';
     echo '<input type="hidden" name="action" value="delete_file">';
     echo '</form>';
+} else {
+    echo '<form method="post" enctype="multipart/form-data">';
+    echo '<input type="hidden" name="action" value="send_file">';
+    // TODO: Don't expose local path in HTML
+    echo '<input type="hidden" name="temp_file_name" value="'.$_POST['temp_file_name'].'">';
+    echo '<input name="file" type="file" class="'.Design::getClass('formfield', '').'">';
+    echo '</form>';
 }
-
-echo '<form method="post" enctype="multipart/form-data">';
-echo '<input type="hidden" name="action" value="send_file">';
-// TODO: Don't expose local path in HTML
-echo '<input type="hidden" name="temp_file_name" value="'.$_POST['temp_file_name'].'">';
-echo '<input name="file" type="file" class="'.Design::getClass('formfield', '').'">';
-echo '</form>';
 
 pageend();

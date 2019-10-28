@@ -34,8 +34,13 @@ class File extends Datarecord {
         parent::buildStructure();
     }
     
+    /**
+     * Attach a file to this File object. When saved the file will be copied to
+     * instance store.
+     * @param string $filename Full path of file to attach.
+     */
     public function attachFile($filename) {
-        if (! file_exists($filename)) trigger_error('No such file: '.$filename);
+        if (! file_exists($filename)) trigger_error('No such file: '.$filename, E_USER_ERROR);
         $this->content_source = 'file';
         $this->content = $filename;
     }
@@ -48,6 +53,11 @@ class File extends Datarecord {
         return $result;
     }
     
+    /**
+     * Ensure that the given folder exist within the instance store.
+     * @param string $folder (A single) folder name
+     * @return boolean
+     */
     public static function ensureFolder($folder) {
         if (file_exists($folder)) return true;
         $result = mkdir($folder, 0774, true);
@@ -55,21 +65,42 @@ class File extends Datarecord {
         return true;
     }
     
-    public function getCompleteFilename() {
-        return $this->getFolder().'data'.$this->file_id.'.blob';
+    /**
+     * Get the complete file name to the local file holding this files content
+     * @param boolean $use_current_value Indicate if we should get it using current values.
+     * Otherwise values from when the File object was loaded will be used.
+     * @return string
+     */
+    public function getCompleteFilename($use_current_value = true) {
+        return $this->getCompleteFolderPath($use_current_value).'data'.$this->file_id.'.blob';
     }
 
-    public function getFolder() {
+    /**
+     * Get the complete folder path to the folder holding this files content
+     * @param boolean $use_current_value Indicate if we should get it using current values.
+     * Otherwise values from when the File object was loaded will be used.
+     * @return string
+     */
+    public function getCompleteFolderPath($use_current_value = true) {
         global $platform_configuration;
         $instance = Instance::getActiveInstanceID();
         if (! $instance) trigger_error('Couldn\'t detect an instance!', E_USER_ERROR);
         $folder = $platform_configuration['dir_store'];
         if (! substr($folder,-1) == '/') $folder .= '/';
         $folder .= $instance.'/';
-        if ($this->folder) $folder .= $this->folder.'/';
+        if ($use_current_value) {
+            if ($this->folder) $folder .= $this->folder.'/';
+        } else {
+            if ($this->values_on_load['folder']) $folder .= $this->values_on_load['folder'].'/';
+        }
         return $folder;
     }
     
+    /**
+     * Get the full folder path for an specific folder in the current instance.
+     * @param string $folder Folder name
+     * @return string
+     */
     public static function getFullFolderPath($folder) {
         global $platform_configuration;
         $instance = Instance::getActiveInstanceID();
@@ -85,6 +116,10 @@ class File extends Datarecord {
         return '<a href="/Platform/file.php/'.Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename.'" target="_blank">'.$this->filename.'</a>';
     }
     
+    /**
+     * Get a temporary file name in the temp namespace
+     * @return string
+     */
     public static function getTempFilename() {
         $path = self::getFullFolderPath('temp');
         self::ensureFolder($path);
@@ -105,13 +140,24 @@ class File extends Datarecord {
      * @return boolean True if we actually saved the object
      */
     public function save($force_save = false, $keep_open_for_write = false) {
-       $force_save |= $this->content_source != '';
+        // Check if file have moved folder
+        if ($this->isInDatabase() && $this->values_on_load['folder'] != $this->folder) {
+            $old_filename = $this->getCompleteFilename(false);
+            if (file_exists($old_filename)) {
+                // We need to move it into place
+                $this->ensureFolder($this->getCompleteFolderPath());
+                $result = rename($old_filename, $this->getCompleteFilename());
+                if (! $result) trigger_error('Couldn\'t move file content from folder '.$this->values_on_load['folder'].' to '.$this->folder, E_USER_ERROR);
+            }
+        }
+        
+        $force_save |= $this->content_source != '';
         $result = parent::save($force_save, $keep_open_for_write);
         // Handle file content
         switch ($this->content_source) {
             case 'file':
                 if (file_exists($this->content)) {
-                    $this->ensureFolder($this->getFolder());
+                    $this->ensureFolder($this->getCompleteFolderPath());
                     $result = copy($this->content, $this->getCompleteFilename());
                     if (! $result) trigger_error('Couldn\'t copy '.$this->content.' to '.$this->getCompleteFilename(), E_USER_ERROR);
                 }
