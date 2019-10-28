@@ -134,7 +134,7 @@ class File extends Datarecord {
     }
     
     public function getTitle() {
-        return '<a href="/Platform/file.php/'.Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename.'" target="_blank">'.$this->filename.'</a>';
+        return '<a href="'.$this->getURL().'" target="_blank">'.$this->filename.'</a>';
     }
     
     /**
@@ -152,6 +152,26 @@ class File extends Datarecord {
         touch($path.$filename);
         Semaphore::release('tempfilename');
         return $path.$filename;
+    }
+    
+    /**
+     * Get the URL to this file
+     * @return string
+     */
+    public function getURL() {
+        if (! $this->isInDatabase()) return '';
+        return '/Platform/file.php/'.Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename;
+    }
+
+    /**
+     * Get the URL for the file with the given ID
+     * @param int $file_id File ID
+     * @return string
+     */
+    public static function getURLByID($file_id) {
+        $file = new File();
+        $file->loadForRead($file_id);
+        return $file->getURL();
     }
     
      /**
