@@ -66,6 +66,17 @@ class File extends Datarecord {
     }
     
     /**
+     * Extract the extention from a file name
+     * @param string $filename File name
+     * @return string
+     */
+    public static function extractExtension($filename) {
+        $dot = strrpos($filename,'.');
+        if ($dot === false) return '';
+        return substr($filename,$dot+1);
+    }
+    
+    /**
      * Get the complete file name to the local file holding this files content
      * @param boolean $use_current_value Indicate if we should get it using current values.
      * Otherwise values from when the File object was loaded will be used.
@@ -94,6 +105,16 @@ class File extends Datarecord {
             if ($this->values_on_load['folder']) $folder .= $this->values_on_load['folder'].'/';
         }
         return $folder;
+    }
+    
+    /**
+     * Get an URL for an icon image corresponding to the given extension
+     * @param string $extension
+     * @return string URL to image
+     */
+    public static function getFiletypeURL($extension) {
+        if (! file_exists(__DIR__.'/gfx/'.$extension.'.png')) $extension = 'other'; 
+        return '/Platform/File/gfx/'.$extension.'.png';
     }
     
     /**

@@ -42,8 +42,9 @@ if ($_POST['action'] == 'send_file') {
 }
 
 if ($current_file_name) {
-    echo '<b>'.$current_file_name.'</b>';
-    echo ' (<span style="color: red" id="file_delete">Delete</span>)';
+    echo '<img style="vertical-align: baseline;" src="'.File::getFiletypeURL(File::extractExtension($current_file_name)).'">';
+    echo $current_file_name;
+    echo ' <span class="fa fa-minus-circle" id="file_delete" style="color: red"> </span>';
     echo '<form method="post" id="file_delete_form">';
     echo '<input type="hidden" name="temp_file_name" value="'.$_POST['temp_file_name'].'">';
     echo '<input type="hidden" name="action" value="delete_file">';
