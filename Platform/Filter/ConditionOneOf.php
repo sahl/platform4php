@@ -29,4 +29,17 @@ class FilterConditionOneOf extends FilterCondition {
         }
         return '('.implode(' OR ', $sql).')';
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'OneOf',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+    
 }

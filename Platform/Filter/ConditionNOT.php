@@ -22,4 +22,16 @@ class FilterConditionNOT extends FilterCondition {
     public function getSQLFragment() {
         return 'NOT ('.$this->condition->getSQLFragment().')';
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'NOT',
+            'condition' => $this->condition->toArray()
+        );
+    }
+    
 }

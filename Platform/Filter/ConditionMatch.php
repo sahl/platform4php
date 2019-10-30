@@ -20,4 +20,17 @@ class FilterConditionMatch extends FilterCondition {
                 return $this->fieldname.' = '.$this->getSQLFieldValue($this->value);
         }
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'Match',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+    
 }

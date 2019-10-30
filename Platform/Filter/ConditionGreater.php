@@ -20,4 +20,16 @@ class FilterConditionGreater extends FilterCondition {
                 return $this->fieldname.' > '.$this->getSQLFieldValue($this->value);
         }
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'Greater',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
 }

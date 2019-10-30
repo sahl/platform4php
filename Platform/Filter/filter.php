@@ -4,6 +4,12 @@ namespace Platform;
 class Filter {
     
     /**
+     * The name of the base class
+     * @var string
+     */
+    private $base_classname = null;
+
+    /**
      * An instance of the class the filter works on.
      * @var Datarecord 
      */
@@ -20,6 +26,7 @@ class Filter {
      * @param string $classname Class name of the base class to operate on.
      */
     public function __construct($classname) {
+        $this->base_classname = $classname;
         $this->base_object = new $classname();
         if (! $this->base_object instanceof Datarecord) trigger_error('Must attach Datarecord to filter');
     }
@@ -74,6 +81,18 @@ class Filter {
     }
     
     /**
+     * Get a filter from a JSON string
+     * @param string $json JSON string as prepared by the toJSON function
+     * @return \Platform\Filter
+     */
+    public static function getFilterFromJSON($json) {
+        $array = json_decode($json, true);
+        $filter = new Filter($array['base_classname']);
+        if ($array['base_condition']) $filter->addCondition(FilterCondition::getConditionFromArray($array['base_condition']));
+        return $filter;
+    }
+    
+    /**
      * Get the base object of this filter.
      * @return string
      */
@@ -89,6 +108,18 @@ class Filter {
         $sql = 'SELECT * FROM '.$this->base_object->getDatabaseTable();
         if ($this->base_condition instanceof FilterCondition) $sql .= ' WHERE '.$this->base_condition->getSQLFragment();
         return $sql;
+    }
+    
+    /**
+     * Express this filter as a JSON string
+     * @return string
+     */
+    public function toJSON() {
+        $result = array('base_classname' => $this->base_classname);
+        if ($this->base_condition instanceof FilterCondition) {
+            $result['base_condition'] = $this->base_condition->toArray();
+        }
+        return json_encode($result);
     }
     
 }

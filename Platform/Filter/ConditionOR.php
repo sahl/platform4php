@@ -27,4 +27,16 @@ class FilterConditionOR extends FilterCondition {
     public function getSQLFragment() {
         return '('.$this->condition1->getSQLFragment().' OR '.$this->condition2->getSQLFragment().')';
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'OR',
+            'condition1' => $this->condition1->toArray(),
+            'condition2' => $this->condition2->toArray()
+        );
+    }
 }

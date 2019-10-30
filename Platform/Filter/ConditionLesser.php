@@ -20,4 +20,17 @@ class FilterConditionLesser extends FilterCondition {
                 return $this->fieldname.' < '.$this->getSQLFieldValue($this->value);
         }
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'Lesser',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+    
 }

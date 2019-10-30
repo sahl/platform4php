@@ -20,4 +20,17 @@ class FilterConditionLike extends FilterCondition {
                 return 'FALSE';
         }
     }
+    
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function toArray() {
+        return array(
+            'type' => 'Like',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+
 }
