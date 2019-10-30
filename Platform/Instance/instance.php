@@ -153,6 +153,7 @@ class Instance extends Datarecord {
      * Initialize the instance database. Override to initialize own objects
      */
     public function initializeDatabase() {
+        \Platform\DatarecordExtensiblefield::ensureInDatabase();
         \Platform\Accesstoken::ensureInDatabase();
         \Platform\File::ensureInDatabase();
         \Platform\User::ensureInDatabase();
