@@ -31,11 +31,21 @@ class Design {
     }
     
     /**
+     * Shortcut for rendering a script tag directly to page. Will queue the
+     * javascript if page isn't started.
+     * @param string $js_file
+     */
+    public static function JSFile($js_file) {
+        if (! self::$page_started) self::queueJSFile($js_file);
+        echo '<script src="'.$js_file.'" type="text/javascript"></script>';
+    }
+    
+    /**
      * Queue a css file to load when page renders
      * @param string $css_file css file to load
      */
     public static function queueCSSFile($css_file) {
-        if (self::$page_started) trigger_error('Tried to queue CSS after page was started!', E_USER_ERROR);
+        if (self::$page_started) self::JSFile ($js_file);
         if (! in_array($css_file, self::$css_files_to_load)) self::$css_files_to_load[] = $css_file;
     }
     
