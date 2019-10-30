@@ -22,5 +22,11 @@
 .platform_autocenter {
     margin-left: auto;
     margin-right: auto;
-    min-width: 980px;
+}
+
+
+@media (min-width: 980px) {
+    .platform_autocenter {
+        min-width: 980px;
+    }
 }
