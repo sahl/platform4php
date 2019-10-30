@@ -32,7 +32,7 @@ class Datarecord {
 
     /**
      * Indicate what mode this object is in
-     * @var int Mode
+     * @var int
      */
     protected $access_mode = self::MODE_WRITE;
     
@@ -50,7 +50,7 @@ class Datarecord {
     
     /**
      * Set a delete strategy for this object
-     * @var int Delete strategy 
+     * @var int
      */
     protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
 
@@ -77,6 +77,12 @@ class Datarecord {
      * @var boolean|string
      */
     protected $lockname = false;
+    
+    /**
+     * Name of this object type
+     * @var string 
+     */
+    protected static $object_name = '';
     
     /**
      * Names of all classes referring this class
@@ -451,7 +457,7 @@ class Datarecord {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
-                    self::query('ALTER TABLE '.static::$database_table.' ADD COLUMN '.$key.' '.$definition);
+                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$key.' '.$definition);
                     $changed = true;
                     
                     // As this field could have been represented in the metadata
@@ -483,14 +489,16 @@ class Datarecord {
                         }
                     }
                     // Field was removed from structure.
-                    self::query('ALTER TABLE '.static::$database_table.' DROP COLUMN '.$field_in_database['Field']);
+                    self::query('ALTER TABLE '.static::$database_table.' DROP '.$field_in_database['Field']);
                     $changed = true;
                     continue;
                 }
                 $element = static::$structure[$field_in_database['Field']];
                 if ($field_in_database['Type'] != mb_substr(mb_strtolower(static::getSQLFieldType($element['fieldtype'])),0, mb_strlen($field_in_database['Type']))) {
                     //echo 'Type '.$fieldindatabase['Type'].' isnt '.mb_strtolower(self::getSQLFieldType($element['fieldtype']));
-                    self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN '.$field_in_database['Field'].' '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']));
+                    //self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN '.$field_in_database['Field'].' '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']));
+                    self::query('ALTER TABLE '.static::$database_table.' DROP '.$field_in_database['Field']);
+                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']));
                     $changed = true;
                 }
             }
@@ -521,7 +529,10 @@ class Datarecord {
                 $search_fields[] = $field;
             }
         }
-        if (! count($search_fields)) return array();
+        if (! count($search_fields)) {
+            if ($output == 'DatarecordCollection') return new DatarecordCollection();
+            return array();
+        }
         $filter = new Filter(get_called_class());
         $parsed_keywords = self::parseKeywords($keywords);
         foreach ($parsed_keywords as $keyword) {
@@ -756,7 +767,8 @@ class Datarecord {
                  * /
                  */
             case self::FIELDTYPE_ENUMERATION:
-                return new FieldSelect($definition['label'], $name, array('options' => $definition['enumeration']));
+                $options['options'] = $definition['enumeration'];
+                return new FieldSelect($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 return new FieldMultidatarecordcombobox($definition['label'], $name, array('class' => $definition['foreignclass']));
                 /*
@@ -893,10 +905,19 @@ class Datarecord {
      * Get a simple class name (without namespace and in lowercase) for this class
      * @return string Simple name
      */
-    public static function getObjectName() {
+    public static function getClassName() {
         $class = strtolower(get_called_class());
         if (strpos($class, '\\')) $class = substr($class,strrpos($class,'\\')+1);
         return $class;
+    }
+
+    /**
+     * Get the readable name of this object type. Defaults to class name if
+     * no name is set.
+     * @return string
+     */
+    public static function getObjectName() {
+        return static::$object_name ?: static::getClassName();
     }
     
     /**
@@ -1302,26 +1323,35 @@ class Datarecord {
      */
     public static function renderEditComplex($parameters = array()) {
         // Get base class name
-        $name = static::getObjectName();
+        $class = static::getClassName();
+        // Get object name
+        $name = strtolower(static::getObjectName());
+        
         // Create table
-        $datarecord_table = new Table($name.'_table');
+        $datarecord_table = new Table($class.'_table');
         $datarecord_table->setDefinitionFromDatarecord(get_called_class());
         $datarecord_table->setOption('ajaxURL', '/Platform/Datarecord/php/table_datarecord.php?class='.get_called_class());
+        $datarecord_table->setOption('placeholder', 'No '.$name);
         
-        foreach ($parameters as $key => $parameter) {
-            $datarecord_table->setOption($key, $parameter);
-        }
+        if ($parameters['filter']) $parameters['table']['filter'] = $parameters['filter'];
+        
+        if (is_array($parameters['table']))
+            foreach ($parameters['table'] as $key => $parameter) {
+                $datarecord_table->setOption($key, $parameter);
+            }
         
         // Get form
         $form = static::getForm();
         
-        echo '<div class="'.Design::getClass('datarecord_editcomplex', 'platform_render_edit_complex').'" data-name="'.$name.'" data-class="'.get_called_class().'">';
+        if (is_callable($parameters['form_function'])) call_user_func($parameters['form_function'], $form);
+        
+        echo '<div class="'.Design::getClass('datarecord_editcomplex', 'platform_render_edit_complex').'" data-name="'.$name.'" data-shortclass="'.$class.'" data-class="'.get_called_class().'">';
         
         $menu = array(
-            $name.'_new_button' => 'Create new '.$name,
-            $name.'_edit_button' => 'Edit selected '.$name,
-            $name.'_delete_button' => 'Delete selected '.$name,
-            $name.'_column_select_button' => 'Select columns'
+            $class.'_new_button' => 'Create new '.$name,
+            $class.'_edit_button' => 'Edit selected '.$name,
+            $class.'_delete_button' => 'Delete selected '.$name,
+            $class.'_column_select_button' => 'Select columns'
         );
         $datarecord_menu = new Menu($menu);
         
@@ -1331,13 +1361,13 @@ class Datarecord {
         
         echo '</div>';
 
-        echo '<div id="'.$name.'_edit_dialog" title="Edit '.$name.'" class="platform_invisible">';
+        echo '<div id="'.$class.'_edit_dialog" title="Edit '.$name.'" class="platform_invisible">';
         $form->render();
         echo '</div>';
         
         $fields = static::getTableFields();
 
-        $table_configuration = UserProperty::getPropertyForCurrentUser('table_configuration', $name.'_table');
+        $table_configuration = UserProperty::getPropertyForCurrentUser('table_configuration', $class.'_table');
         if (! is_array($table_configuration)) {
             // Build default set
             $table_configuration = array();
@@ -1346,7 +1376,7 @@ class Datarecord {
             }
         }
         
-        echo '<div id="'.$name.'_column_dialog" title="'.$name.' columns" class="platform_invisible">';
+        echo '<div id="'.$class.'_column_dialog" title="'.$name.' columns" class="platform_invisible">';
         $datarecord_table->renderColumnSelector();
         echo '</div>';
         
@@ -1542,20 +1572,20 @@ class Datarecord {
     }
     
     /**
+     * Set default render mode, when returning values for this object
+     * @param int $rendermode
+     */
+    public function setDefaultRenderMode($rendermode) {
+        if (in_array($rendermode, array(self::RENDER_RAW, self::RENDER_TEXT, self::RENDER_FULL, self::RENDER_FORM))) $this->default_rendermode = $rendermode;
+    }
+    
+    /**
      * Set values to object as defined in an array
      * @param array $array Field values hashed by field names
      */
     public function setFromArray($array) {
         if (! is_array($array)) return;
         foreach ($array as $key => $value) $this->setValue ($key, $value);
-    }
-    
-    /**
-     * Set default render mode, when returning values for this object
-     * @param int $rendermode
-     */
-    public function setDefaultRenderMode($rendermode) {
-        if (in_array($rendermode, array(self::RENDER_RAW, self::RENDER_TEXT, self::RENDER_FULL, self::RENDER_FORM))) $this->default_rendermode = $rendermode;
     }
     
     /**

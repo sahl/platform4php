@@ -3,13 +3,13 @@ $(function() {
         datarecord_list_edit_complex(
             $(this).data('name'), 
             $(this).data('class'),
-            '#'+$(this).data('name')+'_table',
-            '#'+$(this).data('name')+'_edit_dialog',
-            '#'+$(this).data('name')+'_column_dialog',
-            '#'+$(this).data('name')+'_new_button',
-            '#'+$(this).data('name')+'_edit_button',
-            '#'+$(this).data('name')+'_delete_button',
-            '#'+$(this).data('name')+'_column_select_button'
+            '#'+$(this).data('shortclass')+'_table',
+            '#'+$(this).data('shortclass')+'_edit_dialog',
+            '#'+$(this).data('shortclass')+'_column_dialog',
+            '#'+$(this).data('shortclass')+'_new_button',
+            '#'+$(this).data('shortclass')+'_edit_button',
+            '#'+$(this).data('shortclass')+'_delete_button',
+            '#'+$(this).data('shortclass')+'_column_select_button'
         );
     })
 })

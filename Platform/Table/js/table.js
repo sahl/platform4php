@@ -4,6 +4,11 @@ addCustomPlatformFunction(function(item) {
     $('.platform_table', item).each(function() {
         var element = $(this);
         
+        // Resize this table if the window is resized.
+        $(window).resize(function() {
+            sizeTableContainer(element);
+        })
+        
         var table_configuration = {
             columnResized: function() {
                 saveTableLayout(element.prop('id'));
@@ -118,10 +123,19 @@ function sizeTableContainer(table_container) {
     var table = getTableByID('#'+id);
     var number_of_rows = table.getDataCount(true);
     var header_height = table_container.find('.tabulator-headers').height();
+    // Special zero result case
+    if (! number_of_rows) {
+        table_container.css('height', 90);
+        return;
+    }
     var row_height = table_container.find('.tabulator-row').height();
     var max_height = parseInt(table_container.css('max-height'));
     if (! max_height) max_height = 500;
     console.log('We have '+number_of_rows+' rows available and they are '+row_height+'px high.');
     console.log('Max allowed height is: '+max_height);
-    table_container.css('height', Math.min(max_height, number_of_rows*row_height+header_height+3));
+    // Calculate additional height based of if a scrollbar is shown
+    // TODO: These values are hardcoded and should be calculated
+    var additional_height = container_width < width ? 20 : 3;
+    
+    table_container.css('height', Math.min(max_height, number_of_rows*row_height+header_height+additional_height));
 }
