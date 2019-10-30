@@ -135,7 +135,7 @@ class Instance extends Datarecord {
         $cls = get_called_class();
         $instance = new $cls();
         $instance->title = $title;
-        $instance->save();
+        $instance->save(false, true);
         
         $instance->activate();
         $instance->initializeDatabase();

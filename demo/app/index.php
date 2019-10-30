@@ -39,6 +39,8 @@ echo '<button class="w3-button w3-black w3-hover-teal" data-destination="?action
 echo '</div>';
 echo '</div>';
 
+\Platform\User::renderEditComplex();
+
 echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
