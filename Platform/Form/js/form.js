@@ -19,9 +19,10 @@ addCustomPlatformFunction(function(item) {
         // Gather hidden fields
         var hiddenfields = [];
 
-        $('.form_field:hidden', $(this)).each(function() {
+        $('.platform_form_field:hidden', $(this)).each(function() {
             hiddenfields.push($(this).prop('name'));
         });
+        console.log(hiddenfields);
         if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
 
         if (! allowsubmit) {
@@ -54,9 +55,9 @@ $.fn.clearError = function() {
 }
 
 $.fn.clearForm = function() {
-    this.find('input[type!="hidden"][type!="checkbox"],input[type="hidden"][name!="form_action"][name!="form_name"]').val('');
-    this.find('[type="checkbox"]').prop('checked', false);
-    this.find('select option:first-child').prop('selected', true);
+    this.find('input[type!="hidden"][type!="checkbox"],input[type="hidden"][name!="form_action"][name!="form_name"]').not('.platform_dont_clear').val('');
+    this.find('[type="checkbox"]').not('.platform_dont_clear').prop('checked', false);
+    this.find('select').not('.platform_dont_clear').find('option:first-child').prop('selected', true);
     this.find('.platform_form_multiplier').each(function() {
         $(this).find('.platform_form_multiplier_element:not(:first)').remove();
     });

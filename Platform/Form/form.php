@@ -44,6 +44,7 @@ class Form {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
                     $newfields[] = $formfield;
+                    $field->attachToForm($this);
                 }
                 $inserted = true;
             }
@@ -71,6 +72,7 @@ class Form {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
                     $newfields[] = $formfield;
+                    $field->attachToForm($this);
                 }
                 $inserted = true;
             }
@@ -334,6 +336,38 @@ class Form {
         }
         echo '</form>';
     }
+    
+    /**
+     * Replaces a field in the form with a new field. If no match the field are
+     * inserted last in form
+     * @param \Platform\Field|array<\Platform\Field> $fields Field(s) to add
+     * @param string $fieldname Field name to replace.
+     */
+    public function replaceField($fields, $fieldname) {
+        if (! is_array($fields)) $fields = array($fields);
+        $newfields = array(); $inserted = false;
+        foreach ($this->fields as $formfield) {
+            if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
+                foreach ($fields as $field) {
+                    if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                    $field->attachToForm($this);
+                    $newfields[] = $field;
+                }
+                $inserted = true;
+            } else {
+                $newfields[] = $formfield;
+            }
+        }
+        if (! $inserted) {
+            foreach ($fields as $field) {
+                if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                $field->attachToForm($this);
+                $newfields[] = $formfield;
+            }
+        }
+        $this->fields = $newfields;
+    }
+    
     
     /**
      * Set the base action of the form

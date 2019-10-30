@@ -103,6 +103,10 @@ class Field {
             $this->setOptions($options['options']);
             unset($options['options']);
         }
+        if ($options['dont-clear']) {
+            $this->addClass('platform_dont_clear');
+            unset($options['dont-clear']);
+        }
         if ($options['heading']) {
             $this->setHeading($options['heading']);
             unset($options['heading']);
