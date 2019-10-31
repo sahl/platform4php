@@ -22,7 +22,8 @@ class UserProperty extends Datarecord {
             ),
             'property' => array(
                 'label' => 'Property',
-                'fieldtype' => self::FIELDTYPE_TEXT
+                'fieldtype' => self::FIELDTYPE_TEXT,
+                'key' => 'subproperty'
             ),
             'subproperty' => array(
                 'label' => 'Subproperty',

@@ -24,7 +24,8 @@ class File extends Datarecord {
             ),
             'folder' => array(
                 'label' => 'Folder',
-                'fieldtype' => self::FIELDTYPE_TEXT
+                'fieldtype' => self::FIELDTYPE_TEXT,
+                'key' => true
             ),
             'mimetype' => array(
                 'label' => 'Mimetype',

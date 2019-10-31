@@ -108,6 +108,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
     /**
      * Render an edit complex for fields to add to the given class, which should
      * be of type DatarecordExtensible
+     * TODO: Sorting of fields
      * @param string $class Class
      * @param array $parameters
      */

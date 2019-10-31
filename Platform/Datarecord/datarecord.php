@@ -503,6 +503,52 @@ class Datarecord {
                 }
             }
         }
+        
+        // Gather keys
+        $existing_keys = array();
+        $resultset = self::query("SHOW INDEXES FROM ".static::$database_table);
+        while ($row = fr($resultset)) {
+            if ($row['Key_name'] == 'PRIMARY') continue;
+            $existing_keys[$row['Key_name']][] = $row['Column_name'];
+        }
+        // Check for new keys
+        foreach (static::$structure as $fieldname => $definition) {
+            if ($definition['key']) {
+                $key_name = $fieldname.'_key';
+                if ($definition['key'] === true) {
+                    $key_fields = array($fieldname);
+                } else {
+                    $key_fields = array($fieldname);
+                    foreach (explode(',',$definition['key']) as $key_fieldname) {
+                        $key_fields[] = trim($key_fieldname);
+                    }
+                }
+                // Check if we have such a key
+                if (isset($existing_keys[$key_name])) {
+                    // Check if keys are identical
+                    if (count(array_diff($key_fields, $existing_keys[$key_name])) || count(array_diff($existing_keys[$key_name], $key_fields))) {
+                        // Changed, so we drop the key and rebuild it
+                        self::query('ALTER TABLE '.static::$database_table.' DROP KEY '.$key_name);
+                        self::query('ALTER TABLE '.static::$database_table.' ADD KEY '.$key_name.' ('.implode(',',$key_fields).')');
+                        $changed = true;
+                    }
+                } else {
+                    // We don't have it, so we build it.
+                    self::query('ALTER TABLE '.static::$database_table.' ADD KEY '.$key_name.' ('.implode(',',$key_fields).')');
+                    $changed = true;
+                }
+            }
+        }
+        // Check for expired keys
+        foreach ($existing_keys as $key_name => $key_fields) {
+            $first_field = current($key_fields);
+            if (! static::$structure[$first_field]['key']) {
+                // We found a key that does not exist anymore.
+                self::query('ALTER TABLE '.static::$database_table.' DROP KEY '.$key_name);
+                $changed = true;
+            }
+        }
+        
         return $changed;
     }
 
