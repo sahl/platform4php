@@ -100,7 +100,9 @@ function platform_multiplier_fixnames(element) {
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
-            $(this).prop('name', new_name).prop('id', new_name);
+            var id = $(this).prop('id');
+            var new_id = id.replace(regexp, '$1['+i+']$2');
+            $(this).prop('name', new_name).prop('id', new_id);
             if ($(this).parent().is('.formfield_container')) {
                 $(this).parent().prop('id', new_name+'_container');
                 $(this).parent().find('label').prop('for', new_name);

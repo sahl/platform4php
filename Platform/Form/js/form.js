@@ -35,7 +35,7 @@ addCustomPlatformFunction(function(item) {
         return allowsubmit;
      });
      
-     $('.form_required_field',item).change(function() {
+     $('.platform_form_field',item).change(function() {
          $(this).clearError();
      })
      
@@ -119,4 +119,13 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
             }
         }
     }, 'json');
+}
+
+function add_errors_to_form(form, errors) {
+    $.each(errors, function(form_id, error_message) {
+        form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
+        console.log('Trying to assign error '+error_message+' to ID: '+form_id);
+        console.log('Searching got '+$('#'+form_id).length+' results');
+        $('#'+form_id, form).setError(error_message);
+    })
 }

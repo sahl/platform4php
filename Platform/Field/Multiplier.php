@@ -17,6 +17,26 @@ class FieldMultiplier extends Field {
         }
         parent::__construct($label, $name, $options);
     }
+    
+    /**
+     * Add errors from this field to the given array
+     * @param array $error_array Array to add to
+     */
+    public function addErrors(&$error_array) {
+        for ($i = 0; $i < count($this->value)+1; $i++) {
+            foreach ($this->contained_fields as $field) {
+                // Store old field name
+                $old_field_name = $field->getName();
+                // Generate new field name
+                $field->setName($this->getName().'['.$i.']['.$old_field_name.']');
+                if (isset($this->error_cache[$i][$old_field_name])) {
+                    $error_array[$field->getFieldIdForHTML ()] = $this->error_cache[$i][$old_field_name];
+                }
+                $field->setName($old_field_name);
+            }
+        }
+    }
+    
 
     /**
      * Add one or more fields to this multiplier
@@ -54,6 +74,15 @@ class FieldMultiplier extends Field {
         $this->addFields(Form::parseFieldsFromText($text));
     }
     
+    /**
+     * Check if this field is in error
+     * @return boolean
+     */
+    public function isError() {
+        return count($this->error_cache) > 0;
+    }
+    
+    
     public function parse($values) {
         $totalresult = true;
         // Always remove last entry as it is empty
@@ -80,7 +109,7 @@ class FieldMultiplier extends Field {
     
     public function renderInput() {
         for ($i = 0; $i < count($this->value)+1; $i++) {
-            echo '<div class="platform_form_multiplier_element" id="'.$this->getFieldIdForHTML().'">';
+            echo '<div class="platform_form_multiplier_element formfield_container" id="'.$this->getFieldIdForHTML().'">';
             foreach ($this->contained_fields as $field) {
                 // Store old field name
                 $old_field_name = $field->getName();

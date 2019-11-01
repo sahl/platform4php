@@ -106,7 +106,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
                 } 
                 $(edit_dialog).dialog('close');
             } else {
-                warningDialog('Error while saving', 'The following error occured while saving: '+data.errormessage);
+                add_errors_to_form(form, data.errors);
             }
         }, 'json');
         return false;

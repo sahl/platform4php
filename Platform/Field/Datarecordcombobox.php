@@ -60,8 +60,8 @@ class FieldDatarecordcombobox extends FieldCombobox {
     
     public function renderInput() {
         if (! is_array($this->value)) $this->value = array();
-        echo '<input type="hidden" name="'.$this->name.'[id]" id="'.$this->getFieldIdForHTML().'" value="'.$this->value['id'].'">';
-        echo '<input class="'.$this->getClassString().'" type="text" name="'.$this->name.'[visual]" value="'.$this->value['visual'].'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
+        echo '<input type="hidden" name="'.$this->name.'[id]" value="'.$this->value['id'].'">';
+        echo '<input id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().'" type="text" name="'.$this->name.'[visual]" value="'.$this->value['visual'].'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
     }
     
     public function setValue($value) {

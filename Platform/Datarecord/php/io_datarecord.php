@@ -23,13 +23,17 @@ else {
                 'errormessage' => 'Requested data not available'
             );
         }
-    } elseif ($_POST['form_action'] == 'datarecord_save' && $form->isSubmitted () && $form->validate ()) {
-        $values = $form->getValues();
-        $datarecord = new $class();
-        if ($values[$datarecord->getKeyField()]) $datarecord->loadForWrite($values[$datarecord->getKeyField()]);
-        $datarecord->setFromArray($values);
-        $datarecord->save();
-        $result = array('status' => 1);
+    } elseif ($_POST['form_action'] == 'datarecord_save' && $form->isSubmitted ()) {
+        if ($form->validate ()) {
+            $values = $form->getValues();
+            $datarecord = new $class();
+            if ($values[$datarecord->getKeyField()]) $datarecord->loadForWrite($values[$datarecord->getKeyField()]);
+            $datarecord->setFromArray($values);
+            $datarecord->save();
+            $result = array('status' => 1);
+        } else {
+            $result = array('status' => 0, 'errors' => $form->getAllErrors());
+        }
     } elseif ($_POST['action'] == 'datarecord_delete') {
         $result = array('status' => 1);
         foreach (json_decode($_POST['ids']) as $id) {

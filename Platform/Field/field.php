@@ -155,6 +155,14 @@ class Field {
     }
     
     /**
+     * Add errors from this field to the given array
+     * @param array $error_array Array to add to
+     */
+    public function addErrors(&$error_array) {
+        if ($this->isError()) $error_array[$this->getFieldIdForHTML ()] = $this->getErrorText ();
+    }
+    
+    /**
      * Attach this field to a form
      * @param \Platform\Form $form
      */
@@ -232,6 +240,14 @@ class Field {
      */
     public function getValue() {
         return $this->value;
+    }
+    
+    /**
+     * Check if this field is in error
+     * @return boolean
+     */
+    public function isError() {
+        return $this->is_error;
     }
     
     /**

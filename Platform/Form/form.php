@@ -112,6 +112,17 @@ class Form {
     }
     
     /**
+     * Get all errors hashed by field ids
+     */
+    public function getAllErrors() {
+        $errors = array();
+        foreach ($this->fields as $field) {
+            if ($field->isError()) $field->addErrors($errors);
+        }
+        return $errors;
+    }
+    
+    /**
      * Get a field from the form by name. If a multiplier is present in the form
      * a field from that can be found by using a name on the following form:
      * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER
