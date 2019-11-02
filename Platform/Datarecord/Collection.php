@@ -70,6 +70,20 @@ class DatarecordCollection {
     }
     
     /**
+     * Get all titles from the objects in this collection hashed by their IDs
+     * @return array
+     */
+    public function getAllAsArray() {
+        $result = array();
+        $class = new $this->collectiontype();
+        $keyfield = $class->getKeyField();
+        foreach ($this->getAll() as $object) {
+            $result[$object->getRawValue($keyfield)] = $object->getTitle();
+        }
+        return $result;
+    }
+    
+    /**
      * Get all Datarecords from this collection in an array hashed by the object
      * id.
      * @return array
@@ -160,6 +174,7 @@ class DatarecordCollection {
     /**
      * Sort this datacollection according to the given field
      * @param string $fields Fields to sort by. If several fields are given use comma as a separator.
+     * @return DatarecordCollection Return itself so it can be chained to another command
      */
     public function sort($fields) {
         $sort_array = array();
@@ -171,5 +186,6 @@ class DatarecordCollection {
             $sort_array[] = $finalvalue;
         }
         array_multisort($sort_array, SORT_ASC, $this->datarecords);
+        return $this;
     }
 }

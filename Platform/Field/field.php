@@ -120,6 +120,11 @@ class Field {
             unset($options['containerclass']);
         }        
         
+        if ($options['autofocus']) {
+            $this->addClass('platform_autofocus');
+            unset($options['platform_autofocus']);
+        }
+        
         if ($this->is_required) $this->classes[] = 'form_required_field';
         
         foreach ($options as $key => $val) {

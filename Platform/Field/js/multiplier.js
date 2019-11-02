@@ -12,8 +12,8 @@ addCustomPlatformFunction(function(item) {
 
 
 function platform_add_multiplier_functionality(element) {
-    $(element).find('input,textarea').blur(platform_handle_multiplier_change);
-    $(element).find('input,textarea').keyup(platform_handle_multiplier_expand);
+    $(element).find('input[type!="checkbox"],textarea').blur(platform_handle_multiplier_change);
+    $(element).find('input[type!="checkbox"],textarea').keyup(platform_handle_multiplier_expand);
     $(element).find('input[type="checkbox"]').click(platform_handle_multiplier_change);
     $(element).find('select').change(platform_handle_multiplier_change);
 }
@@ -35,6 +35,7 @@ function platform_detect_values(element) {
 }
 
 function platform_handle_multiplier_expand() {
+    console.log('expand '+$(this).prop('id'));
     var row = $(this).closest('.platform_form_multiplier_element');
     // Check if we need to expand
     if (row.next().is(':last-child') && $(this).val() != '') {
@@ -50,15 +51,19 @@ function platform_handle_multiplier_expand() {
         row.closest('.platform_form_multiplier').trigger('row_added');
         platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));
     }
+    return true;
 }
 
 function platform_handle_multiplier_change() {
+    console.log('change '+$(this).prop('id'));
     var row = $(this).closest('.platform_form_multiplier_element');
     // Check if we need to expand
     if (row.next().is(':last-child') && $(this).val() != '') {
+        console.log('change-exp '+$(this).prop('id'));
         // We need to expand.
         var new_row = row.clone();
-        new_row.appendTo($(this).closest('.platform_form_multiplier'));
+        new_row.insertAfter(row);
+        //new_row.appendTo($(this).closest('.platform_form_multiplier'));
         new_row.find('textarea,input[type!="checkbox"]').val('');
         new_row.find('input[type="checkbox"]').attr('checked', false);
         platform_add_multiplier_functionality(new_row);
@@ -67,16 +72,18 @@ function platform_handle_multiplier_change() {
     } else {
         // Check if we need to collapse
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! row.next().is(':last-child')) {
+            console.log('change-col '+$(this).prop('id'));
             var container = $(this).closest('.platform_form_multiplier');
             if (row.next().is(':last-child'))
-                row.prev().find('input').focus();
+                row.prev().find('input:first').focus();
             else
-                row.next().find('input').focus();
+                row.next().find('input:first').focus();
             row.remove();
             platform_multiplier_fixnames(container);
             container.trigger('row_deleted');
         }
     }
+    return true;
 }
 
 function platform_multiplier_fixnames(element) {

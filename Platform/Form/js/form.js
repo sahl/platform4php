@@ -22,7 +22,6 @@ addCustomPlatformFunction(function(item) {
         $('.platform_form_field:hidden', $(this)).each(function() {
             hiddenfields.push($(this).prop('name'));
         });
-        console.log(hiddenfields);
         if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
 
         if (! allowsubmit) {
@@ -34,15 +33,20 @@ addCustomPlatformFunction(function(item) {
          
         return allowsubmit;
      });
-     
+
+    // Clear errors when changing fields
      $('.platform_form_field',item).change(function() {
          $(this).clearError();
-     })
-     
+     });
+          
+     // Indicate on password-field when it is updated.
      $('.platform-password',item).change(function() {
          $(this).closest('.formfield_container').find('input[type="hidden"]').val(1);
          return true;
      });
+     
+     // Focus on auto-focus field
+     $('.platform_autofocus:first').focus();
 });
 
 

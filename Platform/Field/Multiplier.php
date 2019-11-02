@@ -8,7 +8,7 @@ class FieldMultiplier extends Field {
     private $error_cache = array();
     
     public function __construct($label = '', $name = '', $options = array()) {
-        $this->classes[] = 'w3-input';
+        $this->classes[] = 'platform_form_multiplier_element formfield_container';
         $this->container_classes[] = 'platform_form_multiplier';
         $this->value = array();
         if ($options['sortable']) {
@@ -109,7 +109,7 @@ class FieldMultiplier extends Field {
     
     public function renderInput() {
         for ($i = 0; $i < count($this->value)+1; $i++) {
-            echo '<div class="platform_form_multiplier_element formfield_container" id="'.$this->getFieldIdForHTML().'">';
+            echo '<div class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" '.$this->additional_attributes.'>';
             foreach ($this->contained_fields as $field) {
                 // Store old field name
                 $old_field_name = $field->getName();
