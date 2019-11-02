@@ -224,6 +224,8 @@ class Datarecord {
         $this->access_mode = self::MODE_READ;
         $this->unlock();
         
+        $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
+        
         if ($force_remove || static::$delete_strategy == self::DELETE_STRATEGY_REMOVE_REFERENCES || static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
             // Find all objects referring this
             foreach (static::$referring_classes as $referring_class) {
@@ -262,7 +264,7 @@ class Datarecord {
             }
         }
         
-        return (static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected()) > 0;
+        return $number_of_items_deleted > 0;
     }
     
     /**
@@ -896,6 +898,8 @@ class Datarecord {
             case self::FIELDTYPE_TEXT:
             case self::FIELDTYPE_BIGTEXT:
                 return str_replace('\\n', '<br>', htmlentities($this->getRawValue($field)));
+            case self::FIELDTYPE_BOOLEAN:
+                return $this->getRawValue($field) ? 'Yes' : 'No';
             default:
                 return $this->getRawValue($field);
         }

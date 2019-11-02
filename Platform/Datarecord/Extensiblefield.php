@@ -78,6 +78,13 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
         parent::buildStructure();
     }
     
+    public function delete($force_remove = false) {
+        if (parent::delete($force_remove)) {
+            $class = '\\'.$this->class;
+            $class::ensureInDatabase();
+        }
+    }
+    
     /**
      * Get available field types for extensible fields
      * @return array
