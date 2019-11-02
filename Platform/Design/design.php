@@ -118,6 +118,7 @@ class Design {
     private static $style_array = array(
         'datarecord_editcomplex' => 'platform_autocenter',
         'formfield' => 'w3-input',
+        'formfield_checkbox' => 'w3-check',
         'file_input_frame' => '',
         'platform_table' => 'platform_autocenter',
         
