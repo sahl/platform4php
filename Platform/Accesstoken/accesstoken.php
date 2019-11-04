@@ -53,21 +53,24 @@ class Accesstoken extends Datarecord {
     
     /**
      * Clear token information from session.
+     * @param boolean $destroy_entire_session If this is set to true, then we destroy the entire PHP session
      */
-    private static function clearSession() {
-        unset($_SESSION['token_code']);
+    private static function clearSession($destroy_entire_session = false) {
+        if ($destroy_entire_session) $_SESSION = array();
+        else unset($_SESSION['token_code']);
     }
     
     /**
      * Destroy current session effectually logging out the user.
+     * @param boolean $destroy_entire_session If this is set to true, then we destroy the entire PHP session
      */
-    public static function destroySession() {
+    public static function destroySession($destroy_entire_session = true) {
         $accesstoken = self::getByTokencode(self::getSavedTokenCode());
         // Nothing to destroy
         if (! $accesstoken->isInDatabase()) return;
         // Destroy it
         Accesstoken::deleteByID($accesstoken->token_id);
-        Accesstoken::clearSession();
+        Accesstoken::clearSession($destroy_entire_session);
     }
 
     /**
