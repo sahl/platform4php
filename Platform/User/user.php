@@ -7,7 +7,10 @@ class User extends Datarecord {
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_INSTANCE;
-    protected static $referring_classes = array(
+    
+    protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
+    
+    protected static $depending_classes = array(
         'Platform\\Accesstoken',
         'Platform\\UserProperty',
     );
@@ -30,6 +33,7 @@ class User extends Datarecord {
             ),
             'password' => array(
                 'label' => 'Password',
+                'required' => true,
                 'fieldtype' => self::FIELDTYPE_PASSWORD
             )
         ));

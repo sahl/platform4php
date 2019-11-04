@@ -7,7 +7,7 @@ class Instance extends Datarecord {
     protected static $structure = false;
     protected static $key_field = false;
     
-    protected static $referring_classes = array(
+    protected static $depending_classes = array(
         'Platform\Job'
     );
     

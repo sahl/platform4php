@@ -9,8 +9,7 @@ class Datarecord {
     const COLUMN_DEFAULTSHOWN = 0;
     
     const DELETE_STRATEGY_BLOCK = 0;
-    const DELETE_STRATEGY_REMOVE_REFERENCES = 1;
-    const DELETE_STRATEGY_PURGE_REFERERS = 2;
+    const DELETE_STRATEGY_PURGE_REFERERS = 1;
     
     // Object locations
     const LOCATION_GLOBAL = 0;
@@ -89,6 +88,12 @@ class Datarecord {
      * @var array 
      */
     protected static $referring_classes = array();
+    
+    /**
+     * Names of all classes depending on this class
+     * @var type 
+     */
+    protected static $depending_classes = array();
 
     /**
      * Is populated with the structure of the data record
@@ -181,6 +186,7 @@ class Datarecord {
     
     /**
      * Check if this object can be accessed.
+     * This is a soft check, which doesn't affect the inner workings of this object.
      * @return boolean
      */
     public function canAccess() {
@@ -188,7 +194,18 @@ class Datarecord {
     }
     
     /**
+     * Check if a new instance of this object can be created.
+     * This is a soft check, which doesn't affect the inner workings of this object.
+     * @return boolean
+     */
+    public static function canCreate() {
+        return true;
+    }
+    
+    /**
      * Check if this object can be deleted
+     * This is a hard check, where a value of true will prevent the object from
+     * deleting (except when overriding this behaviour)
      * @return boolean|string True or an error message
      */
     public function canDelete() {
@@ -208,15 +225,24 @@ class Datarecord {
     }
     
     /**
+     * Check if this object can be edited
+     * This is a soft check, which doesn't affect the inner workings of this object.
+     * @return boolean
+     */
+    public function canEdit() {
+        return true;
+    }
+    
+    /**
      * Delete this record from the database.
-     * @param boolean $force_remove Force a removal of references if object is configured for blocking only.
+     * @param boolean $force_purge Force a purge of references even if object is configured for blocking only.
      * @return boolean True if something was actually deleted.
      */
-    public function delete($force_remove = false) {
+    public function delete($force_purge = false) {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
         
-        if (! $force_remove && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
+        if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
         
         self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
         $deleted_id = $this->values[static::getKeyField()];
@@ -226,42 +252,52 @@ class Datarecord {
         
         $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
         
-        if ($force_remove || static::$delete_strategy == self::DELETE_STRATEGY_REMOVE_REFERENCES || static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
-            // Find all objects referring this
-            foreach (static::$referring_classes as $referring_class) {
-                // Build a filter to find all referers
-                $referer_field_found = false;
-                $filter = new Filter($referring_class);
-                foreach ($referring_class::getStructure() as $key => $definition) {
-                    if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
-                        $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
-                        $referer_field_found = true;
-                    }
-                }
-                // Bail if remote object doesn't have fields pointing at us.
-                if (! $referer_field_found) continue;
-                // Get all objects referring this
-                $referring_objects = $filter->execute();
-                if (static::$delete_strategy == self::DELETE_STRATEGY_PURGE_REFERERS) {
-                    $referring_objects->deleteAll();
-                } else {
-                    foreach ($referring_objects->getAll() as $referring_object) {
-                        $referring_object->reloadForWrite();
-                        foreach ($referring_class::getStructure() as $key => $definition) {
-                            if ($definition['foreignclass'] == get_called_class()) {
-                                if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
-                                    if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
-                                } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
-                                    $values = $referring_object->getRawValue($key);
-                                    array_remove($values, $deleted_id);
-                                    $referring_object->setValue($key, $values);
-                                }
-                            }
-                        }
-                        $referring_object->save();
-                    }
+        // Find all objects referring this
+        foreach (static::$referring_classes as $depending_class) {
+            // Build a filter to find all referers
+            $referer_field_found = false;
+            $filter = new Filter($depending_class);
+            foreach ($depending_class::getStructure() as $key => $definition) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                    $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
+                    $referer_field_found = true;
                 }
             }
+            // Bail if remote object doesn't have fields pointing at us.
+            if (! $referer_field_found) continue;
+            // Get all objects referring this
+            $depending_objects = $filter->execute();
+            foreach ($depending_objects->getAll() as $referring_object) {
+                $referring_object->reloadForWrite();
+                foreach ($depending_class::getStructure() as $key => $definition) {
+                    if ($definition['foreignclass'] == get_called_class()) {
+                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
+                            if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
+                        } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
+                            $values = $referring_object->getRawValue($key);
+                            array_remove($values, $deleted_id);
+                            $referring_object->setValue($key, $values);
+                        }
+                    }
+                }
+                $referring_object->save();
+            }
+        }
+        foreach (static::$depending_classes as $depending_class) {
+            // Build a filter to find all referers
+            $referer_field_found = false;
+            $filter = new Filter($depending_class);
+            foreach ($depending_class::getStructure() as $key => $definition) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                    $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
+                    $referer_field_found = true;
+                }
+            }
+            // Bail if remote object doesn't have fields pointing at us.
+            if (! $referer_field_found) continue;
+            // Get all objects referring this
+            $depending_objects = $filter->execute();
+            $depending_objects->deleteAll();
         }
         
         return $number_of_items_deleted > 0;
@@ -1397,12 +1433,13 @@ class Datarecord {
         
         echo '<div class="'.Design::getClass('datarecord_editcomplex', 'platform_render_edit_complex').'" data-name="'.$name.'" data-shortclass="'.$class.'" data-class="'.get_called_class().'">';
         
-        $menu = array(
-            $class.'_new_button' => 'Create new '.$name,
-            $class.'_edit_button' => 'Edit selected '.$name,
-            $class.'_delete_button' => 'Delete selected '.$name,
-            $class.'_column_select_button' => 'Select columns'
-        );
+        $menu = array();
+        if (static::canCreate()) $menu[$class.'_new_button'] = 'Create new '.$name;
+        
+        $menu[$class.'_edit_button'] = 'Edit selected '.$name;
+        $menu[$class.'_delete_button'] = 'Delete selected '.$name;
+        $menu[$class.'_column_select_button'] = 'Select columns';
+
         $datarecord_menu = new Menu($menu);
         
         $datarecord_menu->renderAsMenubutton();
@@ -1451,13 +1488,13 @@ class Datarecord {
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
                     if (! $definition['foreignclass']) $errors[] = $field.': Reference without foreign class';
                     elseif (!class_exists($definition['foreignclass'])) $errors[] = $field.': Reference to class which doesn\'t exists.';
-                    elseif (! in_array(get_called_class(), $definition['foreignclass']::$referring_classes)) $errors[] = 'Remote class '.$definition['foreignclass'].' doesn\'t list this as a referer, even though we refer in field: <i>'.$field.'</i>';
+                    elseif (! in_array(get_called_class(), $definition['foreignclass']::$referring_classes) && ! in_array(get_called_class(), $definition['foreignclass']::$depending_classes)) $errors[] = 'Remote class '.$definition['foreignclass'].' doesn\'t list this as a referer or dependent class, even though we refer in field: <i>'.$field.'</i>';
                     break;
             }
         }
-        // Check foreign classes
+        // Check referring classes
         foreach (static::$referring_classes as $foreign_class) {
-            if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a foreign class, but the class doesn\'t exist.';
+            if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a referring class, but the class doesn\'t exist.';
             else {
                 $hit = false;
                 foreach ($foreign_class::getStructure() as $field => $definition) {
@@ -1466,10 +1503,23 @@ class Datarecord {
                         break;
                     }
                 }
-                if (! $hit) $errors[] = 'Have <i>'.$foreign_class.'</i> as a foreign class, but that class doesn\'t refer this class.';
+                if (! $hit) $errors[] = 'Have <i>'.$foreign_class.'</i> as a referring class, but that class doesn\'t refer this class.';
             }
         }
-        echo '<ul>';
+        // Check depending classes
+        foreach (static::$depending_classes as $foreign_class) {
+            if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a depending class, but the class doesn\'t exist.';
+            else {
+                $hit = false;
+                foreach ($foreign_class::getStructure() as $field => $definition) {
+                    if ($definition['foreignclass'] == get_called_class()) {
+                        $hit = true;
+                        break;
+                    }
+                }
+                if (! $hit) $errors[] = 'Have <i>'.$foreign_class.'</i> as a depending class, but that class doesn\'t refer this class.';
+            }
+        }        echo '<ul>';
         if (! count($errors) && ! count($warnings)) echo '<li><span style="color: green;">All OK</span>';
         foreach ($errors as $error) echo '<li><span style="color: red;">'.$error.'</span>';
         foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$error.'</span>';
@@ -1657,7 +1707,7 @@ class Datarecord {
                 break;
             case self::FIELDTYPE_ENUMERATION:
                 // Fail if trying to set invalid value.
-                if ($value && ! isset(static::$structure[$field]['enumeration'][$value])) trigger_error('Tried to set invalid ENUMERATION value '.$value.' in field: '.$field, E_USER_ERROR);
+                if ($value !== null && ! isset(static::$structure[$field]['enumeration'][$value])) trigger_error('Tried to set invalid ENUMERATION value '.$value.' in field: '.$field, E_USER_ERROR);
                 $this->values[$field] = (int)$value;
                 break;
             case self::FIELDTYPE_INTEGER:
@@ -1761,6 +1811,14 @@ class Datarecord {
                 $this->setValue($key, $value);
             }
         }
+    }
+    
+    /**
+     * Perform additional validation of the edit form
+     * @return boolean
+     */
+    public static function validateForm($form) {
+        return true;
     }
     
 

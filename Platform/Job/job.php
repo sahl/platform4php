@@ -6,9 +6,8 @@ namespace Platform;
 class Job extends \Platform\Datarecord {
     
     protected static $database_table = 'jobs';
-    protected static $delete_strategy = self::DELETE_STRATEGY_REMOVE_REFERENCES;
+    protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
     protected static $referring_classes = array(
-        
     );
 
     protected static $location = self::LOCATION_GLOBAL;

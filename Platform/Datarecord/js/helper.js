@@ -21,12 +21,17 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
     // Additional data rows
     table.addColumn({
         formatter: function(cell, formatterParams) {
-            return '<i class="fa fa-trash"></i>';
+            if (cell.getValue() == 1)
+                return '<i class="fa fa-trash"></i>';
+            else
+                return '';
         },
+        field: 'platform_can_delete',
         width: 40,
         headerSort:false,
         align: 'center',
         cellClick: function(e, cell) {
+            if (cell.getValue() != 1) return;
             confirmDialog('Delete '+name, 'You are about to delete the selected '+name+'(s)', function() {
                 $.post(script, {action: 'datarecord_delete', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
                     if (data.status == 0) {
@@ -41,12 +46,17 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
     }, false, 'checkboxcolumn');
     table.addColumn({
         formatter: function(cell, formatterParams) {
-            return '<i class="fa fa-pencil"></i>';
+            if (cell.getValue() == 1)
+                return '<i class="fa fa-pencil"></i>';
+            else
+                return '';
         },
+        field: 'platform_can_edit',
         width: 40,
         headerSort:false,
         align: 'center',
         cellClick: function(e, cell) {
+            if (cell.getValue() != 1) return;
             $(form).clearForm();
             $(form).loadValues(script, {action: 'datarecord_load', id: cell.getRow().getIndex(), __class: classname}, function() {
                 $(edit_dialog).dialog('option', 'title', 'Edit '+name).dialog('open');

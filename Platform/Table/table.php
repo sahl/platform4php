@@ -67,6 +67,8 @@ class Table {
                         $columns[$field] = $value;
                 }
             }
+            $columns['platform_can_delete'] = $object->canDelete() === true ? 1 : 0;
+            $columns['platform_can_edit'] = $object->canEdit() ? 1 : 0;
             $result[] = $columns;
         }
         return $result;

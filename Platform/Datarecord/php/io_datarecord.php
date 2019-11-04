@@ -7,16 +7,25 @@ if (!class_exists($class)) $result = array('status' => 0, 'errormessage' => 'Inv
 else {
     $form = $class::getForm();
     
+    $form->addValidationFunction($class.'::validateForm');
+    
     $result = array('status' => 0, 'errormessage' => 'Unresolved action');
 
     if ($_POST['action'] == 'datarecord_load') {
         $datarecord = new $class();
         $datarecord->loadForRead($_POST['id']);
         if ($datarecord->isInDatabase()) {
-            $result = array(
-                'status' => 1,
-                'data' => $datarecord->getAsArrayForForm()
-            );
+            if ($datarecord->canEdit()) {
+                $result = array(
+                    'status' => 1,
+                    'data' => $datarecord->getAsArrayForForm()
+                );
+            } else {
+                $result = array(
+                    'status' => 0,
+                    'errormessage' => 'You don\'t have permissions to edit this '.$datarecord->getObjectName()
+                );
+            }
         } else {
             $result = array(
                 'status' => 0,
@@ -28,9 +37,12 @@ else {
             $values = $form->getValues();
             $datarecord = new $class();
             if ($values[$datarecord->getKeyField()]) $datarecord->loadForWrite($values[$datarecord->getKeyField()]);
-            $datarecord->setFromArray($values);
-            $datarecord->save();
-            $result = array('status' => 1);
+            if (! $datarecord->canEdit() || ! $class::canCreate() && ! $datarecord->isInDatabase()) $result = array('status' => 0, 'message' => 'You don\'t have permissions to edit this '.$datarecord->getObjectName());
+            else {
+                $datarecord->setFromArray($values);
+                $datarecord->save();
+                $result = array('status' => 1);
+            }
         } else {
             $result = array('status' => 0, 'errors' => $form->getAllErrors());
         }

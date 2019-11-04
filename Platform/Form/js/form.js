@@ -75,14 +75,14 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
     var element = this;
     $.post(script, parameters, function(data) {
         if (data.status == 0) {
-            warningDialog('Error loading data', 'Error loading data from '+script+'.<br>'+data.errormessage);
+            warningDialog('Error loading data', data.errormessage);
         } else {
             $.each(data.data, function(key, value) {
                 var el = element.find('[name="'+key+'"]');
                 if (el.length) {
                     if (el.is('input')) el.val(value);
                     else if (el.is('select')) {
-                        if (value) el.val(value);
+                        if (value !== null) el.val(value);
                         else el.find('option:first-child').prop('selected', true);
                     }
                 } else {
