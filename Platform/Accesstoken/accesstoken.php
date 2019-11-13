@@ -110,7 +110,7 @@ class Accesstoken extends Datarecord {
      * Get the saved token code from session
      * @return string
      */
-    private static function getSavedTokenCode() {
+    public static function getSavedTokenCode() {
         return $_SESSION['token_code'];
     }
     

@@ -69,7 +69,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
     // Capture edit form
     var form = $(edit_dialog).find('form');
     // Set objective
-    form.find('input[name="form_action"]').val('datarecord_save');
+    form.find('input[name="form_event"]').val('datarecord_save');
     form.prepend('<input type="hidden" name="__class" value="'+classname+'">');
     // Init dialogs
     $(edit_dialog).platformDialog([

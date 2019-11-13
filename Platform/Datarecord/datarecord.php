@@ -776,7 +776,7 @@ class Datarecord {
         $baseclass = strtolower(strpos(get_called_class(), '\\') !== false ? substr(get_called_class(), strrpos(get_called_class(), '\\')+1) : get_called_class());
         // Build form
         $form = new Form($baseclass.'_form');
-        $form->setAction('save_'.$baseclass);
+        $form->setEvent('save_'.$baseclass);
         $form->addField(new FieldHidden('', static::getKeyField()));
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {

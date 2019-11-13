@@ -88,7 +88,7 @@ class Field {
      * @param array $options Field options
      */
     public function __construct($label, $name, $options = array()) {
-        if (in_array($name, array('form_action', 'form_name', 'form_hidden_fields'))) trigger_error('Used reserved form name', E_USER_ERROR);
+        if (in_array($name, array('form_event', 'form_name', 'form_hidden_fields'))) trigger_error('Used reserved form name', E_USER_ERROR);
         $this->label = $label;
         $this->name = $name;
         if ($options['required']) {

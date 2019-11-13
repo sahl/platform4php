@@ -9,7 +9,9 @@ class Form {
     
     private $validationfunctions = array();
     
-    private $action = 'submit';
+    private $action = '';
+    
+    private $event = 'submit';
     
     public function __construct($form_id, $filename = '') {
         $this->form_id = $form_id;
@@ -336,9 +338,9 @@ class Form {
      * Render the form
      */
     public function render() {
-        echo '<form id="'.$this->form_id.'" method="post" class="platform_form">';
+        echo '<form id="'.$this->form_id.'" method="post" class="platform_form" action="'.$this->action.'">';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
-        echo '<input type="hidden" name="form_action" value="submit">';
+        echo '<input type="hidden" name="form_event" value="'.$this->event.'">';
         echo '<input type="hidden" name="form_hiddenfields" value="">';
            
         foreach ($this->fields as $field) {
@@ -381,11 +383,19 @@ class Form {
     
     
     /**
-     * Set the base action of the form
-     * @param type $action
+     * Set the action of the form
+     * @param string $action
      */
     public function setAction($action) {
         $this->action = $action;
+    }
+    
+    /**
+     * Set the event to transmit with the form
+     * @param string $event
+     */
+    public function setEvent($event) {
+        $this->event = $event;
     }
     
     /**

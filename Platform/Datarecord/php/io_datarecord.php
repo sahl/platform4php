@@ -32,7 +32,7 @@ else {
                 'errormessage' => 'Requested data not available'
             );
         }
-    } elseif ($_POST['form_action'] == 'datarecord_save' && $form->isSubmitted ()) {
+    } elseif ($_POST['form_event'] == 'datarecord_save' && $form->isSubmitted ()) {
         if ($form->validate ()) {
             $values = $form->getValues();
             $datarecord = new $class();

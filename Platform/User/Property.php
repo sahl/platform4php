@@ -37,10 +37,23 @@ class UserProperty extends Datarecord {
         parent::buildStructure();
     }
     
+    /**
+     * Get a property for the current user
+     * @param string $property Property to return
+     * @param string $subproperty Subproperty to return
+     * @return mixed Property value
+     */
     public static function getPropertyForCurrentUser($property, $subproperty = '') {
         return static::getPropertyForUser(Accesstoken::getCurrentUserID(), $property, $subproperty);
     }
     
+    /**
+     * Get a property for a specific user or the system
+     * @param int $userid The ID of the user or 0 for a system property
+     * @param string $property Property to return
+     * @param string $subproperty Property to return
+     * @return mixed Property value
+     */
     public static function getPropertyForUser($userid, $property, $subproperty = '') {
         $qr = fq("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".esc($property)."' AND subproperty = '".esc($subproperty)."'");
         $userproperty = new UserProperty();
@@ -48,16 +61,29 @@ class UserProperty extends Datarecord {
         return $userproperty->value;
     }
     
-    public static function setPropertyForCurrentUser($property, $subproperty, $value = false) {
+    /**
+     * Set a property for the current user
+     * @param string $property Property to set
+     * @param string $subproperty Subproperty to set
+     * @param mixed $value Value to set (or null to remove existing)
+     */
+    public static function setPropertyForCurrentUser($property, $subproperty, $value = null) {
         static::setPropertyForUser(Accesstoken::getCurrentUserID(), $property, $subproperty, $value);
     }
 
-    public static function setPropertyForUser($userid, $property, $subproperty, $value = false) {
+    /**
+     * Set a property to a given user or the system
+     * @param int $userid The ID of the user or 0 for a system property
+     * @param string $property Property to set
+     * @param string $subproperty Subproperty to set
+     * @param mixed $value Value to set (or null to remove existing)
+     */
+    public static function setPropertyForUser($userid, $property, $subproperty, $value = null) {
         $qr = fq("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".esc($property)."' AND subproperty = '".esc($subproperty)."'");
         $userproperty = new UserProperty();
         $userproperty->loadFromDatabaseRow($qr);
         $userproperty->forceWritemode();
-        if (! $value) $userproperty->delete();
+        if ($value === null) $userproperty->delete();
         else {
             if (! $userproperty->isInDatabase()) {
                 $userproperty->user_ref = $userid;
