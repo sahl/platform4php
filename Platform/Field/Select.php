@@ -13,7 +13,7 @@ class FieldSelect extends Field {
         echo '<option value="">'.$this->heading;
         foreach ($this->options as $key => $option) {
             $selected = $key == $this->value ? ' selected' : '';
-            echo '<option value="'.$key.'"'.$selected.'>'.$option;
+            echo '<option value="'.htmlentities($key, ENT_QUOTES).'"'.$selected.'>'.$option;
         }
         echo '</select>';
     }

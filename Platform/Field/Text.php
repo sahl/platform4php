@@ -9,6 +9,6 @@ class FieldText extends Field {
     }
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="text" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value.'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" type="text" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
 }

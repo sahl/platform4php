@@ -15,7 +15,7 @@ class FieldCombobox extends Field {
     }
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="text" id="'.$this->getFieldIdForHTML().'" name="'.$this->name.'" value="'.$this->value.'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
+        echo '<input class="'.$this->getClassString().'" type="text" id="'.$this->getFieldIdForHTML().'" name="'.$this->name.'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
     }
     
     public function setDatasource($datasource) {
