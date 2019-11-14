@@ -885,7 +885,8 @@ class Datarecord {
                 return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_ENUMERATION:
-                return $this->getRawValue($field);
+            case self::FIELDTYPE_BOOLEAN:
+                return $this->getRawValue($field) ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 // Bail of no values
                 if (! count($this->getRawValue($field))) return array();

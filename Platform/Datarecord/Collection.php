@@ -75,6 +75,7 @@ class DatarecordCollection {
      */
     public function getAllAsArray() {
         $result = array();
+        if (! $this->getCount()) return array();
         $class = new $this->collectiontype();
         $keyfield = $class->getKeyField();
         foreach ($this->getAll() as $object) {

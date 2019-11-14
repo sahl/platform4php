@@ -82,7 +82,13 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
             $.each(data.data, function(key, value) {
                 var el = element.find('[name="'+key+'"]');
                 if (el.length) {
-                    if (el.is('input')) el.val(value);
+                    if (el.is('input')) {
+                        if (el.is('[type=checkbox]')) {
+                            el.prop('checked', value == 1);
+                        } else {
+                            el.val(value);
+                        }
+                    }
                     else if (el.is('select')) {
                         if (value !== null) el.val(value);
                         else el.find('option:first-child').prop('selected', true);
