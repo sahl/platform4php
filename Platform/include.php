@@ -42,6 +42,7 @@ Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
 Platform\Design::queueJSFile('/Platform/Design/js/contentbox.js');
 Platform\Design::queueJSFile('/Platform/Design/js/dialogs.js');
 Platform\Design::queueJSFile('/Platform/Form/js/form.js');
+Platform\Design::queueJSFile('/Platform/Form/js/autosize.js');
 
 Platform\Design::queueJSFile('/Platform/Field/js/multiplier.js');
 Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');

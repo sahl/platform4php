@@ -47,6 +47,8 @@ addCustomPlatformFunction(function(item) {
      
      // Focus on auto-focus field
      $('.platform_autofocus:first').focus();
+     
+     autosize($('textarea', item));
 });
 
 
