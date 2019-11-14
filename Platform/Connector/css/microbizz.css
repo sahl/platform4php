@@ -1,0 +1,45 @@
+.microbizz_box {
+    max-width: 926px;
+    background: #F7F7F7;
+    border-radius: 5px !important;
+    padding: 10px 5px !important;
+    margin: 5px 4px 20px !important;
+    box-shadow: 1px 3px 10px 0px rgba(100,100,100,0.39);
+}
+
+body {
+    font: 14px "Arial", "Helvetica", sans-serif;
+    background-color: white;
+    margin: 0px;
+    padding: 0px;
+}
+
+H1 {
+    font-family: "Ubuntu Condensed", "Trebuchet MS", sans-serif;
+    color: #820263;
+    font-stretch: condensed;
+    font-size: 27px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    margin-top: 2px;
+}
+
+H2 {
+    font-family: "Ubuntu Condensed", "Trebuchet MS", sans-serif;
+    color: #820263;
+    font-stretch: condensed;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    margin: 4px;
+}
+
+H3 {
+    font-family: "Ubuntu Condensed", "Trebuchet MS", sans-serif;
+    color: #820263;
+    font-stretch: condensed;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0px;
+    margin: 4px;
+}
