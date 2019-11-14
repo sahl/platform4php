@@ -48,6 +48,8 @@ class Accesstoken extends Datarecord {
         $accesstoken->save();
         Semaphore::release('accesstoken_generator');
         $accesstoken->setSession();
+        self::$current_user_id = $accesstoken->user_ref;
+        
         return $accesstoken;
     }
     
