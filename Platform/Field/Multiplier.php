@@ -37,7 +37,6 @@ class FieldMultiplier extends Field {
         }
     }
     
-
     /**
      * Add one or more fields to this multiplier
      * @param array|Field $fields One or more fields to add
@@ -51,6 +50,28 @@ class FieldMultiplier extends Field {
     }
     
     /**
+     * Remove a field by name from this multiplier
+     * @param string $fieldname Field name
+     */
+    public function removeFieldByName($fieldname) {
+        $new_fields = array();
+        foreach ($this->contained_fields as $field) {
+            if ($fieldname != $field->getName()) $new_fields[] = $field;
+        }
+        $this->contained_fields = $new_fields;
+    }
+    
+    /**
+     * Add all fields from a form file to this multiplier
+     * @param string $filename Filename
+     */
+    public function addFieldsFromForm($filename) {
+        $text = file_get_contents($filename);
+        if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
+        $this->addFields(Form::parseFieldsFromText($text));
+    }
+
+    /**
      * Get a field by name
      * @param string $fieldname Field name
      * @return boolean|Field The field or false if no field was found
@@ -61,17 +82,6 @@ class FieldMultiplier extends Field {
             if ($fieldname == $field->getName()) return $field;
         }
         return false;
-    }
-    
-    
-    /**
-     * Add all fields from a form file to this multiplier
-     * @param string $filename Filename
-     */
-    public function addFieldsFromForm($filename) {
-        $text = file_get_contents($filename);
-        if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
-        $this->addFields(Form::parseFieldsFromText($text));
     }
     
     /**

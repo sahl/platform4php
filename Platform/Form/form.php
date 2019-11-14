@@ -335,6 +335,32 @@ class Form {
     }
     
     /**
+     * Removes a field from the form by name. If a multiplier is present in the form
+     * a field from that can be found by using a name on the following form:
+     * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER
+     * TODO: Handle nested multipliers
+     * @param string $fieldname Field name to find
+     */
+    public function removeFieldByName($fieldname) {
+        if (strpos($fieldname,'/')) {
+            $segments = explode('/',$fieldname);
+            if (count($segments) != 2) return false;
+            $field = $this->getFieldByName($segments[0]);
+            if ($field instanceof FieldMultiplier) {
+                $field->removeFieldByName($segments[1]);
+            }
+            return;
+        }
+        /* @var $field Field */
+        $newfields = $this->fields;
+        foreach ($this->fields as $field) {
+            if ($fieldname != $field->getName()) $newfields[] = $field;
+        }
+        $this->fields = $newfields;
+        return;
+    }
+
+    /**
      * Render the form
      */
     public function render() {
