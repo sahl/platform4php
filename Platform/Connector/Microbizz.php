@@ -69,6 +69,21 @@ class ConnectorMicrobizz {
     }
     
     /**
+     * Get a form for connecting with Microbizz (consisting only of a button)
+     * @param array $request The connection request, which can be retrieved from buildRequest function
+     * @param string $button_text The button text
+     * @param boolean $connect_testserver Indicate if the Microbizz test environment should be used
+     */
+    public static function getConnectForm($request, $button_text = 'Link to Microbizz', $connect_testserver = false) {
+        $request_form = new \Platform\Form('microbizz_connect_form');
+        $action = $connect_testserver ? 'https://test2.microbizz.dk/appconnect/' : 'https://system.microbizz.dk/appconnect/';
+        $request_form->setAction($action);
+        $request_form->addField(new \Platform\FieldHidden('', 'request', array('value' => json_encode($request))));
+        $request_form->addField(new \Platform\FieldSubmit($button_text, 'performlink'));
+        return $request_form;
+    }
+
+    /**
      * Get the currently stored contract number for MB
      * @return string|boolean The contract number or false if no number present
      */
@@ -118,21 +133,6 @@ class ConnectorMicrobizz {
         return sha1($challenge.$platform_configuration['microbizz_secret_token']);
     }
     
-    /**
-     * Render a button for connecting to Microbizz
-     * @param array $request The connection request, which can be retrieved from buildRequest function
-     * @param string $button_text The button text
-     * @param boolean $connect_testserver Indicate if the Microbizz test environment should be used
-     */
-    public static function renderConnectInterface($request, $button_text = 'Link to Microbizz', $connect_testserver = false) {
-        $request_form = new \Platform\Form('microbizz_connect_form');
-        $action = $connect_testserver ? 'https://test2.microbizz.dk/appconnect/' : 'https://system.microbizz.dk/appconnect/';
-        $request_form->setAction($action);
-        $request_form->addField(new \Platform\FieldHidden('', 'request', array('value' => json_encode($request))));
-        $request_form->addField(new \Platform\FieldSubmit($button_text, 'performlink'));
-        $request_form->render();
-    }
-
     /**
      * Query the Microbizz API
      * @param string $command Command to execute
