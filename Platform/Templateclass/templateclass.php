@@ -3,30 +3,15 @@
 
 class Templateclass extends \Platform\Datarecord {
     
-    /**
-     * Name of table in database
-     * @var string 
-     */
     protected static $database_table = 'DATABASE TABLE';
-    
-    /**
-     * Set a delete strategy for this object
-     * @var int Delete strategy 
-     */
     protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
-    
-    /**
-     * Names of all classes referring this class
-     * @var array 
-     */
     protected static $referring_classes = array(
         
     );
+    protected static $depending_classes = array(
+        
+    );
 
-    /**
-     * Indicate if this object is relevant for an instance or globally
-     * @var int 
-     */
     protected static $location = self::LOCATION_INSTANCE;
 
     protected static $structure = false;
@@ -49,12 +34,11 @@ class Templateclass extends \Platform\Datarecord {
             ),
         );
         self::addStructure($structure);
-        // Remember to call parent
         parent::buildStructure();
     }
     
     public function getTitle() {
-        // Override to get a meaningfull title of this object
+        // Override to get a meaningful title of this object
         return $this->property1;
     }
     
