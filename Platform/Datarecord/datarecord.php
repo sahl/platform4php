@@ -1445,9 +1445,10 @@ class Datarecord {
         $menu[$class.'_delete_button'] = 'Delete selected '.$name;
         $menu[$class.'_column_select_button'] = 'Select columns';
 
-        $datarecord_menu = new Menu($menu);
+        $datarecord_menu = new MenuButton();
+        $datarecord_menu->setElements($menu);
         
-        $datarecord_menu->renderAsMenubutton();
+        $datarecord_menu->render();
         
         $datarecord_table->renderTable();
         

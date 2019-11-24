@@ -16,6 +16,8 @@ class Menu extends Component {
     protected static function compareLocations($real_location, $menu_link) {
         if (substr($real_location,-9) == 'index.php') $real_location = substr($real_location, 0, -9);
         if (substr($menu_link,-9) == 'index.php') $menu_link = substr($menu_link, 0, -9);
+        if (substr($real_location,-4) == '.php') $real_location = substr($real_location, 0, -4);
+        if (substr($menu_link,-4) == '.php') $menu_link = substr($menu_link, 0, -4);
         return strpos($real_location, $menu_link) !== false;
     }
     
