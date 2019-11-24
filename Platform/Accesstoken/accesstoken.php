@@ -42,7 +42,7 @@ class Accesstoken extends Datarecord {
         $accesstoken = new Accesstoken();
         if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
         $accesstoken->generateTokenCode();
-        $accesstoken->user_ref = $user;
+        $accesstoken->user_ref = $user->user_id;
         $timestamp = new Timestamp('now');
         $accesstoken->expire_date = $timestamp->add($seconds_to_live);
         $accesstoken->save();

@@ -51,6 +51,14 @@ class Instance extends Datarecord {
         return true;
     }
     
+    protected static function createInitialUser($username, $password) {
+        // Create initial user
+        $user = new User();
+        $user->username = $username;
+        $user->password = $password;
+        $user->save();
+    }
+    
     /**
      * Deactivate this instance as the current instance
      */
@@ -140,11 +148,8 @@ class Instance extends Datarecord {
         $instance->activate();
         $instance->initializeDatabase();
         
-        // Create initial user
-        $user = new User();
-        $user->username = $username;
-        $user->password = $password;
-        $user->save();
+        static::createInitialUser($username, $password);
+        
         \Platform\Semaphore::release('instance_initialize');
         return $instance;
     }    

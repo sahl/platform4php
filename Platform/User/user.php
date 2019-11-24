@@ -1,7 +1,9 @@
 <?php
 namespace Platform;
 
-class User extends Datarecord {
+class User extends DatarecordExtensible {
+    
+    protected static $username_is_email = false;
     
     protected static $database_table = 'users';
     protected static $structure = false;
@@ -27,9 +29,9 @@ class User extends Datarecord {
                 'fieldtype' => self::FIELDTYPE_KEY
             ),
             'username' => array(
-                'label' => 'Username',
+                'label' => static::$username_is_email ? 'Email' : 'Username',
                 'required' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
+                'fieldtype' => static::$username_is_email ? self::FIELDTYPE_EMAIL : self::FIELDTYPE_TEXT
             ),
             'password' => array(
                 'label' => 'Password',
@@ -47,7 +49,7 @@ class User extends Datarecord {
      * @return boolean True on success and user is logged in.
      */
     public static function tryLogin($username, $password) {
-        $filter = new Filter('\\Platform\\User');
+        $filter = new Filter(get_called_class());
         $filter->addCondition(new FilterConditionMatch('username', $username));
         $filter->addCondition(new FilterConditionMatch('password', $password));
         $result = $filter->execute();

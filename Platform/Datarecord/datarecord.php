@@ -820,6 +820,8 @@ class Datarecord {
             case self::FIELDTYPE_TEXT:
             case self::FIELDTYPE_BIGTEXT:
                 return new FieldText($definition['label'], $name, $options);
+            case self::FIELDTYPE_EMAIL:
+                return new FieldEmail($definition['label'], $name, $options);
             case self::FIELDTYPE_PASSWORD:
                 return new FieldPassword($definition['label'], $name, $options);
             case self::FIELDTYPE_INTEGER:
@@ -924,6 +926,8 @@ class Datarecord {
                 $result = $this->resolveForeignReferences($field);
                 sort($result);
                 return implode(', ', $result);
+            case self::FIELDTYPE_EMAIL:
+                return $this->getRawValue($field) ? '<a href="mailto:'.$this->getRawValue($field).'">'.$this->getRawValue($field).'</a>' : '';
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
             case self::FIELDTYPE_DATETIME:
@@ -1702,6 +1706,7 @@ class Datarecord {
                 $this->values[$field] = $value ? md5($value.$platform_configuration['password_salt']) : '';
                 break;
             case self::FIELDTYPE_TEXT:
+            case self::FIELDTYPE_EMAIL:
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_BIGTEXT:
                 $this->values[$field] = $value;
@@ -1831,6 +1836,8 @@ class Datarecord {
     
     const FIELDTYPE_DATETIME = 10;
     const FIELDTYPE_DATE = 11;
+    
+    const FIELDTYPE_EMAIL = 20;
     
     const FIELDTYPE_ARRAY = 100;
     const FIELDTYPE_OBJECT = 103;
