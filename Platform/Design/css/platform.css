@@ -4,6 +4,7 @@
 
 .platform_content_box {
     display: none;
+    overflow: hidden;
 }
 
 .platform_disabled {

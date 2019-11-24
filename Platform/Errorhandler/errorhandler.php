@@ -64,6 +64,12 @@ class Errorhandler {
                 return false;
         }
     }
+    
+    public static function recursionTest($level = 20) {
+        if (count(debug_backtrace()) > $level) {
+            trigger_error('Recursion exceeded (level '.$level.')', E_USER_ERROR);
+        }
+    }
 
     /**
      * Shutdown callback function

@@ -58,9 +58,8 @@ class Design {
         if (! in_array($js_file, self::$js_files_to_load)) self::$js_files_to_load[] = $js_file;
     }    
     
-    public static function renderContentBox($box_id, $source, $parameters = array(), $prepare_function = '', $reveal = '') {
+    public static function renderContentBox($box_id, $source, $parameters = array(), $reveal = 'fade') {
         echo '<div class="'.Design::getClass('content_box', 'platform_content_box').'" id="'.$box_id.'" data-source="'.$source.'" data-parameters="'.http_build_query($parameters).'"';
-        if ($prepare_function) echo ' data-prepare_function="'.$prepare_function.'"';
         if ($reveal) echo ' data-reveal="'.$reveal.'"';
         echo '></div>';
     }

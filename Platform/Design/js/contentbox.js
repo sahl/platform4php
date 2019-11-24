@@ -9,18 +9,18 @@ $.fn.contentbox = function(action, param1, param2) {
             var element = $(this);
             $.post($(this).data('source'), $(this).data('parameters'), function(data) {
                 if (element.is(':visible')) {
-                    element.hide(250, function() {
+                    element.hide(element.data('reveal'), {}, 300, function() {
                         element.html(data);
-                        element.applyPlatformFunctions();
+                        element.children().applyPlatformFunctions();
                         if (element.data('prepare_function')) eval(element.data('prepare_function'))(element);
-                        element.show(250);
+                        element.show(element.data('reveal'), {}, 300);
                         if (typeof(param1) == 'function') param1(element);
                     })
                 } else {
                     element.html(data);
-                    element.applyPlatformFunctions();
-                    if (element.data('prepare_function')) eval(element.data('prepare_function'))(element);
-                    element.show(500);
+                    element.children().applyPlatformFunctions();
+                    element.trigger('contentbox_updated');
+                    element.show(element.data('reveal'), {}, 600);
                     if (typeof(param1) == 'function') param1(element);
                 }
             }, 'html');
