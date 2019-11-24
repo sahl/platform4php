@@ -98,7 +98,7 @@ class Mail extends \Platform\Datarecord {
     }
     
     public function getTitle() {
-        // Override to get a meaningfull title of this object
+        // Override to get a meaningful title of this object
         return $this->subject;
     }
     
