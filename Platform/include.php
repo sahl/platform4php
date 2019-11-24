@@ -22,7 +22,7 @@ umask(002);
 function platformAutoLoad($class) {
     global $platform_configuration;
     
-    if (preg_match('/^(.*)\\\\([A-Z][a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
+    if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
         if ($match[3]) $file = __DIR__.'/../'.$match[1].'/'.$match[2].'/'.$match[3].'.php';
         else $file = __DIR__.'/../'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
         if (file_exists($file)) {
