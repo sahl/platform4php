@@ -3,32 +3,84 @@ namespace Platform;
 
 class Component {
     
-    public $configuration = array();
-    
-    public static $js_script = false;
-    
-    public static $base_script_loaded = false;
-    
+    /**
+     * Indicate if this component can be disabled.
+     * @var boolean 
+     */
     public static $can_disable = true;
     
+    /**
+     * Configuration of component.
+     * @var array 
+     */
+    public $configuration = array();
+    
+    /**
+     * Javascript to load along with this component.
+     * @var boolean|string 
+     */
+    public static $js_script = false;
+    
+    /**
+     * Indicate if base component script is loaded.
+     * @var boolean 
+     */
+    private static $base_script_loaded = false;
+
+    /**
+     * Internal counter used for assigning component IDs if not set
+     * @var int 
+     */
+    private static $component_counter = 1;
+    
+    /**
+     * Component ID for HTML
+     * @var boolean|string 
+     */
+    private $component_id = false;
+
+    
+    
+    /**
+     * Short for getConfiguration
+     * @param string $key Configuration key to retrieve
+     * @return mixed
+     */
     public function __get($key) {
         return $this->getConfiguration($key);
     }
     
+    /**
+     * Short for setConfiguration
+     * @param string $key Configuration key to set
+     * @param mixed $value Value to set
+     */
     public function __set($key, $value) {
         $this->setConfiguration($key, $value);
     }
     
+    /**
+     * Get a friendly name for this component, which is the class name without path.
+     * @return string
+     */
     public function getName() {
         $name = strtolower(get_called_class());
         if (strpos($name,'\\')) $name = substr($name,strrpos($name,'\\')+1);
         return $name;
     }
     
+    /**
+     * Get a configuration parameter from this component
+     * @param string $key Configuration key to retrieve
+     * @return mixed
+     */
     public function getConfiguration($key) {
         return $this->configuration[$key];
     }
-    
+
+    /**
+     * Renders the component
+     */
     public function render() {
         if (static::$js_script) {
             \Platform\Design::JSFile(static::$js_script);
@@ -38,21 +90,42 @@ class Component {
             \Platform\Design::JSFile('/Platform/Component/js/component.js');
             self::$base_script_loaded = true;
         }
+        
+        if ($this->component_id === false) {
+            $this->component_id = 'platform_component_'.(self::$component_counter++);
+        }
+        
         $classes = array();
         $classes[] = 'platform_component';
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
         $classes[] = 'platform_component_'.$this->getName();
-        echo '<div class="'.implode(' ',$classes).'" data-configuration="'.htmlentities(json_encode($this->configuration), ENT_QUOTES).'">';
+        
+        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-configuration="'.htmlentities(json_encode($this->configuration), ENT_QUOTES).'">';
         static::renderContent();
         echo '</div>';
     }
     
+    /**
+     * Render the component content. Override in subclass.
+     */
     public function renderContent() {
+        echo 'Override me';
     }
     
-    public function setConfiguration($key, $value) {
+     /**
+     * Set a configuration parameter
+     * @param string $key Configuration key to set
+     * @param mixed $value Value to set
+     */
+   public function setConfiguration($key, $value) {
         if (isset($this->configuration[$key])) $this->configuration[$key] = $value;
     }
     
-    
+    /**
+     * Set ID of component
+     * @param string $id
+     */
+    public function setID($id) {
+        $this->component_id = $id;
+    }
 }
