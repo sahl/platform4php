@@ -1,0 +1,6 @@
+.platform_greyout_element {
+    position: absolute;
+    background: black;
+    opacity: 50%;
+    z-index: 5000;
+}

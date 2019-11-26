@@ -39,13 +39,15 @@ Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
 Platform\Design::queueJSFile('/Platform/Design/js/general.js');
 
 Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
-Platform\Design::queueJSFile('/Platform/Design/js/contentbox.js');
 Platform\Design::queueJSFile('/Platform/Design/js/dialogs.js');
 Platform\Design::queueJSFile('/Platform/Form/js/form.js');
 Platform\Design::queueJSFile('/Platform/Form/js/autosize.js');
 
 Platform\Design::queueJSFile('/Platform/Field/js/multiplier.js');
 Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');
+
+Platform\Design::queueJSFile('/Platform/Design/js/greyout.js');
+Platform\Design::queueCSSFile('/Platform/Design/css/greyout.css');
 
 Platform\Design::queueJSFile('/Platform/Table/js/table.js');
 
