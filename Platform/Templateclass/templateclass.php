@@ -5,14 +5,14 @@ class Templateclass extends \Platform\Datarecord {
     
     protected static $database_table = 'DATABASE TABLE';
     protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
-    protected static $referring_classes = array(
-        
-    );
+    protected static $location = self::LOCATION_INSTANCE;
     protected static $depending_classes = array(
         
     );
+    protected static $referring_classes = array(
+        
+    );
 
-    protected static $location = self::LOCATION_INSTANCE;
 
     protected static $structure = false;
     protected static $key_field = false;

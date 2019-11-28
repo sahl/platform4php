@@ -89,7 +89,7 @@ class Table {
             $columndef[] = array(
                 'title' => $structure[$field]['label'],
                 'field' => $field,
-                'visible' => $structure[$field]['table'] == Datarecord::COLUMN_DEFAULTSHOWN,
+                'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter($structure[$field]['fieldtype']),
                 'width' => valalt($structure[$field]['width'], 200)
             );

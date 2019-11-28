@@ -4,9 +4,9 @@ namespace Platform;
 class Datarecord {
 
     // Column visibilities
-    const COLUMN_UNSELECTABLE = 1;
-    const COLUMN_DEFAULTHIDDEN = 2;
-    const COLUMN_DEFAULTSHOWN = 0;
+    const COLUMN_INVISIBLE = 1;
+    const COLUMN_HIDDEN = 2;
+    const COLUMN_VISIBLE = 0;
     
     const DELETE_STRATEGY_BLOCK = 0;
     const DELETE_STRATEGY_PURGE_REFERERS = 1;
@@ -30,16 +30,16 @@ class Datarecord {
     const SEARCH_ADDITIONAL = 2;
 
     /**
-     * Indicate what mode this object is in
-     * @var int
-     */
-    protected $access_mode = self::MODE_WRITE;
-    
-    /**
      * Reference to a collection, that this is a part of
      * @var DatarecordCollection 
      */
     public $collection = false;
+
+    /**
+     * Indicate what mode this object is in
+     * @var int
+     */
+    protected $access_mode = self::MODE_WRITE;
     
     /**
      * Database table to store records of this type.
@@ -60,49 +60,54 @@ class Datarecord {
     private $default_rendermode = self::RENDER_RAW;
 
     /**
+     * Names of all classes depending on this class
+     * @var type 
+     */
+    protected static $depending_classes = array();
+    
+    /**
+     * Name of javascript file to include when editing object
+     * @var string 
+     */
+    protected static $edit_script = false;
+
+    /**
      * Convenience to store keyfield
      * @var boolean|string 
      */
     protected static $key_field = false;
-    
+
     /**
      * Indicate the location of this record
      * @var type 
      */
     protected static $location = LOCATION_GLOBAL;
-    
+
     /**
      * Name of semaphore lock to lock this object, or false if not locked
      * @var boolean|string
      */
     protected $lockname = false;
-    
+
     /**
      * Name of this object type
      * @var string 
      */
     protected static $object_name = '';
-    
+
     /**
      * Names of all classes referring this class
      * @var array 
      */
     protected static $referring_classes = array();
     
-    /**
-     * Names of all classes depending on this class
-     * @var type 
-     */
-    protected static $depending_classes = array();
+    protected static $requested_calculation_buffer = array();
 
     /**
      * Is populated with the structure of the data record
      * @var array|boolean Array of structure or false if isn't loaded.
      */
     protected static $structure = false;
-    
-    
-    protected static $requested_calculation_buffer = array();
     
     /**
      * All values of the object
@@ -155,6 +160,48 @@ class Datarecord {
     public static function addStructure($structure) {
         foreach ($structure as $field => $data) {
             if (isset($data['foreignclass']) && substr($data['foreignclass'],0,1) == '\\') $data['foreignclass'] = substr($data['foreignclass'],1);
+            switch($data['fieldtype']) {
+                case self::FIELDTYPE_CURRENCY:
+                    $data['store_in_database'] = false;
+                    static::addStructure(array(
+                        $field.'_localvalue' => array(
+                            'invisible' => true,
+                            'fieldtype' => self::FIELDTYPE_FLOAT,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        ),
+                        $field.'_currency' => array(
+                            'invisible' => true,
+                            'fieldtype' => self::FIELDTYPE_TEXT,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        ),
+                        $field.'_exchange_rate' => array(
+                            'invisible' => true,
+                            'fieldtype' => self::FIELDTYPE_FLOAT,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        ),
+                        $field.'_globalvalue' => array(
+                            'invisible' => true,
+                            'fieldtype' => self::FIELDTYPE_FLOAT,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        )
+                    ));
+                break;
+                case self::FIELDTYPE_REFERENCE_HYPER:
+                    $data['store_in_database'] = false;
+                    static::addStructure(array(
+                        $field.'_foreignclass' => array(
+                            'invisible' => true,
+                            'fieldtype' => self::FIELDTYPE_TEXT,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        ),
+                        $field.'_reference' => array(
+                            'invisible' => true,
+                            'fieldtype' => self::FIELDTYPE_INTEGER,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        )
+                    ));
+                break;
+            }
             static::$structure[$field] = $data;
         }
     }
@@ -172,13 +219,13 @@ class Datarecord {
             'create_date' => array(
                 'label' => 'Created',
                 'readonly' => true,
-                'table' => self::COLUMN_DEFAULTHIDDEN,
+                'columnvisibility' => self::COLUMN_HIDDEN,
                 'fieldtype' => self::FIELDTYPE_DATETIME
             ),
             'change_date' => array(
                 'label' => 'Last change',
                 'readonly' => true,
-                'table' => self::COLUMN_DEFAULTHIDDEN,
+                'columnvisibility' => self::COLUMN_HIDDEN,
                 'fieldtype' => self::FIELDTYPE_DATETIME
             )
         ));
@@ -597,6 +644,15 @@ class Datarecord {
         if (is_array(static::$structure)) return;
         static::buildStructure();
     }
+    
+    /**
+     * Fill this object with the default values
+     */
+    public function fillDefaultValues() {
+        foreach ($this->getStructure() as $key => $definition) {
+            if ($definition['default_value']) $this->setValue($key, $definition['default_value']);
+        }
+    }
 
     /**
      * 
@@ -774,6 +830,8 @@ class Datarecord {
     public static function getForm() {
         static::ensureStructure();
         $baseclass = strtolower(strpos(get_called_class(), '\\') !== false ? substr(get_called_class(), strrpos(get_called_class(), '\\')+1) : get_called_class());
+        // Request javascript
+        if (static::$edit_script) \Platform\Design::JSFile(static::$edit_script);
         // Build form
         $form = new Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
@@ -886,7 +944,6 @@ class Datarecord {
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
             case self::FIELDTYPE_FILE:
-            case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
@@ -905,6 +962,8 @@ class Datarecord {
                 return str_replace(' ', 'T', $this->getRawValue($field)->getReadable('Y-m-d H:i'));
             case self::FIELDTYPE_DATE:
                 return $this->getRawValue($field)->getReadable('Y-m-d');
+            case self::FIELDTYPE_ENUMERATION:
+                return $this->getRawValue($field);
             default:
                 return $this->getTextValue($field);
         }
@@ -922,6 +981,7 @@ class Datarecord {
                 return implode(', ', $this->getRawValue($field));
             case self::FIELDTYPE_REFERENCE_SINGLE:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+            case self::FIELDTYPE_REFERENCE_HYPER:
             case self::FIELDTYPE_FILE:
                 $result = $this->resolveForeignReferences($field);
                 sort($result);
@@ -1113,6 +1173,8 @@ class Datarecord {
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
                 return $this->values[$field] instanceof Timestamp ? $this->values[$field] : new Timestamp();
+            case self::FIELDTYPE_REFERENCE_HYPER:
+                return array('foreignclass' => $this->values[$field.'_foreignclass'], 'reference' => $this->values[$field.'_reference']);
             default:
                 return $this->values[$field];
         }
@@ -1167,7 +1229,7 @@ class Datarecord {
         static::ensureStructure();
         $result = array();
         foreach (static::$structure as $key => $element) {
-            if ($element['invisible'] || $element['table'] == self::COLUMN_UNSELECTABLE) continue;
+            if ($element['invisible'] || $element['columnvisibility'] == self::COLUMN_INVISIBLE) continue;
             $result[] = $key;
         }
         return $result;
@@ -1346,9 +1408,13 @@ class Datarecord {
         // Locate all interesting ids
         $ids = array();
         foreach (static::$structure as $key => $definition) {
-            if ($definition['foreignclass'] != $class && !($definition['fieldtype'] == self::FIELDTYPE_FILE && $class == 'Platform\\File')) continue;
+            if ($definition['foreignclass'] != $class && !($definition['fieldtype'] == self::FIELDTYPE_FILE && $class == 'Platform\\File') && $definition['fieldtype'] != self::FIELDTYPE_REFERENCE_HYPER) continue;
             foreach ($datarecords as $datarecord) {
                 $values = $datarecord->getRawValue($key);
+                if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_HYPER) {
+                    if ($values['foreignclass'] != $class) continue;
+                    $values = $values['reference'];
+                }
                 if (! is_array($values)) $values = array($values);
                 foreach ($values as $value) {
                     if ($value && ! in_array($value, $ids)) $ids[] = $value;
@@ -1424,10 +1490,17 @@ class Datarecord {
         $datarecord_table->setOption('ajaxURL', '/Platform/Datarecord/php/table_datarecord.php?class='.get_called_class());
         $datarecord_table->setOption('placeholder', 'No '.$name);
         
-        if ($parameters['filter']) $parameters['table']['filter'] = $parameters['filter'];
+        // Grouping
+        $groupfields = array();
+        foreach (static::$structure as $key => $definition) {
+            if ($definition['tablegroup']) $groupfields[] = $key;
+        }
+        if ($groupfields) $datarecord_table->setOption('groupBy', $groupfields);
         
-        if (is_array($parameters['table']))
-            foreach ($parameters['table'] as $key => $parameter) {
+        if ($parameters['filter']) $parameters['columnvisibility']['filter'] = $parameters['filter'];
+        
+        if (is_array($parameters['columnvisibility']))
+            foreach ($parameters['columnvisibility'] as $key => $parameter) {
                 $datarecord_table->setOption($key, $parameter);
             }
         
@@ -1465,7 +1538,7 @@ class Datarecord {
             // Build default set
             $table_configuration = array();
             foreach ($fields as $field) {
-                if (static::$structure[$field]['table'] == Datarecord::COLUMN_DEFAULTSHOWN) $table_configuration[$field] = array('width' => 0);
+                if (static::$structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE) $table_configuration[$field] = array('width' => 0);
             }
         }
         
@@ -1549,14 +1622,25 @@ class Datarecord {
      * @return array Foreign object titles hashed by ids
      */
     public function resolveForeignReferences($field) {
-        if (! in_array(static::$structure[$field]['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_FILE))) trigger_error('Tried to resolve a foreign reference on an incompatible field.', E_USER_ERROR);
-        if (static::$structure[$field]['fieldtype'] == self::FIELDTYPE_FILE) {
-            $class = 'Platform\\File';
-        } else {
-            $class = static::$structure[$field]['foreignclass'];
+        if (! in_array(static::$structure[$field]['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER, self::FIELDTYPE_FILE))) trigger_error('Tried to resolve a foreign reference on an incompatible field.', E_USER_ERROR);
+        switch (static::$structure[$field]['fieldtype']) {
+            case self::FIELDTYPE_FILE:
+                $class = 'Platform\\File';
+                $ids = array($this->getRawValue($field));
+                break;
+            case self::FIELDTYPE_REFERENCE_SINGLE:
+                $class = static::$structure[$field]['foreignclass'];
+                $ids = array($this->getRawValue($field));
+            break;
+            case self::FIELDTYPE_REFERENCE_MULTIPLE:
+                $class = static::$structure[$field]['foreignclass'];
+                $ids = $this->getRawValue($field);
+            break;
+            case self::FIELDTYPE_REFERENCE_HYPER:
+                $class = $this->getRawValue($field.'_foreignclass');
+                $ids = array($this->getRawValue($field.'_reference'));
+            break;
         }
-        $ids = $this->getRawValue($field);
-        if (! is_array($ids)) $ids = array($ids);
         $missing = array();
         foreach ($ids as $id) {
             if (! isset(self::$foreign_reference_buffer[$class][$id])) $missing[] = $id;
@@ -1798,6 +1882,15 @@ class Datarecord {
                     $this->values[$field] = $value;
                 }
                 break;
+            case self::FIELDTYPE_REFERENCE_HYPER:
+                if (is_array($value)) {
+                    $this->setValue($field.'_foreignclass', $value['foreignclass']);
+                    $this->setValue($field.'_reference', $value['reference']);
+                } elseif ($value instanceof Datarecord) {
+                    $this->setValue($field.'_foreignclass', get_class($value));
+                    $this->setValue($field.'_reference', $value->getRawValue($value->getKeyField()));
+                }
+                break;
         }
     }
 
@@ -1837,6 +1930,7 @@ class Datarecord {
     
     const FIELDTYPE_DATETIME = 10;
     const FIELDTYPE_DATE = 11;
+    const FIELDTYPE_CURRENCY = 12;
     
     const FIELDTYPE_EMAIL = 20;
     
@@ -1844,12 +1938,14 @@ class Datarecord {
     const FIELDTYPE_OBJECT = 103;
     const FIELDTYPE_ENUMERATION = 101;
     
+    
     const FIELDTYPE_PASSWORD = 300;
     
     const FIELDTYPE_FILE = 400;
     
     const FIELDTYPE_REFERENCE_SINGLE = 500;
     const FIELDTYPE_REFERENCE_MULTIPLE = 501;
+    const FIELDTYPE_REFERENCE_HYPER = 502;
     
     const FIELDTYPE_KEY = 9999;
 }

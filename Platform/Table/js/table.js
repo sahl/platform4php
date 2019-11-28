@@ -137,5 +137,5 @@ function sizeTableContainer(table_container) {
     // TODO: These values are hardcoded and should be calculated
     var additional_height = container_width < width ? 20 : 3;
     
-    table_container.css('height', Math.min(max_height, number_of_rows*row_height+header_height+additional_height));
+    table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
 }

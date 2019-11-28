@@ -13,8 +13,9 @@ else {
 
     if ($_POST['action'] == 'datarecord_load') {
         $datarecord = new $class();
-        $datarecord->loadForRead($_POST['id']);
-        if ($datarecord->isInDatabase()) {
+        if (! $_POST['id']) $datarecord->fillDefaultValues();
+        else $datarecord->loadForRead($_POST['id']);
+        if ($datarecord->isInDatabase() || ! $_POST['id']) {
             if ($datarecord->canEdit()) {
                 $result = array(
                     'status' => 1,

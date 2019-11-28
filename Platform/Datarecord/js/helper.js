@@ -124,7 +124,9 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
     
     $(create_button).click(function() {
         $(form).clearForm();
-        $(edit_dialog).dialog('option', 'title', 'Create new '+name).dialog('open');
+        $(form).loadValues(script, {action: 'datarecord_load', id: 0, __class: classname}, function() {
+            $(edit_dialog).dialog('option', 'title', 'Create new '+name).dialog('open');
+        });
     })
     
     $(edit_button).click(function() {

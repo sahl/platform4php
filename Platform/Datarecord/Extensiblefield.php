@@ -60,7 +60,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
             'linked_class' => array(
                 'label' => 'Remote object',
                 'required' => true,
-                'table' => self::COLUMN_UNSELECTABLE,
+                'columnvisibility' => self::COLUMN_INVISIBLE,
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
             'class' => array(

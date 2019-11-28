@@ -61,7 +61,7 @@ class Mail extends \Platform\Datarecord {
             ),
             'body' => array(
                 'label' => 'Mail text',
-                'table' => self::COLUMN_UNSELECTABLE,
+                'columnvisibility' => self::COLUMN_INVISIBLE,
                 'fieldtype' => self::FIELDTYPE_BIGTEXT
             ),
             'file_ref' => array(
