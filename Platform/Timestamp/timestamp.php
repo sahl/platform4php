@@ -5,6 +5,7 @@ class Timestamp {
     
     private $timestamp = null;
     
+    private static $time_zone_object = null;
     
     public function __construct($ts = null) {
         if ($ts instanceof Timestamp) $this->timestamp = $ts->getTimestamp();
@@ -28,7 +29,13 @@ class Timestamp {
     }
 
     public function getReadable($format = 'd-m-Y H:i') {
-        return $this->timestamp !== null ? date($format, $this->timestamp) : '';
+        if ($this->timestamp !== null) {
+            $datetime = new \DateTime();
+            $datetime->setTimestamp($this->timestamp);
+            if (self::$time_zone_object) $datetime->setTimezone(self::$time_zone_object);
+            return $datetime->format($format);
+        }
+        return '';
     }
     
     public function getMinutesUntil($other_timestamp) {
@@ -57,6 +64,10 @@ class Timestamp {
     
     public static function now() {
         return new Timestamp('now');
+    }
+    
+    public static function setDisplayTimeZone($display_time_zone) {
+        self::$time_zone_object = new \DateTimeZone($display_time_zone);
     }
     
 }

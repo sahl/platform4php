@@ -54,10 +54,12 @@ addCustomPlatformFunction(function(item) {
 
 $.fn.setError = function(text) {
     this.addClass('formfield_error').closest('.formfield_container').find('.formfield_error_container').html(text).slideDown();
+    return this;
 }
 
 $.fn.clearError = function() {
     this.filter('.formfield_error').removeClass('formfield_error').closest('.formfield_container').find('.formfield_error_container').slideUp();
+    return this;
 }
 
 $.fn.clearForm = function() {
@@ -71,6 +73,7 @@ $.fn.clearForm = function() {
     this.find('iframe').each(function() {
         $(this).prop('src', $(this).prop('src'));
     })
+    return this;
 }
 
 $.fn.loadValues = function(script, parameters = {}, onload = null) {
@@ -126,11 +129,13 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
                     }
                 }
             })
+            element.trigger('dataloaded');
             if (typeof onload == 'function') {
                 onload();
             }
         }
     }, 'json');
+    return this;
 }
 
 function add_errors_to_form(form, errors) {
