@@ -12,6 +12,8 @@ class FilterConditionOneOf extends FilterCondition {
             if ($value instanceof Datarecord) $value = $value->getRawValue($value->getKeyField ());
             $this->value[] = $value;
         }
+        // Remove duplicates
+        $this->value = array_unique($this->value);
     }
     
     public function getSQLFragment() {

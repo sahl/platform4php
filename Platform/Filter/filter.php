@@ -26,6 +26,7 @@ class Filter {
      * @param string $classname Class name of the base class to operate on.
      */
     public function __construct($classname) {
+        if (substr($classname,0,1) == '\\') $classname = substr($classname,1);
         $this->base_classname = $classname;
         $this->base_object = new $classname();
         if (! $this->base_object instanceof Datarecord) trigger_error('Must attach Datarecord to filter');
@@ -92,6 +93,10 @@ class Filter {
         return $filter;
     }
     
+    public function getBaseClassName() {
+        return $this->base_classname;
+    }
+    
     /**
      * Get the base object of this filter.
      * @return string
@@ -105,9 +110,12 @@ class Filter {
      * @return string
      */
     public function getSQL() {
-        $sql = 'SELECT * FROM '.$this->base_object->getDatabaseTable();
-        if ($this->base_condition instanceof FilterCondition) $sql .= ' WHERE '.$this->base_condition->getSQLFragment();
+        $sql = 'SELECT * FROM '.$this->base_object->getDatabaseTable().$this->getSQLWhere();
         return $sql;
+    }
+    
+    public function getSQLWhere() {
+        return $this->base_condition instanceof FilterCondition ? ' WHERE '.$this->base_condition->getSQLFragment() : '';
     }
     
     /**

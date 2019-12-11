@@ -57,6 +57,8 @@ class FilterCondition {
                 return new FilterConditionMatch($array['fieldname'], $array['value']);
             case 'OneOf':
                 return new FilterConditionOneOf($array['fieldname'], $array['value']);
+            case 'InFilter':
+                return new FilterConditionInFilter($array['fieldname'], $array['filter']);
             default:
                 trigger_error('Could not parse FilterCondition', E_USER_ERROR);
         }
