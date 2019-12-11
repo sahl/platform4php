@@ -9,9 +9,9 @@ else {
     
     $form->addValidationFunction($class.'::validateForm');
     
-    $result = array('status' => 0, 'errormessage' => 'Unresolved action');
+    $result = array('status' => 0, 'errormessage' => 'Unresolved event');
 
-    if ($_POST['action'] == 'datarecord_load') {
+    if ($_POST['event'] == 'datarecord_load') {
         $datarecord = new $class();
         if (! $_POST['id']) $datarecord->fillDefaultValues();
         else $datarecord->loadForRead($_POST['id']);
@@ -47,7 +47,7 @@ else {
         } else {
             $result = array('status' => 0, 'errors' => $form->getAllErrors());
         }
-    } elseif ($_POST['action'] == 'datarecord_delete') {
+    } elseif ($_POST['event'] == 'datarecord_delete') {
         $result = array('status' => 1);
         foreach (json_decode($_POST['ids']) as $id) {
             $datarecord = new $class();
@@ -61,6 +61,13 @@ else {
                 break;
             }
             $datarecord->delete();
+        }
+    } elseif ($_POST['event'] == 'datarecord_copy') {
+        $result = array('status' => 1);
+        foreach (json_decode($_POST['ids']) as $id) {
+            $datarecord = new $class();
+            $datarecord->loadForRead($id);
+            $datarecord->copy();
         }
     }
 }

@@ -36,9 +36,50 @@ addCustomPlatformFunction(function(item) {
             delete table_configuration['action_buttons'];
         }
         
+        var show_selector = false;
+        if (table_configuration['show_selector']) {
+            show_selector = true;
+            delete table_configuration['show_selector'];
+        }
+        
+        var control_form = false;
+        if (table_configuration['controlform']) {
+            control_form = $('#'+table_configuration['controlform']);
+            delete table_configuration['controlform'];
+        }
+        
+        var filter_field = false;
+        if (table_configuration['filterfield']) {
+            filter_field = $('#'+table_configuration['filterfield']);
+            delete table_configuration['filterfield'];
+        }
+        
         element.removeClass('platform_invisible');
         
         var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
+        
+        if (control_form) {
+            function makeObject(array) {
+                var res = {};
+                array.forEach(function(val) {
+                    res[val.name] = val.value;
+                })
+                return res;
+            }
+            
+            control_form.submit(function() {
+                table.setData(table.getAjaxUrl(), makeObject(control_form.serializeArray()), "post");
+                return false;
+            })
+        }
+        
+        if (filter_field) {
+            filter_field.keyup(function() {
+                var val = $(this).val();
+                if (val) filterTable(table, val);
+                else table.clearFilter();
+            })
+        }
         
         $.each(action_buttons, function(key, element) {
             table.addColumn({
@@ -53,11 +94,12 @@ addCustomPlatformFunction(function(item) {
                 }
             }, true)
         });
-        table.addColumn({
-            formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerSort:false, width: 15, cellClick:function(e, cell){
-                cell.getRow().toggleSelect();
-            }
-        }, true);
+        if (show_selector)
+            table.addColumn({
+                formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerSort:false, width: 15, cellClick:function(e, cell){
+                    cell.getRow().toggleSelect();
+                }
+            }, true);
         
         tablebuffer['#'+$(this).prop('id')] = table;
     })
@@ -79,6 +121,15 @@ addCustomPlatformFunction(function(item) {
     });
 })
 
+function filterTable(table, string) {
+    var filter_elements = [];
+    $.each(table.getColumns(), function(key, element) {
+        if (element._column.definition && element._column.definition.field) {
+            filter_elements.push({field: element._column.definition.field, type: "like", value: string});
+        }
+    });
+    table.setFilter([filter_elements]);
+}
 
 function getSelectedTableIds(tableid) {
     var table = getTableByID(tableid);
@@ -100,7 +151,6 @@ function saveTableLayout(tableid) {
     var columns = [];
     $.each(table.getColumns(), function(key, element) {
         if (element._column.definition && element._column.definition.field) {
-            console.log(element._column.definition.field);
             columns.push({field: element._column.definition.field, width: element._column.width});
         }
     })
@@ -118,7 +168,10 @@ function sizeTableContainer(table_container) {
     } else {
         var container_width = $(table_container).parent().width();
         $(table_container).width(Math.min(width, container_width));
+        console.log('Table container request: '+Math.min(width, container_width));
     }
+    console.log('Table container width: '+$(table_container).width());
+    
     var id = table_container.prop('id');
     var table = getTableByID('#'+id);
     var number_of_rows = table.getDataCount(true);
@@ -137,5 +190,6 @@ function sizeTableContainer(table_container) {
     // TODO: These values are hardcoded and should be calculated
     var additional_height = container_width < width ? 20 : 3;
     
-    table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
+    if (number_of_rows < 50) table_container.css('height', 'auto');
+    else table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
 }

@@ -8,13 +8,14 @@ $(function() {
             '#'+$(this).data('shortclass')+'_column_dialog',
             '#'+$(this).data('shortclass')+'_new_button',
             '#'+$(this).data('shortclass')+'_edit_button',
+            '#'+$(this).data('shortclass')+'_copy_button',
             '#'+$(this).data('shortclass')+'_delete_button',
             '#'+$(this).data('shortclass')+'_column_select_button'
         );
     })
 })
 
-function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, column_dialog, create_button, edit_button, delete_button, column_select_button) {
+function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, column_dialog, create_button, edit_button, copy_button, delete_button, column_select_button) {
     var script = '/Platform/Datarecord/php/io_datarecord.php';
     var table = getTableByID(list_view);
     
@@ -33,7 +34,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
         cellClick: function(e, cell) {
             if (cell.getValue() != 1) return;
             confirmDialog('Delete '+name, 'You are about to delete the selected '+name+'(s)', function() {
-                $.post(script, {action: 'datarecord_delete', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
+                $.post(script, {event: 'datarecord_delete', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
                     if (data.status == 0) {
                         warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
                     }
@@ -44,6 +45,28 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
             })
         }
     }, false, 'checkboxcolumn');
+    if ($(copy_button).length) {
+        table.addColumn({
+            formatter: function(cell, formatterParams) {
+                if (cell.getValue() == 1)
+                    return '<i class="fa fa-clone"></i>';
+                else
+                    return '';
+            },
+            field: 'platform_can_copy',
+            width: 40,
+            headerSort:false,
+            align: 'center',
+            cellClick: function(e, cell) {
+                if (cell.getValue() != 1) return;
+                $.post(script, {event: 'datarecord_copy', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
+                    // Reload tabulator
+                    table.replaceData();
+                })
+            }
+        }, false, 'checkboxcolumn');
+        
+    }
     table.addColumn({
         formatter: function(cell, formatterParams) {
             if (cell.getValue() == 1)
@@ -58,7 +81,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
         cellClick: function(e, cell) {
             if (cell.getValue() != 1) return;
             $(form).clearForm();
-            $(form).loadValues(script, {action: 'datarecord_load', id: cell.getRow().getIndex(), __class: classname}, function() {
+            $(form).loadValues(script, {event: 'datarecord_load', id: cell.getRow().getIndex(), __class: classname}, function() {
                 $(edit_dialog).dialog('option', 'title', 'Edit '+name).dialog('open');
             });        
         }
@@ -124,7 +147,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
     
     $(create_button).click(function() {
         $(form).clearForm();
-        $(form).loadValues(script, {action: 'datarecord_load', id: 0, __class: classname}, function() {
+        $(form).loadValues(script, {event: 'datarecord_load', id: 0, __class: classname}, function() {
             $(edit_dialog).dialog('option', 'title', 'Create new '+name).dialog('open');
         });
     })
@@ -135,7 +158,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
             warningDialog('Select one', 'You need to select exactly one '+name);
         else {
             $(form).clearForm();
-            $(form).loadValues(script, {action: 'datarecord_load', id: ids.pop(), __class: classname}, function() {
+            $(form).loadValues(script, {event: 'datarecord_load', id: ids.pop(), __class: classname}, function() {
                 $(edit_dialog).dialog('option', 'title', 'Edit '+name).dialog('open');
             });
         }
@@ -147,7 +170,7 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
             warningDialog('Select at least one', 'You need to select at least one '+name);
         else {
             confirmDialog('Delete '+name, 'You are about to delete the selected '+name+'(s)', function() {
-                $.post(script, {action: 'datarecord_delete', ids: JSON.stringify(ids), __class: classname}, function(data) {
+                $.post(script, {event: 'datarecord_delete', ids: JSON.stringify(ids), __class: classname}, function(data) {
                     if (data.status == 0) {
                         warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
                     }

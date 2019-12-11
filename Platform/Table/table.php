@@ -14,9 +14,19 @@ class Table {
         $this->id = $id;
         $this->setOption('layout', 'fitColumns');
         $this->setOption('placeholder', 'No data');
-        $this->setOption('movableColumns', true);
     }
     
+    /**
+     * Add a further table definition from a datarecord
+     * @param string $classname Class to build table from
+     */
+    public function addDefinitionFromDatarecord($classname) {
+        foreach (self::buildDefinitionFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
+            $this->options['columns'][] = $definition;
+        }
+        $this->adjustColumnsFromConfiguration();
+    }
+
     /**
      * Adjust table columns from an earlier saved configuration
      */
@@ -45,16 +55,28 @@ class Table {
         }
         $this->options['columns'] = $columns;
     }
-
+    
     /**
      * Retrieve table data from a DataRecordCollection
      * @param DatarecordCollection $collection
+     * @param string $resolve_relation_field If a field name is given here, the
+     * relation of this field is resolved and the resulting data is also added.
      * @return array Array ready to use for table
      */
-    public static function getDataFromDatarecordCollection($collection) {
-        $result = array();
+    public static function getDataFromDatarecordCollection($collection, $resolve_relation_field = '') {
+        $result = array(); $supplemental_data = array();
         $classname = $collection->getCollectionType();
         if ($classname === false) return array();
+        // Resolve relation (if any)
+        if ($resolve_relation_field) {
+            if (! in_array($classname::getStructure()[$resolve_relation_field]['fieldtype'], array(Datarecord::FIELDTYPE_REFERENCE_SINGLE))) trigger_error('getDataFromDatarecordCollection can only resolve single reference fields and '.$resolve_relation_field.' is not of this type.', E_USER_ERROR);
+            $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreignclass'];
+            $simple_foreign_class = $foreign_class::getClassName();
+            $filter = new Filter($foreign_class);
+            $filter->addCondition(new FilterConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
+            $supplemental_datarecord = $filter->execute();
+            $supplemental_data = $supplemental_datarecord->getAllWithKeys();
+        }
         $structure = $classname::getStructure();
         foreach ($collection->getAll() as $object) {
             $columns = array();
@@ -67,6 +89,13 @@ class Table {
                         $columns[$field] = $value;
                 }
             }
+            // Add relation data (if any)
+            if ($supplemental_data[$object->getRawValue($resolve_relation_field)]) {
+                foreach ($supplemental_data[$object->getRawValue($resolve_relation_field)]->getAsArray(array(), Datarecord::RENDER_TEXT) as $field => $value) {
+                    $columns[$simple_foreign_class.'-'.$field] = $value;
+                }
+            }
+            $columns['platform_can_copy'] = $object->canCopy() ? 1 : 0;
             $columns['platform_can_delete'] = $object->canDelete() === true ? 1 : 0;
             $columns['platform_can_edit'] = $object->canEdit() ? 1 : 0;
             $result[] = $columns;
@@ -79,7 +108,7 @@ class Table {
      * @param string $classname Name of class to build from
      * @return array Column definition compatible with Tabulator
      */
-    public static function buildDefinitionFromDatarecord($classname) {
+    public static function buildDefinitionFromDatarecord($classname, $prefix = '') {
         $columndef = array();
         $structure = $classname::getStructure();
         
@@ -88,7 +117,7 @@ class Table {
         foreach ($fields as $field) {
             $columndef[] = array(
                 'title' => $structure[$field]['label'],
-                'field' => $field,
+                'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter($structure[$field]['fieldtype']),
                 'width' => valalt($structure[$field]['width'], 200)
@@ -117,6 +146,22 @@ class Table {
                 return 'string';
         }
     }
+    
+   /**
+     * Ensure that the given columns are hidden
+     * @param array $hidden_columns Column names to hide
+     */
+    public function hideColumns($hidden_columns) {
+        $columns = $this->options['columns'];
+        if (! is_array($columns) || ! is_array($hidden_columns)) return;
+        $new_columns = array();
+        foreach ($columns as $column) {
+            if (in_array($column['field'], $hidden_columns)) $column['visible'] = false;
+            $new_columns[] = $column;
+        }
+        $this->options['columns'] = $new_columns;
+    }
+    
     
     /**
      * Render a form for selecting columns for this table.
@@ -149,9 +194,25 @@ class Table {
     /**
      * Render the table.
      */
-    public function renderTable() {
+    public function render() {
         echo '<div id="'.$this->id.'" class="'.Design::getClass('platform_table', 'platform_table platform_invisible').'">'.json_encode($this->options).'</div>';
     }
+    
+    /**
+     * Only the named columns are shown
+     * @param array $show_columns Column names to show
+     */
+    public function setColumns($show_columns) {
+        $columns = $this->options['columns'];
+        if (! is_array($columns) || ! is_array($show_columns)) return;
+        $new_columns = array();
+        foreach ($columns as $column) {
+            $column['visible'] = in_array($column['field'], $show_columns);
+            $new_columns[] = $column;
+        }
+        $this->options['columns'] = $new_columns;
+    }
+    
     
     /**
      * Set the table definition from a given Datarecord and also consider saved
@@ -162,7 +223,7 @@ class Table {
         $this->options['columns'] = self::buildDefinitionFromDatarecord($classname);
         $this->adjustColumnsFromConfiguration();
     }
-    
+
     /**
      * Set an option for this table
      * @param string $option Option keyword
@@ -181,4 +242,20 @@ class Table {
                 break;
         }
     }
+    
+    /**
+     * Ensure that the given columns are shown
+     * @param array $show_columns Column names to show
+     */
+    public function showColumns($show_columns) {
+        $columns = $this->options['columns'];
+        if (! is_array($columns) || ! is_array($show_columns)) return;
+        $new_columns = array();
+        foreach ($columns as $column) {
+            if (in_array($column['field'], $show_columns)) $column['visible'] = true;
+            $new_columns[] = $column;
+        }
+        $this->options['columns'] = $new_columns;
+    }
+    
 }

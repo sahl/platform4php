@@ -76,6 +76,12 @@ class Datarecord {
      * @var boolean|string 
      */
     protected static $key_field = false;
+    
+    /**
+     * Point to which field contains the title for this field
+     * @var boolean|string 
+     */
+    protected static $title_field = false;
 
     /**
      * Indicate the location of this record
@@ -159,6 +165,7 @@ class Datarecord {
      */
     public static function addStructure($structure) {
         foreach ($structure as $field => $data) {
+            if ($data['is_title']) static::$title_field = $field;
             if (isset($data['foreignclass']) && substr($data['foreignclass'],0,1) == '\\') $data['foreignclass'] = substr($data['foreignclass'],1);
             switch($data['fieldtype']) {
                 case self::FIELDTYPE_CURRENCY:
@@ -241,6 +248,15 @@ class Datarecord {
     }
     
     /**
+     * Check if this object can be copied.
+     * This is a soft check, which doesn't affect the inner workings of this object.
+     * @return boolean
+     */
+    public static function canCopy() {
+        return false;
+    }
+    
+    /**
      * Check if a new instance of this object can be created.
      * This is a soft check, which doesn't affect the inner workings of this object.
      * @return boolean
@@ -278,6 +294,73 @@ class Datarecord {
      */
     public function canEdit() {
         return true;
+    }
+    
+    /**
+     * Make a copy of this object
+     * @return Datarecord New copied and saved object (in read mode)
+     */
+    public function copy($related_objects_to_copy = array()) {
+        $copy = $this->getCopy(true);
+        // Rename object
+        $copy->save(false, true);
+        // Check if there also are related objects to copy
+        if (count($related_objects_to_copy)) {
+            $remap = array(); $new_objects = array();
+            // Add a remapping from the old ID to the new ID
+            $remap[get_called_class()][$this->getValue($this->getKeyField())] = $copy->getValue($this->getKeyField());
+            $new_objects[get_called_class()][] = $copy;
+            // Loop all objects
+            foreach ($related_objects_to_copy as $class) {
+                if (substr($class,0,1) == '\\') $class = substr($class,1);
+                if (! class_exists($class)) trigger_error('Class '.$class.' does not exist.', E_USER_ERROR);
+                // Find all fields in remote object pointing to this object type
+                $referring_fields = $class::getFieldsRelatingTo(get_called_class());
+                if (! count($referring_fields)) continue;
+                // Build a filter to retrieve relevant objects
+                $filter = new Filter($class);
+                foreach ($referring_fields as $referring_field)
+                    $filter->addConditionOR(new FilterConditionMatch($referring_field, $this));
+                // Now get all relevant objects and copy them
+                $relevant_objects = $filter->execute()->getAll();
+                foreach ($relevant_objects as $relevant_object) {
+                    $new_object = $relevant_object->getCopy();
+                    $new_object->save(false, true);
+                    $new_objects[$class][] = $new_object;
+                    // Add a remapping from the old ID to the new ID
+                    $remap[$class][$relevant_object->getValue($relevant_object->getKeyField())] = $new_object->getValue($relevant_object->getKeyField());
+                }
+            }
+            // Now we need to loop again to fix relations
+            foreach ($new_objects as $class => $objects) {
+                foreach ($objects as $object) {
+                    // Loop to find all relevant fields
+                    foreach ($class::$structure as $fieldname => $definition) {
+                        // If this is a single reference pointing to a remapped object...
+                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE && isset($remap[$definition['foreignclass']])) {
+                            // If we have a remap from an old to a new id, use it.
+                            if (isset($remap[$definition['foreignclass']][$object->getValue($fieldname)]))
+                                $object->setValue($fieldname, $remap[$definition['foreignclass']][$object->getValue($fieldname)]);
+                        }
+                        // If this is a multi reference pointing to a remapped object...
+                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE && isset($remap[$definition['foreignclass']])) {
+                            $new_values = array();
+                            // Loop all values...
+                            foreach ($object->getValue($fieldname) as $value) {
+                                // If we have a remap from an old id to a new id, use it. Otherwise keep the existing value.
+                                $new_values[] = $remap[$definition['foreignclass']][$value] ?: $value;
+                            }
+                            // Write back values.
+                            $object->setValue($fieldname, $new_values);
+                        }
+                    }
+                    // Save the finalized object.
+                    $object->save();
+                }
+            }
+        }
+        $copy->unlock();
+        return $copy;
     }
     
     /**
@@ -784,6 +867,26 @@ class Datarecord {
     }
     
     /**
+     * Get a copy of this object
+     * @return Datarecord
+     */
+    public function getCopy($name_as_copy = false) {
+        $class = get_called_class();
+        $new_object = new $class(); 
+        $new_object->setFromArray($this->getAsArray(array(),self::RENDER_RAW));
+        if (static::$title_field && $name_as_copy) $new_object->setValue(static::$title_field, 'Copy of '.$this->getRawValue(static::$title_field));
+        return $new_object;
+    }
+
+    /**
+     * Get the script to use with the edit form from this object
+     * @return string
+     */
+    public static function getEditScript() {
+        return static::$edit_script;
+    }
+    
+    /**
      * Get the field definition for a particular field
      * @param string $field Field name
      * @return array
@@ -791,6 +894,21 @@ class Datarecord {
     public static function getFieldDefinition($field) {
         static::ensureStructure();
         return static::$structure[$field];
+    }
+    
+    /**
+     * Get field names of all fields referring to the given class
+     * @param string $class Class name
+     * @return array Field names
+     */
+    public static function getFieldsRelatingTo($class) {
+        static::ensureStructure();
+        $result = array();
+        foreach (static::$structure as $fieldname => $definition) {
+            if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == $class)
+                $result[] = $fieldname;
+        }
+        return $result;
     }
     
     /**
@@ -830,8 +948,6 @@ class Datarecord {
     public static function getForm() {
         static::ensureStructure();
         $baseclass = strtolower(strpos(get_called_class(), '\\') !== false ? substr(get_called_class(), strrpos(get_called_class(), '\\')+1) : get_called_class());
-        // Request javascript
-        if (static::$edit_script) \Platform\Design::JSFile(static::$edit_script);
         // Build form
         $form = new Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
@@ -998,7 +1114,7 @@ class Datarecord {
                 return $this->getRawValue($field) ? '---' : '';
             case self::FIELDTYPE_TEXT:
             case self::FIELDTYPE_BIGTEXT:
-                return str_replace('\\n', '<br>', htmlentities($this->getRawValue($field)));
+                return str_replace("\n", '<br>', htmlentities($this->getRawValue($field)));
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 'Yes' : 'No';
             default:
@@ -1101,7 +1217,7 @@ class Datarecord {
      * @return string
      */
     public function getTitle() {
-        return get_called_class().' (#'.$this->getValue(static::getKeyField(), self::RENDER_RAW).')';
+        return static::$title_field ? $this->getFullValue(static::$title_field) : get_called_class().' (#'.$this->getValue(static::getKeyField(), self::RENDER_RAW).')';
     }
     
     /**
@@ -1484,11 +1600,17 @@ class Datarecord {
         // Get object name
         $name = strtolower(static::getObjectName());
         
+        // Prepare script
+        $script = static::getEditScript();
+        if ($script) \Platform\Design::JSFile ($script);
+        
         // Create table
         $datarecord_table = new Table($class.'_table');
         $datarecord_table->setDefinitionFromDatarecord(get_called_class());
         $datarecord_table->setOption('ajaxURL', '/Platform/Datarecord/php/table_datarecord.php?class='.get_called_class());
         $datarecord_table->setOption('placeholder', 'No '.$name);
+        $datarecord_table->setOption('show_selector', true);
+        $datarecord_table->setOption('movableColumns', true);
         
         // Grouping
         $groupfields = array();
@@ -1513,7 +1635,7 @@ class Datarecord {
         
         $menu = array();
         if (static::canCreate()) $menu[$class.'_new_button'] = 'Create new '.$name;
-        
+        if (static::canCopy()) $menu[$class.'_copy_button'] = 'Copy selected '.$name;
         $menu[$class.'_edit_button'] = 'Edit selected '.$name;
         $menu[$class.'_delete_button'] = 'Delete selected '.$name;
         $menu[$class.'_column_select_button'] = 'Select columns';
@@ -1523,7 +1645,7 @@ class Datarecord {
         
         $datarecord_menu->render();
         
-        $datarecord_table->renderTable();
+        $datarecord_table->render();
         
         echo '</div>';
 
