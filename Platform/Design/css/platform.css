@@ -18,9 +18,16 @@
 
 .platform_table {
     height: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .platform_autocenter {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.platform_autocenter .platform_table {
     margin-left: auto;
     margin-right: auto;
 }
@@ -30,4 +37,9 @@
     .platform_autocenter {
         min-width: 980px;
     }
+    
+    .platform_autocenter .platform_table {
+        min-width: 980px;
+    }
+    
 }

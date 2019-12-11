@@ -119,8 +119,7 @@ class Design {
         'formfield' => 'w3-input',
         'formfield_checkbox' => 'w3-check',
         'file_input_frame' => '',
-        'platform_table' => 'platform_autocenter',
-        
+        'platform_table' => '',
     );
     
 }
