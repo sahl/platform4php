@@ -68,7 +68,7 @@ class Filter {
      * @return \Platform\DatarecordCollection The result of the filter.
      */
     public function execute() {
-        return $this->base_object->getCollectionFromSQL($this->getSQL());
+        return $this->base_object->getCollectionFromSQL($this->getSQL(), true);
     }
     
     /**

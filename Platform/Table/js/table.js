@@ -54,6 +54,12 @@ addCustomPlatformFunction(function(item) {
             delete table_configuration['filterfield'];
         }
         
+        var callback = false;
+        if (table_configuration['callback_function']) {
+            callback = eval(table_configuration['callback_function']);
+            delete table_configuration['callback_function'];
+        }
+        
         element.removeClass('platform_invisible');
         
         var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
@@ -100,6 +106,10 @@ addCustomPlatformFunction(function(item) {
                     cell.getRow().toggleSelect();
                 }
             }, true);
+        
+        if (typeof callback == 'function') {
+            callback(table);
+        }
         
         tablebuffer['#'+$(this).prop('id')] = table;
     })
