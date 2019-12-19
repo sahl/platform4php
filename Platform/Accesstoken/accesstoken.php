@@ -136,6 +136,24 @@ class Accesstoken extends Datarecord {
     }
     
     /**
+     * Return to a previously saved location, or do nothing if no location was
+     * saved.
+     */
+    public static function resumeLocation() {
+        if ($_SESSION['session_resume_url']) {
+            header('location: '.$_SESSION['session_resume_url']);
+            exit;
+        }
+    }
+    
+    /**
+     * Store the current URL location
+     */
+    public static function saveLocation() {
+        $_SESSION['session_resume_url'] = $_SERVER['QUERY_STRING'] ? $_SERVER['PHP_SELF'].'?'.$_SERVER['QUERY_STRING'] : $_SERVER['PHP_SELF'];
+    }
+    
+    /**
      * Store the token code in session for later retrieval
      */
     private function setSession() {
@@ -158,6 +176,10 @@ class Accesstoken extends Datarecord {
             $token = self::getByTokencode(self::getSavedTokenCode());
             if ($valid && ! $token->isValid()) $valid = false;
         }
+        if (! $valid) {
+            self::saveLocation();
+        }
+        
         if (! $valid && $redirect) {
             header('location: '.$redirect);
             exit;
@@ -169,6 +191,13 @@ class Accesstoken extends Datarecord {
             self::$current_user_id = $token->user_ref;
         }
         return $valid;
+    }
+    
+    public static function validateTokenCode($token_code) {
+        $access_token = Accesstoken::getByTokencode($token_code);
+        if (! $access_token->isInDatabase() || ! $access_token->isValid()) return false;
+        self::$current_user_id = $access_token->user_ref;
+        return true;
     }
     
     
