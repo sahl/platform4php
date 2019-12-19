@@ -10,10 +10,10 @@ class FieldFile extends Field {
     
     public function parse($value) {
         $this->value = array(
-            'mimetype' => $_POST[$this->getName().'__mimetype'],
-            'status' => $_POST[$this->getName().'__status'],
-            'original_file' => $_POST[$this->getName().'__original_file'],
-            'temp_file' => $_POST[$this->getName().'__temp_file'],
+            'mimetype' => $value['mimetype'],
+            'status' => $value['status'],
+            'original_file' => $value['original_file'],
+            'temp_file' => $value['temp_file'],
             'file_id' => 0
         );
         return true;
@@ -22,11 +22,11 @@ class FieldFile extends Field {
     public function renderInput() {
         $value = $this->getValue();
         if (! is_array($value)) $value = array();
-        echo '<input type="hidden" name="'.$this->getName().'__mimetype" value="'.$value['mimetype'].'">';
-        echo '<input type="hidden" name="'.$this->getName().'__status" value="'.$value['status'].'">';
-        echo '<input type="hidden" name="'.$this->getName().'__original_file" value="'.$value['original_file'].'">';
-        echo '<input type="hidden" name="'.$this->getName().'__temp_file" value="'.$value['temp_file'].'">';
-        echo '<br><iframe id="'.$this->getFieldIdForHTML().'" class="'.Design::getClass('file_input_frame', 'file_select_frame').'" src="/Platform/Field/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 width=100% height=50 style="vertical-align: top;"></iframe>';    
+        echo '<input type="hidden" name="'.$this->getName().'[mimetype]" value="'.$value['mimetype'].'">';
+        echo '<input type="hidden" name="'.$this->getName().'[status]" value="'.$value['status'].'">';
+        echo '<input type="hidden" name="'.$this->getName().'[original_file]" value="'.$value['original_file'].'">';
+        echo '<input type="hidden" name="'.$this->getName().'[temp_file]" value="'.$value['temp_file'].'">';
+        echo '<br><iframe id="'.$this->getFieldIdForHTML().'" data-name="'.$this->getName().'" class="'.Design::getClass('file_input_frame', 'file_select_frame').'" src="/Platform/Field/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 width=100% height=50 style="vertical-align: top;"></iframe>';
     }
     
     public function setValue($value) {

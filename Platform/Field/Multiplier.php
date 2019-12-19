@@ -48,18 +48,7 @@ class FieldMultiplier extends Field {
             $this->contained_fields[] = $field;
         }
     }
-    
-    /**
-     * Remove a field by name from this multiplier
-     * @param string $fieldname Field name
-     */
-    public function removeFieldByName($fieldname) {
-        $new_fields = array();
-        foreach ($this->contained_fields as $field) {
-            if ($fieldname != $field->getName()) $new_fields[] = $field;
-        }
-        $this->contained_fields = $new_fields;
-    }
+
     
     /**
      * Add all fields from a form file to this multiplier
@@ -71,6 +60,16 @@ class FieldMultiplier extends Field {
         $this->addFields(Form::parseFieldsFromText($text));
     }
 
+    /**
+     * Attach this field to a form
+     * @param \Platform\Form $form
+     */
+    public function attachToForm($form) {
+        if (! $form instanceof Form) trigger_error('Tried to attach field to non-form object', E_USER_ERROR);
+        $this->form = $form;
+        foreach ($this->contained_fields as $field) $field->attachToForm($form);
+    }
+    
     /**
      * Get a field by name
      * @param string $fieldname Field name
@@ -115,6 +114,18 @@ class FieldMultiplier extends Field {
             }
         }
         return $totalresult;
+    }
+    
+    /**
+     * Remove a field by name from this multiplier
+     * @param string $fieldname Field name
+     */
+    public function removeFieldByName($fieldname) {
+        $new_fields = array();
+        foreach ($this->contained_fields as $field) {
+            if ($fieldname != $field->getName()) $new_fields[] = $field;
+        }
+        $this->contained_fields = $new_fields;
     }
     
     public function renderInput() {

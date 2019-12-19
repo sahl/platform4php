@@ -108,12 +108,17 @@ class File extends Datarecord {
         return $folder;
     }
     
+    public function getFileTypeURL() {
+        return self::getFiletypeURLByExtension(self::extractExtension($this->getRawValue('filename')));
+    }
+    
     /**
      * Get an URL for an icon image corresponding to the given extension
      * @param string $extension
      * @return string URL to image
      */
-    public static function getFiletypeURL($extension) {
+    public static function getFiletypeURLByExtension($extension) {
+        $extension = strtolower($extension);
         if (! file_exists(__DIR__.'/gfx/'.$extension.'.png')) $extension = 'other'; 
         return '/Platform/File/gfx/'.$extension.'.png';
     }

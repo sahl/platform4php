@@ -35,7 +35,6 @@ function platform_detect_values(element) {
 }
 
 function platform_handle_multiplier_expand() {
-    console.log('expand '+$(this).prop('id'));
     var row = $(this).closest('.platform_form_multiplier_element');
     // Check if we need to expand
     if (row.next().is(':last-child') && $(this).val() != '') {
@@ -46,10 +45,10 @@ function platform_handle_multiplier_expand() {
         new_row.find('input[type="checkbox"]').attr('checked', false);
         new_row.find('.formfield_error').removeClass('formfield_error');
         new_row.find('.formfield_error_container').hide();
+        platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));
         new_row.applyPlatformFunctions();
         platform_add_multiplier_functionality(new_row);
         row.closest('.platform_form_multiplier').trigger('row_added');
-        platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));
     }
     return true;
 }
@@ -110,10 +109,29 @@ function platform_multiplier_fixnames(element) {
             var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('name', new_name).prop('id', new_id);
-            if ($(this).parent().is('.formfield_container')) {
-                $(this).parent().prop('id', new_name+'_container');
-                $(this).parent().find('label').prop('for', new_name);
-            }
+//            if ($(this).parent().is('.formfield_container') && ! $(this).parent().find('.file_select_frame').length) {
+//                $(this).parent().prop('id', new_name+'_container');
+//                $(this).parent().find('label').prop('for', new_name);
+//            }
+        })
+        $(this).find('.formfield_container').each(function() {
+            var id = $(this).prop('id');
+            var new_id = id.replace(regexp, '$1['+i+']$2');
+            $(this).prop('id', new_id);
+            // TODO: We cannot find the main field for the label
+        })
+        $(this).find('iframe.file_select_frame').each(function() {
+            var name = $(this).data('name');
+            var new_name = name.replace(regexp, '$1['+i+']$2');
+            var id = $(this).prop('id');
+            var new_id = id.replace(regexp, '$1['+i+']$2');
+            $(this).prop('id', new_id);
+            // Recode url if source changed
+            var src = '/Platform/Field/php/file.php?form_name='+$(this).closest('form').prop('id')+'&field_name='+new_name;
+            console.log('Compare');
+            console.log(name);
+            console.log(new_name);
+            if (name != new_name) $(this).prop('src', src);
         })
         i++;
     })

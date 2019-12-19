@@ -219,7 +219,7 @@ class Field {
      * @return string
      */
     public function getFieldIdForHTML() {
-        if ($this->form) return $this->form->getId().'_'.$this->name;
+        if ($this->form) return $this->form->getId().'_'.$this->getName();
         return $this->name;
     }
     
