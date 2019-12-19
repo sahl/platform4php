@@ -374,6 +374,15 @@ class Datarecord {
         
         if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
         
+        // Terminate all files
+        foreach (static::getStructure() as $key => $definition) {
+            if ($definition['fieldtype'] == self::FIELDTYPE_FILE && $this->getRawValue($key)) {
+                $file = new File();
+                $file->loadForWrite($this->getRawValue($key));
+                $file->delete();
+            }
+        }
+        
         self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
         $deleted_id = $this->values[static::getKeyField()];
         unset($this->values[static::getKeyField()]);
@@ -853,14 +862,17 @@ class Datarecord {
     /**
      * Get a collection containing the objects gathered by the given SQL
      * @param string $sql
+     * @param boolean $perform_access_check If true, then only return objects which
+     * we can access
      * @return DatarecordCollection
      */
-    public static function getCollectionFromSQL($sql) {
+    public static function getCollectionFromSQL($sql, $perform_access_check = false) {
         $collection = new DatarecordCollection();
         $qh = self::query($sql);
         while ($qr = fr($qh)) {
             $object = new static();
             $object->loadFromDatabaseRow($qr);
+            if ($perform_access_check && ! $object->canAccess()) continue;
             $collection->add($object);
         }
         return $collection;
@@ -1946,8 +1958,8 @@ class Datarecord {
                 if (! is_array($value)) $value = array($value);
                 $final = array();
                 foreach ($value as $v) {
-                    if (is_numeric($v)) $final[] = $v;
-                    elseif (get_class($v) == static::$structure[$field]['foreignclass']) $final[] = $v->getValue($value->getKeyField());
+                    if (is_numeric($v)) $final[] = (int)$v;
+                    elseif (get_class($v) == static::$structure[$field]['foreignclass']) $final[] = (int)$v->getValue($value->getKeyField());
                     elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreignclass'].' but got '.get_class($v), E_USER_ERROR);
                 }
                 $this->values[$field] = $final;
@@ -2043,7 +2055,15 @@ class Datarecord {
         return true;
     }
     
-
+    /**
+     * Validate if the object is valid in it's current state.
+     * @return boolean|array true if valid otherwise array of problems
+     */
+    public function validateObject() {
+        return true;
+    }
+    
+    
     const FIELDTYPE_TEXT = 1;
     const FIELDTYPE_INTEGER = 2;
     const FIELDTYPE_FLOAT = 3;
