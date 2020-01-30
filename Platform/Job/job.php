@@ -120,10 +120,10 @@ class Job extends \Platform\Datarecord {
         }
         $this->process_id = 0;
         $this->run_count = $this->run_count + 1;
-        $this->last_run_time = $this->last_start->getMinutesUntil(Timestamp::now());
+        $this->last_run_time = $this->last_start->getMinutesUntil(Time::now());
         $this->average_run_time = (($this->run_count-1)*$this->average_run_time + $this->last_run_time)/$this->run_count;
         if ($this->frequency_offset_from_end && $this->freqency > 0) {
-            $this->next_start = Timestamp::now()->add(0, $this->frequency);
+            $this->next_start = Time::now()->add(0, $this->frequency);
         }
         $this->save();
     }
@@ -155,7 +155,7 @@ class Job extends \Platform\Datarecord {
         // Create basic job
         $job = new Job();
         $instance_id = Instance::getActiveInstanceID();
-        $qr = gfq("SELECT job_id FROM jobs WHERE instance_ref = ".((int)$instance_id)." AND class = '".esc($class)."' AND function = '".esc($function)."'");
+        $qr = Database::globalFastQuery("SELECT job_id FROM jobs WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
         if ($qr) {
             $job->loadForWrite($qr['job_id']);
             if ($frequency != self::FREQUENCY_NOCHANGE) $job->frequency = $frequency;
@@ -209,7 +209,7 @@ class Job extends \Platform\Datarecord {
         $filter = new Filter('Platform\Job');
         $filter->addCondition(new FilterConditionMatch('process_id', 0));
         $filter->addCondition(new FilterConditionNOT(new FilterConditionMatch('frequency', 0)));
-        $filter->addCondition(new FilterConditionLesserEqual('next_start', new Timestamp('now')));
+        $filter->addCondition(new FilterConditionLesserEqual('next_start', new Time('now')));
         return $filter->execute()->getAll();
     }
     
@@ -218,7 +218,7 @@ class Job extends \Platform\Datarecord {
      * @return boolean
      */
     public function isOverdue() {
-        return $this->last_start->add(0,$this->max_runtime)->isBefore(new Timestamp('now'));
+        return $this->last_start->add(0,$this->max_runtime)->isBefore(new Time('now'));
     }
     
     /**
@@ -313,7 +313,7 @@ class Job extends \Platform\Datarecord {
      */
     public function save($force_save = false, $keep_open_for_write = false) {
         // Ensure that we have a run time
-        if ($this->frequency != self::FREQUENCY_PAUSED && $this->next_start->getTimestamp() === null) $this->next_start = Timestamp::now();
+        if ($this->frequency != self::FREQUENCY_PAUSED && $this->next_start->getTimestamp() === null) $this->next_start = Time::now();
             
         $result = parent::save($force_save, $keep_open_for_write);
         if (Instance::getActiveInstanceID()) $this->log('updated', 'Job updated', $this);
@@ -326,9 +326,9 @@ class Job extends \Platform\Datarecord {
     public function start() {
         $this->reloadForWrite();
         self::log('start', 'Starting job scheduled at '.$this->getFullValue('next_start'), $this);
-        $this->last_start = Timestamp::now();
+        $this->last_start = Time::now();
         if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
-        if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Timestamp::now()->add(0, $this->frequency);
+        if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Time::now()->add(0, $this->frequency);
         $result = (int)shell_exec('php '.__DIR__.'/php/runjob.php '.$this->job_id.' > '.$this->getOutputFile().' & echo $!');
         if ($result) {
             self::log('started', 'Running with PID: '.$result, $this);

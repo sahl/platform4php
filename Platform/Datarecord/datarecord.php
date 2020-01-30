@@ -612,7 +612,7 @@ class Datarecord {
             $changed = true;
         } else {
             $fields_in_database = array();
-            while ($row = fr($resultset)) {
+            while ($row = Database::getRow($resultset)) {
                 $fields_in_database[$row['Field']] = $row;
             }
             
@@ -640,13 +640,13 @@ class Datarecord {
                     // As this field could have been represented in the metadata
                     // we'll try to copy it from the metadata.
                     $resultset = self::query("SELECT ".static::getKeyField().", ".$key.", metadata FROM ".static::$database_table);
-                    while ($row = fr($resultset)) {
+                    while ($row = Database::getRow($resultset)) {
                         $metadata = $row['metadata'] ? json_decode($row['metadata'], true) : array();
                         if (isset($metadata[$key])) {
                             // There was something. Write it and unset metadata.
                             $value = $metadata[$key];
                             unset($metadata[$key]);
-                            self::query("UPDATE ".static::$database_table." SET metadata = '".esc(json_encode($metadata))."', ".self::getAssignmentForDatabase($key, $value)." WHERE ".static::getKeyField()." = ".$row[static::getKeyField()]);
+                            self::query("UPDATE ".static::$database_table." SET metadata = '".Database::escape(json_encode($metadata))."', ".self::getAssignmentForDatabase($key, $value)." WHERE ".static::getKeyField()." = ".$row[static::getKeyField()]);
                         }
                     }
                     
@@ -659,10 +659,10 @@ class Datarecord {
                         // We asked to store this field in the metadata instead
                         // so copy it.
                         $resultset = self::query("SELECT ".static::getKeyField().", ".$field_in_database['Field'].", metadata FROM ".static::$database_table);
-                        while ($row = fr($resultset)) {
+                        while ($row = Database::getRow($resultset)) {
                             $metadata = $row['metadata'] ? json_decode($row['metadata'], true) : array();
                             $metadata[$field_in_database['Field']] = $row[$field_in_database['Field']];
-                            self::query("UPDATE ".static::$database_table." SET metadata = '".esc(json_encode($metadata))."' WHERE ".static::getKeyField()." = ".$row[static::getKeyField()]);
+                            self::query("UPDATE ".static::$database_table." SET metadata = '".Database::escape(json_encode($metadata))."' WHERE ".static::getKeyField()." = ".$row[static::getKeyField()]);
                         }
                     }
                     // Field was removed from structure.
@@ -684,7 +684,7 @@ class Datarecord {
         // Gather keys
         $existing_keys = array();
         $resultset = self::query("SHOW INDEXES FROM ".static::$database_table);
-        while ($row = fr($resultset)) {
+        while ($row = Database::getRow($resultset)) {
             if ($row['Key_name'] == 'PRIMARY') continue;
             $existing_keys[$row['Key_name']][] = $row['Column_name'];
         }
@@ -869,7 +869,7 @@ class Datarecord {
     public static function getCollectionFromSQL($sql, $perform_access_check = false) {
         $collection = new DatarecordCollection();
         $qh = self::query($sql);
-        while ($qr = fr($qh)) {
+        while ($qr = Database::getRow($qh)) {
             $object = new static();
             $object->loadFromDatabaseRow($qr);
             if ($perform_access_check && ! $object->canAccess()) continue;
@@ -943,13 +943,13 @@ class Datarecord {
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                return '\''.esc(json_encode($value)).'\'';
+                return '\''.Database::escape(json_encode($value)).'\'';
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
-                $datetime = new Timestamp($value);
+                $datetime = new Time($value);
                 return $datetime->getTimestamp() !== null ? '\''.$datetime->getTime().'\'' : 'NULL';
             default:
-                return '\''.esc($value).'\'';
+                return '\''.Database::escape($value).'\'';
         }
     }
     
@@ -1300,7 +1300,7 @@ class Datarecord {
                 return is_array($this->values[$field]) ? $this->values[$field] : array();
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
-                return $this->values[$field] instanceof Timestamp ? $this->values[$field] : new Timestamp();
+                return $this->values[$field] instanceof Time ? $this->values[$field] : new Time();
             case self::FIELDTYPE_REFERENCE_HYPER:
                 return array('foreignclass' => $this->values[$field.'_foreignclass'], 'reference' => $this->values[$field.'_reference']);
             default:
@@ -1431,7 +1431,7 @@ class Datarecord {
      */
     private function loadFromDatabase($id) {
         $result = self::query("SELECT * FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$id));
-        $row = fr($result);
+        $row = Database::getRow($result);
         if ($row !== false) {
             $this->parseFromDatabaseRow($row);
             $this->unpackMetadata();
@@ -1556,7 +1556,7 @@ class Datarecord {
         // Fill buffer with all missing instances
         if (count($missing)) {
             $qh = self::query("SELECT * FROM ".$class::$database_table." WHERE ".$class::getKeyField()." IN (".implode(',',$missing).")");
-            while ($qr = fr($qh)) {
+            while ($qr = Database::getRow($qh)) {
                 $foreign_datarecord = new $class();
                 $foreign_datarecord->loadFromDatabaseRow($qr);
                 self::$foreign_reference_buffer[$class][$qr[$class::getKeyField()]] = $foreign_datarecord->getTitle();
@@ -1838,7 +1838,7 @@ class Datarecord {
         }
         
         $this->packMetadata();
-        $this->setValue('change_date', new Timestamp('now'));
+        $this->setValue('change_date', new Time('now'));
         if ($this->isInDatabase()) {
             // Prepare update.
             $fielddefinitions = array();
@@ -1852,7 +1852,7 @@ class Datarecord {
             $this->values_on_load = $this->values;
             if (! $keep_open_for_write) $this->unlock();
         } else {
-            $this->setValue('create_date', new Timestamp('now'));
+            $this->setValue('create_date', new Time('now'));
             $fieldlist = array(); $fieldvalues = array();
             foreach (static::$structure as $key => $definition) {
                 if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
@@ -1969,7 +1969,7 @@ class Datarecord {
                 break;
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
-                $this->values[$field] = new Timestamp($value);
+                $this->values[$field] = new Time($value);
                 break;
             case self::FIELDTYPE_FILE:
                 if (is_array($value)) {

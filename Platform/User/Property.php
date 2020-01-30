@@ -55,7 +55,7 @@ class UserProperty extends Datarecord {
      * @return mixed Property value
      */
     public static function getPropertyForUser($userid, $property, $subproperty = '') {
-        $qr = fq("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".esc($property)."' AND subproperty = '".esc($subproperty)."'");
+        $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         $userproperty = new UserProperty();
         $userproperty->loadFromDatabaseRow($qr);
         return $userproperty->value;
@@ -79,7 +79,7 @@ class UserProperty extends Datarecord {
      * @param mixed $value Value to set (or null to remove existing)
      */
     public static function setPropertyForUser($userid, $property, $subproperty, $value = null) {
-        $qr = fq("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".esc($property)."' AND subproperty = '".esc($subproperty)."'");
+        $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         $userproperty = new UserProperty();
         $userproperty->loadFromDatabaseRow($qr);
         $userproperty->forceWritemode();

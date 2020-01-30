@@ -139,7 +139,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
         if (! $this->order_id) {
             $semaphore_name = 'DatarecordExtensibleFieldOrderId';
             if (!Semaphore::wait($semaphore_name)) trigger_error('Couldn\'t obtain '.$semaphore_name, E_USER_ERROR);
-            $qr = fq("SELECT MAX(order_id) as order_id FROM extensible_fields WHERE class = '".esc($this->class)."'");
+            $qr = Database::instanceFastQuery("SELECT MAX(order_id) as order_id FROM extensible_fields WHERE class = '".Database::escape($this->class)."'");
             $this->order_id = (int)$qr['order_id']+1;
             Semaphore::release($semaphore_name);
         }

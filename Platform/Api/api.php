@@ -46,7 +46,7 @@ class Api {
             }
         }
         ksort($result);
-        $result['__api_generated'] = Timestamp::now()->getTime();
+        $result['__api_generated'] = Time::now()->getTime();
         return $result;
     }
     
@@ -182,7 +182,7 @@ class Api {
                     $object->setValue($key, $value);
                     break;
                 case Datarecord::FIELDTYPE_DATETIME:
-                    $stamp = new Timestamp($value);
+                    $stamp = new Time($value);
                     if ($stamp->getTimestamp() <= 0) {
                         $errors[] = 'Could not parse '.$value.' into field '.$key.' as a valid timestamp';
                         continue;

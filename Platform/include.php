@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$configfile = $_SERVER['DOCUMENT_ROOT'].'/config.php';
+$configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
 
 require_once $configfile;
 
@@ -20,8 +20,6 @@ set_error_handler('Platform\\Errorhandler::handler');
 umask(002);
 
 function platformAutoLoad($class) {
-    global $platform_configuration;
-    
     if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
         if ($match[3]) $file = __DIR__.'/../'.$match[1].'/'.$match[2].'/'.$match[3].'.php';
         else $file = __DIR__.'/../'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
@@ -57,41 +55,6 @@ Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/css
 function platformInitialize() {
     Instance::ensureInDatabase();
 }
-
-// Conventience functions
-function gq($query, $failonerror = true) {
-    return Platform\Database::globalQuery($query, $failonerror);
-}
-
-function fq($query) {
-    return Platform\Database::instanceFastQuery($query);
-}
-
-function q($query, $failonerror = true) {
-    return Platform\Database::instanceQuery($query, $failonerror);
-}
-
-function fr($resultset) {
-    return Platform\Database::getRow($resultset);
-}
-
-function gfq($query) {
-    return Platform\Database::globalFastQuery($query);
-}
-
-function esc($string) {
-    return Platform\Database::escape($string);
-}
-
-function pagestart($title, $jsfiles = array(), $cssfiles = array()) {
-    Platform\Design::renderPagestart($title, $jsfiles, $cssfiles);
-}
-
-function pageend() {
-    Platform\Design::renderPageend();
-}
-
-// Helper functions
 
 /**
  * Removes an element from an array

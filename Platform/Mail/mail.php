@@ -113,7 +113,7 @@ class Mail extends \Platform\Datarecord {
         global $platform_configuration;
         $filter = new Filter('\Platform\Mail');
         $filter->addCondition(new FilterConditionMatch('is_sent', 0));
-        $filter->addCondition(new FilterConditionLesserEqual('scheduled_for', new Timestamp('now')));
+        $filter->addCondition(new FilterConditionLesserEqual('scheduled_for', new Time('now')));
         $mails = $filter->execute();
         if ($mails->getCount()) {
             self::initPhpmailer();
@@ -147,7 +147,7 @@ class Mail extends \Platform\Datarecord {
                     $mail->scheduled_for = $this->scheduled_for->add(0,0,1);
                 } else {
                     $mail->is_sent = 1;
-                    $mail->sent_date = Timestamp::now();
+                    $mail->sent_date = Time::now();
                 }
                 $mail->save();
             }
@@ -168,7 +168,7 @@ class Mail extends \Platform\Datarecord {
             'is_sent' => false,
             'error_count' => 0,
             'format' => 'html',
-            'scheduled_for' => new Timestamp('now')
+            'scheduled_for' => new Time('now')
         ));
         $mail->save();
         self::setupQueue();
@@ -177,9 +177,9 @@ class Mail extends \Platform\Datarecord {
     public static function setupQueue() {
         $job = Job::getJob('Platform\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
         // Check for next run time
-        $qr = fq("SELECT MIN(scheduled_for) as next_start FROM mails WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
+        $qr = Database::instanceFastQuery("SELECT MIN(scheduled_for) as next_start FROM mails WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
         if ($qr) {
-            $job->next_start = new Timestamp($qr['next_start']);
+            $job->next_start = new Time($qr['next_start']);
             $job->frequency = Job::FREQUENCY_ONCE;
         }
         $job->save();

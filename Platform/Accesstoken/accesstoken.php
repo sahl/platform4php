@@ -43,7 +43,7 @@ class Accesstoken extends Datarecord {
         if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
         $accesstoken->generateTokenCode();
         $accesstoken->user_ref = $user->user_id;
-        $timestamp = new Timestamp('now');
+        $timestamp = new Time('now');
         $accesstoken->expire_date = $timestamp->add($seconds_to_live);
         $accesstoken->save();
         Semaphore::release('accesstoken_generator');
@@ -121,7 +121,7 @@ class Accesstoken extends Datarecord {
      * @return boolean
      */
     public function isValid() {
-        return $this->isInDatabase() && $this->expire_date->isAfter(new Timestamp('now'));
+        return $this->isInDatabase() && $this->expire_date->isAfter(new Time('now'));
     }
     
     /**
@@ -129,10 +129,10 @@ class Accesstoken extends Datarecord {
      * @param int $seconds_to_live Seconds to live from now
      */
     public function quickExtend($seconds_to_live = 3600) {
-        $timestamp = new Timestamp('now');
+        $timestamp = new Time('now');
         $this->expire_date = $timestamp->add($seconds_to_live);
         // Make a dirty write primary for speed reasons
-        if ($this->isInDatabase()) q("UPDATE ".static::$database_table.' SET expire_date = '.$this->getFieldForDatabase('expire_date', $timestamp)." WHERE token_id = ".$this->token_id);
+        if ($this->isInDatabase()) Database::instanceQuery("UPDATE ".static::$database_table.' SET expire_date = '.$this->getFieldForDatabase('expire_date', $timestamp)." WHERE token_id = ".$this->token_id);
     }
     
     /**

@@ -24,7 +24,7 @@ class FilterConditionOneOf extends FilterCondition {
             switch ($fieldtype) {
                 case Datarecord::FIELDTYPE_ARRAY:
                 case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
-                    $sql[] = $this->fieldname.' LIKE \'%"'.$value.'"%\'';
+                    $sql[] = $this->fieldname.' REGEXP "[^0-9]'.$value.'[^0-9]"';
                 default:
                     $sql[] = $this->fieldname.' = '.$this->getSQLFieldValue($value);
             }
