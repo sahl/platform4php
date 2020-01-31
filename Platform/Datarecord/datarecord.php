@@ -808,16 +808,17 @@ class Datarecord {
      * @return array
      */
     public static function getAllAsArray() {
+        $result = array();
         $filter = new Filter(get_called_class());
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());
             $title = strip_tags($element->getTitle());
             self::$foreign_reference_buffer[get_called_class()][$id] = $title;
-            $fieldoptions[$id] = strip_tags($title);
+            $result[$id] = strip_tags($title);
         }
-        asort($fieldoptions);
-        return $fieldoptions;
+        asort($result);
+        return $result;
     }
     
     /**
