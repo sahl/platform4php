@@ -58,6 +58,13 @@ class Design {
         if (! in_array($js_file, self::$js_files_to_load)) self::$js_files_to_load[] = $js_file;
     }    
     
+    /**
+     * @deprecated
+     * @param type $box_id
+     * @param type $source
+     * @param type $parameters
+     * @param type $reveal
+     */
     public static function renderContentBox($box_id, $source, $parameters = array(), $reveal = 'fade') {
         echo '<div class="'.Design::getClass('content_box', 'platform_content_box').'" id="'.$box_id.'" data-source="'.$source.'" data-parameters="'.http_build_query($parameters).'"';
         if ($reveal) echo ' data-reveal="'.$reveal.'"';
@@ -116,6 +123,8 @@ class Design {
     
     private static $style_array = array(
         'datarecord_editcomplex' => 'platform_autocenter',
+        'datarecord_row' => 'w3-row-padding w3-margin-top',
+        'datarecord_column' => 'w3-col',
         'formfield' => 'w3-input',
         'formfield_checkbox' => 'w3-check',
         'file_input_frame' => '',

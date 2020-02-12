@@ -34,11 +34,27 @@ class Component {
     private static $component_counter = 1;
     
     /**
+     * Indicates if this component can only be used when logged in. (Relevant
+     * when using the ajax reload.     * 
+     * @var boolean
+     */
+    public static $is_secure = true;
+    
+    /**
      * Component ID for HTML
      * @var boolean|string 
      */
     private $component_id = false;
+    
+    private $classes = array();
 
+    /**
+     * Construct this component
+     * @param type $configuration
+     */
+    public function __construct($configuration = array()) {
+        foreach ($configuration as $key => $value) $this->setConfiguration ($key, $value);
+    }
     
     
     /**
@@ -57,6 +73,14 @@ class Component {
      */
     public function __set($key, $value) {
         $this->setConfiguration($key, $value);
+    }
+    
+    /**
+     * Add a class to this component
+     * @param string $class Class name
+     */
+    public function addClass($class) {
+        $this->classes[] = $class;
     }
     
     /**
@@ -95,7 +119,7 @@ class Component {
             $this->component_id = 'platform_component_'.(self::$component_counter++);
         }
         
-        $classes = array();
+        $classes = $this->classes;
         $classes[] = 'platform_component';
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
         $classes[] = 'platform_component_'.$this->getName();

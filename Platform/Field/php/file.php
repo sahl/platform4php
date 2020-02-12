@@ -3,7 +3,7 @@ namespace Platform;
 
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-pagestart('File upload', '/Platform/Field/js/file.js');
+Design::renderPagestart('File upload', '/Platform/Field/js/file.js');
 
 $current_file_name = '';
 
@@ -62,4 +62,4 @@ if ($current_file_name) {
     echo '</form>';
 }
 
-pageend();
+Design::renderPageend();

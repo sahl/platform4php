@@ -17,4 +17,5 @@ $.fn.greyOut = function(enable) {
             $(this).removeClass('platform_greyouted');
         }
     })
+    return this;
 }

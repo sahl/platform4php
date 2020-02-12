@@ -981,9 +981,9 @@ class Datarecord {
             }
             // Check if we need to start a new row
             if ($percentleft == 100) {
-                $form->addHTML('<div class="w3-row-padding w3-margin-top">');
+                $form->addHTML('<div class="'.Design::getClass('datarecord_row').'">');
             }
-            $field->addContainerClass('w3-col');
+            $field->addContainerClass(Design::getClass('datarecord_column'));
             $field->addContainerStyle('width: '.$size.'%');
             $percentleft -= $size;
 
