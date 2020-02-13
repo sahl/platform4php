@@ -1,7 +1,7 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-pagestart('Log into instance');
+\Platform\Design::renderPagestart('Log into instance');
 
 $loginform = new \Platform\Form('loginform', 'login.frm');
 
@@ -15,23 +15,14 @@ $loginform->addValidationFunction(function($form) {
     // Select the instance to check user credentials.
     $instance->activate();
     
-    $isloggedin = \Platform\User::tryLogin($_POST['username'], $_POST['password']);
-
-    if (! $isloggedin) {
-        $instance->deactivate();
-        $form->getFieldByName('username')->triggerError('Invalid user name or password');
-        $form->getFieldByName('password')->triggerError('Invalid user name or password');
-        return false;
-    }
-    // Ensure database structures
-    $instance->initializeDatabase();
+    $instance->login($_POST['username'], $_POST['password'], '/demo/app/');
     
-    return true;
+    $form->getFieldByName('username')->triggerError('Login failed');
+    return false;
 });
 
-if ($loginform->isSubmitted() && $loginform->validate()) {
-    header('location: /demo/app/');
-    exit;
+if ($loginform->isSubmitted()) {
+    $loginform->validate();
 }
 
 echo '<div class="w3-container w3-teal">';
@@ -46,4 +37,4 @@ echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.
 echo 'Platform';
 echo '</div>';
 
-pageend();
+\Platform\Design::renderPageend();

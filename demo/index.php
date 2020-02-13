@@ -1,7 +1,7 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-pagestart('Platform demo');
+\Platform\Design::renderPagestart('Platform demo');
 
 echo '<div class="w3-container w3-teal">';
 echo '<h1>Platform demo</h1>';
@@ -20,4 +20,4 @@ echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.
 echo 'Platform';
 echo '</div>';
 
-pageend();
+\Platform\Design::renderPageend();

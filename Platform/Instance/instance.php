@@ -6,11 +6,11 @@ class Instance extends Datarecord {
     protected static $database_table = 'platform_instances';
     protected static $structure = false;
     protected static $key_field = false;
+    protected static $location = self::LOCATION_GLOBAL;
     
     protected static $depending_classes = array(
         'Platform\Job'
     );
-    
 
     protected static function buildStructure() {
         static::addStructure(array(
@@ -22,6 +22,11 @@ class Instance extends Datarecord {
                 'label' => 'Instance title',
                 'store_in_metadata' => false,
                 'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'server_ref' => array(
+                'label' => 'Server',
+                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
+                'foreignclass' => '\\Platform\\Server'
             ),
             'is_initiated' => array(
                 'label' => 'Is initiated',
@@ -126,23 +131,48 @@ class Instance extends Datarecord {
     }
     
     /**
-     * Initialize this instance
-     * @param string $title Instance title
-     * @param string $username User name of first user
-     * @param string $password Password of first user
+     * Initialize this instance.
+     * @param string $title Instance title.
+     * @param string $username User name of first user.
+     * @param string $password Password of first user.
+     * @param int $on_server ID of server to place instance on.
      * @return Instance|boolean The created instance or false
      */
-    public static function initialize($title, $username, $password) {
-        if (! \Platform\Semaphore::wait('instanceinitialize', 30, 20)) return false;
+    public static function initialize($title, $username, $password, $on_server = 0) {
+        if (! \Platform\Semaphore::wait('instance_initialize', 30, 20)) return false;
         // Check if name is valid
         if (self::getByTitle($title) !== false) {
             \Platform\Semaphore::release('instance_initialize');
             return false;
         }
+        // Check if we know the server
+        if (! $on_server) {
+            $server = Server::getLeastLoaded();
+        } else {
+            $server = new Server();
+            $server->loadForRead($on_server);
+        }
+        if (! $server->isThisServer()) {
+            // Request creation on remote server
+            $request = array(
+                'event' => 'create_instance',
+                'class' => get_called_class(),
+                'title' => $title,
+                'username' => $username,
+                'password' => $password
+            );
+            $result = $server->talk($request);
+            if ($result === false || ! $result['status']) return false;
+            $cls = get_called_class();
+            $instance = new $cls();
+            $instance->loadForRead($result['instance_id']);
+            return $instance;
+        }
         // Create and initialize instance
         $cls = get_called_class();
         $instance = new $cls();
         $instance->title = $title;
+        $instance->server_ref = $server->server_id;
         $instance->save(false, true);
         
         $instance->activate();
@@ -166,6 +196,49 @@ class Instance extends Datarecord {
     }
     
     /**
+     * Check if this is the active instance
+     * @return boolean
+     */
+    public function isActive() {
+        return $this->instance_id = self::getActiveInstanceID();
+    }
+    
+    public function login($username, $password, $continue_url = '') {
+        if (mb_substr($continue_url,0,1) != '/') $continue_url = '/'.$continue_url;
+        $server = new Server();
+        $server->loadForRead($this->server_ref);
+        if (! $server->isThisServer()) {
+            // Request login on remote server
+            $request = array(
+                'event' => 'login',
+                'class' => get_called_class(),
+                'instance_id' => $this->instance_id,
+                'username' => $username,
+                'password' => $password
+            );
+            $result = $server->talk($request);
+            if ($result === false || ! $result['status']) return false;
+            $continue_url .= ((mb_strpos($continue_url,'?') !== false) ? '&' : '?').'token_code='.$result['token_code'].'&instance_id='.$this->instance_id;
+            header('location: https://'.$server->hostname.$continue_url);
+            exit;
+        }
+        $result = static::tryLogin($username, $password);
+        if ($result === false) return false;
+        // Ensure database structures
+        $this->initializeDatabase();
+        Accesstoken::resumeLocation();
+        header('location: '.$continue_url);
+        exit;
+    }
+    
+    public function loginToInstance($title, $username, $password, $continue_url = '') {
+        $instance = Instance::getByTitle($title);
+        if ($instance === false) return false;
+        $instance->activate();
+        return $instance->login($username, $password, $continue_url);
+    }
+    
+    /**
      * Save the instance initializing it if not already initialized
      * @param boolean $force_save Set true to always save object
      * @param boolean $keep_open_for_write Set to true to keep object open for write after saving
@@ -177,5 +250,14 @@ class Instance extends Datarecord {
             if ($this->createDatabase()) parent::save($forcesave);
         }
     }
-    
+
+    /**
+     * Try a login
+     * @param string $username
+     * @param string $password
+     * @return mixed Accesstoken on success, otherwise false.
+     */
+    public function tryLogin($username, $password) {
+        return User::tryLogin($username, $password);
+    }
 }

@@ -1,12 +1,14 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-pagestart('Installer');
+\Platform\Design::renderPagestart('Installer');
 
 echo '<div class="w3-container w3-teal">';
 echo '<h1>Installer</h1>';
 echo '</div>';
 
+Platform\Server::ensureInDatabase();
+Platform\Server::ensureThisServer();
 Platform\Instance::ensureInDatabase();
 Platform\Job::ensureInDatabase();
 
@@ -18,4 +20,4 @@ echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.
 echo 'Platform';
 echo '</div>';
 
-pageend();
+\Platform\Design::renderPageend();

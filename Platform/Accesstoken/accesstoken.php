@@ -168,6 +168,16 @@ class Accesstoken extends Datarecord {
      * @return boolean True if valid otherwise false 
      */
     public static function validateSession($redirect = '', $extend = false, $seconds_to_live = 3600) {
+        // Check for information in URL
+        if ($_GET['instance_id']) {
+            $instance = new Instance();
+            $instance->loadForRead($_GET['instance_id']);
+            $instance->activate();
+        }
+        if ($_GET['token_code']) {
+            $token = self::getByTokencode($_GET['token_code']);
+            $token->setSession();
+        }
         $valid = true;
         // Check if we have a valid instance
         if (Instance::getActiveInstanceID() === false) $valid = false;

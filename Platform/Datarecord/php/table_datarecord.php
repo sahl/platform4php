@@ -1,6 +1,6 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
-if (! Platform\Accesstoken::validateSession()) die('No session');
+if (! Platform\Accesstoken::validateSession() && !\Platform\Administrator::isLoggedIn()) die('No session');
 
 if ($_POST['filter']) $filter = \Platform\Filter::getFilterFromJSON ($_POST['filter']);
 else $filter = new Platform\Filter($_GET['class']);

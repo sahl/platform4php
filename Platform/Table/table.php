@@ -221,7 +221,7 @@ class Table {
      */
     public function setDefinitionFromDatarecord($classname) {
         $this->options['columns'] = self::buildDefinitionFromDatarecord($classname);
-        $this->adjustColumnsFromConfiguration();
+        if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
 
     /**

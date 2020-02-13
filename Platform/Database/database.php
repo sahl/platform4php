@@ -74,7 +74,7 @@ class Database {
         $instance = Instance::getActiveInstanceID();
         if (! $instance) trigger_error('Tried to connect to instance database without having an active instance.', E_USER_ERROR);
         if (self::$instance_connection === false) {
-            self::$instance_connection = mysqli_connect($platform_configuration['global_database_server'], $platform_configuration['global_database_username'], $platform_configuration['global_database_password'], Instance::getActiveDatabaseName());
+            self::$instance_connection = mysqli_connect($platform_configuration['local_database_server'], $platform_configuration['local_database_username'], $platform_configuration['local_database_password'], Instance::getActiveDatabaseName());
             if (! self::$instance_connection) {
                 trigger_error('Failed to connect to database '.mysqli_error(self::$instance_connection), E_USER_ERROR);
             }

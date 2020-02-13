@@ -1668,18 +1668,20 @@ class Datarecord {
         
         $fields = static::getTableFields();
 
-        $table_configuration = UserProperty::getPropertyForCurrentUser('table_configuration', $class.'_table');
-        if (! is_array($table_configuration)) {
-            // Build default set
-            $table_configuration = array();
-            foreach ($fields as $field) {
-                if (static::$structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE) $table_configuration[$field] = array('width' => 0);
+        // We can only select columns within an instance.
+        if (Instance::getActiveInstanceID()) {
+            $table_configuration = UserProperty::getPropertyForCurrentUser('table_configuration', $class.'_table');
+            if (! is_array($table_configuration)) {
+                // Build default set
+                $table_configuration = array();
+                foreach ($fields as $field) {
+                    if (static::$structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE) $table_configuration[$field] = array('width' => 0);
+                }
             }
+            echo '<div id="'.$class.'_column_dialog" title="'.$name.' columns" class="platform_invisible">';
+            $datarecord_table->renderColumnSelector();
+            echo '</div>';
         }
-        
-        echo '<div id="'.$class.'_column_dialog" title="'.$name.' columns" class="platform_invisible">';
-        $datarecord_table->renderColumnSelector();
-        echo '</div>';
         
     }
     

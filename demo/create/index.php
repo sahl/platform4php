@@ -1,7 +1,7 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-pagestart('Create new instance');
+\Platform\Design::renderPagestart('Create new instance');
 
 $new_instance_form = new \Platform\Form('new_instance_form', 'new_instance.frm');
 
@@ -20,11 +20,7 @@ if ($new_instance_form->isSubmitted() && $new_instance_form->validate()) {
     if ($instance instanceof \Platform\Instance) {
         // Instance was created. Login and continue.
         $instance->activate();
-        $loginresult = \Platform\User::tryLogin($values['username'], $values['password']);
-        if ($loginresult) {
-            header('location: /demo/app/');
-            exit;
-        }
+        $instance->login($values['username'], $values['password'], '/demo/app/');
         $new_instance_form->getFieldByName('instancetitle')->triggerError('Instance was created, but a login couldn\'t be performed.');
     } else {
         $new_instance_form->getFieldByName('instancetitle')->triggerError('A new instance couldn\'t be initialized!');
@@ -43,4 +39,4 @@ echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.
 echo 'Platform';
 echo '</div>';
 
-pageend();
+\Platform\Design::renderPageend();

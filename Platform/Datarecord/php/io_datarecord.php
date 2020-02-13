@@ -1,6 +1,6 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
-if (! Platform\Accesstoken::validateSession()) die('No session');
+if (! Platform\Accesstoken::validateSession() && !\Platform\Administrator::isLoggedIn()) die('No session');
 
 $class = $_POST['__class'];
 if (!class_exists($class)) $result = array('status' => 0, 'errormessage' => 'Invalid class');
