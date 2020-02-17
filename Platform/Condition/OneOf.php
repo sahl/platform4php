@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionOneOf extends FilterCondition {
+class ConditionOneOf extends Condition {
     
     public function __construct($fieldname, $values) {
         if (! is_array($values)) $values = array($values);

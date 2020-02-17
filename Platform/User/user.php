@@ -52,8 +52,8 @@ class User extends DatarecordExtensible {
      */
     public static function tryLogin($username, $password) {
         $filter = new Filter(get_called_class());
-        $filter->addCondition(new FilterConditionMatch('username', $username));
-        $filter->addCondition(new FilterConditionMatch('password', $password));
+        $filter->addCondition(new ConditionMatch('username', $username));
+        $filter->addCondition(new ConditionMatch('password', $password));
         $result = $filter->execute();
         if ($result->getCount()) {
             $user = $result->get(0);

@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionLesser extends FilterCondition {
+class ConditionMatch extends Condition {
     
     public function __construct($fieldname, $value) {
         // Resolve datarecord to its ID
@@ -15,9 +15,9 @@ class FilterConditionLesser extends FilterCondition {
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_ARRAY:
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
-                return 'FALSE';
+                return $this->fieldname.' LIKE \'%"'.$this->value.'"%\'';
             default:
-                return $this->fieldname.' < '.$this->getSQLFieldValue($this->value);
+                return $this->fieldname.' = '.$this->getSQLFieldValue($this->value);
         }
     }
     
@@ -27,7 +27,7 @@ class FilterConditionLesser extends FilterCondition {
      */
     public function toArray() {
         return array(
-            'type' => 'Lesser',
+            'type' => 'Match',
             'fieldname' => $this->fieldname,
             'value' => $this->value
         );

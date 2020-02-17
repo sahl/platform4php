@@ -197,7 +197,7 @@ class Job extends \Platform\Datarecord {
      */
     public static function getRunningJobs() {
         $filter = new Filter('Platform\Job');
-        $filter->addCondition(new FilterConditionGreater('process_id', 0));
+        $filter->addCondition(new ConditionGreater('process_id', 0));
         return $filter->execute()->getAll();
     }
     
@@ -207,9 +207,9 @@ class Job extends \Platform\Datarecord {
      */
     public static function getPendingJobs() {
         $filter = new Filter('Platform\Job');
-        $filter->addCondition(new FilterConditionMatch('process_id', 0));
-        $filter->addCondition(new FilterConditionNOT(new FilterConditionMatch('frequency', 0)));
-        $filter->addCondition(new FilterConditionLesserEqual('next_start', new Time('now')));
+        $filter->addCondition(new ConditionMatch('process_id', 0));
+        $filter->addCondition(new ConditionNOT(new ConditionMatch('frequency', 0)));
+        $filter->addCondition(new ConditionLesserEqual('next_start', new Time('now')));
         return $filter->execute()->getAll();
     }
     

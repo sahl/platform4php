@@ -112,8 +112,8 @@ class Mail extends \Platform\Datarecord {
     public static function processQueue() {
         global $platform_configuration;
         $filter = new Filter('\Platform\Mail');
-        $filter->addCondition(new FilterConditionMatch('is_sent', 0));
-        $filter->addCondition(new FilterConditionLesserEqual('scheduled_for', new Time('now')));
+        $filter->addCondition(new ConditionMatch('is_sent', 0));
+        $filter->addCondition(new ConditionLesserEqual('scheduled_for', new Time('now')));
         $mails = $filter->execute();
         if ($mails->getCount()) {
             self::initPhpmailer();

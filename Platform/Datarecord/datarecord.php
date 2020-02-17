@@ -31,7 +31,7 @@ class Datarecord {
 
     /**
      * Reference to a collection, that this is a part of
-     * @var DatarecordCollection 
+     * @var Collection 
      */
     public $collection = false;
 
@@ -320,7 +320,7 @@ class Datarecord {
                 // Build a filter to retrieve relevant objects
                 $filter = new Filter($class);
                 foreach ($referring_fields as $referring_field)
-                    $filter->addConditionOR(new FilterConditionMatch($referring_field, $this));
+                    $filter->addConditionOR(new ConditionMatch($referring_field, $this));
                 // Now get all relevant objects and copy them
                 $relevant_objects = $filter->execute()->getAll();
                 foreach ($relevant_objects as $relevant_object) {
@@ -398,7 +398,7 @@ class Datarecord {
             $filter = new Filter($depending_class);
             foreach ($depending_class::getStructure() as $key => $definition) {
                 if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
-                    $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
+                    $filter->addConditionOR(new ConditionMatch($key, $deleted_id));
                     $referer_field_found = true;
                 }
             }
@@ -428,7 +428,7 @@ class Datarecord {
             $filter = new Filter($depending_class);
             foreach ($depending_class::getStructure() as $key => $definition) {
                 if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
-                    $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
+                    $filter->addConditionOR(new ConditionMatch($key, $deleted_id));
                     $referer_field_found = true;
                 }
             }
@@ -762,7 +762,7 @@ class Datarecord {
             }
         }
         if (! count($search_fields)) {
-            if ($output == 'DatarecordCollection') return new DatarecordCollection();
+            if ($output == 'DatarecordCollection') return new Collection();
             return array();
         }
         $filter = new Filter(get_called_class());
@@ -770,8 +770,8 @@ class Datarecord {
         foreach ($parsed_keywords as $keyword) {
             $previouscondition = false;
             foreach ($search_fields as $fieldname) {
-                $condition = new FilterConditionLike($fieldname, $keyword);
-                if ($previouscondition) $condition = new FilterConditionOR($condition, $previouscondition);
+                $condition = new ConditionLike($fieldname, $keyword);
+                if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
                 $previouscondition = $condition;
             }
             $filter->addCondition($condition);
@@ -865,10 +865,10 @@ class Datarecord {
      * @param string $sql
      * @param boolean $perform_access_check If true, then only return objects which
      * we can access
-     * @return DatarecordCollection
+     * @return Collection
      */
     public static function getCollectionFromSQL($sql, $perform_access_check = false) {
-        $collection = new DatarecordCollection();
+        $collection = new Collection();
         $qh = self::query($sql);
         while ($qr = Database::getRow($qh)) {
             $object = new static();
@@ -1081,7 +1081,7 @@ class Datarecord {
                 // We need to retrieve all the referred values
                 $class = static::$structure[$field]['foreign_class'];
                 $filter = new Filter($class);
-                $filter->addCondition(new FilterConditionOneOf($class::getKeyField(), $this->getRawValue($field)));
+                $filter->addCondition(new ConditionOneOf($class::getKeyField(), $this->getRawValue($field)));
                 $values = array();
                 foreach ($filter->execute()->getAll() as $foreignobject) {
                     $values[] = array('id' => $foreignobject->getRawValue($class::getKeyField()), 'visual' => $foreignobject->getTitle());
@@ -1213,7 +1213,7 @@ class Datarecord {
             $filter = new Filter($referring_class);
             foreach ($referring_class::getStructure() as $key => $definition) {
                 if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
-                    $filter->addConditionOR(new FilterConditionMatch($key, $this->getRawValue($this->getKeyField())));
+                    $filter->addConditionOR(new ConditionMatch($key, $this->getRawValue($this->getKeyField())));
                     $referer_found = true;
                 }
             }

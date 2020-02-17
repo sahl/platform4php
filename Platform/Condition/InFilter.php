@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionInFilter extends FilterCondition {
+class ConditionInFilter extends Condition {
     
     private $other_filter = false;
     

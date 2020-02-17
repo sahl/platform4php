@@ -123,7 +123,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
         if (substr($class,0,1) == '\\') $class = substr($class,1);
 
         $filter = new \Platform\Filter('\\Platform\\DatarecordExtensiblefield');
-        $filter->addCondition(new \Platform\FilterConditionMatch('class', $class));
+        $filter->addCondition(new \Platform\ConditionMatch('class', $class));
         $parameters['filter'] = $filter;
         
         $parameters['form_function'] = function($form) use ($class) {

@@ -83,7 +83,7 @@ class Accesstoken extends Datarecord {
         do {
             $token_code = sha1(rand());
             $filter = new Filter('\\Platform\\Accesstoken');
-            $filter->addCondition(new FilterConditionMatch('token_code', $token_code));
+            $filter->addCondition(new ConditionMatch('token_code', $token_code));
         } while ($filter->execute()->getCount());
         $this->token_code = $token_code;
     }
@@ -95,7 +95,7 @@ class Accesstoken extends Datarecord {
      */
     public static function getByTokencode($token_code) {
         $filter = new Filter('\\Platform\\Accesstoken');
-        $filter->addCondition(new \Platform\FilterConditionMatch('token_code', $token_code));
+        $filter->addCondition(new \Platform\ConditionMatch('token_code', $token_code));
         $accesstoken = $filter->executeAndGetFirst();
         return $accesstoken instanceof Accesstoken ? $accesstoken : new Accesstoken();
     }

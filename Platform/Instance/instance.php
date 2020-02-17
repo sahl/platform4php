@@ -108,7 +108,7 @@ class Instance extends Datarecord {
      */
     public static function getByTitle($title) {
         $filter = new Filter('\\App\\Instance');
-        $filter->addCondition(new FilterConditionMatch('title', $title));
+        $filter->addCondition(new ConditionMatch('title', $title));
         return $filter->executeAndGetFirst();
     }
 

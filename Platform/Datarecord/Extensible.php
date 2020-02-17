@@ -9,7 +9,7 @@ class DatarecordExtensible extends Datarecord {
     protected static function buildStructure() {
         $structure = array();
         $filter = new Filter('\\Platform\\DatarecordExtensiblefield');
-        $filter->addCondition(new FilterConditionMatch('class', get_called_class()));
+        $filter->addCondition(new ConditionMatch('class', get_called_class()));
         $fields = $filter->execute()->getAll();
         foreach ($fields as $field) {
             $structure['extensiblefield'.$field->field_id] = array(

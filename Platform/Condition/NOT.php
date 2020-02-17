@@ -1,12 +1,12 @@
 <?php
 namespace Platform;
 
-class FilterConditionNOT extends FilterCondition {
+class ConditionNOT extends Condition {
     
     private $condition = null;
     
     public function __construct($condition) {
-        if (! $condition instanceof FilterCondition) trigger_error('Parameter 1 must be FilterCondition', E_USER_ERROR);
+        if (! $condition instanceof Condition) trigger_error('Parameter 1 must be FilterCondition', E_USER_ERROR);
         $this->condition = $condition;
     }
     

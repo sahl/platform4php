@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterCondition {
+class Condition {
     
     /**
      * Name of field to filter on
@@ -33,32 +33,32 @@ class FilterCondition {
     /**
      * Decode a condition from an array.
      * @param array $array Array earlier packed with toArray()
-     * @return \Platform\FilterConditionMatch|\Platform\FilterConditionLike|\Platform\FilterConditionNOT|\Platform\FilterConditionLesserEqual|\Platform\FilterConditionOneOf|\Platform\FilterConditionGreater|\Platform\FilterConditionGreaterEqual|\Platform\FilterConditionLesser|\Platform\FilterConditionOR|\Platform\FilterConditionAND
+     * @return \Platform\ConditionMatch|\Platform\ConditionLike|\Platform\ConditionNOT|\Platform\ConditionLesserEqual|\Platform\ConditionOneOf|\Platform\ConditionGreater|\Platform\ConditionGreaterEqual|\Platform\FilterConditionLesser|\Platform\ConditionOR|\Platform\ConditionAND
      */
     public static function getConditionFromArray($array) {
         switch ($array['type']) {
             case 'AND':
-                return new FilterConditionAND(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
+                return new ConditionAND(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
             case 'NOT':
-                return new FilterConditionNOT(self::getConditionFromArray($array['condition']));
+                return new ConditionNOT(self::getConditionFromArray($array['condition']));
             case 'OR':
-                return new FilterConditionOR(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
+                return new ConditionOR(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
             case 'Greater':
-                return new FilterConditionGreater($array['fieldname'], $array['value']);
+                return new ConditionGreater($array['fieldname'], $array['value']);
             case 'GreaterEqual':
-                return new FilterConditionGreaterEqual($array['fieldname'], $array['value']);
+                return new ConditionGreaterEqual($array['fieldname'], $array['value']);
             case 'Lesser':
-                return new FilterConditionLesser($array['fieldname'], $array['value']);
+                return new ConditionLesser($array['fieldname'], $array['value']);
             case 'LesserEqual':
-                return new FilterConditionLesserEqual($array['fieldname'], $array['value']);
+                return new ConditionLesserEqual($array['fieldname'], $array['value']);
             case 'Like':
-                return new FilterConditionLike($array['fieldname'], $array['value']);
+                return new ConditionLike($array['fieldname'], $array['value']);
             case 'Match':
-                return new FilterConditionMatch($array['fieldname'], $array['value']);
+                return new ConditionMatch($array['fieldname'], $array['value']);
             case 'OneOf':
-                return new FilterConditionOneOf($array['fieldname'], $array['value']);
+                return new ConditionOneOf($array['fieldname'], $array['value']);
             case 'InFilter':
-                return new FilterConditionInFilter($array['fieldname'], $array['filter']);
+                return new ConditionInFilter($array['fieldname'], $array['filter']);
             default:
                 trigger_error('Could not parse FilterCondition', E_USER_ERROR);
         }

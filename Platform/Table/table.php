@@ -58,7 +58,7 @@ class Table {
     
     /**
      * Retrieve table data from a DataRecordCollection
-     * @param DatarecordCollection $collection
+     * @param Collection $collection
      * @param string $resolve_relation_field If a field name is given here, the
      * relation of this field is resolved and the resulting data is also added.
      * @return array Array ready to use for table
@@ -73,7 +73,7 @@ class Table {
             $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreign_class'];
             $simple_foreign_class = $foreign_class::getClassName();
             $filter = new Filter($foreign_class);
-            $filter->addCondition(new FilterConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
+            $filter->addCondition(new ConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
             $supplemental_datarecord = $filter->execute();
             $supplemental_data = $supplemental_datarecord->getAllWithKeys();
         }

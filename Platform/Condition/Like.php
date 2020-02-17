@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionLike extends FilterCondition {
+class ConditionLike extends Condition {
     
     public function __construct($fieldname, $value) {
         // Resolve datarecord to its ID

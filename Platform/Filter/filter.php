@@ -17,7 +17,7 @@ class Filter {
     
     /**
      * The base condition of the filter.
-     * @var FilterCondition 
+     * @var Condition 
      */
     private $base_condition = null;
         
@@ -35,37 +35,37 @@ class Filter {
     /**
      * Add a condition to the filter. Several conditions can be added, and will
      * be AND'ed together
-     * @param \Platform\FilterCondition $condition Condition to add
+     * @param \Platform\Condition $condition Condition to add
      */
     public function addCondition($condition) {
-        if (! $condition instanceof FilterCondition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
+        if (! $condition instanceof Condition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
         $condition->attachFilter($this);
         if ($this->base_condition == null) {
             $this->base_condition = $condition;
         } else {
-            $this->base_condition = new FilterConditionAND($this->base_condition, $condition);
+            $this->base_condition = new ConditionAND($this->base_condition, $condition);
         }
     }
     
     /**
      * Add a condition to the filter. Several conditions can be added, and will
      * be OR'ed together
-     * @param \Platform\FilterCondition $condition Condition to add
+     * @param \Platform\Condition $condition Condition to add
      */
     public function addConditionOR($condition) {
-        if (! $condition instanceof FilterCondition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
+        if (! $condition instanceof Condition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
         $condition->attachFilter($this);
         if ($this->base_condition == null) {
             $this->base_condition = $condition;
         } else {
-            $this->base_condition = new FilterConditionOR($this->base_condition, $condition);
+            $this->base_condition = new ConditionOR($this->base_condition, $condition);
         }
     }
     
     
     /**
      * Execute this filter
-     * @return \Platform\DatarecordCollection The result of the filter.
+     * @return \Platform\Collection The result of the filter.
      */
     public function execute() {
         return $this->base_object->getCollectionFromSQL($this->getSQL(), true);
@@ -89,7 +89,7 @@ class Filter {
     public static function getFilterFromJSON($json) {
         $array = json_decode($json, true);
         $filter = new Filter($array['base_classname']);
-        if ($array['base_condition']) $filter->addCondition(FilterCondition::getConditionFromArray($array['base_condition']));
+        if ($array['base_condition']) $filter->addCondition(Condition::getConditionFromArray($array['base_condition']));
         return $filter;
     }
     
@@ -115,7 +115,7 @@ class Filter {
     }
     
     public function getSQLWhere() {
-        return $this->base_condition instanceof FilterCondition ? ' WHERE '.$this->base_condition->getSQLFragment() : '';
+        return $this->base_condition instanceof Condition ? ' WHERE '.$this->base_condition->getSQLFragment() : '';
     }
     
     /**
@@ -124,7 +124,7 @@ class Filter {
      */
     public function toJSON() {
         $result = array('base_classname' => $this->base_classname);
-        if ($this->base_condition instanceof FilterCondition) {
+        if ($this->base_condition instanceof Condition) {
             $result['base_condition'] = $this->base_condition->toArray();
         }
         return json_encode($result);

@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionGreaterEqual extends FilterCondition {
+class ConditionGreaterEqual extends Condition {
     
     public function __construct($fieldname, $value) {
         // Resolve datarecord to its ID

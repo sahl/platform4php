@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FilterConditionLesserEqual extends FilterCondition {
+class ConditionGreater extends Condition {
     
     public function __construct($fieldname, $value) {
         // Resolve datarecord to its ID
@@ -17,7 +17,7 @@ class FilterConditionLesserEqual extends FilterCondition {
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
                 return 'FALSE';
             default:
-                return $this->fieldname.' <= '.$this->getSQLFieldValue($this->value);
+                return $this->fieldname.' > '.$this->getSQLFieldValue($this->value);
         }
     }
     
@@ -27,10 +27,9 @@ class FilterConditionLesserEqual extends FilterCondition {
      */
     public function toArray() {
         return array(
-            'type' => 'LesserEqual',
+            'type' => 'Greater',
             'fieldname' => $this->fieldname,
             'value' => $this->value
         );
     }
-
 }
