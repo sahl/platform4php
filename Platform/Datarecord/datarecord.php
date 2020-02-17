@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class Datarecord {
+class Datarecord implements DatarecordReferable {
 
     // Column visibilities
     const COLUMN_INVISIBLE = 1;
@@ -1556,7 +1556,7 @@ class Datarecord {
         }
         // Fill buffer with all missing instances
         if (count($missing)) {
-            $qh = self::query("SELECT * FROM ".$class::$database_table." WHERE ".$class::getKeyField()." IN (".implode(',',$missing).")");
+            $qh = $class::query("SELECT * FROM ".$class::$database_table." WHERE ".$class::getKeyField()." IN (".implode(',',$missing).")");
             while ($qr = Database::getRow($qh)) {
                 $foreign_datarecord = new $class();
                 $foreign_datarecord->loadFromDatabaseRow($qr);
@@ -2023,7 +2023,7 @@ class Datarecord {
                 if (is_array($value)) {
                     $this->setValue($field.'_foreign_class', $value['foreign_class']);
                     $this->setValue($field.'_reference', $value['reference']);
-                } elseif ($value instanceof Datarecord) {
+                } elseif ($value instanceof DatarecordReferable) {
                     $this->setValue($field.'_foreign_class', get_class($value));
                     $this->setValue($field.'_reference', $value->getRawValue($value->getKeyField()));
                 }

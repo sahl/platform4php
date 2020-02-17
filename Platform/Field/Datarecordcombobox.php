@@ -3,7 +3,7 @@ namespace Platform;
 
 class FieldDatarecordcombobox extends FieldCombobox {
     
-    private $connected_class = false;
+    protected $connected_class = false;
     
     public function __construct($label, $name, $options = array()) {
         $this->classes[] = 'w3-input platform_combobox platform_datarecord_combobox';
@@ -61,7 +61,7 @@ class FieldDatarecordcombobox extends FieldCombobox {
     public function renderInput() {
         if (! is_array($this->value)) $this->value = array();
         echo '<input type="hidden" name="'.$this->name.'[id]" value="'.$this->value['id'].'">';
-        echo '<input id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().'" type="text" name="'.$this->name.'[visual]" value="'.$this->value['visual'].'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
+        echo '<input id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().'" type="text" data-realname="'.$this->name.'" name="'.$this->name.'[visual]" value="'.$this->value['visual'].'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
     }
     
     public function setValue($value) {

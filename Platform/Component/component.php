@@ -111,6 +111,12 @@ class Component {
     public function getConfiguration($key) {
         return $this->configuration[$key];
     }
+    
+    /**
+     * Override to prepare internal data in this component (if any)
+     */
+    public function prepareData() {
+    }
 
     /**
      * Renders the component

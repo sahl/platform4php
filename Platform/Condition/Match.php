@@ -16,6 +16,14 @@ class ConditionMatch extends Condition {
             case Datarecord::FIELDTYPE_ARRAY:
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
                 return $this->fieldname.' LIKE \'%"'.$this->value.'"%\'';
+            case Datarecord::FIELDTYPE_REFERENCE_HYPER:
+                if (is_array($this->value)) {
+                    return $this->fieldname.'_foreign_class = \''.Database::escape($this->value['foreign_class']).'\' AND '.$this->fieldname.'_reference = '.((int)$this->value['reference']);
+                } elseif ($this->value instanceof DatarecordReferable) {
+                    return $this->fieldname.'_foreign_class = \''.Database::escape(get_class($this->value)).'\' AND '.$this->fieldname.'_reference = '.((int)$this->value->getRawValue($this->value->getKeyField()));
+                } else {
+                    return 'false';
+                }
             default:
                 return $this->fieldname.' = '.$this->getSQLFieldValue($this->value);
         }

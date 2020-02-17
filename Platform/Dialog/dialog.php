@@ -6,8 +6,8 @@ class Dialog {
     private $id;
     private $title;
     private $text;
-    private $buttons;
     private $form;
+    private $buttons;
     
     public function __construct($id, $title, $text, $buttons = array(), $form = false) {
         $this->id = $id;
@@ -18,9 +18,9 @@ class Dialog {
     }
     
     public function render() {
-        echo '<div class="platform_dialog" id="'.$this->id.'" title="'.$this->title.'" data-buttons="'.json_encode($this->buttons).'">';
+        echo '<div class="platform_dialog" id="'.$this->id.'" title="'.$this->title.'" data-buttons="'.htmlentities(json_encode($this->buttons)).'">';
         echo $this->text;
-        if ($this->form instanceof Form) $form->render();
+        if ($this->form instanceof Form) $this->form->render();
         echo '</div>';
     }
     

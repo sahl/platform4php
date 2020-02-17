@@ -1,5 +1,5 @@
 <?php
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 if (! Platform\Accesstoken::validateSession() && !\Platform\Administrator::isLoggedIn()) die('No session');
 
 $class = $_POST['__class'];

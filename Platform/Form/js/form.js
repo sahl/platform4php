@@ -20,7 +20,9 @@ addCustomPlatformFunction(function(item) {
         var hiddenfields = [];
 
         $('.platform_form_field:hidden', $(this)).each(function() {
-            hiddenfields.push($(this).prop('name'));
+            var name = $(this).prop('name');
+            if ($(this).data('realname')) name = $(this).data('realname');
+            hiddenfields.push(name);
         });
         if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
 

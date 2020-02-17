@@ -1,6 +1,6 @@
 <?php
 namespace Platform;
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 if (! Accesstoken::validateSession()) die();
 

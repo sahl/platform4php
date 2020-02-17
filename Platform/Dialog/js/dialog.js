@@ -30,6 +30,22 @@ $.fn.platformDialog = function(buttons, opts) {
     return this;
 }
 
+addCustomPlatformFunctionLast(function(item) {
+     $('.platform_dialog',item).each(function(e) {
+         var buttons = [];
+         var dialog = $(this);
+         $.each($(this).data('buttons'), function(event, title) {
+             buttons.push({
+                 text: title,
+                 click: function() {dialog.trigger(event); console.log('Firex '+event);}
+             });
+         });
+         console.log('Build dialog');
+         $(this).platformDialog(buttons);
+     })
+ });
+
+
 $(function() {
     $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div></div>');
     $('#platform_allpurpose_dialog').platformDialog([]);

@@ -102,13 +102,13 @@ class Collection {
      * Get the raw value from the given field from all objects in this collection.
      * @param string $field Field to read from
      * @param int $limit Max number of values to retrieve. -1 = get all
-     * @return array Array of raw values
+     * @return array Array of raw values hashed by object id.
      */
     public function getAllRawValues($field, $limit = -1) {
         $result = array();
         foreach ($this->datarecords as $datarecord) {
             if ($limit > -1 && count($result) >= $limit) break;
-            $result[] = $datarecord->getRawValue($field);
+            $result[$datarecord->getRawValue($datarecord->getKeyField())] = $datarecord->getRawValue($field);
         }
         return $result;
     }
@@ -117,18 +117,20 @@ class Collection {
      * Get the full value from the given field from all objects in this collection.
      * @param string $field Field to read from
      * @param int $limit Max number of values to retrieve. -1 = get all
-     * @return array Array of full values sorted alfabetically
+     * @return array Array of full values sorted alfabetically hashed by object id
      */
     public function getAllFullValues($field, $limit = -1) {
-        $result = array(); $sort_array = array();
+        $keys = array(); $result = array(); $sort_array = array();
         foreach ($this->datarecords as $datarecord) {
             if ($limit > -1 && count($result) >= $limit) break;
             $value = $datarecord->getFullValue($field);
+            $keys[] = $datarecord->getRawValue($datarecord->getKeyField());
             $result[] = $value;
             // Strip HTML from the sorting array
             $sort_array[] = strip_tags($value);
         }
-        array_multisort($sort_array, SORT_ASC, $result);
+        array_multisort($sort_array, SORT_ASC, $result, $keys);
+        $result = array_combine($keys, $result);
         return $result;
     }
 
