@@ -214,7 +214,7 @@ class Api {
                     break;
                 case Datarecord::FIELDTYPE_REFERENCE_SINGLE:
                     if ($value > 0) {
-                        $foreign_class = $structure[$key]['foreignclass'];
+                        $foreign_class = $structure[$key]['foreign_class'];
                         $foreign_object = new $foreign_class();
                         $foreign_object->loadForRead($value);
                         if (! $foreign_object->isInDatabase()) {
@@ -226,7 +226,7 @@ class Api {
                     break;
                 case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
                     if (! is_array($value)) $value = array($value);
-                    $foreign_class = $structure[$key]['foreignclass'];
+                    $foreign_class = $structure[$key]['foreign_class'];
                     $foreign_object = new $foreign_class();
                     $values = array();
                     foreach ($value as $v) {

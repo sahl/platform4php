@@ -18,7 +18,7 @@ class UserProperty extends Datarecord {
                 'label' => 'User',
                 'required' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreignclass' => '\\Platform\\User'
+                'foreign_class' => '\\Platform\\User'
             ),
             'property' => array(
                 'label' => 'Property',

@@ -22,7 +22,7 @@ class Accesstoken extends Datarecord {
             'user_ref' => array(
                 'label' => 'User',
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreignclass' => 'Platform\User'
+                'foreign_class' => 'Platform\User'
             ),
             'expire_date' => array(
                 'label' => 'Token expire',

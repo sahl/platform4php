@@ -34,6 +34,12 @@ class Component {
     private static $component_counter = 1;
     
     /**
+     * URL used for component redrawing
+     * @var string
+     */
+    protected static $redraw_url = '/Platform/Component/php/get_content.php';
+    
+    /**
      * Indicates if this component can only be used when logged in. (Relevant
      * when using the ajax reload.     * 
      * @var boolean
@@ -83,6 +89,10 @@ class Component {
         $this->classes[] = $class;
     }
     
+    public function dontLoadScript() {
+        self::$base_script_loaded = true;
+    }
+    
     /**
      * Get a friendly name for this component, which is the class name without path.
      * @return string
@@ -122,10 +132,12 @@ class Component {
         $classes = $this->classes;
         $classes[] = 'platform_component';
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
-        $classes[] = 'platform_component_'.$this->getName();
         
-        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-configuration="'.htmlentities(json_encode($this->configuration), ENT_QUOTES).'">';
-        static::renderContent();
+        $configuration = $this->configuration;
+        $configuration['__class'] = get_called_class();
+        
+        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-redraw_url="'.static::$redraw_url.'" data-configuration="'.htmlentities(json_encode($configuration), ENT_QUOTES).'">';
+        $this->renderInnerDiv();
         echo '</div>';
     }
     
@@ -134,6 +146,13 @@ class Component {
      */
     public function renderContent() {
         echo 'Override me';
+    }
+    
+    public function renderInnerDiv() {
+        $inner_class = 'platform_component_'.$this->getName();
+        echo '<div class="'.$inner_class.'">';
+        $this->renderContent();
+        echo '</div>';
     }
     
      /**

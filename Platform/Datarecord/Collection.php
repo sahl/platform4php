@@ -149,7 +149,7 @@ class DatarecordCollection {
         }
         if (! count($foreign_ids)) return new DatarecordCollection();
         $structure = $this->collectiontype::getStructure();
-        $foreign_class = $structure[$field]['foreignclass'];
+        $foreign_class = $structure[$field]['foreign_class'];
         if (!class_exists($foreign_class)) return new DatarecordCollection();
         $filter = new Filter($foreign_class);
         $filter->addCondition(new FilterConditionOneOf($foreign_class::getKeyfield(), $foreign_ids));

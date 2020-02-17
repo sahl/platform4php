@@ -17,7 +17,7 @@ $.fn.platformDialog = function(buttons, opts) {
             modal: true,
             zIndex: 100,
             width: 650,
-            buttons: buttons,
+            buttons: dialog_buttons,
             open: function() {
                 $(this).dialog("moveToTop");
                 // Fix auto completers append

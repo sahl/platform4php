@@ -166,7 +166,7 @@ class Datarecord {
     public static function addStructure($structure) {
         foreach ($structure as $field => $data) {
             if ($data['is_title']) static::$title_field = $field;
-            if (isset($data['foreignclass']) && substr($data['foreignclass'],0,1) == '\\') $data['foreignclass'] = substr($data['foreignclass'],1);
+            if (isset($data['foreign_class']) && substr($data['foreign_class'],0,1) == '\\') $data['foreign_class'] = substr($data['foreign_class'],1);
             switch($data['fieldtype']) {
                 case self::FIELDTYPE_CURRENCY:
                     $data['store_in_database'] = false;
@@ -196,7 +196,7 @@ class Datarecord {
                 case self::FIELDTYPE_REFERENCE_HYPER:
                     $data['store_in_database'] = false;
                     static::addStructure(array(
-                        $field.'_foreignclass' => array(
+                        $field.'_foreign_class' => array(
                             'invisible' => true,
                             'fieldtype' => self::FIELDTYPE_TEXT,
                             'store_in_metadata' => $data['store_in_metadata']
@@ -337,18 +337,18 @@ class Datarecord {
                     // Loop to find all relevant fields
                     foreach ($class::$structure as $fieldname => $definition) {
                         // If this is a single reference pointing to a remapped object...
-                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE && isset($remap[$definition['foreignclass']])) {
+                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE && isset($remap[$definition['foreign_class']])) {
                             // If we have a remap from an old to a new id, use it.
-                            if (isset($remap[$definition['foreignclass']][$object->getValue($fieldname)]))
-                                $object->setValue($fieldname, $remap[$definition['foreignclass']][$object->getValue($fieldname)]);
+                            if (isset($remap[$definition['foreign_class']][$object->getValue($fieldname)]))
+                                $object->setValue($fieldname, $remap[$definition['foreign_class']][$object->getValue($fieldname)]);
                         }
                         // If this is a multi reference pointing to a remapped object...
-                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE && isset($remap[$definition['foreignclass']])) {
+                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE && isset($remap[$definition['foreign_class']])) {
                             $new_values = array();
                             // Loop all values...
                             foreach ($object->getValue($fieldname) as $value) {
                                 // If we have a remap from an old id to a new id, use it. Otherwise keep the existing value.
-                                $new_values[] = $remap[$definition['foreignclass']][$value] ?: $value;
+                                $new_values[] = $remap[$definition['foreign_class']][$value] ?: $value;
                             }
                             // Write back values.
                             $object->setValue($fieldname, $new_values);
@@ -397,7 +397,7 @@ class Datarecord {
             $referer_field_found = false;
             $filter = new Filter($depending_class);
             foreach ($depending_class::getStructure() as $key => $definition) {
-                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
                     $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
                     $referer_field_found = true;
                 }
@@ -409,7 +409,7 @@ class Datarecord {
             foreach ($depending_objects->getAll() as $referring_object) {
                 $referring_object->reloadForWrite();
                 foreach ($depending_class::getStructure() as $key => $definition) {
-                    if ($definition['foreignclass'] == get_called_class()) {
+                    if ($definition['foreign_class'] == get_called_class()) {
                         if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
                             if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
                         } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
@@ -427,7 +427,7 @@ class Datarecord {
             $referer_field_found = false;
             $filter = new Filter($depending_class);
             foreach ($depending_class::getStructure() as $key => $definition) {
-                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
                     $filter->addConditionOR(new FilterConditionMatch($key, $deleted_id));
                     $referer_field_found = true;
                 }
@@ -918,7 +918,7 @@ class Datarecord {
         static::ensureStructure();
         $result = array();
         foreach (static::$structure as $fieldname => $definition) {
-            if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == $class)
+            if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == $class)
                 $result[] = $fieldname;
         }
         return $result;
@@ -1025,14 +1025,14 @@ class Datarecord {
             case self::FIELDTYPE_FILE:
                 return new FieldFile($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                return new FieldDatarecordcombobox($definition['label'], $name, array('class' => $definition['foreignclass']));
+                return new FieldDatarecordcombobox($definition['label'], $name, array('class' => $definition['foreign_class']));
                 /*
                 $fieldoptions = array();
                 // Get possibilities
-                $filter = new Filter($definition['foreignclass']);
+                $filter = new Filter($definition['foreign_class']);
                 $datacollection = $filter->execute();
                 foreach ($datacollection->getAll() as $element) {
-                    $fieldoptions[$element->getRawValue($definition['foreignclass']::getKeyField())] = strip_tags($element->getTitle());
+                    $fieldoptions[$element->getRawValue($definition['foreign_class']::getKeyField())] = strip_tags($element->getTitle());
                 }
                 asort($fieldoptions);
                 $options['options'] = $fieldoptions;
@@ -1043,14 +1043,14 @@ class Datarecord {
                 $options['options'] = $definition['enumeration'];
                 return new FieldSelect($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                return new FieldMultidatarecordcombobox($definition['label'], $name, array('class' => $definition['foreignclass']));
+                return new FieldMultidatarecordcombobox($definition['label'], $name, array('class' => $definition['foreign_class']));
                 /*
                 $fieldoptions = array();
                 // Get possibilities
-                $filter = new Filter($definition['foreignclass']);
+                $filter = new Filter($definition['foreign_class']);
                 $datacollection = $filter->execute();
                 foreach ($datacollection->getAll() as $element) {
-                    $fieldoptions[$element->getRawValue($definition['foreignclass']::getKeyField())] = strip_tags($element->getTitle());
+                    $fieldoptions[$element->getRawValue($definition['foreign_class']::getKeyField())] = strip_tags($element->getTitle());
                 }
                 asort($fieldoptions);
                 $options['options'] = $fieldoptions;
@@ -1079,7 +1079,7 @@ class Datarecord {
                 // Bail of no values
                 if (! count($this->getRawValue($field))) return array();
                 // We need to retrieve all the referred values
-                $class = static::$structure[$field]['foreignclass'];
+                $class = static::$structure[$field]['foreign_class'];
                 $filter = new Filter($class);
                 $filter->addCondition(new FilterConditionOneOf($class::getKeyField(), $this->getRawValue($field)));
                 $values = array();
@@ -1212,7 +1212,7 @@ class Datarecord {
             $referer_found = false;
             $filter = new Filter($referring_class);
             foreach ($referring_class::getStructure() as $key => $definition) {
-                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreignclass'] == get_called_class()) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
                     $filter->addConditionOR(new FilterConditionMatch($key, $this->getRawValue($this->getKeyField())));
                     $referer_found = true;
                 }
@@ -1303,7 +1303,7 @@ class Datarecord {
             case self::FIELDTYPE_DATE:
                 return $this->values[$field] instanceof Time ? $this->values[$field] : new Time();
             case self::FIELDTYPE_REFERENCE_HYPER:
-                return array('foreignclass' => $this->values[$field.'_foreignclass'], 'reference' => $this->values[$field.'_reference']);
+                return array('foreign_class' => $this->values[$field.'_foreign_class'], 'reference' => $this->values[$field.'_reference']);
             default:
                 return $this->values[$field];
         }
@@ -1537,11 +1537,11 @@ class Datarecord {
         // Locate all interesting ids
         $ids = array();
         foreach (static::$structure as $key => $definition) {
-            if ($definition['foreignclass'] != $class && !($definition['fieldtype'] == self::FIELDTYPE_FILE && $class == 'Platform\\File') && $definition['fieldtype'] != self::FIELDTYPE_REFERENCE_HYPER) continue;
+            if ($definition['foreign_class'] != $class && !($definition['fieldtype'] == self::FIELDTYPE_FILE && $class == 'Platform\\File') && $definition['fieldtype'] != self::FIELDTYPE_REFERENCE_HYPER) continue;
             foreach ($datarecords as $datarecord) {
                 $values = $datarecord->getRawValue($key);
                 if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_HYPER) {
-                    if ($values['foreignclass'] != $class) continue;
+                    if ($values['foreign_class'] != $class) continue;
                     $values = $values['reference'];
                 }
                 if (! is_array($values)) $values = array($values);
@@ -1702,9 +1702,9 @@ class Datarecord {
             switch ($definition['fieldtype']) {
                 case self::FIELDTYPE_REFERENCE_SINGLE:
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                    if (! $definition['foreignclass']) $errors[] = $field.': Reference without foreign class';
-                    elseif (!class_exists($definition['foreignclass'])) $errors[] = $field.': Reference to class which doesn\'t exists.';
-                    elseif (! in_array(get_called_class(), $definition['foreignclass']::$referring_classes) && ! in_array(get_called_class(), $definition['foreignclass']::$depending_classes)) $errors[] = 'Remote class '.$definition['foreignclass'].' doesn\'t list this as a referer or dependent class, even though we refer in field: <i>'.$field.'</i>';
+                    if (! $definition['foreign_class']) $errors[] = $field.': Reference without foreign class';
+                    elseif (!class_exists($definition['foreign_class'])) $errors[] = $field.': Reference to class which doesn\'t exists.';
+                    elseif (! in_array(get_called_class(), $definition['foreign_class']::$referring_classes) && ! in_array(get_called_class(), $definition['foreign_class']::$depending_classes)) $errors[] = 'Remote class '.$definition['foreign_class'].' doesn\'t list this as a referer or dependent class, even though we refer in field: <i>'.$field.'</i>';
                     break;
             }
         }
@@ -1714,7 +1714,7 @@ class Datarecord {
             else {
                 $hit = false;
                 foreach ($foreign_class::getStructure() as $field => $definition) {
-                    if ($definition['foreignclass'] == get_called_class()) {
+                    if ($definition['foreign_class'] == get_called_class()) {
                         $hit = true;
                         break;
                     }
@@ -1728,7 +1728,7 @@ class Datarecord {
             else {
                 $hit = false;
                 foreach ($foreign_class::getStructure() as $field => $definition) {
-                    if ($definition['foreignclass'] == get_called_class()) {
+                    if ($definition['foreign_class'] == get_called_class()) {
                         $hit = true;
                         break;
                     }
@@ -1766,15 +1766,15 @@ class Datarecord {
                 $ids = array($this->getRawValue($field));
                 break;
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                $class = static::$structure[$field]['foreignclass'];
+                $class = static::$structure[$field]['foreign_class'];
                 $ids = array($this->getRawValue($field));
             break;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                $class = static::$structure[$field]['foreignclass'];
+                $class = static::$structure[$field]['foreign_class'];
                 $ids = $this->getRawValue($field);
             break;
             case self::FIELDTYPE_REFERENCE_HYPER:
-                $class = $this->getRawValue($field.'_foreignclass');
+                $class = $this->getRawValue($field.'_foreign_class');
                 $ids = array($this->getRawValue($field.'_reference'));
             break;
         }
@@ -1833,7 +1833,7 @@ class Datarecord {
                     foreach ($definition['calculations'] as $calculation) {
                         foreach ($foreign_ids as $foreign_id) {
                             if (! $foreign_id) continue;
-                            self::$requested_calculation_buffer[$definition['foreignclass']][$calculation][$foreign_id] = true;
+                            self::$requested_calculation_buffer[$definition['foreign_class']][$calculation][$foreign_id] = true;
                         }
                     }
                 }
@@ -1948,11 +1948,11 @@ class Datarecord {
                 $this->values[$field] = is_numeric($value) ? (double)$value : null;
                 break;
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                if (is_object($value) && get_class($value) == static::$structure[$field]['foreignclass']) {
+                if (is_object($value) && get_class($value) == static::$structure[$field]['foreign_class']) {
                     // An object of the desired class was passed. Extract ID and set it.
                     $this->values[$field] = $value->getValue($value->getKeyField());
                 } else {
-                    if (is_object($value) && $value instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreignclass'].' but got '.get_class($value), E_USER_ERROR);
+                    if (is_object($value) && $value instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreign_class'].' but got '.get_class($value), E_USER_ERROR);
                     // We expect an ID
                     $this->values[$field] = is_numeric($value) ? (int)$value : null;
                 }
@@ -1962,8 +1962,8 @@ class Datarecord {
                 $final = array();
                 foreach ($value as $v) {
                     if (is_numeric($v)) $final[] = (int)$v;
-                    elseif (get_class($v) == static::$structure[$field]['foreignclass']) $final[] = (int)$v->getValue($value->getKeyField());
-                    elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreignclass'].' but got '.get_class($v), E_USER_ERROR);
+                    elseif (get_class($v) == static::$structure[$field]['foreign_class']) $final[] = (int)$v->getValue($value->getKeyField());
+                    elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreign_class'].' but got '.get_class($v), E_USER_ERROR);
                 }
                 $this->values[$field] = $final;
                 break;
@@ -2021,10 +2021,10 @@ class Datarecord {
                 break;
             case self::FIELDTYPE_REFERENCE_HYPER:
                 if (is_array($value)) {
-                    $this->setValue($field.'_foreignclass', $value['foreignclass']);
+                    $this->setValue($field.'_foreign_class', $value['foreign_class']);
                     $this->setValue($field.'_reference', $value['reference']);
                 } elseif ($value instanceof Datarecord) {
-                    $this->setValue($field.'_foreignclass', get_class($value));
+                    $this->setValue($field.'_foreign_class', get_class($value));
                     $this->setValue($field.'_reference', $value->getRawValue($value->getKeyField()));
                 }
                 break;

@@ -68,7 +68,7 @@ class Mail extends \Platform\Datarecord {
                 'label' => 'Attachments',
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_MULTIPLE,
-                'foreignclass' => 'Platform\\File'
+                'foreign_class' => 'Platform\\File'
             ),
             'format' => array(
                 'label' => 'Mail format',

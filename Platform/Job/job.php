@@ -33,7 +33,7 @@ class Job extends \Platform\Datarecord {
             'instance_ref' => array(
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreignclass' => 'Platform\Instance'
+                'foreign_class' => 'Platform\Instance'
             ),
             'class' => array(
                 'invisible' => true,

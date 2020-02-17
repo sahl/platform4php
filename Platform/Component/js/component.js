@@ -23,8 +23,9 @@ addCustomPlatformFunction(function(item) {
         
         $(this).on('redraw', function(e) {
             var configuration = $(this).data('configuration');
+            var redraw_url = $(this).data('redraw_url');
             var element = $(this);
-            $.post('/Platform/Component/php/get_content.php', configuration, function(data) {
+            $.post(redraw_url, configuration, function(data) {
                 element.html(data).applyPlatformFunctions();
             });
             e.stopPropagation();

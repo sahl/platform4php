@@ -26,7 +26,7 @@ class Instance extends Datarecord {
             'server_ref' => array(
                 'label' => 'Server',
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreignclass' => '\\Platform\\Server'
+                'foreign_class' => '\\Platform\\Server'
             ),
             'is_initiated' => array(
                 'label' => 'Is initiated',
@@ -222,6 +222,7 @@ class Instance extends Datarecord {
             header('location: https://'.$server->hostname.$continue_url);
             exit;
         }
+        $this->activate();
         $result = static::tryLogin($username, $password);
         if ($result === false) return false;
         // Ensure database structures

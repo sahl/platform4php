@@ -11,7 +11,7 @@ class FilterConditionInFilter extends FilterCondition {
     }
     
     public function getSQLFragment() {
-        $class_of_field = $this->other_filter->getBaseObject()->getFieldDefinition($this->fieldname)['foreignclass'];
+        $class_of_field = $this->other_filter->getBaseObject()->getFieldDefinition($this->fieldname)['foreign_class'];
         $class_of_filter = $this->filter->getBaseClassName();
         
         if ($class_of_field != $class_of_filter) trigger_error('Class '.$class_of_field.' is not compatible with '.$class_of_filter.' in InFilter condition!', E_USER_ERROR);

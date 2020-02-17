@@ -70,7 +70,7 @@ class Table {
         // Resolve relation (if any)
         if ($resolve_relation_field) {
             if (! in_array($classname::getStructure()[$resolve_relation_field]['fieldtype'], array(Datarecord::FIELDTYPE_REFERENCE_SINGLE))) trigger_error('getDataFromDatarecordCollection can only resolve single reference fields and '.$resolve_relation_field.' is not of this type.', E_USER_ERROR);
-            $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreignclass'];
+            $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreign_class'];
             $simple_foreign_class = $foreign_class::getClassName();
             $filter = new Filter($foreign_class);
             $filter->addCondition(new FilterConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));

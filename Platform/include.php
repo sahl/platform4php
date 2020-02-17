@@ -37,7 +37,8 @@ Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
 Platform\Design::queueJSFile('/Platform/Design/js/general.js');
 
 Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
-Platform\Design::queueJSFile('/Platform/Design/js/dialogs.js');
+Platform\Design::queueJSFile('/Platform/Dialog/js/dialog.js');
+Platform\Design::queueJSFile('/Platform/Menu/js/menuitem.js');
 Platform\Design::queueJSFile('/Platform/Form/js/form.js');
 Platform\Design::queueJSFile('/Platform/Form/js/autosize.js');
 
