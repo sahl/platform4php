@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class Collection {
+class Collection implements \Iterator {
 
     /**
      * Type of data in this collection
@@ -14,6 +14,12 @@ class Collection {
      * @var array 
      */
     private $datarecords = array();
+    
+    /**
+     * Internal pointer for iterator interface.
+     * @var int
+     */
+    private $pointer = 0;
     
     /**
      * Construct a DatarecordCollection
@@ -191,4 +197,12 @@ class Collection {
         array_multisort($sort_array, SORT_ASC, $this->datarecords);
         return $this;
     }
+    
+    // Iterator interface
+    public function current() {return $this->get($this->pointer);}
+    public function key() { $object = $this->get($this->pointer); return $object->getRawValue($object->getKeyField());}
+    public function next() {$this->pointer++;}
+    public function rewind() {$this->pointer = 0;}
+    public function valid() {return $this->pointer < $this->getCount();}
+    
 }
