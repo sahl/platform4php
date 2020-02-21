@@ -133,6 +133,7 @@ class Job extends \Platform\Datarecord {
      * @param type $force_remove
      */
     public function delete($force_remove = false) {
+        Errorhandler::checkParams($force_remove, 'boolean');
         $this->kill();
         parent::delete($force_remove);
     }
@@ -148,6 +149,7 @@ class Job extends \Platform\Datarecord {
      * @return \Platform\Job The job
      */
     public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, $slot_size = -1, $max_runtime = -1) {
+        Errorhandler::checkParams($class, 'string', $frequency, 'int', $frequency_offset_from_end, 'boolean', $slot_size, 'int', $max_runtime, 'int');
         if (! $function && strpos($class, '::')) {
             $elements = explode('::', $class);
             $class = $elements[0]; $elements = $split[1];
@@ -251,6 +253,7 @@ class Job extends \Platform\Datarecord {
      * @param \Platform\Job $job The job the event is about
      */
     public static function log($event, $text = '', $job = false) {
+        Errorhandler::checkParams($event, 'string', $text, 'string', $job, array('\\Platform\\Job', 'boolean'));
         if (! self::$log) self::$log = new Log('job_scheduler', array(8, 15, 30), false);
         $event = strtoupper($event);
         if ($job instanceof Job) self::$log->log($job->instance_ref, $event, $job->class.'::'.$job->function, $text);
@@ -312,6 +315,7 @@ class Job extends \Platform\Datarecord {
      * @return type
      */
     public function save($force_save = false, $keep_open_for_write = false) {
+        Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         // Ensure that we have a run time
         if ($this->frequency != self::FREQUENCY_PAUSED && $this->next_start->getTimestamp() === null) $this->next_start = Time::now();
             

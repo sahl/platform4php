@@ -79,6 +79,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
     }
     
     public function delete($force_remove = false) {
+        Errorhandler::checkParams($force_remove, 'boolean');
         if (parent::delete($force_remove)) {
             $class = '\\'.$this->class;
             $class::ensureInDatabase();
@@ -120,6 +121,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
      * @param array $parameters
      */
     public static function renderEditComplexForClass($class, $parameters = array()) {
+        Errorhandler::checkParams($class, 'string', $parameters, 'array');
         if (substr($class,0,1) == '\\') $class = substr($class,1);
 
         $filter = new \Platform\Filter('\\Platform\\DatarecordExtensiblefield');
@@ -135,6 +137,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
     
     
     public function save($force_save = false, $keep_open_for_write = false) {
+        Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         // Obtain an order ID if we haven't got one.
         if (! $this->order_id) {
             $semaphore_name = 'DatarecordExtensibleFieldOrderId';
@@ -156,6 +159,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
      * @param array $classes
      */
     public static function setRemoteClasses($classes) {
+        Errorhandler::checkParams($classes, 'array');
         foreach ($classes as $class) {
             self::$remote_classes[$class] = $class::getObjectName();
         }

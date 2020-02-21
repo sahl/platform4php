@@ -26,6 +26,7 @@ class Collection implements \Iterator {
      * @param Datarecord $datarecord Object to add to this record.
      */
     public function __construct($datarecord = null) {
+        Errorhandler::checkParams($datarecord, '\\Platform\\Datarecord');
         if ($datarecord !== null) $this->add($datarecord);
     }
     
@@ -34,6 +35,7 @@ class Collection implements \Iterator {
      * @param array|Datarecord $datarecords Datarecord to add
      */
     public function add($datarecords) {
+        Errorhandler::checkParams($datarecords, array('\\Platform\\Datarecord', 'array'));
         if (! is_array($datarecords)) $datarecords = array($datarecords);
         foreach ($datarecords as $datarecord) {
             // Check if datarecord
@@ -63,6 +65,7 @@ class Collection implements \Iterator {
      * @return Datarecord
      */
     public function get($i) {
+        Errorhandler::checkParams($i, 'int');
         if ($i >= $this->getCount()) trigger_error('Requested OOR-index', E_USER_ERROR);
         return $this->datarecords[$i];
     }
@@ -111,6 +114,7 @@ class Collection implements \Iterator {
      * @return array Array of raw values hashed by object id.
      */
     public function getAllRawValues($field, $limit = -1) {
+        Errorhandler::checkParams($field, 'string', $limit, 'int');
         $result = array();
         foreach ($this->datarecords as $datarecord) {
             if ($limit > -1 && count($result) >= $limit) break;
@@ -126,6 +130,7 @@ class Collection implements \Iterator {
      * @return array Array of full values sorted alfabetically hashed by object id
      */
     public function getAllFullValues($field, $limit = -1) {
+        Errorhandler::checkParams($field, 'string', $limit, 'int');
         $keys = array(); $result = array(); $sort_array = array();
         foreach ($this->datarecords as $datarecord) {
             if ($limit > -1 && count($result) >= $limit) break;
@@ -147,6 +152,7 @@ class Collection implements \Iterator {
      * @return Datacollection All associated objects
      */
     public function getAssociatedObjects($field) {
+        Errorhandler::checkParams($field, 'string');
         $foreign_ids = array();
         foreach ($this->getAllRawValues($field) as $value) {
             if (is_array($value)) {
@@ -186,6 +192,7 @@ class Collection implements \Iterator {
      * @return Collection Return itself so it can be chained to another command
      */
     public function sort($fields) {
+        Errorhandler::checkParams($fields, 'string');
         $sort_array = array();
         foreach ($this->datarecords as $datarecord) {
             $finalvalue = '';

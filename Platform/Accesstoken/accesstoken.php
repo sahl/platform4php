@@ -39,6 +39,7 @@ class Accesstoken extends Datarecord {
      * @return \Platform\Accesstoken The token
      */
     public static function acquire($user, $seconds_to_live = 3600) {
+        Errorhandler::checkParams($user, '\\Platform\\User', $seconds_to_live, 'int');
         $accesstoken = new Accesstoken();
         if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
         $accesstoken->generateTokenCode();
@@ -58,6 +59,7 @@ class Accesstoken extends Datarecord {
      * @param boolean $destroy_entire_session If this is set to true, then we destroy the entire PHP session
      */
     private static function clearSession($destroy_entire_session = false) {
+        Errorhandler::checkParams($destroy_entire_session, 'boolean');
         if ($destroy_entire_session) $_SESSION = array();
         else unset($_SESSION['token_code']);
     }
@@ -67,6 +69,7 @@ class Accesstoken extends Datarecord {
      * @param boolean $destroy_entire_session If this is set to true, then we destroy the entire PHP session
      */
     public static function destroySession($destroy_entire_session = true) {
+        Errorhandler::checkParams($destroy_entire_session, 'boolean');
         $accesstoken = self::getByTokencode(self::getSavedTokenCode());
         // Nothing to destroy
         if (! $accesstoken->isInDatabase()) return;
@@ -94,10 +97,10 @@ class Accesstoken extends Datarecord {
      * @return Accesstoken The Accesstoken or a new token if none was found
      */
     public static function getByTokencode($token_code) {
+        Errorhandler::checkParams($token_code, 'string');
         $filter = new Filter('\\Platform\\Accesstoken');
         $filter->addCondition(new \Platform\ConditionMatch('token_code', $token_code));
-        $accesstoken = $filter->executeAndGetFirst();
-        return $accesstoken instanceof Accesstoken ? $accesstoken : new Accesstoken();
+        return $filter->executeAndGetFirst();
     }
     
     /**
@@ -129,6 +132,7 @@ class Accesstoken extends Datarecord {
      * @param int $seconds_to_live Seconds to live from now
      */
     public function quickExtend($seconds_to_live = 3600) {
+        Errorhandler::checkParams($seconds_to_live, 'int');
         $timestamp = new Time('now');
         $this->expire_date = $timestamp->add($seconds_to_live);
         // Make a dirty write primary for speed reasons
@@ -168,6 +172,7 @@ class Accesstoken extends Datarecord {
      * @return boolean True if valid otherwise false 
      */
     public static function validateSession($redirect = '', $extend = false, $seconds_to_live = 3600) {
+        Errorhandler::checkParams($redirect, 'string', $extend, 'boolean', $seconds_to_live, 'int');
         // Check for information in URL
         if ($_GET['instance_id']) {
             $instance = new Instance();
@@ -204,6 +209,7 @@ class Accesstoken extends Datarecord {
     }
     
     public static function validateTokenCode($token_code) {
+        Errorhandler::checkParams($token_code, 'string');
         $access_token = Accesstoken::getByTokencode($token_code);
         if (! $access_token->isInDatabase() || ! $access_token->isValid()) return false;
         self::$current_user_id = $access_token->user_ref;

@@ -6,6 +6,7 @@ class FieldDatarecordcombobox extends FieldCombobox {
     protected $connected_class = false;
     
     public function __construct($label, $name, $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         $this->classes[] = 'w3-input platform_combobox platform_datarecord_combobox';
         if ($options['class']) {
             $this->connected_class = $options['class'];

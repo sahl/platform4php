@@ -137,6 +137,7 @@ class Datarecord implements DatarecordReferable {
      * Constructs the object and ensures that the structure is in place.
      */
     public function __construct($initialvalues = array()) {
+        Errorhandler::checkParams($initialvalues, 'array');
         static::ensureStructure();
         $this->setFromArray($initialvalues);
     }
@@ -147,6 +148,7 @@ class Datarecord implements DatarecordReferable {
      * @return mixed Value
      */
     public function __get($field) {
+        Errorhandler::checkParams($field, 'string');
         return $this->getValue($field, $this->default_rendermode);
     }
     
@@ -156,6 +158,7 @@ class Datarecord implements DatarecordReferable {
      * @param mixed $value Value
      */
     public function __set($field, $value) {
+        Errorhandler::checkParams($field, 'string');
         $this->setValue($field, $value);
     }
 
@@ -164,6 +167,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $structure Array of field definitions to add
      */
     public static function addStructure($structure) {
+        Errorhandler::checkParams($structure, 'array');
         foreach ($structure as $field => $data) {
             if ($data['is_title']) static::$title_field = $field;
             if (isset($data['foreign_class']) && substr($data['foreign_class'],0,1) == '\\') $data['foreign_class'] = substr($data['foreign_class'],1);
@@ -297,10 +301,21 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Check if the given render mode is a valid render mode.
+     * @param int $render_mode
+     * @return boolean
+     */
+    private static function checkRenderMode($render_mode) {
+        Errorhandler::checkParams($render_mode, 'int');
+        return in_array($render_mode, array(self::RENDER_RAW, self::RENDER_TEXT, self::RENDER_FULL, self::RENDER_FORM));
+    }
+    
+    /**
      * Make a copy of this object
      * @return Datarecord New copied and saved object (in read mode)
      */
     public function copy($related_objects_to_copy = array()) {
+        Errorhandler::checkParams($related_objects_to_copy, 'array');
         $copy = $this->getCopy(true);
         // Rename object
         $copy->save(false, true);
@@ -369,6 +384,7 @@ class Datarecord implements DatarecordReferable {
      * @return boolean True if something was actually deleted.
      */
     public function delete($force_purge = false) {
+        Errorhandler::checkParams($force_purge, 'boolean');
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
         
@@ -447,6 +463,7 @@ class Datarecord implements DatarecordReferable {
      * @param array|int $ids One or more IDs
      */
     public static function deleteByID($ids) {
+        Errorhandler::checkParams($ids, array('array', 'int'));
         if (! is_array($ids)) $ids = array($ids);
         // First lock all objects
         foreach ($ids as $id) {
@@ -475,6 +492,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $ids Object IDs
      */
     public static function doCalculationOnObjects($calculation, $ids) {
+        Errorhandler::checkParams($calculation, 'string', $ids, 'array');
         $class = get_called_class();
         foreach ($ids as $id) {
             $object = new $class();
@@ -491,6 +509,7 @@ class Datarecord implements DatarecordReferable {
      * @param Job $job
      */
     public static function calculationJob($job) {
+        Errorhandler::checkParams($job, '\\Platform\\Job');
         global $platform_configuration;
         
         $MAX_LINES = 250000; // Max number of lines to read at once.
@@ -754,6 +773,8 @@ class Datarecord implements DatarecordReferable {
      * @return type
      */
     public static function findByKeywords($keywords, $output = 'DatarecordCollection') {
+        Errorhandler::checkParams($keywords, 'string', $output, 'string');
+        if (! in_array($output, array('DatarecordCollection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
         $main_field = false; $search_fields = array();
         // Locate search fields
         foreach (static::getStructure() as $field => $definition) {
@@ -828,7 +849,9 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public function getAsArray($fields = array(), $render_mode = -999) {
+        Errorhandler::checkParams($fields, 'array', $render_mode, 'int');
         if ($render_mode == -999) $render_mode = $this->default_rendermode;
+        if (! self::checkRenderMode($render_mode)) trigger_error('Invalid render mode', E_USER_ERROR);
         if (! count($fields)) $fields = array_keys(static::$structure);
         $result = array();
         foreach ($fields as $field) {
@@ -857,6 +880,7 @@ class Datarecord implements DatarecordReferable {
      * @return string The SQL assignment statement
      */
     private static function getAssignmentForDatabase($field, $value) {
+        Errorhandler::checkParams($field, 'string');
         return $field.'='.self::getFieldForDatabase($field, $value);
     }
     
@@ -868,6 +892,7 @@ class Datarecord implements DatarecordReferable {
      * @return Collection
      */
     public static function getCollectionFromSQL($sql, $perform_access_check = false) {
+        Errorhandler::checkParams($sql, 'string', $perform_access_check, 'boolean');
         $collection = new Collection();
         $qh = self::query($sql);
         while ($qr = Database::getRow($qh)) {
@@ -884,6 +909,7 @@ class Datarecord implements DatarecordReferable {
      * @return Datarecord
      */
     public function getCopy($name_as_copy = false) {
+        Errorhandler::checkParams($name_as_copy, 'boolean');
         $class = get_called_class();
         $new_object = new $class(); 
         $new_object->setFromArray($this->getAsArray(array(),self::RENDER_RAW));
@@ -905,6 +931,7 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public static function getFieldDefinition($field) {
+        Errorhandler::checkParams($field, 'string');
         static::ensureStructure();
         return static::$structure[$field];
     }
@@ -915,6 +942,7 @@ class Datarecord implements DatarecordReferable {
      * @return array Field names
      */
     public static function getFieldsRelatingTo($class) {
+        Errorhandler::checkParams($class, 'string');
         static::ensureStructure();
         $result = array();
         foreach (static::$structure as $fieldname => $definition) {
@@ -931,11 +959,13 @@ class Datarecord implements DatarecordReferable {
      * @return string The encoded field
      */
     public static function getFieldForDatabase($field, $value) {
+        Errorhandler::checkParams($field, 'string');
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_INTEGER:
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_REFERENCE_SINGLE:
+            case self::FIELDTYPE_KEY:
                 return $value === null ? 'NULL' : (int)$value;
             case self::FIELDTYPE_BOOLEAN:
                 return $value ? 1 : 0;
@@ -1001,6 +1031,7 @@ class Datarecord implements DatarecordReferable {
      * @return \Platform\Field
      */
     public static function getFormFieldFromDefinition($name, $definition) {
+        Errorhandler::checkParams($name, 'string', $definition, 'array');
         $options = array();
         if ($definition['required']) $options['required'] = true;
         switch ($definition['fieldtype']) {
@@ -1066,6 +1097,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Text string
      */
     public function getFormValue($field) {
+        Errorhandler::checkParams($field, 'string');
         if (! isset(static::$structure[$field])) return null;
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
@@ -1104,6 +1136,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Formatted string
      */
     public function getFullValue($field) {
+        Errorhandler::checkParams($field, 'string');
         if (! isset(static::$structure[$field])) return null;
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_ARRAY:
@@ -1168,7 +1201,7 @@ class Datarecord implements DatarecordReferable {
      */
     protected function getLockFileName() {
         if (! static::$database_table) trigger_error('Cannot determine lock file name without table name.', E_USER_ERROR);
-        return self::getLockFileNameByTableAndID(static::$database_table, $this->values[static::getKeyField()]);
+        return self::getLockFileNameByTableAndID(static::$database_table, (int)$this->values[static::getKeyField()]);
     }
     
     /**
@@ -1178,6 +1211,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Lock file name
      */
     protected static function getLockFileNameByTableAndID($database_table, $id) {
+        Errorhandler::checkParams($database_table, 'string', $id, 'int');
         return $database_table.((int)$id);
     }
     
@@ -1239,6 +1273,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Title
      */
     public static function getTitleById($id) {
+        Errorhandler::checkParams($id, 'int');
         $class = get_called_class();
         // Try the buffer
         if (! isset(self::$foreign_reference_buffer[$class][$id])) {
@@ -1256,6 +1291,7 @@ class Datarecord implements DatarecordReferable {
      * @return string MySQL field type
      */
     private static function getSQLFieldType($fieldtype) {
+        Errorhandler::checkParams($fieldtype, 'int');
         switch ($fieldtype) {
             case self::FIELDTYPE_DATE:
             case self::FIELDTYPE_DATETIME:
@@ -1295,6 +1331,7 @@ class Datarecord implements DatarecordReferable {
      * @return mixed Value
      */
     public function getRawValue($field) {
+        Errorhandler::checkParams($field, 'string');
         if (! isset(static::$structure[$field])) return null;
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_ARRAY:
@@ -1323,6 +1360,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Text string
      */
     public function getTextValue($field) {
+        Errorhandler::checkParams($field, 'string');
         if (! isset(static::$structure[$field])) return null;
         switch (static::$structure[$field]['fieldtype']) {
             default:
@@ -1337,7 +1375,9 @@ class Datarecord implements DatarecordReferable {
      * @return mixed Value
      */
     public function getValue($field, $rendermode = -999) {
+        Errorhandler::checkParams($field, 'string');
         if ($rendermode == -999) $rendermode = $this->default_rendermode;
+        if (! self::checkRenderMode($rendermode)) trigger_error('Invalid render mode', E_USER_ERROR);
         switch ($rendermode) {
             case self::RENDER_RAW:
                 return $this->getRawValue($field);
@@ -1400,6 +1440,7 @@ class Datarecord implements DatarecordReferable {
      * @param int $id Object ID
      */
     public function loadForRead($id) {
+        Errorhandler::checkParams($id, 'int');
         // Check if already in write mode
         if ($this->access_mode == self::MODE_WRITE) {
             // Unlock
@@ -1414,6 +1455,7 @@ class Datarecord implements DatarecordReferable {
      * @param int $id Object ID
      */
     public function loadForWrite($id) {
+        Errorhandler::checkParams($id, 'int');
         // Spoof id field
         $this->values[static::getKeyField()] = $id;
         $this->lock();
@@ -1431,6 +1473,7 @@ class Datarecord implements DatarecordReferable {
      * @return boolean True if an object was loaded
      */
     private function loadFromDatabase($id) {
+        Errorhandler::checkParams($id, 'int');
         $result = self::query("SELECT * FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$id));
         $row = Database::getRow($result);
         if ($row !== false) {
@@ -1448,6 +1491,8 @@ class Datarecord implements DatarecordReferable {
      * @param array $databaserow Database result from database
      */
     public function loadFromDatabaseRow($databaserow) {
+        Errorhandler::checkParams($databaserow, array('array', 'boolean'));
+        if ($databaserow === false) return;
         // Check if already in write mode
         if ($this->access_mode == self::MODE_WRITE) {
             // Unlock
@@ -1485,6 +1530,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $databaserow The database row
      */
     private function parseFromDatabaseRow($databaserow) {
+        Errorhandler::checkParams($databaserow, 'array');
         $this->values = array();
         if (! is_array($databaserow)) return;
         foreach ($databaserow as $key => $value) {
@@ -1510,6 +1556,7 @@ class Datarecord implements DatarecordReferable {
      * @return array Individual words and phrases.
      */
     private static function parseKeywords($keywords) {
+        Errorhandler::checkParams($keywords, 'array');
         $parsed_keywords = array(); $inside = false; $wordbuffer = '';
         for ($i = 0; $i < strlen($keywords); $i++) {
             $character = substr($keywords,$i,1);
@@ -1531,6 +1578,7 @@ class Datarecord implements DatarecordReferable {
      * @param string $class Class of the foreign object
      */
     private function populateForeignReferenceBuffer($class) {
+        Errorhandler::checkParams($class, 'string');
         // Get attached collection or create a collection of just this
         $datarecords = $this->collection === false ? array($this) : $this->collection->getAll();
         
@@ -1581,6 +1629,7 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public static function query($query, $failonerror = true) {
+        Errorhandler::checkParams($query, 'string', $failonerror, 'boolean');
         if (static::$location == self::LOCATION_GLOBAL) return Database::globalQuery ($query, $failonerror);
         else return Database::instanceQuery ($query,$failonerror);
     }
@@ -1608,6 +1657,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $parameters Additional params to the table
      */
     public static function renderEditComplex($parameters = array()) {
+        Errorhandler::checkParams($parameters, 'array');
         // Get base class name
         $class = static::getClassName();
         // Get object name
@@ -1748,6 +1798,7 @@ class Datarecord implements DatarecordReferable {
      * @return boolean True if calculation was requested.
      */
     public function requestCalculation($calculation) {
+        Errorhandler::checkParams($calculation, 'string');
         if (! $this->isInDatabase()) return false;
         self::$requested_calculation_buffer[get_called_class()][$calculation][$this->getRawValue($this->getKeyField())] = true;
         return true;
@@ -1759,6 +1810,7 @@ class Datarecord implements DatarecordReferable {
      * @return array Foreign object titles hashed by ids
      */
     public function resolveForeignReferences($field) {
+        Errorhandler::checkParams($field, 'string');
         if (! in_array(static::$structure[$field]['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER, self::FIELDTYPE_FILE))) trigger_error('Tried to resolve a foreign reference on an incompatible field.', E_USER_ERROR);
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_FILE:
@@ -1799,6 +1851,7 @@ class Datarecord implements DatarecordReferable {
      * @return boolean True if we actually saved the object
      */
     public function save($force_save = false, $keep_open_for_write = false) {
+        Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to save object '.static::$database_table.' in read mode', E_USER_ERROR);
         
         $change = true;
@@ -1903,7 +1956,8 @@ class Datarecord implements DatarecordReferable {
      * @param int $rendermode
      */
     public function setDefaultRenderMode($rendermode) {
-        if (in_array($rendermode, array(self::RENDER_RAW, self::RENDER_TEXT, self::RENDER_FULL, self::RENDER_FORM))) $this->default_rendermode = $rendermode;
+        if (! self::checkRenderMode($rendermode)) trigger_error('Invalid render mode', E_USER_ERROR);
+        $this->default_rendermode = $rendermode;
     }
     
     /**
@@ -1911,7 +1965,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $array Field values hashed by field names
      */
     public function setFromArray($array) {
-        if (! is_array($array)) return;
+        Errorhandler::checkParams($array, 'array');
         foreach ($array as $key => $value) $this->setValue ($key, $value);
     }
     
@@ -1921,6 +1975,7 @@ class Datarecord implements DatarecordReferable {
      * @param mixed $value Field value
      */
     public function setValue($field, $value) {
+        Errorhandler::checkParams($field, 'string');
         global $platform_configuration;
         if (! isset(static::$structure[$field])) trigger_error('Tried setting invalid field: '.$field, E_USER_ERROR);
         switch (static::$structure[$field]['fieldtype']) {

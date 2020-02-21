@@ -4,6 +4,7 @@ namespace Platform;
 class ConditionOneOf extends Condition {
     
     public function __construct($fieldname, $values) {
+        Errorhandler::checkParams($fieldname, 'string');
         if (! is_array($values)) $values = array($values);
         $this->fieldname = $fieldname;
         $this->value = array();

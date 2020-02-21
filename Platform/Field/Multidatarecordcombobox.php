@@ -4,6 +4,7 @@ namespace Platform;
 class FieldMultidatarecordcombobox extends FieldMultiplier {
     
     public function __construct($label, $name, $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         $datarecordcombobox = new FieldDatarecordcombobox('', 'innercombobox', array('class' => $options['class']));
         $datarecordcombobox->setContainerClasses(array());
         unset($options['class']);

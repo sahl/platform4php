@@ -26,6 +26,7 @@ class Filter {
      * @param string $classname Class name of the base class to operate on.
      */
     public function __construct($classname) {
+        Errorhandler::checkParams($classname, 'string');
         if (substr($classname,0,1) == '\\') $classname = substr($classname,1);
         $this->base_classname = $classname;
         $this->base_object = new $classname();
@@ -38,7 +39,7 @@ class Filter {
      * @param \Platform\Condition $condition Condition to add
      */
     public function addCondition($condition) {
-        if (! $condition instanceof Condition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
+        Errorhandler::checkParams($condition, '\\Platform\\Condition');
         $condition->attachFilter($this);
         if ($this->base_condition == null) {
             $this->base_condition = $condition;
@@ -53,7 +54,7 @@ class Filter {
      * @param \Platform\Condition $condition Condition to add
      */
     public function addConditionOR($condition) {
-        if (! $condition instanceof Condition) trigger_error('Invalid condition added to filter!', E_USER_ERROR);
+        Errorhandler::checkParams($condition, '\\Platform\\Condition');
         $condition->attachFilter($this);
         if ($this->base_condition == null) {
             $this->base_condition = $condition;
@@ -73,11 +74,11 @@ class Filter {
     
     /**
      * Execute this filter and get first result
-     * @return Datarecord|boolean First result or false if no results
+     * @return Datarecord First result or empty object of same type.
      */
     public function executeAndGetFirst() {
         $collection = $this->base_object->getCollectionFromSQL($this->getSQL());
-        if (! $collection->getCount()) return false;
+        if (! $collection->getCount()) return new $this->base_classname();
         return $collection->get(0);
     }
     
@@ -87,6 +88,7 @@ class Filter {
      * @return \Platform\Filter
      */
     public static function getFilterFromJSON($json) {
+        Errorhandler::checkParams($json, 'string');
         $array = json_decode($json, true);
         $filter = new Filter($array['base_classname']);
         if ($array['base_condition']) $filter->addCondition(Condition::getConditionFromArray($array['base_condition']));

@@ -6,7 +6,7 @@ class ConditionNOT extends Condition {
     private $condition = null;
     
     public function __construct($condition) {
-        if (! $condition instanceof Condition) trigger_error('Parameter 1 must be FilterCondition', E_USER_ERROR);
+        Errorhandler::checkParams($condition, '\\Platform\\Condition');
         $this->condition = $condition;
     }
     
@@ -15,6 +15,7 @@ class ConditionNOT extends Condition {
      * @param \Platform\Filter $filter
      */
     public function attachFilter($filter) {
+        Errorhandler::checkParams($filter, '\\Platform\\Filter');
         $this->condition->attachFilter($filter);
         parent::attachFilter($filter);
     }

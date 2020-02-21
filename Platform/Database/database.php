@@ -43,6 +43,7 @@ class Database {
      * @param string $query Query to cache
      */
     private static function cacheQuery($query) {
+        Errorhandler::checkParams($query, 'string');
         self::$query_cache[] = array(
             'query' => $query,
             'time' => date('H:i:s', time()),
@@ -97,6 +98,7 @@ class Database {
      * @return string
      */
     public static function escape($string) {
+        Errorhandler::checkParams($string, 'string');
         return mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C]', '\\\0', $string);
     }
     
@@ -106,6 +108,7 @@ class Database {
      * @return array Result row
      */
     public static function getRow($result_set) {
+        Errorhandler::checkParams($result_set, array('mysqli_result', 'boolean'));
         return mysqli_fetch_assoc($result_set);
     }
     
@@ -131,6 +134,7 @@ class Database {
      * @return boolean|array False if no results for query otherwise result row
      */
     public static function globalFastQuery($query) {
+        Errorhandler::checkParams($query, 'string');
         $result_set = self::globalQuery($query);
         if ($result_set === false || $result_set === true) return false;
         $row = self::getRow($result_set);
@@ -144,6 +148,7 @@ class Database {
      * @return boolean|resource Result set or false if an error occured.
      */
     public static function globalQuery($query, $fail_on_error = true) {
+        Errorhandler::checkParams($query, 'string', $fail_on_error, 'boolean');
         if (self::$global_connection === false) {
             self::connectGlobal();
         }
@@ -177,6 +182,7 @@ class Database {
      * @return boolean|array False if no results for query otherwise result row
      */
     public static function instanceFastQuery($query) {
+        Errorhandler::checkParams($query, 'string');
         $result_set = self::instanceQuery($query);
         if ($result_set === false || $result_set === true) return false;
         $row = self::getRow($result_set);
@@ -186,10 +192,11 @@ class Database {
     /**
      * Query the global database
      * @param string $query SQL query to carry out
-     * @param boolean $failonerror Set to true if a SQL error should trigger a php error.
+     * @param boolean $fail_on_error Set to true if a SQL error should trigger a php error.
      * @return boolean|resource Result set or false if an error occured.
      */
-    public static function instanceQuery($query, $failonerror = true) {
+    public static function instanceQuery($query, $fail_on_error = true) {
+        Errorhandler::checkParams($query, 'string', $fail_on_error, 'boolean');
         if (self::$instance_connection === false) {
             self::connectInstance();
         }

@@ -4,6 +4,7 @@ namespace Platform;
 class FieldHidden extends Field {
     
     public function __construct($label, $name, $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         parent::__construct('', $name, $options);
     }
     

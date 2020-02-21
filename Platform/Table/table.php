@@ -11,6 +11,7 @@ class Table {
      * @param string $id Table ID
      */
     public function __construct($id) {
+        Errorhandler::checkParams($id, 'string');
         $this->id = $id;
         $this->setOption('layout', 'fitColumns');
         $this->setOption('placeholder', 'No data');
@@ -21,6 +22,7 @@ class Table {
      * @param string $classname Class to build table from
      */
     public function addDefinitionFromDatarecord($classname) {
+        Errorhandler::checkParams($classname, 'string');
         foreach (self::buildDefinitionFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
             $this->options['columns'][] = $definition;
         }
@@ -64,6 +66,7 @@ class Table {
      * @return array Array ready to use for table
      */
     public static function getDataFromDatarecordCollection($collection, $resolve_relation_field = '') {
+        Errorhandler::checkParams($collection, '\\Platform\\Collection', $resolve_relation_field, 'string');
         $result = array(); $supplemental_data = array();
         $classname = $collection->getCollectionType();
         if ($classname === false) return array();
@@ -109,6 +112,7 @@ class Table {
      * @return array Column definition compatible with Tabulator
      */
     public static function buildDefinitionFromDatarecord($classname, $prefix = '') {
+        Errorhandler::checkParams($classname, 'string', $prefix, 'string');
         $columndef = array();
         $structure = $classname::getStructure();
         
@@ -119,7 +123,7 @@ class Table {
                 'title' => $structure[$field]['label'],
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
-                'sorter' => self::getSorter($structure[$field]['fieldtype']),
+                'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
                 'width' => valalt($structure[$field]['width'], 200)
             );
         }
@@ -132,6 +136,7 @@ class Table {
      * @return mixed
      */
     public function getOption($option) {
+        Errorhandler::checkParams($option, 'string');
         return $this->options[$option];
     }
     
@@ -141,6 +146,7 @@ class Table {
      * @return string Tabulator sorter
      */
     private static function getSorter($fieldtype) {
+        Errorhandler::checkParams($fieldtype, 'string');
         switch ($fieldtype) {
             default:
                 return 'string';
@@ -152,6 +158,7 @@ class Table {
      * @param array $hidden_columns Column names to hide
      */
     public function hideColumns($hidden_columns) {
+        Errorhandler::checkParams($hidden_columns, 'array');
         $columns = $this->options['columns'];
         if (! is_array($columns) || ! is_array($hidden_columns)) return;
         $new_columns = array();
@@ -203,6 +210,7 @@ class Table {
      * @param array $show_columns Column names to show
      */
     public function setColumns($show_columns) {
+        Errorhandler::checkParams($show_columns, 'array');
         $columns = $this->options['columns'];
         if (! is_array($columns) || ! is_array($show_columns)) return;
         $new_columns = array();
@@ -220,6 +228,7 @@ class Table {
      * @param string $classname Class to build table from
      */
     public function setDefinitionFromDatarecord($classname) {
+        Errorhandler::checkParams($classname, 'string');
         $this->options['columns'] = self::buildDefinitionFromDatarecord($classname);
         if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
@@ -230,6 +239,7 @@ class Table {
      * @param mixed $value Option value
      */
     public function setOption($option, $value) {
+        Errorhandler::checkParams($option, 'string');
         switch ($option) {
             case 'filter':
                 if ($value instanceof Filter) {
@@ -248,6 +258,7 @@ class Table {
      * @param array $show_columns Column names to show
      */
     public function showColumns($show_columns) {
+        Errorhandler::checkParams($show_columns, 'array');
         $columns = $this->options['columns'];
         if (! is_array($columns) || ! is_array($show_columns)) return;
         $new_columns = array();

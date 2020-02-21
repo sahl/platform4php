@@ -7,7 +7,7 @@ $new_instance_form = new \Platform\Form('new_instance_form', 'new_instance.frm')
 
 $new_instance_form->addValidationFunction(function($new_instance_form) {
     // Check if instance if taken
-    if (\Platform\Instance::getByTitle($_POST['instancetitle'])) {
+    if (\Platform\Instance::getByTitle($_POST['instancetitle'])->isInDatabase()) {
         $new_instance_form->getFieldByName('instancetitle')->triggerError('Instance name already in use');
         return false;
     }

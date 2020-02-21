@@ -86,6 +86,8 @@ class Server extends Datarecord {
      * @return mixed Key/value pair as result
      */
     public function talk($message = array()) {
+        Errorhandler::checkParams($message, 'array');
+        
         global $platform_configuration;
         
         $string = json_encode($message);

@@ -27,6 +27,7 @@ class Design {
      * @return string Combined class string
      */
     public static function getClass($keyword, $additional_classes = '') {
+        Errorhandler::checkParams($keyword, 'string', $additional_classes, 'string');
         return trim(self::$style_array[$keyword].' '.$additional_classes);
     }
     
@@ -36,6 +37,7 @@ class Design {
      * @param string $js_file
      */
     public static function JSFile($js_file) {
+        Errorhandler::checkParams($js_file, 'string');
         if (! self::$page_started) self::queueJSFile($js_file);
         echo '<script src="'.$js_file.'" type="text/javascript"></script>';
     }
@@ -45,6 +47,7 @@ class Design {
      * @param string $css_file css file to load
      */
     public static function queueCSSFile($css_file) {
+        Errorhandler::checkParams($css_file, 'string');
         if (self::$page_started) self::JSFile ($js_file);
         if (! in_array($css_file, self::$css_files_to_load)) self::$css_files_to_load[] = $css_file;
     }
@@ -54,22 +57,10 @@ class Design {
      * @param string $js_file javascript file to load
      */
     public static function queueJSFile($js_file) {
+        Errorhandler::checkParams($js_file, 'string');
         if (self::$page_started) trigger_error('Tried to queue JS after page was started!', E_USER_ERROR);
         if (! in_array($js_file, self::$js_files_to_load)) self::$js_files_to_load[] = $js_file;
     }    
-    
-    /**
-     * @deprecated
-     * @param type $box_id
-     * @param type $source
-     * @param type $parameters
-     * @param type $reveal
-     */
-    public static function renderContentBox($box_id, $source, $parameters = array(), $reveal = 'fade') {
-        echo '<div class="'.Design::getClass('content_box', 'platform_content_box').'" id="'.$box_id.'" data-source="'.$source.'" data-parameters="'.http_build_query($parameters).'"';
-        if ($reveal) echo ' data-reveal="'.$reveal.'"';
-        echo '></div>';
-    }
     
     /**
      * Render the page start including html, head and body tag
@@ -78,7 +69,7 @@ class Design {
      * @param array $css_files CSS files to include
      */
     public static function renderPagestart($title, $js_files = array(), $css_files = array()) {
-        
+        Errorhandler::checkParams($title, 'string', $js_files, array('array', 'string'), $css_files, array('array', 'string'));
         self::$page_started = true;
         
         echo '<!DOCTYPE html><html><head>';
@@ -117,6 +108,7 @@ class Design {
      * @param type $array
      */
     public static function setStyleArray($array) {
+        Errorhandler::checkParams($array, 'array');
         self::$style_array = $array;
     }
     

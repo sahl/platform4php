@@ -7,6 +7,10 @@ class Semaphore {
     
     private static $php_semaphore = false;
     
+    /**
+     * Get a real php semaphore
+     * @return resource
+     */
     private static function getSemaphoreObject() {
         if (self::$php_semaphore === false) {
             self::$php_semaphore = sem_get(ftok(__FILE__, 'a'));
@@ -14,7 +18,13 @@ class Semaphore {
         return self::$php_semaphore;
     }
     
+    /**
+     * Get a complete semaphore file name from a title
+     * @param string $title
+     * @return string Complete file name
+     */
     private static function getSemaphoreFileNameFromTitle($title) {
+        Errorhandler::checkParams($title, 'string');
         global $platform_configuration;
         return $platform_configuration['dir_temp'].'Semaphore_'.$title;
     }
@@ -26,6 +36,7 @@ class Semaphore {
      * @return boolean True if it was possible to grab the semaphore
      */
     public static function grab($title, $minutesbeforebreak = 30) {
+        Errorhandler::checkParams($class, 'string', $minutesbeforebreak, 'int');
         $php_semaphore = self::getSemaphoreObject();
         
         $semfile = self::getSemaphoreFileNameFromTitle($title);
@@ -65,6 +76,7 @@ class Semaphore {
      * @param string $title Semaphore title
      */
     public static function release($title) {
+        Errorhandler::checkParams($title, 'string');
         $semfile = self::getSemaphoreFileNameFromTitle($title);
         
         // We can only release a semaphore we actually carry.
@@ -100,6 +112,7 @@ class Semaphore {
      * @return boolean True if it was possible to grab the semaphore within the allotted time
      */
     public static function wait($title, $minutesbeforebreak = 30, $maxwaitinseconds = 30) {
+        Errorhandler::checkParams($class, 'string', $minutesbeforebreak, 'int', $maxwaitinseconds, 'int');
         $waited = 0;
         while (! self::grab($title, $minutesbeforebreak)) {
             if ($waited > $maxwaitinseconds) return false;

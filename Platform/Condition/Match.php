@@ -4,6 +4,7 @@ namespace Platform;
 class ConditionMatch extends Condition {
     
     public function __construct($fieldname, $value) {
+        Errorhandler::checkParams($fieldname, 'string');
         // Resolve datarecord to its ID
         if ($value instanceof Datarecord) $value = $value->getRawValue($value->getKeyField ());
         $this->fieldname = $fieldname;

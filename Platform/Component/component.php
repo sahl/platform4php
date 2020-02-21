@@ -59,6 +59,7 @@ class Component {
      * @param type $configuration
      */
     public function __construct($configuration = array()) {
+        Errorhandler::checkParams($configuration, 'array');
         foreach ($configuration as $key => $value) $this->setConfiguration ($key, $value);
     }
     
@@ -69,6 +70,7 @@ class Component {
      * @return mixed
      */
     public function __get($key) {
+        Errorhandler::checkParams($key, 'string');
         return $this->getConfiguration($key);
     }
     
@@ -78,6 +80,7 @@ class Component {
      * @param mixed $value Value to set
      */
     public function __set($key, $value) {
+        Errorhandler::checkParams($key, 'string');
         $this->setConfiguration($key, $value);
     }
     
@@ -86,6 +89,7 @@ class Component {
      * @param string $class Class name
      */
     public function addClass($class) {
+        Errorhandler::checkParams($class, 'string');
         $this->classes[] = $class;
     }
     
@@ -109,6 +113,7 @@ class Component {
      * @return mixed
      */
     public function getConfiguration($key) {
+        Errorhandler::checkParams($key, 'string');
         return $this->configuration[$key];
     }
     
@@ -167,6 +172,7 @@ class Component {
      * @param mixed $value Value to set
      */
    public function setConfiguration($key, $value) {
+        Errorhandler::checkParams($key, 'string');
         if (isset($this->configuration[$key])) $this->configuration[$key] = $value;
     }
     
@@ -175,6 +181,7 @@ class Component {
      * @param string $id
      */
     public function setID($id) {
+        Errorhandler::checkParams($id, 'string');
         $this->component_id = $id;
     }
 }

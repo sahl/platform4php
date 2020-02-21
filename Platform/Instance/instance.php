@@ -57,6 +57,7 @@ class Instance extends Datarecord {
     }
     
     protected static function createInitialUser($username, $password) {
+        Errorhandler::checkParams($username, 'string', $password, 'string');
         // Create initial user
         $user = new User();
         $user->username = $username;
@@ -77,6 +78,7 @@ class Instance extends Datarecord {
      * @return boolean
      */
     public function delete($force_remove = false) {
+        Errorhandler::checkParams($force_remove, 'boolean');
         $databasename = $this->getDatabaseName();
         $result = parent::delete($force_remove);
         if ($result && $this->is_initiated) {
@@ -107,6 +109,7 @@ class Instance extends Datarecord {
      * @return Instance|boolean Instance or false if no instance
      */
     public static function getByTitle($title) {
+        Errorhandler::checkParams($title, 'string');
         $filter = new Filter('\\App\\Instance');
         $filter->addCondition(new ConditionMatch('title', $title));
         return $filter->executeAndGetFirst();
@@ -139,9 +142,10 @@ class Instance extends Datarecord {
      * @return Instance|boolean The created instance or false
      */
     public static function initialize($title, $username, $password, $on_server = 0) {
+        Errorhandler::checkParams($title, 'string', $username, 'string', $password, 'string', $on_server, 'int');
         if (! \Platform\Semaphore::wait('instance_initialize', 30, 20)) return false;
         // Check if name is valid
-        if (self::getByTitle($title) !== false) {
+        if (self::getByTitle($title)->isInDatabase()) {
             \Platform\Semaphore::release('instance_initialize');
             return false;
         }
@@ -203,7 +207,15 @@ class Instance extends Datarecord {
         return $this->instance_id = self::getActiveInstanceID();
     }
     
+    /**
+     * Login to this instance
+     * @param string $username Username to try
+     * @param string $password Password to try
+     * @param string $continue_url URL to go to if success
+     * @return boolean
+     */
     public function login($username, $password, $continue_url = '') {
+        Errorhandler::checkParams($username, 'string', $password, 'string', $continue_url, 'string');
         if (mb_substr($continue_url,0,1) != '/') $continue_url = '/'.$continue_url;
         $server = new Server();
         $server->loadForRead($this->server_ref);
@@ -232,9 +244,18 @@ class Instance extends Datarecord {
         exit;
     }
     
+    /**
+     * Login to the given instance
+     * @param string $title Instance title
+     * @param string $username Username to try
+     * @param string $password Password to try
+     * @param string $continue_url URL to go to if success
+     * @return boolean
+     */
     public function loginToInstance($title, $username, $password, $continue_url = '') {
+        Errorhandler::checkParams($title, 'string', $username, 'string', $password, 'string', $continue_url, 'string');
         $instance = Instance::getByTitle($title);
-        if ($instance === false) return false;
+        if (! $instance->isInDatabase()) return false;
         $instance->activate();
         return $instance->login($username, $password, $continue_url);
     }
@@ -246,6 +267,7 @@ class Instance extends Datarecord {
      * @return boolean True if we actually saved the object
      */
     public function save($force_save = false, $keep_open_for_write = false) {
+        Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         parent::save($force_save, $keep_open_for_write);
         if (! $this->is_initiated) {
             if ($this->createDatabase()) parent::save($forcesave);
@@ -259,6 +281,7 @@ class Instance extends Datarecord {
      * @return mixed Accesstoken on success, otherwise false.
      */
     public function tryLogin($username, $password) {
+        Errorhandler::checkParams($username, 'string', $password, 'string');
         return User::tryLogin($username, $password);
     }
 }

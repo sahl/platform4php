@@ -20,6 +20,7 @@ class Time {
      * @param mixed $time Either another time object to copy, a time string or "now" for current time.
      */
     public function __construct($time = null) {
+        Errorhandler::checkParams($time, array('string', '\\Platform\\Time'));
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
         elseif ($time) $this->timestamp = strtotime($time);
@@ -33,6 +34,7 @@ class Time {
      * @return $this
      */
     public function add($seconds, $minutes = 0, $hours = 0) {
+        Errorhandler::checkParams($seconds, 'int', $minutes, 'int', $hours, 'int');
         $this->timestamp += $seconds + $minutes*60 + $hours*3600;
         return $this;
     }
@@ -44,6 +46,7 @@ class Time {
      * @param int $years Years to add
      */
     public function addDays($days, $months = 0, $years = 0) {
+        Errorhandler::checkParams($days, 'int', $months, 'int', $years, 'int');
         if ($months || $years) {
             // We handle this a little special
             $newyear = date('Y', $this->timestamp)+$years;
@@ -58,12 +61,12 @@ class Time {
     
     /**
      * Check if this timestamp is equal to another timestamp
-     * @param Time $ts Other timestamp
+     * @param Time $other_time Other time
      * @return boolean
      */
-    public function equalTo($ts) {
-        if (! $ts instanceof Time) return false;
-        return $this->timestamp == $ts->getTimestamp();
+    public function equalTo($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return $this->timestamp == $other_time->getTimestamp();
     }
     
     /**
@@ -73,6 +76,7 @@ class Time {
      * @return int Number of days
      */
     public static function daysInMonth($month, $year) {
+        Errorhandler::checkParams($month, 'int', $year, 'int');
         $timestamp = mktime(0, 0, 0, $month, 1, $year);
         return date('t', $timestamp);
     }
@@ -87,37 +91,37 @@ class Time {
     
     /**
      * Get the number of days until another time
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean|int Number of days or false if cannot calculate
      */
-    public function getDaysUntil($time) {
-        if (! $time instanceof Time) return false;
-        if ($this->timestamp == null || $time->getTimestamp() == null) return false;
-        $difference_in_seconds = $time->timestamp - $this->timestamp;
+    public function getDaysUntil($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
+        $difference_in_seconds = $other_time->timestamp - $this->timestamp;
         if ($difference_in_seconds < 0) return (int)(($res-12*60*60)/(60*60*24));
         return (int)(($res+12*60*60)/(60*60*24));
     }
     
     /**
      * Get the earliest of two times
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean|\Platform\Time The earliest time or false if cannot determine
      */
-    public function getEarliest($time) {
-        if (! $time instanceof Time) return false;
-        if ($this->timestamp == null || $time->getTimestamp() == null) return false;
-        return $this->isBefore($time) ? $this : $time;
+    public function getEarliest($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
+        return $this->isBefore($other_time) ? $this : $other_time;
     }
 
     /**
      * Get the latest of two times
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean|\Platform\Time The latest time or false if cannot determine
      */
-    public function getLatest($time) {
-        if (! $time instanceof Time) return false;
-        if ($this->timestamp == null || $time->getTimestamp() == null) return false;
-        return $this->isAfter($time) ? $this : $time;
+    public function getLatest($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
+        return $this->isAfter($other_time) ? $this : $other_time;
     }
     
     /**
@@ -130,15 +134,15 @@ class Time {
     
     /**
      * Get the number of months until another time
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean|int Number of months or false if cannot calculate
      */
-    public function getMonthsUntil($time) {
-        if (! $time instanceof Time) return false;
-        if ($this->timestamp == null || $time->getTimestamp() == null) return false;
-        $difference_in_months = $time->getYear()*12+$time->getMonth()-($this->getYear()*12+$this->getMonth());
-        if ($difference_in_months > 0 && $time->getDay() < $this->getDay()) return $difference_in_months-1;
-        if ($difference_in_months < 0 && $time->getDay() > $this->getDay()) return $difference_in_months+1;
+    public function getMonthsUntil($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
+        $difference_in_months = $other_time->getYear()*12+$other_time->getMonth()-($this->getYear()*12+$this->getMonth());
+        if ($difference_in_months > 0 && $other_time->getDay() < $this->getDay()) return $difference_in_months-1;
+        if ($difference_in_months < 0 && $other_time->getDay() > $this->getDay()) return $difference_in_months+1;
         return $difference_in_months;
     }
     
@@ -152,11 +156,12 @@ class Time {
     
     /**
      * Get the number of years until another time
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean|int Number of months or false if cannot calculate
      */
-    public function getYearsUntil($time) {
-        return (int)($this->getMonthsUntil($time)/12.0);
+    public function getYearsUntil($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return (int)($this->getMonthsUntil($other_time)/12.0);
     }
     
     /**
@@ -193,13 +198,13 @@ class Time {
 
     /**
      * Get the number of minutes until another time
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean|int Number of minutes or false if cannot calculate
      */
-    public function getMinutesUntil($other_timestamp) {
-        $other_timestamp = new Time($other_timestamp);
-        if ($other_timestamp->getTimestamp() === null || $this->getTimestamp() === null) return false;
-        return floor(($other_timestamp->getTimestamp()-$this->getTimestamp())/60);
+    public function getMinutesUntil($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($other_time->getTimestamp() === null || $this->getTimestamp() === null) return false;
+        return floor(($other_time->getTimestamp()-$this->getTimestamp())/60);
     }
     
     /**
@@ -208,6 +213,7 @@ class Time {
      * @return string
      */
     public function getReadable($format = 'd-m-Y H:i') {
+        Errorhandler::checkParams($format, 'string');
         if ($this->timestamp !== null) {
             $datetime = new \DateTime();
             $datetime->setTimestamp($this->timestamp);
@@ -231,6 +237,7 @@ class Time {
      * @return string
      */
     public function getTime($format = 'Y-m-d H:i:s') {
+        Errorhandler::checkParams($format, 'string');
         return $this->timestamp !== null ? date($format, $this->timestamp) : null;
     }
     
@@ -252,31 +259,32 @@ class Time {
     
     /**
      * Check if this time is after another time
-     * @param \Platform\Time $othertime
+     * @param \Platform\Time $other_time
      * @return boolean
      */
-    public function isAfter($othertime) {
-        $othertime = new Time($othertime);
-        return $this->timestamp > $othertime->getTimestamp();
+    public function isAfter($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return $this->timestamp > $other_time->getTimestamp();
     }
     
     /**
      * Check if this time is before another time
-     * @param \Platform\Time $othertime
+     * @param \Platform\Time $other_time
      * @return boolean
      */
-    public function isBefore($othertime) {
-        $othertime = new Time($othertime);
-        return $this->timestamp < $othertime->getTimestamp();
+    public function isBefore($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return $this->timestamp < $other_time->getTimestamp();
     }
     
     /**
      * Check if this date is the same date as another time
-     * @param \Platform\Time $time
+     * @param \Platform\Time $other_time
      * @return boolean
      */
-    public function isSameDate($time) {
-        return $this->getDay() == $time->getDay() && $this->getMonth() == $time->getMonth() && $this->getYear() == $time->getYear();
+    public function isSameDate($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return $this->getDay() == $other_time->getDay() && $this->getMonth() == $other_time->getMonth() && $this->getYear() == $other_time->getYear();
     }
     
     /**
@@ -310,6 +318,7 @@ class Time {
      * @return int Number of weeks in year 
      */
     public static function weeksInYear($year) {
+        Errorhandler::checkParams($year, 'int');
         $ts = mktime(0,0,0,12,28,$year);
         return (int)date('W', $ts);
     }    

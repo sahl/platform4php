@@ -88,6 +88,7 @@ class Field {
      * @param array $options Field options
      */
     public function __construct($label, $name, $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         if (in_array($name, array('form_event', 'form_name', 'form_hidden_fields'))) trigger_error('Used reserved form name', E_USER_ERROR);
         $this->label = $label;
         $this->name = $name;
@@ -137,6 +138,7 @@ class Field {
      * @param string|array $classes Class name or array of class names
      */
     public function addClass($classes) {
+        Errorhandler::checkParams($classes, array('string', 'array'));
         if (! is_array($classes)) $classes = array($classes);
         foreach ($classes as $class) $this->classes[] = $class;
     }
@@ -146,6 +148,7 @@ class Field {
      * @param string|array $classes Class name or array of class names
      */
     public function addContainerClass($classes) {
+        Errorhandler::checkParams($classes, array('string', 'array'));
         if (! is_array($classes)) $classes = array($classes);
         foreach ($classes as $class) $this->container_classes[] = $class;
     }
@@ -155,6 +158,7 @@ class Field {
      * @param string|array $styles Style or array of styles
      */
     public function addContainerStyle($styles) {
+        Errorhandler::checkParams($styles, array('string', 'array'));
         if (! is_array($styles)) $styles = array($styles);
         foreach ($styles as $style) $this->container_styles[] = $style;
     }
@@ -164,6 +168,7 @@ class Field {
      * @param array $error_array Array to add to
      */
     public function addErrors(&$error_array) {
+        Errorhandler::checkParams($error_array, 'array');
         if ($this->isError()) $error_array[$this->getFieldIdForHTML ()] = $this->getErrorText ();
     }
     
@@ -172,7 +177,7 @@ class Field {
      * @param \Platform\Form $form
      */
     public function attachToForm($form) {
-        if (! $form instanceof Form) trigger_error('Tried to attach field to non-form object', E_USER_ERROR);
+        Errorhandler::checkParams($form, '\\Platform\\Form');
         $this->form = $form;
     }
     
@@ -282,9 +287,10 @@ class Field {
     
     /**
      * Render the error container for the field
-     * @param string $text Error text to show
+     * @param string|boolean $text Error text to show
      */
     public function renderErrorContainer($text = '') {
+        Errorhandler::checkParams($text, array('string', 'boolean'));
         $add = $text ? ' style="display:block;"' : '';
         echo '<div class="formfield_error_container"'.$add.'>'.$text.'</div>';
     }
@@ -305,7 +311,12 @@ class Field {
         if ($this->is_required) echo ' (<span style="color:red">*</span>)';
     }
     
+    /**
+     * Set the classes of the container object
+     * @param array $classes
+     */
     public function setContainerClasses($classes) {
+        Errorhandler::checkParams($classes, 'array');
         $this->container_classes = $classes;
     }
 
@@ -314,6 +325,7 @@ class Field {
      * @param string $heading
      */
     public function setHeading($heading) {
+        Errorhandler::checkParams($heading, 'string');
         $this->heading = $heading;
     }
     
@@ -322,6 +334,7 @@ class Field {
      * @param string $new_name New field name
      */
     public function setName($new_name) {
+        Errorhandler::checkParams($new_name, 'string');
         $this->name = $new_name;
     }
     
@@ -331,7 +344,7 @@ class Field {
      * @param array $options
      */
     public function setOptions($options) {
-        if (! is_array($options)) $options = array($options);
+        Errorhandler::checkParams($options, 'array');
         $this->options = $options;
     }
     
@@ -348,6 +361,7 @@ class Field {
      * @param string $errortext Error text
      */
     public function triggerError($errortext = '') {
+        Errorhandler::checkParams($errortext, 'string');
         // We cannot trigger an error, if an error is already triggered.
         if ($this->is_error) return;
         $this->is_error = true;

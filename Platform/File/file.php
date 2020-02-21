@@ -41,12 +41,14 @@ class File extends Datarecord {
      * @param string $filename Full path of file to attach.
      */
     public function attachFile($filename) {
+        Errorhandler::checkParams($filename, 'string');
         if (! file_exists($filename)) trigger_error('No such file: '.$filename, E_USER_ERROR);
         $this->content_source = 'file';
         $this->content = $filename;
     }
     
     public function delete($force_remove = false) {
+        Errorhandler::checkParams($force_remove, 'boolean');
         // Remove file
         $file = $this->getCompleteFilename();
         $result = parent::delete($force_remove);
@@ -60,6 +62,7 @@ class File extends Datarecord {
      * @return boolean
      */
     public static function ensureFolder($folder) {
+        Errorhandler::checkParams($folder, 'string');
         if (file_exists($folder)) return true;
         $result = mkdir($folder, 0774, true);
         if (! $result) trigger_error('Could not create directory: '.$folder, E_USER_ERROR);
@@ -72,6 +75,7 @@ class File extends Datarecord {
      * @return string
      */
     public static function extractExtension($filename) {
+        Errorhandler::checkParams($filename, 'string');
         $dot = strrpos($filename,'.');
         if ($dot === false) return '';
         return substr($filename,$dot+1);
@@ -84,6 +88,7 @@ class File extends Datarecord {
      * @return string
      */
     public function getCompleteFilename($use_current_value = true) {
+        Errorhandler::checkParams($use_current_value, 'boolean');
         return $this->getCompleteFolderPath($use_current_value).'data'.$this->file_id.'.blob';
     }
 
@@ -94,6 +99,7 @@ class File extends Datarecord {
      * @return string
      */
     public function getCompleteFolderPath($use_current_value = true) {
+        Errorhandler::checkParams($use_current_value, 'boolean');
         global $platform_configuration;
         $instance = Instance::getActiveInstanceID();
         if (! $instance) trigger_error('Couldn\'t detect an instance!', E_USER_ERROR);
@@ -118,6 +124,7 @@ class File extends Datarecord {
      * @return string URL to image
      */
     public static function getFiletypeURLByExtension($extension) {
+        Errorhandler::checkParams($extension, 'string');
         $extension = strtolower($extension);
         if (! file_exists(__DIR__.'/gfx/'.$extension.'.png')) $extension = 'other'; 
         return '/Platform/File/gfx/'.$extension.'.png';
@@ -129,6 +136,7 @@ class File extends Datarecord {
      * @return string
      */
     public static function getFullFolderPath($folder) {
+        Errorhandler::checkParams($folder, 'string');
         global $platform_configuration;
         $instance = Instance::getActiveInstanceID();
         if (! $instance) trigger_error('Couldn\'t detect an instance!', E_USER_ERROR);
@@ -175,6 +183,7 @@ class File extends Datarecord {
      * @return string
      */
     public static function getURLByID($file_id) {
+        Errorhandler::checkParams($file_id, 'int');
         $file = new File();
         $file->loadForRead($file_id);
         return $file->getURL();
@@ -187,6 +196,7 @@ class File extends Datarecord {
      * @return boolean True if we actually saved the object
      */
     public function save($force_save = false, $keep_open_for_write = false) {
+        Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         // Check if file have moved folder
         if ($this->isInDatabase() && $this->values_on_load['folder'] != $this->folder) {
             $old_filename = $this->getCompleteFilename(false);

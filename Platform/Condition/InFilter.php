@@ -6,6 +6,7 @@ class ConditionInFilter extends Condition {
     private $other_filter = false;
     
     public function __construct($fieldname, $filter) {
+        Errorhandler::checkParams($fieldname, 'string', $filter, '\\Platform\\Filter');
         $this->fieldname = $fieldname;
         $this->other_filter = $filter;
     }

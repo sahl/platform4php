@@ -44,6 +44,7 @@ class UserProperty extends Datarecord {
      * @return mixed Property value
      */
     public static function getPropertyForCurrentUser($property, $subproperty = '') {
+        Errorhandler::checkParams($property, 'string', $subproperty, 'string');
         return static::getPropertyForUser(Accesstoken::getCurrentUserID(), $property, $subproperty);
     }
     
@@ -55,6 +56,7 @@ class UserProperty extends Datarecord {
      * @return mixed Property value
      */
     public static function getPropertyForUser($userid, $property, $subproperty = '') {
+        Errorhandler::checkParams($userid, 'int', $property, 'string', $subproperty, 'string');
         $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         $userproperty = new UserProperty();
         $userproperty->loadFromDatabaseRow($qr);
@@ -68,6 +70,7 @@ class UserProperty extends Datarecord {
      * @param mixed $value Value to set (or null to remove existing)
      */
     public static function setPropertyForCurrentUser($property, $subproperty, $value = null) {
+        Errorhandler::checkParams($property, 'string', $subproperty, 'string');
         static::setPropertyForUser(Accesstoken::getCurrentUserID(), $property, $subproperty, $value);
     }
 
@@ -79,6 +82,7 @@ class UserProperty extends Datarecord {
      * @param mixed $value Value to set (or null to remove existing)
      */
     public static function setPropertyForUser($userid, $property, $subproperty, $value = null) {
+        Errorhandler::checkParams($userid, 'int', $property, 'string', $subproperty, 'string');
         $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         $userproperty = new UserProperty();
         $userproperty->loadFromDatabaseRow($qr);

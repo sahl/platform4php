@@ -6,6 +6,7 @@ class FieldCombobox extends Field {
     protected $datasource = false;
     
     public function __construct($label, $name, $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         $this->classes[] = Design::getClass('formfield', 'platform_combobox');
         if ($options['datasource']) {
             $this->setDatasource($options['datasource']);

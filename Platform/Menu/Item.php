@@ -1,6 +1,5 @@
-<?
+<?php
 namespace Platform;
-
 
 class MenuItem {
     
@@ -11,7 +10,17 @@ class MenuItem {
     public $icon = '';
     public $data = array();
     
+    /**
+     * Construct a menu item
+     * @param string $text Text on menu item
+     * @param string $url URL to point to
+     * @param string $id ID on menu item html
+     * @param string $classes Class on menu item html
+     * @param string $icon FA icon name
+     * @param array $data Data on html tag with values hashed by keys
+     */
     public function __construct($text, $url = '', $id = '', $classes = '', $icon = '', $data = array()) {
+        Errorhandler::checkParams($text, 'string', $url, 'string', $id, 'string', $classes, 'string', $icon, 'string', $data, 'array');
         $this->text = $text;
         $this->url = $url;
         $this->id = $id;
@@ -19,12 +28,20 @@ class MenuItem {
         $this->icon = $icon;
         $this->data = $data;
     }
-    
+
+    /**
+     * Add a class to this menu item
+     * @param string $class
+     */
     public function addClass($class) {
+        Errorhandler::checkParams($class, 'string');
         if ($this->classes) $this->classes .= ' ';
         $this->classes .= $class;
     }
     
+    /**
+     * Renders this menu item
+     */
     public function render() {
         echo '<a';
         if ($this->url) echo ' href="'.$this->url.'"';

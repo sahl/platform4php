@@ -14,6 +14,7 @@ class Form {
     private $event = 'submit';
     
     public function __construct($form_id, $filename = '') {
+        Errorhandler::checkParams($form_id, 'string', $filename, 'string');
         $this->form_id = $form_id;
         if ($filename) $this->getFromFile ($filename);
     }
@@ -23,6 +24,7 @@ class Form {
      * @param \Platform\Field|array<\Platform\Field> $fields Field(s) to add
      */
     public function addField($fields) {
+        Errorhandler::checkParams($fields, array('\\Platform\\Field', 'array'));
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
             if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
@@ -38,6 +40,7 @@ class Form {
      * @param string $fieldname Field name to insert this field after.
      */
     public function addFieldAfter($fields, $fieldname = '') {
+        Errorhandler::checkParams($fields, array('\\Platform\\Field', 'array'), $fieldname, 'string');
         if (! is_array($fields)) $fields = array($fields);
         $newfields = array(); $inserted = false;
         foreach ($this->fields as $formfield) {
@@ -67,6 +70,7 @@ class Form {
      * @param string $fieldname Field name to insert this field before.
      */
     public function addFieldBefore($fields, $fieldname = '') {
+        Errorhandler::checkParams($fields, array('\\Platform\\Field', 'array'), $fieldname, 'string');
         if (! is_array($fields)) $fields = array($fields);
         $newfields = array(); $inserted = false;
         foreach ($this->fields as $formfield) {
@@ -103,10 +107,12 @@ class Form {
      * @param string $html HTML to add
      */
     public function addHTML($html) {
+        Errorhandler::checkParams($html, 'string');
         $this->addField(new FieldHTML($html));
     }
     
     private static function extractValue($fieldname, &$fragment) {
+        Errorhandler::checkParams($fieldname, 'string');
         if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
             return self::extractValue($matches[2].$matches[3], $fragment[$matches[1]]);
         }
@@ -133,6 +139,7 @@ class Form {
      * @return boolean|\Platform\Field The field or false if no field was found
      */
     public function getFieldByName($fieldname) {
+        Errorhandler::checkParams($fieldname, 'string');
         if (strpos($fieldname,'/')) {
             $segments = explode('/',$fieldname);
             if (count($segments) != 2) return false;
@@ -154,6 +161,7 @@ class Form {
      * @param string $filename
      */
     public function getFromFile($filename) {
+        Errorhandler::checkParams($fieldname, 'string');
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
         foreach (self::parseFieldsFromText($text) as $field) {
@@ -185,6 +193,7 @@ class Form {
     }
     
     private static function injectValue($fieldname, &$target, $value) {
+        Errorhandler::checkParams($fieldname, 'string');
         if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
             self::injectValue($matches[2].$matches[3], $target[$matches[1]], $value);
             return;
@@ -207,6 +216,7 @@ class Form {
      * @return array<\Platform\Field> The parsed form fields.
      */
     public static function parseFieldsFromText($text) {
+        Errorhandler::checkParams($text, 'string');
         $fields = array(); $storedfields = array();
         // Explode on tags
         $elements = explode('<', $text);
@@ -255,6 +265,7 @@ class Form {
      * @return array Parsed format
      */
     private static function parseTag($tagtext) {
+        Errorhandler::checkParams($tagtext, 'string');
         $tagname = '';
         $properties = array();
         $currentname = '';
@@ -342,6 +353,7 @@ class Form {
      * @param string $fieldname Field name to find
      */
     public function removeFieldByName($fieldname) {
+        Errorhandler::checkParams($fieldname, 'string');
         if (strpos($fieldname,'/')) {
             $segments = explode('/',$fieldname);
             if (count($segments) != 2) return false;
@@ -383,6 +395,7 @@ class Form {
      * @param string $fieldname Field name to replace.
      */
     public function replaceField($fields, $fieldname) {
+        Errorhandler::checkParams($fields, array('\\Platform\\Field', 'array'));
         if (! is_array($fields)) $fields = array($fields);
         $newfields = array(); $inserted = false;
         foreach ($this->fields as $formfield) {
@@ -413,6 +426,7 @@ class Form {
      * @param string $action
      */
     public function setAction($action) {
+        Errorhandler::checkParams($action, 'string');
         $this->action = $action;
     }
     
@@ -421,6 +435,7 @@ class Form {
      * @param string $event
      */
     public function setEvent($event) {
+        Errorhandler::checkParams($event, 'string');
         $this->event = $event;
     }
     
@@ -429,7 +444,7 @@ class Form {
      * @param array $values Values hashed by their field name
      */
     public function setValues($values) {
-        if (! is_array($values)) return;
+        Errorhandler::checkParams($values, 'array');
         foreach ($values as $fieldname => $value) {
             $formfield = $this->getFieldByName($fieldname);
             if ($formfield) {

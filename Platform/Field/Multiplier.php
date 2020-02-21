@@ -8,6 +8,7 @@ class FieldMultiplier extends Field {
     private $error_cache = array();
     
     public function __construct($label = '', $name = '', $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         $this->classes[] = 'platform_form_multiplier_element formfield_container';
         $this->container_classes[] = 'platform_form_multiplier';
         $this->value = array();
@@ -23,6 +24,7 @@ class FieldMultiplier extends Field {
      * @param array $error_array Array to add to
      */
     public function addErrors(&$error_array) {
+        Errorhandler::checkParams($error_array, 'array');
         for ($i = 0; $i < count($this->value)+1; $i++) {
             foreach ($this->contained_fields as $field) {
                 // Store old field name
@@ -42,6 +44,7 @@ class FieldMultiplier extends Field {
      * @param array|Field $fields One or more fields to add
      */
     public function addFields($fields) {
+        Errorhandler::checkParams($classes, array('array', '\\Platform\\Field'));
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
             //if ($field instanceof FieldMultiplier) trigger_error('You cannot add a multiplier to another multiplier!', E_USER_ERROR);
@@ -55,6 +58,7 @@ class FieldMultiplier extends Field {
      * @param string $filename Filename
      */
     public function addFieldsFromForm($filename) {
+        Errorhandler::checkParams($filename, 'string');
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
         $this->addFields(Form::parseFieldsFromText($text));
@@ -65,7 +69,7 @@ class FieldMultiplier extends Field {
      * @param \Platform\Form $form
      */
     public function attachToForm($form) {
-        if (! $form instanceof Form) trigger_error('Tried to attach field to non-form object', E_USER_ERROR);
+        Errorhandler::checkParams($form, '\\Platform\\Form');
         $this->form = $form;
         foreach ($this->contained_fields as $field) $field->attachToForm($form);
     }
@@ -76,6 +80,7 @@ class FieldMultiplier extends Field {
      * @return boolean|Field The field or false if no field was found
      */
     public function getFieldByName($fieldname) {
+        Errorhandler::checkParams($fieldname, 'string');
         /* @var $field Field */
         foreach ($this->contained_fields as $field) {
             if ($fieldname == $field->getName()) return $field;
@@ -121,6 +126,7 @@ class FieldMultiplier extends Field {
      * @param string $fieldname Field name
      */
     public function removeFieldByName($fieldname) {
+        Errorhandler::checkParams($fieldname, 'string');
         $new_fields = array();
         foreach ($this->contained_fields as $field) {
             if ($fieldname != $field->getName()) $new_fields[] = $field;

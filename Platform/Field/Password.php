@@ -6,6 +6,7 @@ class FieldPassword extends Field {
     private $inputwasparsed = false;
     
     public function __construct($label, $name, $options = array()) {
+        Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         parent::__construct($label, $name, $options);
         $this->classes[] = 'w3-input';
         $this->classes[] = 'platform_password';

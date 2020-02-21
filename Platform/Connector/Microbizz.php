@@ -12,6 +12,7 @@ class ConnectorMicrobizz {
      * @return array
      */
     public static function buildPermission($modcode, $hook, $title, $url) {
+        Errorhandler::checkParams($modcode, 'string', $hook, 'string', $title, 'string', $url, 'string');
         return array(
             'modcode' => $modcode,
             'hook' => $hook,
@@ -27,6 +28,7 @@ class ConnectorMicrobizz {
      * @return array The request
      */
     public static function buildRequest($return_url, $permissions = array()) {
+        Errorhandler::checkParams($return_url, 'string', $permissions, 'array');
         global $platform_configuration;
         $request = array(
             'publicid' => $platform_configuration['microbizz_public_id'],
@@ -75,6 +77,7 @@ class ConnectorMicrobizz {
      * @param boolean $connect_testserver Indicate if the Microbizz test environment should be used
      */
     public static function getConnectForm($request, $button_text = 'Link to Microbizz', $connect_testserver = false) {
+        Errorhandler::checkParams($request, 'array', $button_text, 'string', $connect_testserver, 'boolean');
         $request_form = new \Platform\Form('microbizz_connect_form');
         $action = $connect_testserver ? 'https://test2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
@@ -104,6 +107,7 @@ class ConnectorMicrobizz {
      * @param string $token The token or null to remove existing token.
      */
     public static function setAccessToken($token = null) {
+        Errorhandler::checkParams($token, 'string');
         \Platform\UserProperty::setPropertyForUser(0, 'ConnectorMicrobizz', 'access_token', $token);
     }
     
@@ -112,6 +116,7 @@ class ConnectorMicrobizz {
      * @param string $contract The contract ID or null to remove existing contract.
      */
     public static function setContract($contract = null) {
+        Errorhandler::checkParams($contract, 'string');
         \Platform\UserProperty::setPropertyForUser(0, 'ConnectorMicrobizz', 'contract', $contract);
     }
 
@@ -120,6 +125,7 @@ class ConnectorMicrobizz {
      * @param string $endpoint The endpoint URL or null to remove existing URL.
      */
     public static function setEndpoint($endpoint = null) {
+        Errorhandler::checkParams($endpoint, 'string');
         \Platform\UserProperty::setPropertyForUser(0, 'ConnectorMicrobizz', 'endpoint', $endpoint);
     }
     
@@ -129,6 +135,7 @@ class ConnectorMicrobizz {
      * @return string The answer
      */
     public static function solveChallenge($challenge) {
+        Errorhandler::checkParams($challenge, 'string');
         global $platform_configuration;
         return sha1($challenge.$platform_configuration['microbizz_secret_token']);
     }
@@ -140,6 +147,7 @@ class ConnectorMicrobizz {
      * @return array Result array.
      */
     public static function query($command, $parameters = array()) {
+        Errorhandler::checkParams($command, 'string', $parameters, 'array');
         $contract = self::getContract();
         $endpoint = self::getEndpoint();
         $access_token = self::getAccessToken();

@@ -8,7 +8,7 @@ $loginform = new \Platform\Form('loginform', 'login.frm');
 $loginform->addValidationFunction(function($form) {
     // First check if instance exists
     $instance = \Platform\Instance::getByTitle($_POST['instancetitle']);
-    if (! $instance ) {
+    if (! $instance->isInDatabase() ) {
         $form->getFieldByName('instancetitle')->triggerError('No such instance');
         return false;
     }

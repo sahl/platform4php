@@ -26,7 +26,7 @@ class Condition {
      * @param \Platform\Filter $filter
      */
     public function attachFilter($filter) {
-        if (! $filter instanceof Filter) trigger_error('Can only attach filter', E_USER_ERROR);
+        Errorhandler::checkParams($filter, '\\Platform\\Filter');
         $this->filter = $filter;
     }
     
@@ -36,6 +36,7 @@ class Condition {
      * @return \Platform\ConditionMatch|\Platform\ConditionLike|\Platform\ConditionNOT|\Platform\ConditionLesserEqual|\Platform\ConditionOneOf|\Platform\ConditionGreater|\Platform\ConditionGreaterEqual|\Platform\FilterConditionLesser|\Platform\ConditionOR|\Platform\ConditionAND
      */
     public static function getConditionFromArray($array) {
+        Errorhandler::checkParams($array, 'array');
         switch ($array['type']) {
             case 'AND':
                 return new ConditionAND(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));

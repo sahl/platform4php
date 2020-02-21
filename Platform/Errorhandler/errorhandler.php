@@ -1,8 +1,60 @@
 <?php
-
 namespace Platform;
 
 class Errorhandler {
+
+    /**
+     * Check type of parameters. Pass sets of variables and type keywords.
+     */
+    public static function checkParams() {
+        $number_of_parameters = func_num_args();
+        if ($number_of_parameters % 2 == 1) trigger_error('Invalid number of parameters to paramCheck', E_USER_ERROR);
+        $parameters = func_get_args();
+        for ($i = 0; $i < $number_of_parameters; $i+=2) {
+            $value = $parameters[$i];
+            $types = $parameters[$i+1];
+            if (! is_array($types)) $types = array($types);
+            $checked = array();
+            foreach ($types as $type) {
+                switch ($type) {
+                    case 'boolean':
+                        if (is_bool($value)) continue 3;
+                        $checked[] = 'boolean';
+                        break;
+                    case 'integer':
+                    case 'int':
+                        if (is_numeric($value) && strpos($value,'.') === false) continue 3;
+                        $checked[] = 'integer';
+                        break;
+                    case 'float':
+                        if (is_numeric($value)) continue 3;
+                        $checked[] = 'float';
+                        break;
+                    case 'string':
+                        if (is_string($value)) continue 3;
+                        $checked[] = 'string';
+                        break;
+                    case 'resource':
+                        if (is_resource($value)) continue 3;
+                        $checked[] = 'resource';
+                        break;
+                    case 'array':
+                        if (is_array($value)) continue 3;
+                        $checked[] = 'array';
+                        break;
+                    default:
+                        if ($value === null || is_a($value, $type)) continue 3;
+                        $checked[] = 'object '.$type;
+                        break;
+                }
+            }
+            $functionname = self::getCallingFunction(1);
+            $parentfunction = self::getCallingFunction(2);
+            
+            if (count($checked) > 1) trigger_error('Parameter '.($i/2+1).' expected to be one of these types: '.implode(', ',$checked).' calling '.$functionname.' from '.$parentfunction.'. Found: '. gettype($value), E_USER_ERROR);
+            else trigger_error('Parameter '.($i/2+1).' expected to be: '.current($checked).' calling '.$functionname.' from '.$parentfunction.'. Found: '. gettype($value), E_USER_ERROR);
+        }
+    }
 
     /**
      * Return the calling function on the form script.php:lineno
@@ -65,6 +117,11 @@ class Errorhandler {
         }
     }
     
+    /**
+     * Debug function to check for recursion. It will fail if recursion exceeds 
+     * the given limit
+     * @param int $level Recursion limit.
+     */
     public static function recursionTest($level = 20) {
         if (count(debug_backtrace()) > $level) {
             trigger_error('Recursion exceeded (level '.$level.')', E_USER_ERROR);

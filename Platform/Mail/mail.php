@@ -57,6 +57,7 @@ class Mail extends \Platform\Datarecord {
             ),
             'subject' => array(
                 'label' => 'Subject',
+                'is_title' => true,
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
             'body' => array(
@@ -97,11 +98,9 @@ class Mail extends \Platform\Datarecord {
         parent::buildStructure();
     }
     
-    public function getTitle() {
-        // Override to get a meaningful title of this object
-        return $this->subject;
-    }
-    
+    /**
+     * Init the PHP mailer library
+     */
     public static function initPhpmailer() {
         require_once __DIR__.'/src/Exception.php';
         require_once __DIR__.'/src/SMTP.php';
@@ -109,6 +108,9 @@ class Mail extends \Platform\Datarecord {
         
     }    
     
+    /**
+     * Process the outgoing mail queue
+     */
     public static function processQueue() {
         global $platform_configuration;
         $filter = new Filter('\Platform\Mail');
@@ -155,8 +157,19 @@ class Mail extends \Platform\Datarecord {
             self::setupQueue();
         }
     }
-    
+
+    /**
+     * Queue a mail
+     * @param string $from_name
+     * @param string $from_email
+     * @param string $to_name
+     * @param string $to_email
+     * @param string $subject
+     * @param string $body
+     * @param array $attachments Pretty file names hashed by file names on disk
+     */
     public static function queueMail($from_name, $from_email, $to_name, $to_email, $subject, $body, $attachments = array()) {
+        Errorhandler::checkParams($from_name, 'string', $from_email, 'string', $to_name, 'string', $to_email, 'string', $subject, 'string', $body, 'string', $attachments, 'array');
         $mail = new Mail(array(
             'from_name' => $from_name,
             'from_email' => $from_email,

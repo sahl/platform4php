@@ -15,6 +15,7 @@ class Log {
     
     
     public function __construct($logname, $lineformat = array(), $in_instance = 'autodetect') {
+        Errorhandler::checkParams($logname, 'string', $lineformat, 'array', $in_instance, array('string', 'int'));
         global $platform_configuration;
         $this->logname = $logname;
         foreach ($lineformat as $format) {
@@ -38,6 +39,9 @@ class Log {
         }
     }
     
+    /**
+     * Log something to the log file
+     */
     public function log() {
         umask(002);
         // Sort log items into columns

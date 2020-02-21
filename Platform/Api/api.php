@@ -28,6 +28,7 @@ class Api {
      * @return array An API object expressed as an array
      */
     private static function getApiObject($class, $object) {
+        Errorhandler::checkParams($class, 'string', $object, '\\Platform\\Datarecord');
         $result = array();
         foreach ($class::getStructure() as $key => $definition) {
             if ($definition['invisible'] &&  $definition['fieldtype'] != Datarecord::FIELDTYPE_KEY) continue;
@@ -134,6 +135,7 @@ class Api {
      * @param string $message Content to transmit
      */
     private static function respondAndDie($code, $message) {
+        Errorhandler::checkParams($code, 'int', $message, 'string');
         http_response_code($code);
         echo $message;
         exit;
@@ -148,6 +150,7 @@ class Api {
      * @return array|boolean True or an array of error messages.
      */
     private static function updateObject($class, $object, $newdata, $check_for_required_fields = false) {
+        Errorhandler::checkParams($class, 'string', $object, '\\Platform\\Datarecord', $newdata, 'array', $check_for_required_fields, 'boolean');
         $structure = $class::getStructure();
         $errors = array();
         foreach ($newdata as $key => $value) {
