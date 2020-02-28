@@ -605,7 +605,6 @@ class Datarecord implements DatarecordReferable {
     
     /**
      * Ensure that the database can store this object
-     * @param string $type 'global' for global database, otherwise instance database
      * @return boolean True if changes were made to the database
      */
     public static function ensureInDatabase() {
@@ -1476,7 +1475,7 @@ class Datarecord implements DatarecordReferable {
         Errorhandler::checkParams($id, 'int');
         $result = self::query("SELECT * FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$id));
         $row = Database::getRow($result);
-        if ($row !== false) {
+        if ($row) {
             $this->parseFromDatabaseRow($row);
             $this->unpackMetadata();
             $this->values_on_load = $this->values;
@@ -1556,7 +1555,7 @@ class Datarecord implements DatarecordReferable {
      * @return array Individual words and phrases.
      */
     private static function parseKeywords($keywords) {
-        Errorhandler::checkParams($keywords, 'array');
+        Errorhandler::checkParams($keywords, 'string');
         $parsed_keywords = array(); $inside = false; $wordbuffer = '';
         for ($i = 0; $i < strlen($keywords); $i++) {
             $character = substr($keywords,$i,1);
@@ -2091,7 +2090,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function unlock() {
         Semaphore::release($this->getLockFileName());
-        $this->access_mode = self::MODE_READ;
+        $this->access_mode = $this->isInDatabase() ? self::MODE_READ : self::MODE_WRITE;
     }
     
     /**

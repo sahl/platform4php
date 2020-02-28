@@ -161,7 +161,7 @@ class Form {
      * @param string $filename
      */
     public function getFromFile($filename) {
-        Errorhandler::checkParams($fieldname, 'string');
+        Errorhandler::checkParams($filename, 'string');
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
         foreach (self::parseFieldsFromText($text) as $field) {

@@ -23,14 +23,17 @@ class Errorhandler {
                         break;
                     case 'integer':
                     case 'int':
+                        if ($value === null) continue 3;
                         if (is_numeric($value) && strpos($value,'.') === false) continue 3;
                         $checked[] = 'integer';
                         break;
                     case 'float':
+                        if ($value === null) continue 3;
                         if (is_numeric($value)) continue 3;
                         $checked[] = 'float';
                         break;
                     case 'string':
+                        if ($value === null) continue 3;
                         if (is_string($value)) continue 3;
                         $checked[] = 'string';
                         break;

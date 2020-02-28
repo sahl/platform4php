@@ -202,7 +202,7 @@ class Database {
         }
         $result_set = mysqli_query(self::$instance_connection, $query);
         if (self::$query_cache_enabled) self::cacheQuery($query);
-        if ($result_set === false && $failonerror) trigger_error('Database error: '.mysqli_error(self::$instance_connection).' when executing '.$query, E_USER_ERROR);
+        if ($result_set === false && $fail_on_error) trigger_error('Database error: '.mysqli_error(self::$instance_connection).' when executing '.$query, E_USER_ERROR);
         self::$instance_queries++;
         self::$total_queries++;
         return $result_set;

@@ -36,7 +36,7 @@ class Semaphore {
      * @return boolean True if it was possible to grab the semaphore
      */
     public static function grab($title, $minutesbeforebreak = 30) {
-        Errorhandler::checkParams($class, 'string', $minutesbeforebreak, 'int');
+        Errorhandler::checkParams($title, 'string', $minutesbeforebreak, 'int');
         $php_semaphore = self::getSemaphoreObject();
         
         $semfile = self::getSemaphoreFileNameFromTitle($title);
@@ -112,7 +112,7 @@ class Semaphore {
      * @return boolean True if it was possible to grab the semaphore within the allotted time
      */
     public static function wait($title, $minutesbeforebreak = 30, $maxwaitinseconds = 30) {
-        Errorhandler::checkParams($class, 'string', $minutesbeforebreak, 'int', $maxwaitinseconds, 'int');
+        Errorhandler::checkParams($title, 'string', $minutesbeforebreak, 'int', $maxwaitinseconds, 'int');
         $waited = 0;
         while (! self::grab($title, $minutesbeforebreak)) {
             if ($waited > $maxwaitinseconds) return false;
