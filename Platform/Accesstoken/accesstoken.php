@@ -40,6 +40,7 @@ class Accesstoken extends Datarecord {
      */
     public static function acquire($user, $seconds_to_live = 3600) {
         Errorhandler::checkParams($user, '\\Platform\\User', $seconds_to_live, 'int');
+        if (! $user->isInDatabase()) trigger_error('Tried to acquire token for unsaved user!', E_USER_ERROR);
         $accesstoken = new Accesstoken();
         if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
         $accesstoken->generateTokenCode();
@@ -50,7 +51,6 @@ class Accesstoken extends Datarecord {
         Semaphore::release('accesstoken_generator');
         $accesstoken->setSession();
         self::$current_user_id = $accesstoken->user_ref;
-        
         return $accesstoken;
     }
     
@@ -108,6 +108,11 @@ class Accesstoken extends Datarecord {
      * @return int User ID
      */
     public static function getCurrentUserID() {
+        if (! self::$current_user_id) {
+            // Try to acquire from current accesstoken
+            $token = self::getByTokencode(self::getSavedTokenCode());            
+            if ($token->isValid()) self::$current_user_id = $token->user_ref;
+        }
         return self::$current_user_id;
     }
     

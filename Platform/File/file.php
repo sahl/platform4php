@@ -45,6 +45,7 @@ class File extends Datarecord {
         if (! file_exists($filename)) trigger_error('No such file: '.$filename, E_USER_ERROR);
         $this->content_source = 'file';
         $this->content = $filename;
+        if (! $this->filename) $this->filename = self::extractFilename ($filename);
     }
     
     public function delete($force_remove = false) {
@@ -79,6 +80,16 @@ class File extends Datarecord {
         $dot = strrpos($filename,'.');
         if ($dot === false) return '';
         return substr($filename,$dot+1);
+    }
+    
+    /**
+     * Extract the filename from a complete path
+     * @param string $pathname Full path name
+     * @return string File name in path
+     */
+    public static function extractFilename($pathname) {
+        $pos = mb_strrpos($file, '/');
+        return $pos === false ? $pathname : mb_substr($pathname,$pos+1);
     }
     
     /**
@@ -208,7 +219,7 @@ class File extends Datarecord {
             }
         }
         
-        $force_save |= $this->content_source != '';
+        $force_save = $force_save || $this->content_source != '';
         $result = parent::save($force_save, $keep_open_for_write);
         // Handle file content
         switch ($this->content_source) {
