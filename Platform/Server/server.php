@@ -39,7 +39,7 @@ class Server extends Datarecord {
      * make it this server.
      */
     public static function ensureThisServer() {
-        if (! count(static::getAllAsArray())) {
+        if (! count(static::getTitleAsArray())) {
             static::purge();
             $server = new Server(array(
                 'title' => $_SERVER['SERVER_NAME'],

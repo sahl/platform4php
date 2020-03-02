@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 Design::renderPagestart('File upload', '/Platform/Field/js/file.js');
 

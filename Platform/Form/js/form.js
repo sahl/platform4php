@@ -106,14 +106,14 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
                         el.prev().val(value.id);
                     } else {
                         // Try for multicheckbox
-                        var el = element.find('#'+element.prop('id')+'_'+key+'.multi_checkbox_container');
+                        var el = element.find('#'+element.attr('id')+'_'+key+'.multi_checkbox_container');
                         if (el.length) {
                             $.each(value, function(key, val) {
                                 el.find('input[value="'+val+'"]').prop('checked', true);
                             });
                         } else {
                             // Try for multiplier
-                            var el = element.find('#'+element.prop('id')+'_'+key+'_container.platform_form_multiplier');
+                            var el = element.find('#'+element.attr('id')+'_'+key+'_container.platform_form_multiplier');
                             if (el.length) {
                                 $.each(value, function(key, val) {
                                     el.find('input[type="hidden"]:last').val(val.id);
@@ -121,7 +121,7 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
                                 });
                             } else {
                                 // Try for file field
-                                var el = element.find('#'+element.prop('id')+'_'+key+'.file_select_frame');
+                                var el = element.find('#'+element.attr('id')+'_'+key+'.file_select_frame');
                                 if (el.length) {
                                     // Recode url
                                     el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').prop('id')+'&field_name='+key+'&file_id='+value);
