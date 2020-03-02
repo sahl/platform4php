@@ -1,6 +1,7 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
+\Platform\Design::queueJSFile('buttonlink.js');
 \Platform\Design::renderPagestart('Platform demo');
 
 echo '<div class="w3-container w3-teal">';

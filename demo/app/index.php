@@ -1,6 +1,5 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
-
 Platform\Accesstoken::validateSession('/demo/login/', true);
 
 if ($_GET['action'] == 'logout') {
@@ -21,6 +20,7 @@ if ($_GET['action'] == 'destroy_instance') {
     exit;
 }
 
+\Platform\Design::queueJSFile('../buttonlink.js');
 \Platform\Design::renderPagestart('You are logged into your instance');
 
 echo '<div class="w3-container w3-teal">';
