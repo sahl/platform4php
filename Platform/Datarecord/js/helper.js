@@ -16,7 +16,7 @@ $(function() {
 })
 
 function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, column_dialog, create_button, edit_button, copy_button, delete_button, column_select_button) {
-    var script = '/Platform/Datarecord/php/io_datarecord.php';
+    var script = $(list_view).data('io_datarecord');
     var table = getTableByID(list_view);
     
     // Additional data rows

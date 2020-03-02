@@ -134,6 +134,18 @@ class Datarecord implements DatarecordReferable {
     private static $foreign_reference_buffer = array();
     
     /**
+     * URL to the datarecord provider for table
+     * @var string 
+     */
+    protected static $url_table_datarecord = '/Platform/Datarecord/php/table_datarecord.php';
+    
+    /**
+     * URL to the datarecord io handler
+     * @var string 
+     */
+    protected static $url_io_datarecord = '/Platform/Datarecord/php/io_datarecord.php';
+    
+    /**
      * Constructs the object and ensures that the structure is in place.
      */
     public function __construct($initialvalues = array()) {
@@ -822,12 +834,27 @@ class Datarecord implements DatarecordReferable {
         $this->lock();
         $this->access_mode = self::MODE_WRITE;
     }
-    
+
     /**
-     * Get all objects of this type as an array of title hashed by key
+     * Get all objects of this type as an array hashed by key
      * @return array
      */
     public static function getAllAsArray() {
+        $result = array();
+        $filter = new Filter(get_called_class());
+        $datacollection = $filter->execute();
+        foreach ($datacollection->getAll() as $element) {
+            $id = $element->getRawValue(static::getKeyField());
+            $result[$id] = $element;
+        }
+        return $result;
+    }
+        
+    /**
+     * Get title of all objects as an array hashed by key
+     * @return array
+     */
+    public static function getTitleAsArray() {
         $result = array();
         $filter = new Filter(get_called_class());
         $datacollection = $filter->execute();
@@ -1440,13 +1467,11 @@ class Datarecord implements DatarecordReferable {
      */
     public function loadForRead($id) {
         Errorhandler::checkParams($id, 'int');
-        // Check if already in write mode
-        if ($this->access_mode == self::MODE_WRITE) {
+        // Switch to read mode if in write mode and something was loaded
+        if ($this->loadFromDatabase($id) && $this->access_mode == self::MODE_WRITE) {
             // Unlock
             $this->unlock();
         }
-        $this->access_mode = self::MODE_READ;
-        $this->loadFromDatabase($id);
     }
     
     /**
@@ -1669,10 +1694,11 @@ class Datarecord implements DatarecordReferable {
         // Create table
         $datarecord_table = new Table($class.'_table');
         $datarecord_table->setDefinitionFromDatarecord(get_called_class());
-        $datarecord_table->setOption('ajaxURL', '/Platform/Datarecord/php/table_datarecord.php?class='.get_called_class());
+        $datarecord_table->setOption('ajaxURL', static::$url_table_datarecord.'?class='.get_called_class());
         $datarecord_table->setOption('placeholder', 'No '.$name);
         $datarecord_table->setOption('show_selector', true);
         $datarecord_table->setOption('movableColumns', true);
+        $datarecord_table->setOption('data', array('io_datarecord' => static::$url_io_datarecord));
         
         // Grouping
         $groupfields = array();

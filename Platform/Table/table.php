@@ -202,7 +202,19 @@ class Table {
      * Render the table.
      */
     public function render() {
-        echo '<div id="'.$this->id.'" class="'.Design::getClass('platform_table', 'platform_table platform_invisible').'">'.json_encode($this->options).'</div>';
+        $attributes = array(
+            'id' => $this->id,
+            'class' => Design::getClass('platform_table', 'platform_table platform_invisible')
+        );
+        if ($this->options['data']) {
+            foreach ($this->options['data'] as $key => $value) $attributes['data-'.$key] = $value;
+            unset ($this->options['data']);
+        }
+        
+        echo '<div';
+        foreach ($attributes as $key => $value) echo ' '.$key.'="'.$value.'"';
+        echo '>';
+        echo json_encode($this->options).'</div>';
     }
     
     /**
