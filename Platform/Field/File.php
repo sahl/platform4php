@@ -3,9 +3,15 @@ namespace Platform;
 
 class FieldFile extends Field {
     
+    private $images_only = false;
+    
     public function __construct($label, $name, $options = array()) {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         parent::__construct($label, $name, $options);
+        if ($options['images_only']) {
+            $this->images_only = true;
+            unset($options['images_only']);
+        }
         $this->classes[] = '';
     }
     
@@ -17,6 +23,13 @@ class FieldFile extends Field {
             'temp_file' => $value['temp_file'],
             'file_id' => 0
         );
+        $file = new File();
+        $folder = File::getFullFolderPath('temp');
+        $file->attachFile($folder.$value['temp_file']);
+        if ($this->images_only && ! $file->isImage()) {
+            $this->triggerError('This file must be an image.');
+            return false;
+        }
         return true;
     }
     

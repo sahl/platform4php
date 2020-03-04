@@ -404,7 +404,7 @@ class Datarecord implements DatarecordReferable {
         
         // Terminate all files
         foreach (static::getStructure() as $key => $definition) {
-            if ($definition['fieldtype'] == self::FIELDTYPE_FILE && $this->getRawValue($key)) {
+            if (in_array($definition['fieldtype'], array(self::FIELDTYPE_FILE, self::FIELDTYPE_IMAGE)) && $this->getRawValue($key)) {
                 $file = new File();
                 $file->loadForWrite($this->getRawValue($key));
                 $file->delete();
@@ -990,6 +990,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_INTEGER:
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
             case self::FIELDTYPE_REFERENCE_SINGLE:
             case self::FIELDTYPE_KEY:
                 return $value === null ? 'NULL' : (int)$value;
@@ -1081,6 +1082,9 @@ class Datarecord implements DatarecordReferable {
                 return new FieldDate($definition['label'], $name, $options);
             case self::FIELDTYPE_FILE:
                 return new FieldFile($definition['label'], $name, $options);
+            case self::FIELDTYPE_IMAGE:
+                $options['images_only'] = true;
+                return new FieldFile($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 return new FieldDatarecordcombobox($definition['label'], $name, array('class' => $definition['foreign_class']));
                 /*
@@ -1131,6 +1135,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
@@ -1171,6 +1176,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
             case self::FIELDTYPE_REFERENCE_HYPER:
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
                 $result = $this->resolveForeignReferences($field);
                 sort($result);
                 return implode(', ', $result);
@@ -1330,6 +1336,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_INTEGER:
             case self::FIELDTYPE_KEY:
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
             case self::FIELDTYPE_REFERENCE_SINGLE:
             case self::FIELDTYPE_ENUMERATION:
                 return 'INT(11)';
@@ -1609,7 +1616,7 @@ class Datarecord implements DatarecordReferable {
         // Locate all interesting ids
         $ids = array();
         foreach (static::$structure as $key => $definition) {
-            if ($definition['foreign_class'] != $class && !($definition['fieldtype'] == self::FIELDTYPE_FILE && $class == 'Platform\\File') && $definition['fieldtype'] != self::FIELDTYPE_REFERENCE_HYPER) continue;
+            if ($definition['foreign_class'] != $class && !(in_array($definition['fieldtype'], array(self::FIELDTYPE_IMAGE, self::FIELDTYPE_FILE)) && $class == 'Platform\\File') && $definition['fieldtype'] != self::FIELDTYPE_REFERENCE_HYPER) continue;
             foreach ($datarecords as $datarecord) {
                 $values = $datarecord->getRawValue($key);
                 if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_HYPER) {
@@ -1836,9 +1843,10 @@ class Datarecord implements DatarecordReferable {
      */
     public function resolveForeignReferences($field) {
         Errorhandler::checkParams($field, 'string');
-        if (! in_array(static::$structure[$field]['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER, self::FIELDTYPE_FILE))) trigger_error('Tried to resolve a foreign reference on an incompatible field.', E_USER_ERROR);
+        if (! in_array(static::$structure[$field]['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER, self::FIELDTYPE_FILE, self::FIELDTYPE_IMAGE))) trigger_error('Tried to resolve a foreign reference on an incompatible field.', E_USER_ERROR);
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
                 $class = 'Platform\\File';
                 $ids = array($this->getRawValue($field));
                 break;
@@ -2055,6 +2063,7 @@ class Datarecord implements DatarecordReferable {
                 $this->values[$field] = new Time($value);
                 break;
             case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
                 if (is_array($value)) {
                     // Form style input
                     // If nothing is changed, then keep status quo
@@ -2167,6 +2176,7 @@ class Datarecord implements DatarecordReferable {
     const FIELDTYPE_PASSWORD = 300;
     
     const FIELDTYPE_FILE = 400;
+    const FIELDTYPE_IMAGE = 401;
     
     const FIELDTYPE_REFERENCE_SINGLE = 500;
     const FIELDTYPE_REFERENCE_MULTIPLE = 501;

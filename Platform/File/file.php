@@ -45,6 +45,7 @@ class File extends Datarecord {
         if (! file_exists($filename)) trigger_error('No such file: '.$filename, E_USER_ERROR);
         $this->content_source = 'file';
         $this->content = $filename;
+        $this->mimetype = mime_content_type($filename);
         if (! $this->filename) $this->filename = self::extractFilename ($filename);
     }
     
@@ -198,6 +199,14 @@ class File extends Datarecord {
         $file = new File();
         $file->loadForRead($file_id);
         return $file->getURL();
+    }
+    
+    /**
+     * Return if this is an image based on a simple analysis of the stored mimetype
+     * @return boolean
+     */
+    public function isImage() {
+        return substr($this->mimetype,0,5) == 'image';
     }
     
      /**
