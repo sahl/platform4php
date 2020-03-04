@@ -187,7 +187,7 @@ class Field {
     public function clearError() {
         if (! $this->is_error) return;
         $this->is_error = false;
-        array_remove($this->classes, 'formfield_error');
+        Utility::arrayRemove($this->classes, 'formfield_error');
         $this->errortext = '';
     }
     

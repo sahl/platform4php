@@ -11,11 +11,11 @@ addCustomPlatformFunction(function(item) {
         
         var table_configuration = {
             columnResized: function() {
-                saveTableLayout(element.prop('id'));
+                saveTableLayout(element.attr('id'));
                 sizeTableContainer(element);
             },
             columnMoved: function() {
-                saveTableLayout(element.prop('id'));
+                saveTableLayout(element.attr('id'));
                 sizeTableContainer(element);
             },
             renderComplete: function() {
@@ -62,7 +62,7 @@ addCustomPlatformFunction(function(item) {
         
         element.removeClass('platform_invisible');
         
-        var table = new Tabulator('#'+$(this).prop('id'), table_configuration);
+        var table = new Tabulator('#'+$(this).attr('id'), table_configuration);
         
         if (control_form) {
             function makeObject(array) {
@@ -111,7 +111,7 @@ addCustomPlatformFunction(function(item) {
             callback(table);
         }
         
-        tablebuffer['#'+$(this).prop('id')] = table;
+        tablebuffer['#'+$(this).attr('id')] = table;
     })
     
     $('.platform_column_select').submit(function() {
@@ -182,7 +182,7 @@ function sizeTableContainer(table_container) {
     }
     console.log('Table container width: '+$(table_container).width());
     
-    var id = table_container.prop('id');
+    var id = table_container.attr('id');
     var table = getTableByID('#'+id);
     var number_of_rows = table.getDataCount(true);
     var header_height = table_container.find('.tabulator-headers').height();

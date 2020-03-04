@@ -124,7 +124,7 @@ class Table {
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
-                'width' => valalt($structure[$field]['width'], 200)
+                'width' => $structure[$field]['width'] ?: 200
             );
         }
         return $columndef;

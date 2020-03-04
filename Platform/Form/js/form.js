@@ -124,7 +124,7 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
                                 var el = element.find('#'+element.attr('id')+'_'+key+'.file_select_frame');
                                 if (el.length) {
                                     // Recode url
-                                    el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').prop('id')+'&field_name='+key+'&file_id='+value);
+                                    el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
                                 }
                             }
                         }

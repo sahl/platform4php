@@ -1,5 +1,5 @@
 <?php
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 $code = 404;
 $error = 'File not found (invalid URL)';

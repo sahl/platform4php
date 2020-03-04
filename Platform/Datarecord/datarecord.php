@@ -442,7 +442,7 @@ class Datarecord implements DatarecordReferable {
                             if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
                         } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
                             $values = $referring_object->getRawValue($key);
-                            array_remove($values, $deleted_id);
+                            Utility::arrayRemove($values, $deleted_id);
                             $referring_object->setValue($key, $values);
                         }
                     }

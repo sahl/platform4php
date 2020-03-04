@@ -1,5 +1,5 @@
 <?php
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 // Switch to requested instance
 $instance = new \App\Instance();

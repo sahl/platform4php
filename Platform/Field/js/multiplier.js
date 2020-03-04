@@ -54,11 +54,11 @@ function platform_handle_multiplier_expand() {
 }
 
 function platform_handle_multiplier_change() {
-    console.log('change '+$(this).prop('id'));
+    console.log('change '+$(this).attr('id'));
     var row = $(this).closest('.platform_form_multiplier_element');
     // Check if we need to expand
     if (row.next().is(':last-child') && $(this).val() != '') {
-        console.log('change-exp '+$(this).prop('id'));
+        console.log('change-exp '+$(this).attr('id'));
         // We need to expand.
         var new_row = row.clone();
         new_row.insertAfter(row);
@@ -71,7 +71,7 @@ function platform_handle_multiplier_change() {
     } else {
         // Check if we need to collapse
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! row.next().is(':last-child')) {
-            console.log('change-col '+$(this).prop('id'));
+            console.log('change-col '+$(this).attr('id'));
             var container = $(this).closest('.platform_form_multiplier');
             if (row.next().is(':last-child'))
                 row.prev().find('input:first').focus();
@@ -106,7 +106,7 @@ function platform_multiplier_fixnames(element) {
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
-            var id = $(this).prop('id');
+            var id = $(this).attr('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('name', new_name).prop('id', new_id);
 //            if ($(this).parent().is('.formfield_container') && ! $(this).parent().find('.file_select_frame').length) {
@@ -115,7 +115,7 @@ function platform_multiplier_fixnames(element) {
 //            }
         })
         $(this).find('.formfield_container').each(function() {
-            var id = $(this).prop('id');
+            var id = $(this).attr('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('id', new_id);
             // TODO: We cannot find the main field for the label
@@ -123,11 +123,11 @@ function platform_multiplier_fixnames(element) {
         $(this).find('iframe.file_select_frame').each(function() {
             var name = $(this).data('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
-            var id = $(this).prop('id');
+            var id = $(this).attr('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('id', new_id);
             // Recode url if source changed
-            var src = '/Platform/Field/php/file.php?form_name='+$(this).closest('form').prop('id')+'&field_name='+new_name;
+            var src = '/Platform/Field/php/file.php?form_name='+$(this).closest('form').attr('id')+'&field_name='+new_name;
             console.log('Compare');
             console.log(name);
             console.log(new_name);

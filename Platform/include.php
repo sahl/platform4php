@@ -56,16 +56,3 @@ Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/css
 function platformInitialize() {
     Instance::ensureInDatabase();
 }
-
-/**
- * Removes an element from an array
- * @param array $array Array to check
- * @param mixed $element Element to remove
- */
-function array_remove(&$array, $element) {
-    $array = array_diff($array, array($element));
-}
-
-function valalt($value, $alternative1, $alternative2 = '') {
-    return $value ? $value : ($alternative1 ? $alternative1 : $alternative2);
-}

@@ -1,6 +1,6 @@
 <?php
 namespace Platform;
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 $input = file_get_contents("php://input");
 $json = json_decode($input, true);

@@ -1,6 +1,6 @@
 <?php
 $_SERVER['DOCUMENT_ROOT'] = __DIR__.'/../../../';
-include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
+include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 $id = $argv[1];
 
