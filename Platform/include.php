@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 $configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
 
 require_once $configfile;
@@ -10,6 +8,8 @@ error_reporting(E_ALL & ~E_NOTICE);
 
 // Register autoloader
 spl_autoload_register("platformAutoLoad");
+
+session_start();
 
 // Register shutdown
 register_shutdown_function('Platform\\Errorhandler::shutdown');
