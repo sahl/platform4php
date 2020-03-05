@@ -2090,7 +2090,7 @@ class Datarecord implements DatarecordReferable {
                         $file->mimetype = $value['mimetype'];
                         $folder = File::getFullFolderPath('temp');
                         $file->attachFile($folder.$value['temp_file']);
-                        $file->save();
+                        $file->save(false, true);
                     } else {
                         // We need to create a new file
                         $file = new File();
@@ -2099,8 +2099,24 @@ class Datarecord implements DatarecordReferable {
                         $file->mimetype = $value['mimetype'];
                         $folder = File::getFullFolderPath('temp');
                         $file->attachFile($folder.$value['temp_file']);
-                        $file->save();
+                        $file->save(false, true);
                         $this->values[$field] = $file->file_id;
+                    }
+                    if (static::$structure[$field]['fieldtype'] == self::FIELDTYPE_IMAGE && static::$structure[$field]['image_max_width'] && static::$structure[$field]['image_max_height']) {
+                        $max_width = static::$structure[$field]['image_max_width'];
+                        $max_height = static::$structure[$field]['image_max_height'];
+                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: \Platform\Image::RESIZE_STRATEGY_FILL;
+                        $image = new \Platform\Image();
+                        $result = $image->attachFile($file, true);
+                        if ($result) {
+                            $image->downsize($max_width, $max_height, $strategy);
+                            $image->attachToFileAsPNG($file);
+                            $file->save();
+                        } else {
+                            $file->unlock();
+                        }
+                    } else {
+                        $file->unlock();
                     }
                 } elseif ($value instanceof File) {
                     $this->values[$field] = $value->file_id;

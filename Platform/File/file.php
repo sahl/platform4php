@@ -126,6 +126,19 @@ class File extends Datarecord {
         return $folder;
     }
     
+    /**
+     * Get the current filename without extension
+     * @return string
+     */
+    public function getFilenameWithoutExtension() {
+        $dotposition = mb_strrpos($this->filename, '.');
+        return $dotposition === false ? $this->filename : mb_substr($this->filename,0,$dotposition+1);
+    }
+    
+    /**
+     * Get an url for an icon representing the current filetype based on extension
+     * @return string
+     */
     public function getFileTypeURL() {
         return self::getFiletypeURLByExtension(self::extractExtension($this->getRawValue('filename')));
     }
