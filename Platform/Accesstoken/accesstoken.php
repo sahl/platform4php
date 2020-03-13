@@ -24,6 +24,10 @@ class Accesstoken extends Datarecord {
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
                 'foreign_class' => 'Platform\User'
             ),
+            'seconds_to_live' => array(
+                'label' => 'Seconds to live',
+                'fieldtype' => self::FIELDTYPE_INTEGER
+            ),
             'expire_date' => array(
                 'label' => 'Token expire',
                 'fieldtype' => self::FIELDTYPE_DATETIME
@@ -47,6 +51,7 @@ class Accesstoken extends Datarecord {
         $accesstoken->user_ref = $user->user_id;
         $timestamp = new Time('now');
         $accesstoken->expire_date = $timestamp->add($seconds_to_live);
+        $accesstoken->seconds_to_live = $seconds_to_live;
         $accesstoken->save();
         Semaphore::release('accesstoken_generator');
         $accesstoken->setSession();
@@ -134,9 +139,10 @@ class Accesstoken extends Datarecord {
     
     /**
      * Do a quick extension on this Accesstoken to make it last longer
-     * @param int $seconds_to_live Seconds to live from now
+     * @param int $seconds_to_live Seconds to live from now or omit to use initial value
      */
-    public function quickExtend($seconds_to_live = 3600) {
+    public function quickExtend($seconds_to_live = -1) {
+        if ($seconds_to_live < 0) $seconds_to_live = $this->seconds_to_live;
         Errorhandler::checkParams($seconds_to_live, 'int');
         $timestamp = new Time('now');
         $this->expire_date = $timestamp->add($seconds_to_live);
@@ -173,10 +179,10 @@ class Accesstoken extends Datarecord {
      * Check if the current session is allowed and represented by an Accesstoken
      * @param string $redirect URL to redirect to, if not valid. If set, then script will terminate on invalid session.
      * @param boolean $extend Indicates if the session should be extended if valid
-     * @param int $seconds_to_live Seconds to extend session by.
+     * @param int $seconds_to_live Seconds to extend session by or omit to use initialization value.
      * @return boolean True if valid otherwise false 
      */
-    public static function validateSession($redirect = '', $extend = false, $seconds_to_live = 3600) {
+    public static function validateSession($redirect = '', $extend = false, $seconds_to_live = -1) {
         Errorhandler::checkParams($redirect, 'string', $extend, 'boolean', $seconds_to_live, 'int');
         // Check for information in URL
         if ($_GET['instance_id']) {
