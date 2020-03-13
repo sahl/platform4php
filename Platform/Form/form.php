@@ -131,6 +131,17 @@ class Form {
     }
     
     /**
+     * Get this form as HTML
+     * @return string Form as html
+     */
+    public function getAsHTML() {
+        ob_start();
+        $this->render();
+        $html = ob_get_clean();
+        return $html;
+    }
+    
+    /**
      * Get a field from the form by name. If a multiplier is present in the form
      * a field from that can be found by using a name on the following form:
      * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER

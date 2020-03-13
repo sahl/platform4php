@@ -20,6 +20,8 @@ addCustomPlatformFunction(function(item) {
         var hiddenfields = [];
 
         $('.platform_form_field:hidden', $(this)).each(function() {
+            // We accept hidden texteditors
+            if ($(this).is('.texteditor')) return true;
             var name = $(this).prop('name');
             if ($(this).data('realname')) name = $(this).data('realname');
             hiddenfields.push(name);
@@ -50,7 +52,8 @@ addCustomPlatformFunction(function(item) {
      // Focus on auto-focus field
      $('.platform_autofocus:first').focus();
      
-     autosize($('textarea', item));
+     // Autosize required textareas
+     autosize($('textarea.autosize', item));
 });
 
 
@@ -86,12 +89,17 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
         } else {
             $.each(data.data, function(key, value) {
                 var el = element.find('[name="'+key+'"]');
+                console.log('Find field '+key);
                 if (el.length) {
-                    if (el.is('input')) {
+                    if (el.is('input,textarea')) {
                         if (el.is('[type=checkbox]')) {
                             el.prop('checked', value == 1);
                         } else {
                             el.val(value);
+                            if (el.is('.texteditor')) {
+                                el.summernote('reset');
+                                el.summernote('code', value);
+                            }
                         }
                     }
                     else if (el.is('select')) {

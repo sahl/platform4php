@@ -63,6 +63,9 @@ addCustomPlatformFunction(function(item) {
         element.removeClass('platform_invisible');
         
         var table = new Tabulator('#'+$(this).attr('id'), table_configuration);
+ 
+        // Buffer the table, so we can get the table object using the DOM node id
+        tablebuffer['#'+$(this).attr('id')] = table;
         
         if (control_form) {
             function makeObject(array) {
@@ -106,12 +109,11 @@ addCustomPlatformFunction(function(item) {
                     cell.getRow().toggleSelect();
                 }
             }, true);
-        
+
         if (typeof callback == 'function') {
             callback(table);
         }
         
-        tablebuffer['#'+$(this).attr('id')] = table;
     })
     
     $('.platform_column_select').submit(function() {

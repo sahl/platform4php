@@ -5,6 +5,7 @@ addCustomPlatformFunction(function(item) {
         stop: function() {
             platform_multiplier_fixnames($(this));
         },
+        cancel: "input,textarea,button,select,option,.note-editor",
         items: "div.platform_form_multiplier_element:not(:last-child)"
     }).find('.platform_form_multiplier_element').css('cursor', 'move');
 });
@@ -40,6 +41,8 @@ function platform_handle_multiplier_expand() {
     if (row.next().is(':last-child') && $(this).val() != '') {
         // We need to expand.
         var new_row = row.clone();
+        // Destroy existing editors in new row
+        new_row.find('.note-editor').remove();
         new_row.insertAfter(row);
         new_row.find('textarea,input[type!="checkbox"]').val('');
         new_row.find('input[type="checkbox"]').attr('checked', false);
@@ -106,7 +109,7 @@ function platform_multiplier_fixnames(element) {
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
-            var id = $(this).attr('id');
+            var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('name', new_name).prop('id', new_id);
 //            if ($(this).parent().is('.formfield_container') && ! $(this).parent().find('.file_select_frame').length) {
@@ -115,7 +118,7 @@ function platform_multiplier_fixnames(element) {
 //            }
         })
         $(this).find('.formfield_container').each(function() {
-            var id = $(this).attr('id');
+            var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('id', new_id);
             // TODO: We cannot find the main field for the label

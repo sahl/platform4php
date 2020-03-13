@@ -39,7 +39,7 @@ class Design {
     public static function JSFile($js_file) {
         Errorhandler::checkParams($js_file, 'string');
         if (! self::$page_started) self::queueJSFile($js_file);
-        echo '<script src="'.$js_file.'" type="text/javascript"></script>';
+        else echo '<script src="'.$js_file.'" type="text/javascript"></script>';
     }
     
     /**
@@ -101,6 +101,11 @@ class Design {
      */
     public static function renderPageend() {
         echo '</body></html>';
+    }
+    
+    public static function setPagestarted($started = true) {
+        Errorhandler::checkParams($started, 'boolean');
+        self::$page_started = $started;
     }
     
     /**

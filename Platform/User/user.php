@@ -57,7 +57,7 @@ class User extends DatarecordExtensible {
         $result = $filter->execute();
         if ($result->getCount()) {
             $user = $result->get(0);
-            $token = Accesstoken::acquire($user);
+            $token = Accesstoken::acquire($user, 60*60*6);
             return $token;
         }
         return false;
