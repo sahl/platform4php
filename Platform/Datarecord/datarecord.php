@@ -1063,8 +1063,11 @@ class Datarecord implements DatarecordReferable {
         if ($definition['required']) $options['required'] = true;
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_TEXT:
-            case self::FIELDTYPE_BIGTEXT:
                 return new FieldText($definition['label'], $name, $options);
+            case self::FIELDTYPE_BIGTEXT:
+                return new FieldTextarea($definition['label'], $name, $options);
+            case self::FIELDTYPE_HTMLTEXT:
+                return new FieldTexteditor($definition['label'], $name, $options);
             case self::FIELDTYPE_EMAIL:
                 return new FieldEmail($definition['label'], $name, $options);
             case self::FIELDTYPE_PASSWORD:
@@ -1134,8 +1137,6 @@ class Datarecord implements DatarecordReferable {
                 return $this->getRawValue($field) ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
-            case self::FIELDTYPE_FILE:
-            case self::FIELDTYPE_IMAGE:
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
@@ -1155,7 +1156,11 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_DATE:
                 return $this->getRawValue($field)->getReadable('Y-m-d');
             case self::FIELDTYPE_ENUMERATION:
+            case self::FIELDTYPE_HTMLTEXT:
                 return $this->getRawValue($field);
+            case self::FIELDTYPE_FILE:
+            case self::FIELDTYPE_IMAGE:
+                return (int)$this->getRawValue($field);
             default:
                 return $this->getTextValue($field);
         }
@@ -1332,6 +1337,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
             case self::FIELDTYPE_BIGTEXT:
+            case self::FIELDTYPE_HTMLTEXT:
                 return 'MEDIUMTEXT';
             case self::FIELDTYPE_INTEGER:
             case self::FIELDTYPE_KEY:
@@ -2019,6 +2025,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_EMAIL:
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_BIGTEXT:
+            case self::FIELDTYPE_HTMLTEXT:
                 $this->values[$field] = $value;
                 break;
             case self::FIELDTYPE_ENUMERATION:
@@ -2177,6 +2184,7 @@ class Datarecord implements DatarecordReferable {
     const FIELDTYPE_FLOAT = 3;
     const FIELDTYPE_BOOLEAN = 4;
     const FIELDTYPE_BIGTEXT = 5;
+    const FIELDTYPE_HTMLTEXT = 6;
     
     const FIELDTYPE_DATETIME = 10;
     const FIELDTYPE_DATE = 11;

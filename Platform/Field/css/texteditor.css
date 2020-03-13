@@ -1,0 +1,11 @@
+.note-editor {
+    cursor: default;
+}
+
+.note-editor.fullscreen {
+    z-index: 6000 !important;
+}
+
+.note-editable {
+    cursor: text;
+}

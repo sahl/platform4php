@@ -31,7 +31,6 @@ function platformAutoLoad($class) {
 }
 
 // Load includes
-Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/js/tabulator.min.js');
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery.js');
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
 Platform\Design::queueJSFile('/Platform/Design/js/general.js');
@@ -44,13 +43,21 @@ Platform\Design::queueJSFile('/Platform/Form/js/autosize.js');
 
 Platform\Design::queueJSFile('/Platform/Field/js/multiplier.js');
 Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');
+Platform\Design::queueJSFile('/Platform/Field/js/texteditor.js');
+Platform\Design::queueCSSFile('/Platform/Field/css/texteditor.css');
 
 Platform\Design::queueJSFile('/Platform/Design/js/greyout.js');
 Platform\Design::queueCSSFile('/Platform/Design/css/greyout.css');
 
 Platform\Design::queueJSFile('/Platform/Table/js/table.js');
 
+Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/js/tabulator.min.js');
 Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/css/tabulator.min.css');
+
+Platform\Design::queueJSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
+Platform\Design::queueCSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
+
+
 
 
 function platformInitialize() {
