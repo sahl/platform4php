@@ -59,9 +59,11 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
             align: 'center',
             cellClick: function(e, cell) {
                 if (cell.getValue() != 1) return;
-                $.post(script, {event: 'datarecord_copy', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
-                    // Reload tabulator
-                    table.replaceData();
+                confirmDialog('Copy', 'Are you sure you want to copy this '+name, function() {
+                    $.post(script, {event: 'datarecord_copy', ids: JSON.stringify([cell.getRow().getIndex()]), __class: classname}, function(data) {
+                        // Reload tabulator
+                        table.replaceData();
+                    })
                 })
             }
         }, false, 'checkboxcolumn');
