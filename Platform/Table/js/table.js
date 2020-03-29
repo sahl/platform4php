@@ -23,6 +23,11 @@ addCustomPlatformFunction(function(item) {
             },
             dataLoaded: function() {
                 sizeTableContainer(element);
+            },
+            dataSorting: function(sorters) {
+                if (sorters.length) {
+                    saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
+                }
             }
         }
         
@@ -131,6 +136,59 @@ addCustomPlatformFunction(function(item) {
         $.post('/Platform/Table/php/save_table_properties.php', {action: 'savevisibility', id: id, visible: visible});
         return false;
     });
+    
+    function saveTableLayout(tableid) {
+       var table = getTableByID('#'+tableid);
+       var columns = [];
+       $.each(table.getColumns(), function(key, element) {
+           if (element._column.definition && element._column.definition.field) {
+               columns.push({field: element._column.definition.field, width: element._column.width});
+           }
+       })
+       $.post('/Platform/Table/php/save_table_properties.php', {id: tableid, action: 'saveorderandwidth', properties: columns});
+   }
+   
+   function saveTableSort(tableid, column, direction) {
+       $.post('/Platform/Table/php/save_table_properties.php', {id: tableid, action: 'savesort', column: column, direction: direction});
+   }
+
+   function sizeTableContainer(table_container) {
+       // Find table width
+       var width = $(table_container).find('.tabulator-table').width();
+       // Check if we are inside an edit complex
+       if ($(table_container).parent().hasClass('platform_render_edit_complex')) {
+           var container_width = $(table_container).parent().parent().width();
+           $(table_container).width(Math.min(width, container_width));
+           $(table_container).parent().width(Math.min(width, container_width));
+       } else {
+           var container_width = $(table_container).parent().width();
+           $(table_container).width(Math.min(width, container_width));
+           console.log('Table container request: '+Math.min(width, container_width));
+       }
+       console.log('Table container width: '+$(table_container).width());
+
+       var id = table_container.attr('id');
+       var table = getTableByID('#'+id);
+       var number_of_rows = table.getDataCount(true);
+       var header_height = table_container.find('.tabulator-headers').height();
+       // Special zero result case
+       if (! number_of_rows) {
+           table_container.css('height', 90);
+           return;
+       }
+       var row_height = table_container.find('.tabulator-row').height();
+       var max_height = parseInt(table_container.css('max-height'));
+       if (! max_height) max_height = 500;
+       console.log('We have '+number_of_rows+' rows available and they are '+row_height+'px high.');
+       console.log('Max allowed height is: '+max_height);
+       // Calculate additional height based of if a scrollbar is shown
+       // TODO: These values are hardcoded and should be calculated
+       var additional_height = container_width < width ? 20 : 3;
+
+       if (number_of_rows < 50) table_container.css('height', 'auto');
+       else table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
+   }   
+    
 })
 
 function filterTable(table, string) {
@@ -156,52 +214,4 @@ function getSelectedTableIds(tableid) {
 
 function getTableByID(id) {
     return tablebuffer[id];
-}
-
-function saveTableLayout(tableid) {
-    var table = getTableByID('#'+tableid);
-    var columns = [];
-    $.each(table.getColumns(), function(key, element) {
-        if (element._column.definition && element._column.definition.field) {
-            columns.push({field: element._column.definition.field, width: element._column.width});
-        }
-    })
-    $.post('/Platform/Table/php/save_table_properties.php', {id: tableid, action: 'saveorderandwidth', properties: columns});
-}
-
-function sizeTableContainer(table_container) {
-    // Find table width
-    var width = $(table_container).find('.tabulator-table').width();
-    // Check if we are inside an edit complex
-    if ($(table_container).parent().hasClass('platform_render_edit_complex')) {
-        var container_width = $(table_container).parent().parent().width();
-        $(table_container).width(Math.min(width, container_width));
-        $(table_container).parent().width(Math.min(width, container_width));
-    } else {
-        var container_width = $(table_container).parent().width();
-        $(table_container).width(Math.min(width, container_width));
-        console.log('Table container request: '+Math.min(width, container_width));
-    }
-    console.log('Table container width: '+$(table_container).width());
-    
-    var id = table_container.attr('id');
-    var table = getTableByID('#'+id);
-    var number_of_rows = table.getDataCount(true);
-    var header_height = table_container.find('.tabulator-headers').height();
-    // Special zero result case
-    if (! number_of_rows) {
-        table_container.css('height', 90);
-        return;
-    }
-    var row_height = table_container.find('.tabulator-row').height();
-    var max_height = parseInt(table_container.css('max-height'));
-    if (! max_height) max_height = 500;
-    console.log('We have '+number_of_rows+' rows available and they are '+row_height+'px high.');
-    console.log('Max allowed height is: '+max_height);
-    // Calculate additional height based of if a scrollbar is shown
-    // TODO: These values are hardcoded and should be calculated
-    var additional_height = container_width < width ? 20 : 3;
-    
-    if (number_of_rows < 50) table_container.css('height', 'auto');
-    else table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
 }

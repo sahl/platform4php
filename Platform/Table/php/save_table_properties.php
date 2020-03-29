@@ -27,5 +27,8 @@ if ($_POST['action'] == 'savevisibility') {
     }
     \Platform\UserProperty::setPropertyForCurrentUser('tableconfiguration', $_POST['id'], $existingproperties);
 }
-
-
+if ($_POST['action'] == 'savesort') {
+    $existingproperties['sort_column'] = $_POST['column'];
+    $existingproperties['sort_direction'] = $_POST['direction'];
+    \Platform\UserProperty::setPropertyForCurrentUser('tableconfiguration', $_POST['id'], $existingproperties);
+}

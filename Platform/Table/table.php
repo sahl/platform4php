@@ -131,6 +131,27 @@ class Table {
     }
     
     /**
+     * Set a default sort for this table, being either a previously saved sort or
+     * the first titled column
+     */
+    private function defaultSort() {
+        // Try to load from session
+        $savedconfiguration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->id);
+        $column = $savedconfiguration['sort_column'];
+        if ($this->hasColumn($column)) {
+            $this->setSort($column, $savedconfiguration['sort_direction']);
+        } else {
+            // Sort by first named column
+            foreach ($this->options['columns'] as $column) {
+                if ($column['title']) {
+                    $this->setSort($column['field']);
+                    return;
+                }
+            }
+        }
+    }
+    
+    /**
      * Get an option from this table
      * @param string $option Option name
      * @return mixed
@@ -151,6 +172,18 @@ class Table {
             default:
                 return 'string';
         }
+    }
+    
+    /**
+     * Check if this table have a column with the given field name
+     * @param Column field name $column_name
+     * @return boolean True if we have it
+     */
+    public function hasColumn($column_name) {
+        foreach ($this->options['columns'] as $column) {
+            if ($column['field'] == $column_name) return true;
+        }
+        return false;
     }
     
    /**
@@ -211,6 +244,14 @@ class Table {
             unset ($this->options['data']);
         }
         
+        if ($this->options['sort'] && $this->hasColumn($this->options['sort'])) {
+            $this->setSort($this->options['sort'],$this->options['sort_direction']);
+        } else {
+            $this->defaultSort();
+        }
+        unset($this->options['sort']);
+        unset($this->options['sort-order']);
+        
         echo '<div';
         foreach ($attributes as $key => $value) echo ' '.$key.'="'.$value.'"';
         echo '>';
@@ -263,6 +304,19 @@ class Table {
                 $this->options[$option] = $value;
                 break;
         }
+    }
+
+    /**
+     * Set the sorting of this table
+     * @param string $column Column to sort by
+     * @param string $direction Direction "desc" for descending otherwise ascending
+     */
+    public function setSort($column, $direction = 'asc') {
+        Errorhandler::checkParams($column, 'string', $direction, 'string');
+        if (! $this->hasColumn($column)) trigger_error('Illegal sort column set', E_USER_ERROR);
+        $sort = array('column' => $column);
+        $sort['dir'] = ($direction == 'desc') ? 'desc' : 'asc';
+        $this->options['initialSort'] = array($sort);
     }
     
     /**
