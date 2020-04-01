@@ -1,9 +1,15 @@
-.formfield_container {
-    padding: 10px;
+.platform_formfield_container > label {
+    display: block;
 }
 
 .formfield_error {
     background-color: #FFDDDD;
+}
+
+.platform_field {
+    width: 100%;
+    margin-right: 10px;
+    box-sizing: border-box;
 }
 
 .formfield_error_container {

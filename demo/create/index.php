@@ -27,15 +27,11 @@ if ($new_instance_form->isSubmitted() && $new_instance_form->validate()) {
     }
 }
 
-echo '<div class="w3-container w3-teal">';
 echo '<h1>Create instance</h1>';
-echo '</div>';
 
-echo '<div class="w3-container">';
 $new_instance_form->render();
-echo '</div>';
 
-echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.8em;">';
+echo '<div style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
 

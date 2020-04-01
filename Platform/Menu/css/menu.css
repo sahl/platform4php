@@ -1,0 +1,48 @@
+.platform_dropdown_menu {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.platform_dropdown_menu_content {
+    display: none;
+    position: absolute;
+    z-index: 10;
+    border: 1px solid black;
+}
+
+.platform_dropdown_menu:hover > .platform_dropdown_menu_content {
+    display: inline-block;
+}
+
+.platform_dropdown_menu_button {
+    margin-bottom: 5px;
+}
+
+.platform_dropdown_menu_item {
+    padding: 6px 40px 6px 15px;
+    display: block;
+    text-decoration: none;
+    background-color: white;
+    color: black;
+}
+
+.platform_dropdown_menu_item:hover {
+    background: #DDDDDD;
+}
+
+.platform_dropdown_menu_top_item {
+    padding: 10px;
+}
+
+.platform_menuitem_selected {
+    background: #DDDDDD;
+    
+}
+
+.platform_dropdown_menu_top_item > a {
+    text-decoration: none;
+}
+
+.platform_dropdown_menu_top_item:hover {
+    background: #DDDDDD;
+}

@@ -110,7 +110,7 @@ class Instance extends Datarecord {
      */
     public static function getByTitle($title) {
         Errorhandler::checkParams($title, 'string');
-        $filter = new Filter('\\App\\Instance');
+        $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('title', $title));
         return $filter->executeAndGetFirst();
     }
@@ -270,7 +270,7 @@ class Instance extends Datarecord {
         Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         parent::save($force_save, $keep_open_for_write);
         if (! $this->is_initiated) {
-            if ($this->createDatabase()) parent::save($forcesave);
+            if ($this->createDatabase()) parent::save($force_save);
         }
     }
 

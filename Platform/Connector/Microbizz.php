@@ -79,7 +79,7 @@ class ConnectorMicrobizz {
     public static function getConnectForm($request, $button_text = 'Link to Microbizz', $connect_testserver = false) {
         Errorhandler::checkParams($request, 'array', $button_text, 'string', $connect_testserver, 'boolean');
         $request_form = new \Platform\Form('microbizz_connect_form');
-        $action = $connect_testserver ? 'https://test2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
+        $action = $connect_testserver ? 'https://dev2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
         $request_form->addField(new \Platform\FieldHidden('', 'request', array('value' => json_encode($request))));
         $request_form->addField(new \Platform\FieldSubmit($button_text, 'performlink'));

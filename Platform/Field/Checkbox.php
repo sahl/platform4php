@@ -17,8 +17,8 @@ class FieldCheckbox extends Field {
     
     public function render() {
         echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
-        $this->renderInput();
         $this->renderLabel();
+        $this->renderInput();
         $this->renderErrorContainer($this->errortext);
         echo '</div>';
     }

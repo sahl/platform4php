@@ -13,6 +13,6 @@ class FieldSubmit extends Field {
     }
     
     public function getClassString() {
-        return 'w3-button w3-round w3-black';
+        return Design::getClass('button');
     }
 }

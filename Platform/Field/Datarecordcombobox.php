@@ -7,7 +7,7 @@ class FieldDatarecordcombobox extends FieldCombobox {
     
     public function __construct($label, $name, $options = array()) {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
-        $this->classes[] = 'w3-input platform_combobox platform_datarecord_combobox';
+        $this->classes[] = Design::getClass('formfield', 'platform_combobox platform_datarecord_combobox');
         if ($options['class']) {
             $this->connected_class = $options['class'];
             $this->setDatasource('/Platform/Field/php/io_combobox.php?class='.$this->connected_class);

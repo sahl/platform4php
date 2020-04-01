@@ -25,15 +25,11 @@ if ($loginform->isSubmitted()) {
     $loginform->validate();
 }
 
-echo '<div class="w3-container w3-teal">';
 echo '<h1>Log into instance</h1>';
-echo '</div>';
 
-echo '<div class="w3-container">';
 $loginform->render();
-echo '</div>';
 
-echo '<div class="w3-container w3-gray" style="font-style: italic; font-size: 0.8em;">';
+echo '<div style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
 

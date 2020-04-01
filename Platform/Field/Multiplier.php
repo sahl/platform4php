@@ -9,7 +9,7 @@ class FieldMultiplier extends Field {
     
     public function __construct($label = '', $name = '', $options = array()) {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
-        $this->classes[] = 'platform_form_multiplier_element formfield_container';
+        $this->classes[] = 'platform_form_multiplier_element platform_formfield_container';
         $this->container_classes[] = 'platform_form_multiplier';
         $this->value = array();
         if ($options['sortable']) {

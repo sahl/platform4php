@@ -78,7 +78,6 @@ class Design {
         
         if (! is_array($css_files)) $css_files = array($css_files);
         $css_files = array_merge(array(
-            'https://www.w3schools.com/w3css/4/w3.css',
             'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
             '/Platform/Jquery/css/jquery-ui.css',
             '/Platform/Design/css/platform.css',
@@ -119,13 +118,21 @@ class Design {
     
     
     private static $style_array = array(
+        'button' => '',
         'datarecord_editcomplex' => 'platform_autocenter',
-        'datarecord_row' => 'w3-row-padding w3-margin-top',
-        'datarecord_column' => 'w3-col',
-        'formfield' => 'w3-input',
-        'formfield_checkbox' => 'w3-check',
+        'datarecord_row' => 'platform_row',
+        'datarecord_column' => 'platform_column',
+        'formfield' => 'platform_field',
+        'formfield_checkbox' => '',
         'file_input_frame' => '',
         'platform_table' => '',
+        'dropdown_menu' => 'platform_dropdown_menu',
+        'dropdown_menu_content' => 'platform_dropdown_menu_content',
+        'dropdown_menu_button' => 'platform_dropdown_menu platform_dropdown_menu_button',
+        'dropdown_menu_item' => 'platform_dropdown_menu_item',
+        'dropdown_menu_item_selected' => 'platform_dropdown_menu_item platform_menuitem_selected',
+        'dropdown_menu_top_item' => 'platform_dropdown_menu_top_item',
+        'dropdown_menu_top_item_selected' => 'platform_dropdown_menu_top_item platform_menuitem_selected'
     );
     
 }

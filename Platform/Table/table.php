@@ -218,16 +218,14 @@ class Table {
 
         echo '<form class="platform_column_select" id="'.$this->id.'_column_select_form">';
         echo '<input type="hidden" name="id" value="'.$this->id.'">';
-        echo '<div class="w3-cell-row">';
         $e = 0;
         for ($i = 0; $i < 3; $i++) {
-            echo '<div class="w3-container w3-cell">';
+            echo '<div>';
             for ($j = 0; $j < $split && $e < count($elements); $j++) {
                 echo $elements[$e++];
             }
             echo '</div>';
         }
-        echo '</div>';
         echo '</form>';
     }
     

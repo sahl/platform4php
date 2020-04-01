@@ -45,7 +45,7 @@ addCustomPlatformFunction(function(item) {
           
      // Indicate on password-field when it is updated.
      $('.platform-password',item).change(function() {
-         $(this).closest('.formfield_container').find('input[type="hidden"]').val(1);
+         $(this).closest('.platform_formfield_container').find('input[type="hidden"]').val(1);
          return true;
      });
      
@@ -58,12 +58,12 @@ addCustomPlatformFunction(function(item) {
 
 
 $.fn.setError = function(text) {
-    this.addClass('formfield_error').closest('.formfield_container').find('.formfield_error_container').html(text).slideDown();
+    this.addClass('formfield_error').closest('.platform_formfield_container').find('.formfield_error_container').html(text).slideDown();
     return this;
 }
 
 $.fn.clearError = function() {
-    this.filter('.formfield_error').removeClass('formfield_error').closest('.formfield_container').find('.formfield_error_container').slideUp();
+    this.filter('.formfield_error').removeClass('formfield_error').closest('.platform_formfield_container').find('.formfield_error_container').slideUp();
     return this;
 }
 

@@ -13,7 +13,7 @@ class Field {
      * Classes to add to form field container
      * @var array
      */
-    protected $container_classes = array('formfield_container');
+    protected $container_classes = array('platform_formfield_container');
     
     /**
      * Special styles for the container
@@ -307,8 +307,9 @@ class Field {
      */
     public function renderLabel() {
         if (! $this->label) return;
-        echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label.'</label>';
+        echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label;
         if ($this->is_required) echo ' (<span style="color:red">*</span>)';
+        echo '</label>';
     }
     
     /**

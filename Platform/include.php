@@ -34,6 +34,7 @@ function platformAutoLoad($class) {
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery.js');
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
 Platform\Design::queueJSFile('/Platform/Design/js/general.js');
+Platform\Design::queueCSSFile('/Platform/Menu/css/menu.css');
 
 Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
 Platform\Design::queueJSFile('/Platform/Dialog/js/dialog.js');
