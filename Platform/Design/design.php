@@ -38,8 +38,7 @@ class Design {
      */
     public static function JSFile($js_file) {
         Errorhandler::checkParams($js_file, 'string');
-        if (! self::$page_started) self::queueJSFile($js_file);
-        else echo '<script src="'.$js_file.'" type="text/javascript"></script>';
+        echo '<script src="'.$js_file.'" type="text/javascript"></script>';
     }
     
     /**

@@ -1546,7 +1546,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function lock() {
         if (!Semaphore::wait($this->getLockFileName())) {
-            trigger_error('Failed to lock object '.__CLASS__.' ('.$this->getValue($this->getKeyField()).') within reasonable time', E_USER_ERROR);
+            trigger_error('Failed to lock '.get_called_class().' ('.$this->getValue($this->getKeyField()).') within reasonable time / '.$this->getLockFileName(), E_USER_ERROR);
         }
     }    
     
