@@ -7,5 +7,9 @@ interface DatarecordReferable {
     
     public static function getKeyField();
     
+    public function loadForRead($id);
 
+    public function isInDatabase();
+    
+    public function getTitle();
 }
