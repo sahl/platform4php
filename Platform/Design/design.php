@@ -122,6 +122,7 @@ class Design {
         'datarecord_row' => 'platform_row',
         'datarecord_column' => 'platform_column',
         'formfield' => 'platform_field',
+        'formfield_container' => 'platform_field_container',
         'formfield_checkbox' => '',
         'file_input_frame' => '',
         'platform_table' => '',

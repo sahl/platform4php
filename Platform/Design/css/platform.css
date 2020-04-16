@@ -45,6 +45,10 @@
     box-sizing: border-box;
 }
 
+.platform_field_container {
+    margin: 8px;
+}
+
 @media (min-width: 980px) {
     .platform_autocenter {
         min-width: 980px;

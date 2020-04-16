@@ -128,6 +128,8 @@ class Field {
         
         if ($this->is_required) $this->classes[] = 'form_required_field';
         
+        $this->addContainerClass(Design::getClass('formfield_container'));
+        
         foreach ($options as $key => $val) {
             $this->additional_attributes .= ' '.$key.'="'.$val.'"';
         }

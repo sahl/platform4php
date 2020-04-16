@@ -10,6 +10,10 @@
     border: 1px solid black;
 }
 
+.platform_dropdown_menu:hover {
+    background: #DDDDDD;
+}
+
 .platform_dropdown_menu:hover > .platform_dropdown_menu_content {
     display: inline-block;
 }
@@ -32,6 +36,7 @@
 
 .platform_dropdown_menu_top_item {
     padding: 10px;
+    cursor: pointer;
 }
 
 .platform_menuitem_selected {
@@ -41,8 +46,4 @@
 
 .platform_dropdown_menu_top_item > a {
     text-decoration: none;
-}
-
-.platform_dropdown_menu_top_item:hover {
-    background: #DDDDDD;
 }
