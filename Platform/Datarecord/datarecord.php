@@ -829,9 +829,11 @@ class Datarecord implements DatarecordReferable {
     /**
      * Force write mode. As another process can have modified the database, this
      * can result in data being overwritten
+     * @param boolean $no_lock If this is true, we won't lock this object. This
+     * means that another process can modify the object while we are modifying it.
      */
-    public function forceWritemode() {
-        $this->lock();
+    public function forceWritemode($no_lock = false) {
+        if (! $no_lock) $this->lock();
         $this->access_mode = self::MODE_WRITE;
     }
 
