@@ -41,6 +41,10 @@ class Errorhandler {
                         if (is_resource($value)) continue 3;
                         $checked[] = 'resource';
                         break;
+                    case 'object':
+                        if (is_object($value)) continue 3;
+                        $checked[] = 'object';
+                        break;
                     case 'array':
                         if (is_array($value)) continue 3;
                         $checked[] = 'array';
