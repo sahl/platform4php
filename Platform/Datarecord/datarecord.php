@@ -1722,10 +1722,8 @@ class Datarecord implements DatarecordReferable {
         }
         if ($groupfields) $datarecord_table->setOption('groupBy', $groupfields);
         
-        if ($parameters['filter']) $parameters['columnvisibility']['filter'] = $parameters['filter'];
-        
-        if (is_array($parameters['columnvisibility']))
-            foreach ($parameters['columnvisibility'] as $key => $parameter) {
+        if (is_array($parameters['table']))
+            foreach ($parameters['table'] as $key => $parameter) {
                 $datarecord_table->setOption($key, $parameter);
             }
         

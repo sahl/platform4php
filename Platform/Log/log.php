@@ -15,7 +15,7 @@ class Log {
     
     
     public function __construct($logname, $lineformat = array(), $in_instance = 'autodetect') {
-        Errorhandler::checkParams($logname, 'string', $lineformat, 'array', $in_instance, array('string', 'int'));
+        Errorhandler::checkParams($logname, 'string', $lineformat, 'array', $in_instance, array('string', 'boolean'));
         global $platform_configuration;
         $this->logname = $logname;
         foreach ($lineformat as $format) {

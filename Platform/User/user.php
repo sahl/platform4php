@@ -5,7 +5,7 @@ class User extends DatarecordExtensible {
     
     protected static $username_is_email = false;
     
-    protected static $database_table = 'users';
+    protected static $database_table = 'platform_users';
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_INSTANCE;

@@ -5,7 +5,7 @@ namespace Platform;
 
 class Job extends \Platform\Datarecord {
     
-    protected static $database_table = 'jobs';
+    protected static $database_table = 'platform_jobs';
     protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
     protected static $referring_classes = array(
     );
@@ -149,15 +149,17 @@ class Job extends \Platform\Datarecord {
      * @return \Platform\Job The job
      */
     public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, $slot_size = -1, $max_runtime = -1) {
-        Errorhandler::checkParams($class, 'string', $frequency, 'int', $frequency_offset_from_end, 'boolean', $slot_size, 'int', $max_runtime, 'int');
+        Errorhandler::checkParams($class, 'string', $frequency, 'int', $frequency_offset_from_end, array('int', 'boolean'), $slot_size, 'int', $max_runtime, 'int');
         if (! $function && strpos($class, '::')) {
             $elements = explode('::', $class);
-            $class = $elements[0]; $elements = $split[1];
+            $class = $elements[0]; $function = $elements[1];
         }
+        // Check functions
+        if (!is_callable(array($class,$function))) trigger_error('Tried creating a job on un-callable function '.$class.'::'.$function, E_USER_ERROR);
         // Create basic job
         $job = new Job();
         $instance_id = Instance::getActiveInstanceID();
-        $qr = Database::globalFastQuery("SELECT job_id FROM jobs WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
+        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
         if ($qr) {
             $job->loadForWrite($qr['job_id']);
             if ($frequency != self::FREQUENCY_NOCHANGE) $job->frequency = $frequency;
@@ -194,17 +196,18 @@ class Job extends \Platform\Datarecord {
     }
     
     /**
-     * Get all jobs registered as running
+     * Get all jobs registered as running on this server
      * @return array<Job>
      */
     public static function getRunningJobs() {
         $filter = new Filter('Platform\Job');
         $filter->addCondition(new ConditionGreater('process_id', 0));
+        $filter->addCondition(new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()));
         return $filter->execute()->getAll();
     }
     
     /**
-     * Get all jobs pending to run
+     * Get all jobs pending to run on this server
      * @return array<Job>
      */
     public static function getPendingJobs() {
@@ -212,6 +215,7 @@ class Job extends \Platform\Datarecord {
         $filter->addCondition(new ConditionMatch('process_id', 0));
         $filter->addCondition(new ConditionNOT(new ConditionMatch('frequency', 0)));
         $filter->addCondition(new ConditionLesserEqual('next_start', new Time('now')));
+        $filter->addCondition(new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()));
         return $filter->execute()->getAll();
     }
     

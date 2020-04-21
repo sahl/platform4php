@@ -3,7 +3,7 @@ namespace Platform;
 
 class File extends Datarecord {
     
-    protected static $database_table = 'files';
+    protected static $database_table = 'platform_files';
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_INSTANCE;
@@ -56,6 +56,22 @@ class File extends Datarecord {
         $result = parent::delete($force_remove);
         if ($result) unlink($file);
         return $result;
+    }
+    
+    /**
+     * Delete temp files older than a day
+     */
+    public static function deleteTempFiles() {
+        // Delete files older than a day
+        $cutdate = Time::now()->addDays(-1);
+        $path = self::getFullFolderPath('temp');
+        self::ensureFolder($path);
+        $dh = opendir($path);
+        while (($file = readdir($dh)) !== false) {
+            $completefile = $path.$file;
+            if (is_dir($completefile)) continue;
+            if (filemtime($completefile) < $cutdate->getTimestamp()) unlink($completefile);
+        }
     }
     
     /**

@@ -3,7 +3,7 @@ namespace Platform;
 
 class Accesstoken extends Datarecord {
     
-    protected static $database_table = 'accesstokens';
+    protected static $database_table = 'platform_accesstokens';
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_INSTANCE;
@@ -67,6 +67,16 @@ class Accesstoken extends Datarecord {
         Errorhandler::checkParams($destroy_entire_session, 'boolean');
         if ($destroy_entire_session) $_SESSION = array();
         else unset($_SESSION['token_code']);
+    }
+
+    /**
+     * Delete expired access tokens from the database.
+     */
+    public static function deleteExpiredTokens() {
+        $filter = new Filter('\\Platform\\Accesstoken');
+        $filter->addCondition(new ConditionLesser('expire_date', Time::now()));
+        $datacollection = $filter->execute();
+        $datacollection->deleteAll();
     }
     
     /**

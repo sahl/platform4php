@@ -3,7 +3,7 @@ namespace Platform;
 
 class UserProperty extends Datarecord {
     
-    protected static $database_table = 'user_properties';
+    protected static $database_table = 'platform_user_properties';
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_INSTANCE;

@@ -7,7 +7,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
      * Name of table in database
      * @var string 
      */
-    protected static $database_table = 'extensible_fields';
+    protected static $database_table = 'platform_extensible_fields';
     
     /**
      * Set a delete strategy for this object
@@ -126,7 +126,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
 
         $filter = new \Platform\Filter('\\Platform\\DatarecordExtensiblefield');
         $filter->addCondition(new \Platform\ConditionMatch('class', $class));
-        $parameters['filter'] = $filter;
+        $parameters['table']['filter'] = $filter;
         
         $parameters['form_function'] = function($form) use ($class) {
             $form->setValues(array('class' => $class));

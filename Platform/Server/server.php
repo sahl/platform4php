@@ -3,7 +3,7 @@ namespace Platform;
 
 class Server extends Datarecord {
     
-    protected static $database_table = 'servers';
+    protected static $database_table = 'platform_servers';
     protected static $structure = false;
     protected static $key_field = false;
     protected static $location = self::LOCATION_GLOBAL;
@@ -50,25 +50,25 @@ class Server extends Datarecord {
     }
     
     /**
-     * Get this server (based on host)
-     * @return \Platform\Server
-     */
-    public static function getThisServer() {
-        $qr = Database::globalFastQuery("SELECT server_id FROM servers WHERE hostname = '".Database::escape($_SERVER['HTTP_HOST'])."'");
-        $server = new Server();
-        if ($qr) $server->loadForRead($qr['server_id']);
-        return $server;
-    }
-    
-    /**
      * Get the server with fewest instances.
      * @return \Platform\Server
      */
     public static function getLeastLoaded() {
-        $qr = Database::globalFastQuery("SELECT server_id, COUNT(*) AS antal FROM servers LEFT JOIN platform_instances ON server_ref = server_id GROUP BY server_id ORDER BY antal");
+        $qr = Database::globalFastQuery("SELECT server_id, COUNT(*) AS antal FROM platform_servers LEFT JOIN platform_instances ON server_ref = server_id GROUP BY server_id ORDER BY antal");
         if (! $qr) trigger_error('No servers!', E_USER_ERROR);
         $server = new Server();
         $server->loadForRead($qr['server_id']);
+        return $server;
+    }
+    
+    /**
+     * Get this server (based on host)
+     * @return \Platform\Server
+     */
+    public static function getThisServer() {
+        global $platform_configuration;
+        $server = new Server();
+        $server->loadForRead($platform_configuration['server_id']);
         return $server;
     }
     
@@ -77,7 +77,8 @@ class Server extends Datarecord {
      * @return boolean
      */
     public function isThisServer() {
-        return $this->hostname == $_SERVER['HTTP_HOST'];
+        global $platform_configuration;
+        return $this->server_id = $platform_configuration['server_id'];
     }
 
     /**

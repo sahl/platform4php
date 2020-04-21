@@ -7,7 +7,7 @@ class Mail extends \Platform\Datarecord {
      * Name of table in database
      * @var string 
      */
-    protected static $database_table = 'mails';
+    protected static $database_table = 'platform_mails';
     
     /**
      * Set a delete strategy for this object

@@ -87,6 +87,15 @@ class Instance extends Datarecord {
         return $result;
     }
     
+    public function ensureJobs() {
+        // Delete token every 6th hour
+        $job = Job::getJob('\\Platform\\Accesstoken', 'deleteExpiredTokens', 6*60);
+        $job->save();
+        // Delete temp files every 6th hour
+        $job = Job::getJob('\\Platform\\File', 'deleteTempFiles', 6*60);
+        $job->save();
+    }
+    
     /**
      * Get the active instance ID
      * @return int|boolean False if no active instance
@@ -123,6 +132,30 @@ class Instance extends Datarecord {
     public function getDatabaseName() {
         global $platform_configuration;
         return $platform_configuration['instance_database_name'].$this->instance_id;
+    }
+    
+    /**
+     * Get all instance ids on a specific server.
+     * @param int $server_id Server ID
+     * @return array Instance ids on that server
+     */
+    public static function getIdsByServerId($server_id) {
+        Errorhandler::checkParams($server_id, 'int');
+        $qh = Database::globalQuery("SELECT instance_id FROM platform_instances WHERE server_ref = ".$server_id);
+        while ($qr = Database::getRow($qh)) {
+            $result[] = $qr['instance_id'];
+        }
+        return $result;
+    }
+    
+    /**
+     * Get all instance ids on this server
+     * @return array Instance ids on this server
+     */
+    public static function getIdsOnThisServer() {
+        $server = Server::getThisServer();
+        if (! $server->isInDatabase()) trigger_error('Could not determine this server.', E_USER_ERROR);
+        return self::getIdsByServerId($server->server_id);
     }
     
     /**
@@ -239,6 +272,8 @@ class Instance extends Datarecord {
         if ($result === false) return false;
         // Ensure database structures
         $this->initializeDatabase();
+        // Ensure jobs
+        $this->ensureJobs();
         Accesstoken::resumeLocation();
         header('location: '.$continue_url);
         exit;
