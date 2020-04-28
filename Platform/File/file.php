@@ -65,7 +65,7 @@ class File extends Datarecord {
         // Delete files older than a day
         $cutdate = Time::now()->addDays(-1);
         $path = self::getFullFolderPath('temp');
-        self::ensureFolder($path);
+        self::ensureFolderInStore($path);
         $dh = opendir($path);
         while (($file = readdir($dh)) !== false) {
             $completefile = $path.$file;
@@ -79,7 +79,7 @@ class File extends Datarecord {
      * @param string $folder (A single) folder name
      * @return boolean
      */
-    public static function ensureFolder($folder) {
+    public static function ensureFolderInStore($folder) {
         Errorhandler::checkParams($folder, 'string');
         if (file_exists($folder)) return true;
         $result = mkdir($folder, 0774, true);
@@ -88,15 +88,32 @@ class File extends Datarecord {
     }
     
     /**
+     * Ensure that this full path exists
+     * @param string $path Path to ensure
+     * @param boolean $includes_file_name If true then the path includes a file name (which isn't ensured to exist)
+     * @return boolean
+     */
+    public static function ensureFullPath($path, $includes_file_name = false) {
+        Errorhandler::checkParams($path, 'string', $includes_file_name, 'boolean');
+        if (file_exists($path)) return true;
+        if ($includes_file_name) {
+            $slash_position = strrpos($path,'/');
+            if ($slash_position !== false) $path = substr($path,0,$slash_position);
+        }
+        echo '<p>Ensure: '.$path;
+        mkdir($path,0774,true);
+    }
+    
+    /**
      * Extract the extention from a file name
      * @param string $filename File name
-     * @return string
+     * @return string Extension in lower case
      */
     public static function extractExtension($filename) {
         Errorhandler::checkParams($filename, 'string');
         $dot = strrpos($filename,'.');
         if ($dot === false) return '';
-        return substr($filename,$dot+1);
+        return strtolower(substr($filename,$dot+1));
     }
     
     /**
@@ -198,7 +215,7 @@ class File extends Datarecord {
      */
     public static function getTempFilename() {
         $path = self::getFullFolderPath('temp');
-        self::ensureFolder($path);
+        self::ensureFolderInStore($path);
         if (!Semaphore::wait('tempfilename')) trigger_error('Couldn\'t grab tempfile semaphore!', E_USER_ERROR);
         do {
             $file_id = rand(1,999999999);
@@ -251,7 +268,7 @@ class File extends Datarecord {
             $old_filename = $this->getCompleteFilename(false);
             if (file_exists($old_filename)) {
                 // We need to move it into place
-                $this->ensureFolder($this->getCompleteFolderPath());
+                $this->ensureFolderInStore($this->getCompleteFolderPath());
                 $result = rename($old_filename, $this->getCompleteFilename());
                 if (! $result) trigger_error('Couldn\'t move file content from folder '.$this->values_on_load['folder'].' to '.$this->folder, E_USER_ERROR);
             }
@@ -263,7 +280,7 @@ class File extends Datarecord {
         switch ($this->content_source) {
             case 'file':
                 if (file_exists($this->content)) {
-                    $this->ensureFolder($this->getCompleteFolderPath());
+                    $this->ensureFolderInStore($this->getCompleteFolderPath());
                     $result = copy($this->content, $this->getCompleteFilename());
                     if (! $result) trigger_error('Couldn\'t copy '.$this->content.' to '.$this->getCompleteFilename(), E_USER_ERROR);
                 }

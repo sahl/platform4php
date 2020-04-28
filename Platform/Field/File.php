@@ -23,12 +23,14 @@ class FieldFile extends Field {
             'temp_file' => $value['temp_file'],
             'file_id' => 0
         );
-        $file = new File();
-        $folder = File::getFullFolderPath('temp');
-        $file->attachFile($folder.$value['temp_file']);
-        if ($this->images_only && ! $file->isImage()) {
-            $this->triggerError('This file must be an image.');
-            return false;
+        if ($value['status'] == 'changed') {
+            $file = new File();
+            $folder = File::getFullFolderPath('temp');
+            $file->attachFile($folder.$value['temp_file']);
+            if ($this->images_only && ! $file->isImage()) {
+                $this->triggerError('This file must be an image.');
+                return false;
+            }
         }
         return true;
     }

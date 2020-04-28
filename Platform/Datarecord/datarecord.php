@@ -1307,6 +1307,14 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get the field containing the title (if any)
+     * @return string
+     */
+    public static function getTitleField() {
+        return static::$title_field;
+    }
+    
+    /**
      * Get the title of an object of this type by ID.
      * @param int $id Object id
      * @return string Title
@@ -1573,6 +1581,9 @@ class Datarecord implements DatarecordReferable {
         $this->values = array();
         if (! is_array($databaserow)) return;
         foreach ($databaserow as $key => $value) {
+            // When reading a database row, we can encounter an extended field structure, so we 
+            // skip fields we don't know about.
+            if (! isset(static::$structure[$key])) continue;
             switch (static::$structure[$key]['fieldtype']) {
                 case self::FIELDTYPE_KEY:
                 case self::FIELDTYPE_PASSWORD:
@@ -2016,7 +2027,7 @@ class Datarecord implements DatarecordReferable {
     public function setValue($field, $value) {
         Errorhandler::checkParams($field, 'string');
         global $platform_configuration;
-        if (! isset(static::$structure[$field])) trigger_error('Tried setting invalid field: '.$field, E_USER_ERROR);
+        if (! isset(static::$structure[$field])) trigger_error('Tried setting invalid field: '.$field.' in class '. get_called_class(), E_USER_ERROR);
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
                 $this->values[$field] = $value ? md5($value.$platform_configuration['password_salt']) : '';
