@@ -100,7 +100,6 @@ class File extends Datarecord {
             $slash_position = strrpos($path,'/');
             if ($slash_position !== false) $path = substr($path,0,$slash_position);
         }
-        echo '<p>Ensure: '.$path;
         mkdir($path,0774,true);
     }
     

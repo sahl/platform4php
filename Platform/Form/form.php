@@ -11,6 +11,8 @@ class Form {
     
     private $action = '';
     
+    private $script = null;
+    
     private $event = 'submit';
     
     public function __construct($form_id, $filename = '') {
@@ -128,6 +130,14 @@ class Form {
             if ($field->isError()) $field->addErrors($errors);
         }
         return $errors;
+    }
+    
+    /**
+     * Get all attached fields
+     * @return type
+     */
+    public function getAllFields() {
+        return $this->fields;
     }
     
     /**
@@ -387,6 +397,7 @@ class Form {
      * Render the form
      */
     public function render() {
+        if ($this->script) Design::JSFile ($this->script);
         echo '<form id="'.$this->form_id.'" method="post" class="platform_form" action="'.$this->action.'">';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
         echo '<input type="hidden" name="form_event" value="'.$this->event.'">';
@@ -450,16 +461,31 @@ class Form {
         $this->event = $event;
     }
     
+    public function setScript($script) {
+        Errorhandler::checkParams($script, 'string');
+        $this->script = $script;
+    }
+    
     /**
      * Add values to this form
      * @param array $values Values hashed by their field name
      */
     public function setValues($values) {
         Errorhandler::checkParams($values, 'array');
-        foreach ($values as $fieldname => $value) {
-            $formfield = $this->getFieldByName($fieldname);
-            if ($formfield) {
-                $formfield->setValue($value);
+        foreach ($this->getAllFields() as $field) {
+            $field_name = $field->getName();
+            // Check for double array field name
+            if (preg_match("/^(.+)\\[(.*)\\]\\[(.*)\\]$/i",$field_name, $target)) {
+                if (isset($values[$target[1]][$target[2]][$target[3]]) && is_array($values[$target[1]][$target[2]]))
+                    $field->setValue($values[$target[1]][$target[2]][$target[3]]);
+            // Check for single array field name
+            } elseif (preg_match("/^(.+)\\[(.*)\\]$/i",$field_name, $target)) {
+                if (isset($values[$target[1]][$target[2]]) && is_array($values[$target[1]]))
+                    $field->setValue($values[$target[1]][$target[2]]);
+            // ...otherwise assume normal field name
+            } else {
+                if (isset($values[$field_name]))
+                    $field->setValue($values[$field_name]);
             }
         }
     }

@@ -2011,16 +2011,17 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
-     * Set values to object as defined in an array
+     * Set values to object as defined in an array. Invalid array elements will be
+     * ignored
      * @param array $array Field values hashed by field names
      */
     public function setFromArray($array) {
         Errorhandler::checkParams($array, 'array');
-        foreach ($array as $key => $value) $this->setValue ($key, $value);
+        foreach ($array as $key => $value) if (isset(static::$structure[$key])) $this->setValue ($key, $value);
     }
     
     /**
-     * Set a value in the object
+     * Set a value in the object. An error will trigger if trying to set invalid field
      * @param string $field Field name
      * @param mixed $value Field value
      */

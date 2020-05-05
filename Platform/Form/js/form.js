@@ -19,7 +19,7 @@ addCustomPlatformFunction(function(item) {
         // Gather hidden fields
         var hiddenfields = [];
 
-        $('.platform_form_field:hidden', $(this)).each(function() {
+        $('.platform_form_field:hidden,.platform_form_field:disabled', $(this)).each(function() {
             // We accept hidden texteditors
             if ($(this).is('.texteditor')) return true;
             var name = $(this).prop('name');
