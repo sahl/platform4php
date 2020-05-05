@@ -38,6 +38,7 @@ class Design {
      */
     public static function JSFile($js_file) {
         Errorhandler::checkParams($js_file, 'string');
+        \Platform\Translation::renderJSFilesForFile($js_file);
         echo '<script src="'.$js_file.'" type="text/javascript"></script>';
     }
     
@@ -84,6 +85,10 @@ class Design {
         ), self::$css_files_to_load, $css_files);
         foreach ($css_files as $css_file) {
             echo '<link rel="stylesheet" href="'.$css_file.'" type="text/css">';
+        }
+        
+        if (\Platform\Translation::isEnabled()) {
+            \Platform\Translation::renderHeadSection();
         }
         
         if (! is_array($js_files)) $js_files = array($js_files);

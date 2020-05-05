@@ -6,10 +6,29 @@ require_once $configfile;
 ini_set('display_errors', 'On');
 error_reporting(E_ALL & ~E_NOTICE);
 
+session_start();
+
+// We need to load some classes before the autoloader can work
+$preload_list = array(
+    '/Datarecord/Referable.php',
+    '/Datarecord/datarecord.php',
+    '/Instance/instance.php',
+    '/Translation/translation.php',
+);
+// Load scripts
+foreach ($preload_list as $script) {
+    require_once __DIR__.$script;
+}
+
 // Register autoloader
 spl_autoload_register("platformAutoLoad");
 
-session_start();
+// Load languages
+if (\Platform\Translation::isEnabled()) {
+    \Platform\Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);
+    foreach ($preload_list as $script) \Platform\Translation::prepareTranslationsForFile(__DIR__.$script);
+    Platform\Design::queueJSFile('/Platform/Translation/js/translation.js');
+}
 
 // Register shutdown
 register_shutdown_function('Platform\\Errorhandler::shutdown');
@@ -18,17 +37,6 @@ register_shutdown_function('Platform\\Errorhandler::shutdown');
 set_error_handler('Platform\\Errorhandler::handler');
 
 umask(002);
-
-function platformAutoLoad($class) {
-    if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
-        if ($match[3]) $file = __DIR__.'/../'.$match[1].'/'.$match[2].'/'.$match[3].'.php';
-        else $file = __DIR__.'/../'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
-        if (file_exists($file)) {
-            require_once $file;
-            return;
-        }
-    }
-}
 
 // Load includes
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery.js');
@@ -60,6 +68,19 @@ Platform\Design::queueCSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/di
 
 
 
+function platformAutoLoad($class) {
+    // Delve root from current location
+    $root = substr(__DIR__,0,strrpos(__DIR__, '/'));
+    if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
+        if ($match[3]) $file = $root.'/'.$match[1].'/'.$match[2].'/'.$match[3].'.php';
+        else $file = $root.'/'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
+        if (file_exists($file)) {
+            require_once $file;
+            if (\Platform\Translation::isEnabled()) \Platform\Translation::prepareTranslationsForFile ($file);
+            return;
+        }
+    }
+}
 
 function platformInitialize() {
     Instance::ensureInDatabase();
