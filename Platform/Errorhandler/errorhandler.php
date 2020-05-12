@@ -87,6 +87,16 @@ class Errorhandler {
         }
         return $result;
     }
+    
+    public static function getMeasures() {
+        return self::$measures;
+    }
+    
+    private static $measures = array();
+    
+    public static function measure($text, $operation_count = false) {
+        self::$measures[] = array('timestamp' => microtime(true), 'text' => $text, 'operation_count' => $operation_count);
+    }
 
     /**
      * Error handler
@@ -133,6 +143,22 @@ class Errorhandler {
         if (count(debug_backtrace()) > $level) {
             trigger_error('Recursion exceeded (level '.$level.')', E_USER_ERROR);
         }
+    }
+    
+    public static function renderMeasures() {
+        if (! count(self::$measures)) return;
+        echo '<table>';
+        $starttime = self::$measures[0]['timestamp'];
+        $lasttime = $starttime;
+        foreach (self::$measures as $measure) {
+            echo '<tr><td>'.number_format($measure['timestamp']-$starttime, 5,'.','').'</td>';
+            echo '<td>+'.number_format($measure['timestamp']-$lasttime, 5,'.','').'</td>';
+            echo '<td>'.$measure['text'];
+            if ($measure['operation_count']) echo ' (average '.number_format(($measure['timestamp']-$lasttime)/$measure['operation_count'],5).') (ops pr. sec '.number_format(1/(($measure['timestamp']-$lasttime)/$measure['operation_count']),2,'.','').')';
+            echo '</td></tr>';
+            $lasttime = $measure['timestamp'];
+        }
+        echo '</table>';
     }
 
     /**
