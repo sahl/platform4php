@@ -6,10 +6,9 @@ require_once $configfile;
 ini_set('display_errors', 'On');
 error_reporting(E_ALL & ~E_NOTICE);
 
-session_start();
-
 // We need to load some classes before the autoloader can work
 $preload_list = array(
+    '/Errorhandler/errorhandler.php',
     '/Datarecord/Referable.php',
     '/Datarecord/datarecord.php',
     '/Instance/instance.php',
@@ -22,6 +21,8 @@ foreach ($preload_list as $script) {
 
 // Register autoloader
 spl_autoload_register("platformAutoLoad");
+
+session_start();
 
 // Load languages
 if (\Platform\Translation::isEnabled()) {

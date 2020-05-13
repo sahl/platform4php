@@ -185,7 +185,7 @@ class Form {
         Errorhandler::checkParams($filename, 'string');
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
-        foreach (self::parseFieldsFromText($text) as $field) {
+        foreach (static::parseFieldsFromText($text) as $field) {
             $this->addField($field);
         }
     }
@@ -285,7 +285,7 @@ class Form {
      * @param string $tagtext Tag
      * @return array Parsed format
      */
-    private static function parseTag($tagtext) {
+    protected static function parseTag($tagtext) {
         Errorhandler::checkParams($tagtext, 'string');
         $tagname = '';
         $properties = array();

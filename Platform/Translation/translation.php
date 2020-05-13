@@ -296,11 +296,12 @@ class Translation {
      * @return string Language key
      */
     public static function getInstanceLanguage() {
+        if (! \Platform\Instance::getActiveInstanceID()) return self::getConfiguration('default_language');
         return \Platform\UserProperty::getPropertyForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
     }
 
     /**
-     * Get the translation js files for the given original js file
+     * Get the translation js files for the given original js file (if one exists)
      * @param string $js_file Javascript file (as URL)
      * @return array Javascript translation files (as URL array)
      */
