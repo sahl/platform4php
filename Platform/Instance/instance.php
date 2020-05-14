@@ -141,6 +141,7 @@ class Instance extends Datarecord {
      */
     public static function getIdsByServerId($server_id) {
         Errorhandler::checkParams($server_id, 'int');
+        $result = array();
         $qh = Database::globalQuery("SELECT instance_id FROM platform_instances WHERE server_ref = ".$server_id);
         while ($qr = Database::getRow($qh)) {
             $result[] = $qr['instance_id'];

@@ -87,7 +87,7 @@ class Datarecord implements DatarecordReferable {
      * Indicate the location of this record
      * @var type 
      */
-    protected static $location = LOCATION_GLOBAL;
+    protected static $location = self::LOCATION_GLOBAL;
 
     /**
      * Name of semaphore lock to lock this object, or false if not locked

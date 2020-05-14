@@ -17,6 +17,8 @@ class Job extends \Platform\Datarecord {
     
     protected static $log = false;
     
+    protected static $custom_script = false;
+    
     const FREQUENCY_PAUSED = 0;
     const FREQUENCY_ONCE = -1;
     const FREQUENCY_ALWAYS = -2;
@@ -122,7 +124,7 @@ class Job extends \Platform\Datarecord {
         $this->run_count = $this->run_count + 1;
         $this->last_run_time = $this->last_start->getMinutesUntil(Time::now());
         $this->average_run_time = (($this->run_count-1)*$this->average_run_time + $this->last_run_time)/$this->run_count;
-        if ($this->frequency_offset_from_end && $this->freqency > 0) {
+        if ($this->frequency_offset_from_end && $this->frequency > 0) {
             $this->next_start = Time::now()->add(0, $this->frequency);
         }
         $this->save();
@@ -200,10 +202,18 @@ class Job extends \Platform\Datarecord {
      * @return array<Job>
      */
     public static function getRunningJobs() {
-        $filter = new Filter('Platform\Job');
+        $filter = new Filter('Platform\\Job');
         $filter->addCondition(new ConditionGreater('process_id', 0));
         $filter->addCondition(new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()));
         return $filter->execute()->getAll();
+    }
+    
+    /**
+     * Get the full path to the script which should run the jobs
+     * @return string
+     */
+    public static function getRunScript() {
+        return static::$custom_script ?: __DIR__.'/php/runjob.php';
     }
     
     /**
@@ -211,7 +221,7 @@ class Job extends \Platform\Datarecord {
      * @return array<Job>
      */
     public static function getPendingJobs() {
-        $filter = new Filter('Platform\Job');
+        $filter = new Filter('Platform\\Job');
         $filter->addCondition(new ConditionMatch('process_id', 0));
         $filter->addCondition(new ConditionNOT(new ConditionMatch('frequency', 0)));
         $filter->addCondition(new ConditionLesserEqual('next_start', new Time('now')));
@@ -258,7 +268,7 @@ class Job extends \Platform\Datarecord {
      */
     public static function log($event, $text = '', $job = false) {
         Errorhandler::checkParams($event, 'string', $text, 'string', $job, array('\\Platform\\Job', 'boolean'));
-        if (! self::$log) self::$log = new Log('job_scheduler', array(8, 15, 30), false);
+        if (! self::$log) self::$log = new Log('job_scheduler', array(8, 15, 55), false);
         $event = strtoupper($event);
         if ($job instanceof Job) self::$log->log($job->instance_ref, $event, $job->class.'::'.$job->function, $text);
         else self::$log->log('global', $event, '-', $text);
@@ -329,6 +339,15 @@ class Job extends \Platform\Datarecord {
     }
     
     /**
+     * Set the script responsible for executing jobs.
+     * @param string $script
+     */
+    public static function setRunScript($script) {
+        if (!file_exists($script)) trigger_error('Script '.$script.' does not exists', E_USER_ERROR);
+        static::$custom_script = $script;
+    }
+    
+    /**
      * Start a job
      */
     public function start() {
@@ -337,7 +356,7 @@ class Job extends \Platform\Datarecord {
         $this->last_start = Time::now();
         if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
         if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Time::now()->add(0, $this->frequency);
-        $result = (int)shell_exec('php '.__DIR__.'/php/runjob.php '.$this->job_id.' > '.$this->getOutputFile().' & echo $!');
+        $result = (int)shell_exec('php '.self::getRunScript().' '.$this->job_id.' > '.$this->getOutputFile().' & echo $!');
         if ($result) {
             self::log('started', 'Running with PID: '.$result, $this);
             $this->process_id = $result;
