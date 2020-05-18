@@ -10,12 +10,6 @@ class Component {
     public static $can_disable = true;
     
     /**
-     * Configuration of component.
-     * @var array 
-     */
-    public $configuration = array();
-    
-    /**
      * Javascript to load along with this component.
      * @var boolean|string 
      */
@@ -55,36 +49,6 @@ class Component {
     private $classes = array();
 
     /**
-     * Construct this component
-     * @param type $configuration
-     */
-    public function __construct($configuration = array()) {
-        Errorhandler::checkParams($configuration, 'array');
-        foreach ($configuration as $key => $value) $this->setConfiguration ($key, $value);
-    }
-    
-    
-    /**
-     * Short for getConfiguration
-     * @param string $key Configuration key to retrieve
-     * @return mixed
-     */
-    public function __get($key) {
-        Errorhandler::checkParams($key, 'string');
-        return $this->getConfiguration($key);
-    }
-    
-    /**
-     * Short for setConfiguration
-     * @param string $key Configuration key to set
-     * @param mixed $value Value to set
-     */
-    public function __set($key, $value) {
-        Errorhandler::checkParams($key, 'string');
-        $this->setConfiguration($key, $value);
-    }
-    
-    /**
      * Add a class to this component
      * @param string $class Class name
      */
@@ -92,7 +56,10 @@ class Component {
         Errorhandler::checkParams($class, 'string');
         $this->classes[] = $class;
     }
-    
+
+    /**
+     * Call this for preventing loading of Javascript
+     */
     public function dontLoadScript() {
         self::$base_script_loaded = true;
     }
@@ -105,16 +72,6 @@ class Component {
         $name = strtolower(get_called_class());
         if (strpos($name,'\\')) $name = substr($name,strrpos($name,'\\')+1);
         return $name;
-    }
-    
-    /**
-     * Get a configuration parameter from this component
-     * @param string $key Configuration key to retrieve
-     * @return mixed
-     */
-    public function getConfiguration($key) {
-        Errorhandler::checkParams($key, 'string');
-        return $this->configuration[$key];
     }
     
     /**
@@ -147,8 +104,10 @@ class Component {
         $configuration = $this->configuration;
         $configuration['__class'] = get_called_class();
         
-        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-redraw_url="'.static::$redraw_url.'" data-configuration="'.htmlentities(json_encode($configuration), ENT_QUOTES).'">';
-        $this->renderInnerDiv();
+        $classes[] = 'platform_component_'.$this->getName();
+        
+        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-redraw_url="'.static::$redraw_url.'" data-configuration="'.base64_encode(serialize($this)).'">';
+        $this->renderContent();
         echo '</div>';
     }
     
@@ -157,23 +116,6 @@ class Component {
      */
     public function renderContent() {
         echo 'Override me';
-    }
-    
-    public function renderInnerDiv() {
-        $inner_class = 'platform_component_'.$this->getName();
-        echo '<div class="'.$inner_class.'">';
-        $this->renderContent();
-        echo '</div>';
-    }
-    
-     /**
-     * Set a configuration parameter
-     * @param string $key Configuration key to set
-     * @param mixed $value Value to set
-     */
-   public function setConfiguration($key, $value) {
-        Errorhandler::checkParams($key, 'string');
-        if (isset($this->configuration[$key])) $this->configuration[$key] = $value;
     }
     
     /**

@@ -25,7 +25,7 @@ addCustomPlatformFunction(function(item) {
             var configuration = $(this).data('configuration');
             var redraw_url = $(this).data('redraw_url');
             var element = $(this);
-            $.post(redraw_url, configuration, function(data) {
+            $.post(redraw_url, {object: configuration}, function(data) {
                 element.html(data).applyPlatformFunctions();
             });
             e.stopPropagation();
