@@ -104,10 +104,8 @@ class Component {
         $configuration = $this->configuration;
         $configuration['__class'] = get_called_class();
         
-        $classes[] = 'platform_component_'.$this->getName();
-        
         echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-redraw_url="'.static::$redraw_url.'" data-configuration="'.base64_encode(serialize($this)).'">';
-        $this->renderContent();
+        $this->renderInnerDiv();
         echo '</div>';
     }
     
@@ -116,6 +114,13 @@ class Component {
      */
     public function renderContent() {
         echo 'Override me';
+    }
+    
+    public function renderInnerDiv() {
+        $inner_class = 'platform_component_'.$this->getName();
+        echo '<div class="'.$inner_class.'">';
+        $this->renderContent();
+        echo '</div>';
     }
     
     /**
