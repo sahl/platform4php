@@ -22,10 +22,10 @@ addCustomPlatformFunction(function(item) {
         });
         
         $(this).on('redraw', function(e) {
-            var configuration = $(this).data('configuration');
+            var object = $(this).data('object');
             var redraw_url = $(this).data('redraw_url');
             var element = $(this);
-            $.post(redraw_url, {object: configuration}, function(data) {
+            $.post(redraw_url, {object: object}, function(data) {
                 element.html(data).applyPlatformFunctions();
             });
             e.stopPropagation();

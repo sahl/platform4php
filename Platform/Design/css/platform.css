@@ -45,7 +45,7 @@
 }
 
 .platform_field_container {
-    margin: 8px;
+    margin-top: 8px;
 }
 
 @media (min-width: 980px) {

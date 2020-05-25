@@ -11,7 +11,7 @@ class Component {
     
     /**
      * Javascript to load along with this component.
-     * @var boolean|string 
+     * @var boolean|string|array
      */
     public static $js_script = false;
     
@@ -45,8 +45,18 @@ class Component {
      * @var boolean|string 
      */
     private $component_id = false;
-    
+
+    /**
+     * Classes
+     * @var array
+     */
     private $classes = array();
+    
+    /**
+     * Data for html tag
+     * @var type 
+     */
+    protected $data = array();
 
     /**
      * Add a class to this component
@@ -55,6 +65,16 @@ class Component {
     public function addClass($class) {
         Errorhandler::checkParams($class, 'string');
         $this->classes[] = $class;
+    }
+    
+    /**
+     * Add a html data key/value pair
+     * @param string $key
+     * @param mixed $value
+     */
+    public function addData($key, $value) {
+        Errorhandler::checkParams($key, 'string');
+        $this->data[$key] = $value;
     }
 
     /**
@@ -85,7 +105,12 @@ class Component {
      */
     public function render() {
         if (static::$js_script) {
-            \Platform\Design::JSFile(static::$js_script);
+            if (is_array(static::$js_script)) {
+                foreach (static::$js_script as $script)
+                    \Platform\Design::JSFile(static::$js_script);
+            } else {
+                \Platform\Design::JSFile(static::$js_script);
+            }
             static::$js_script = false;
         }
         if (! self::$base_script_loaded) {
@@ -101,10 +126,12 @@ class Component {
         $classes[] = 'platform_component';
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
         
-        $configuration = $this->configuration;
-        $configuration['__class'] = get_called_class();
-        
-        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-redraw_url="'.static::$redraw_url.'" data-configuration="'.base64_encode(serialize($this)).'">';
+        echo '<div class="'.implode(' ',$classes).'" id="'.$this->component_id.'" data-redraw_url="'.static::$redraw_url.'" data-object="'.base64_encode(serialize($this)).'"';
+        foreach ($this->data as $key => $data) {
+            if (is_array($data)) $data = json_encode($data);
+            echo ' data-'.$key.'="'.htmlentities($data, ENT_QUOTES).'"';
+        }
+        echo '>';
         $this->renderInnerDiv();
         echo '</div>';
     }

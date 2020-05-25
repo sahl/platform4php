@@ -183,7 +183,7 @@ class Translation {
         return $result;
     }
     
-    private static $languages_to_load = false;
+    public static $languages_to_load = false;
     
     private static function getLanguagesToLoad() {
         if (! self::$languages_to_load) {

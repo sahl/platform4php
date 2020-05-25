@@ -151,6 +151,7 @@ class Datarecord implements DatarecordReferable {
     public function __construct($initialvalues = array()) {
         Errorhandler::checkParams($initialvalues, 'array');
         static::ensureStructure();
+        $this->fillDefaultValues();
         $this->setFromArray($initialvalues);
     }
     
@@ -664,7 +665,8 @@ class Datarecord implements DatarecordReferable {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
-                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$key.' '.$definition);
+                    $default = $element['default_value'] ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
+                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$key.' '.$definition.$default);
                     $changed = true;
                     
                     // As this field could have been represented in the metadata
@@ -705,7 +707,8 @@ class Datarecord implements DatarecordReferable {
                     //echo 'Type '.$fieldindatabase['Type'].' isnt '.mb_strtolower(self::getSQLFieldType($element['fieldtype']));
                     //self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN '.$field_in_database['Field'].' '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']));
                     self::query('ALTER TABLE '.static::$database_table.' DROP '.$field_in_database['Field']);
-                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']));
+                    $default = $element['default_value'] ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
+                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']).$default);
                     $changed = true;
                 }
             }

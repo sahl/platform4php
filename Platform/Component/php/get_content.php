@@ -2,8 +2,6 @@
 namespace Platform;
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
-$class = $_POST['__class'];
-
 $component = unserialize(base64_decode($_POST['object']));
 if (! $component instanceof \Platform\Component) die('Invalid component class');
 $component->dontLoadScript();
