@@ -42,6 +42,7 @@ umask(002);
 // Load includes
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery.js');
 Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
+Platform\Design::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 Platform\Design::queueJSFile('/Platform/Design/js/general.js');
 Platform\Design::queueCSSFile('/Platform/Menu/css/menu.css');
 

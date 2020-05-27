@@ -81,64 +81,68 @@ $.fn.clearForm = function() {
     return this;
 }
 
+$.fn.attachValues = function(values) {
+    var element = this;
+    $.each(values, function(key, value) {
+        var el = element.find('[name="'+key+'"]');
+        if (el.length) {
+            if (el.is('input,textarea')) {
+                if (el.is('[type=checkbox]')) {
+                    el.prop('checked', value == 1);
+                } else {
+                    el.val(value);
+                    if (el.is('.texteditor')) {
+                        el.summernote('reset');
+                        el.summernote('code', value);
+                    }
+                }
+            }
+            else if (el.is('select')) {
+                if (value !== null) el.val(value);
+                else el.find('option:first-child').prop('selected', true);
+            }
+        } else {
+            // Try for combobox
+            var el = element.find('[name="'+key+'[visual]"]');
+            if (el.length) {
+                el.val(value.visual);
+                el.prev().val(value.id);
+            } else {
+                // Try for multicheckbox
+                var el = element.find('#'+element.attr('id')+'_'+key+'.multi_checkbox_container');
+                if (el.length) {
+                    $.each(value, function(key, val) {
+                        el.find('input[value="'+val+'"]').prop('checked', true);
+                    });
+                } else {
+                    // Try for multiplier
+                    var el = element.find('#'+element.attr('id')+'_'+key+'_container.platform_form_multiplier');
+                    if (el.length) {
+                        $.each(value, function(key, val) {
+                            el.find('input[type="hidden"]:last').val(val.id);
+                            el.find('input[type="text"]:last').val(val.visual).trigger('keyup');
+                        });
+                    } else {
+                        // Try for file field
+                        var el = element.find('#'+element.attr('id')+'_'+key+'.file_select_frame');
+                        if (el.length) {
+                            // Recode url
+                            el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
+                        }
+                    }
+                }
+            }
+        }
+    })
+}
+
 $.fn.loadValues = function(script, parameters = {}, onload = null) {
     var element = this;
     $.post(script, parameters, function(data) {
         if (data.status == 0) {
             warningDialog('Error loading data', data.errormessage);
         } else {
-            $.each(data.data, function(key, value) {
-                var el = element.find('[name="'+key+'"]');
-                console.log('Find field '+key);
-                if (el.length) {
-                    if (el.is('input,textarea')) {
-                        if (el.is('[type=checkbox]')) {
-                            el.prop('checked', value == 1);
-                        } else {
-                            el.val(value);
-                            if (el.is('.texteditor')) {
-                                el.summernote('reset');
-                                el.summernote('code', value);
-                            }
-                        }
-                    }
-                    else if (el.is('select')) {
-                        if (value !== null) el.val(value);
-                        else el.find('option:first-child').prop('selected', true);
-                    }
-                } else {
-                    // Try for combobox
-                    var el = element.find('[name="'+key+'[visual]"]');
-                    if (el.length) {
-                        el.val(value.visual);
-                        el.prev().val(value.id);
-                    } else {
-                        // Try for multicheckbox
-                        var el = element.find('#'+element.attr('id')+'_'+key+'.multi_checkbox_container');
-                        if (el.length) {
-                            $.each(value, function(key, val) {
-                                el.find('input[value="'+val+'"]').prop('checked', true);
-                            });
-                        } else {
-                            // Try for multiplier
-                            var el = element.find('#'+element.attr('id')+'_'+key+'_container.platform_form_multiplier');
-                            if (el.length) {
-                                $.each(value, function(key, val) {
-                                    el.find('input[type="hidden"]:last').val(val.id);
-                                    el.find('input[type="text"]:last').val(val.visual).trigger('keyup');
-                                });
-                            } else {
-                                // Try for file field
-                                var el = element.find('#'+element.attr('id')+'_'+key+'.file_select_frame');
-                                if (el.length) {
-                                    // Recode url
-                                    el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
-                                }
-                            }
-                        }
-                    }
-                }
-            })
+            $(element).attachValues(data.data);
             element.trigger('dataloaded');
             if (typeof onload == 'function') {
                 onload();

@@ -239,6 +239,14 @@ class Field {
     }
     
     /**
+     * Get the field label
+     * @return string
+     */
+    public function getLabel() {
+        return $this->label;
+    }
+    
+    /**
      * Get field name
      * @return string
      */

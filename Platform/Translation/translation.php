@@ -200,7 +200,7 @@ class Translation {
      * @return string Save string for php/javascript file
      */
     public static function getSaveString($string) {
-        return preg_replace('/[^\\\\]\'/', '\\\'', $string);
+        return preg_replace('/([^\\\\])\'/', '$1\\\'', $string);
     }
     
     public static function getPhrasesFromTranslationFile($translation_file) {
@@ -518,6 +518,7 @@ class Translation {
                     $newphrases = array();
                     foreach ($phrases as $original_phrase => $translated_phrase) {
                         if (isset($translations[$original_phrase])) $newphrases[$original_phrase] = $translations[$original_phrase];
+                        else $newphrases[$original_phrase] = '';
                     }
                     // Write new file
                     self::saveTranslationFile($file, $language_key, $newphrases);
