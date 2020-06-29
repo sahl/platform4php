@@ -62,8 +62,8 @@ Platform\Design::queueCSSFile('/Platform/Design/css/greyout.css');
 
 Platform\Design::queueJSFile('/Platform/Table/js/table.js');
 
-Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/js/tabulator.min.js');
-Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.5.0/dist/css/tabulator.min.css');
+Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
+Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
 
 Platform\Design::queueJSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
 Platform\Design::queueCSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
