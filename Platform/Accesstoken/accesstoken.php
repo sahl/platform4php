@@ -229,6 +229,11 @@ class Accesstoken extends Datarecord {
         return $valid;
     }
     
+    /**
+     * Validate a given token code
+     * @param string $token_code
+     * @return boolean True if token code validated
+     */
     public static function validateTokenCode($token_code) {
         Errorhandler::checkParams($token_code, 'string');
         $access_token = Accesstoken::getByTokencode($token_code);
