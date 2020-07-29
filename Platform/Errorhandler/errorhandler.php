@@ -110,7 +110,6 @@ class Errorhandler {
         switch ($error_number) {
             case E_ERROR:
             case E_USER_ERROR:
-            case E_WARNING:
                 echo '<hr>';
                 echo '<h3>Error occured</h3>';
                 echo '<table><tr><th>Error:</th><td>' . $error_number . '</td></tr><tr><th>Error text:</th><td>' . $message . '</td></tr></table>';
@@ -159,6 +158,20 @@ class Errorhandler {
             $lasttime = $measure['timestamp'];
         }
         echo '</table>';
+    }
+    
+    public static function logMeasures() {
+        if (! count(self::$measures)) return;
+        $log = new Log('measure', array('10r', '10r', '50'));
+        $log->log('Elapsed', 'Prev-now', 'Logtext');
+        $starttime = self::$measures[0]['timestamp'];
+        $lasttime = $starttime;
+        foreach (self::$measures as $measure) {
+            $entries = array();
+            if ($measure['operation_count']) $log->log(number_format($measure['timestamp']-$starttime, 5,'.',''),number_format($measure['timestamp']-$lasttime, 5,'.',''),$measure['text'], '(average '.number_format(($measure['timestamp']-$lasttime)/$measure['operation_count'],5).') (ops pr. sec '.number_format(1/(($measure['timestamp']-$lasttime)/$measure['operation_count']),2,'.','').')');
+            else $log->log(number_format($measure['timestamp']-$starttime, 5,'.',''),number_format($measure['timestamp']-$lasttime, 5,'.',''),$measure['text']);
+            $lasttime = $measure['timestamp'];
+        }
     }
 
     /**

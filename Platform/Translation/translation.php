@@ -5,6 +5,9 @@ $platform_language = array();
 
 class Translation {
     
+    /**
+     * Build CSV files ready for translation from the translation files already in the system.
+     */
     public static function buildCSVFilesFromTranslationFiles() {
         $data = array();
         // Gather files
@@ -185,6 +188,10 @@ class Translation {
     
     public static $languages_to_load = false;
     
+    /**
+     * Get which languages we should load
+     * @return array Language codes to load
+     */
     private static function getLanguagesToLoad() {
         if (! self::$languages_to_load) {
             $languages_to_load = array(self::getUserLanguage());
@@ -203,12 +210,16 @@ class Translation {
         return preg_replace('/([^\\\\])\'/', '$1\\\'', $string);
     }
     
+    /**
+     * Extract all phrases from a given translation file
+     * @param string $translation_file Full path to translation file
+     * @return type
+     */
     public static function getPhrasesFromTranslationFile($translation_file) {
         $result = array();
         $lines = file($translation_file);
         foreach ($lines as $line) {
             if (preg_match('/\\$platform_language\\[\'[a-z]*\'\\]\\[\'(.*[^\\\\])?\'\\] = \'(.*[^\\\\])?\'/', $line, $match)) {
-                // Ensure not to overwrite something with nothing
                 $result[$match[1]] = $match[2];
             }
         }
@@ -292,7 +303,7 @@ class Translation {
     }
     
     /**
-     * Get the current language for the instance
+     * Get the current language of the instance
      * @return string Language key
      */
     public static function getInstanceLanguage() {
@@ -319,13 +330,36 @@ class Translation {
         }
         return $results;
     }
+
+    /**
+     * Extract accepted language keys from HTTP header
+     * @return array
+     */
+    private static function getLanguageCodeFromHTTP() {
+        $result = array();
+        $header_parts = explode(';', $_SERVER['HTTP_ACCEPT_LANGUAGE']);
+        $language_codes_string = current($header_parts);
+        $language_codes = explode(',', $language_codes_string);
+        foreach ($language_codes as $language_code) {
+            $code_parts = explode('-',$language_code);
+            $relevant_code = $code_parts[0];
+            $result[] = $relevant_code;
+        }
+        return $result;
+    }
     
     /**
-     * Get the current user language or the default language
+     * Get the current user language. First try from cookie, then from browser and
+     * at last select the default language
      * @return string Language key
      */
     public static function getUserLanguage() {
-        return $_SESSION['platform']['language']['user_language'] ?: self::getConfiguration('default_language');
+        $valid_languages = self::getLanguageKeys();
+        if (in_array($_COOKIE['platform_translation_language'], $valid_languages)) return $_COOKIE['platform_translation_language'];
+        foreach (self::getLanguageCodeFromHTTP() as $language_key) {
+            if (in_array($language_key, $valid_languages)) return $language_key;
+        }
+        return self::getConfiguration('default_language');
     }
 
     /**
@@ -451,13 +485,13 @@ class Translation {
     }
     
     /**
-     * Set the user language and store it in the session
+     * Set the user language and store it in a cookie living for a year
      * @param string $language_key User language
      */
     public static function setUserLanguage($language_key) {
         \Platform\Errorhandler::checkParams($language_key, 'string');
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
-        $_SESSION['platform']['language']['user_language'] = $language_key;
+        setcookie('platform_translation_language', $language_key, 60*60*24*360, '/');
     }
     
     /**
