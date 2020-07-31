@@ -491,7 +491,7 @@ class Translation {
     public static function setUserLanguage($language_key) {
         \Platform\Errorhandler::checkParams($language_key, 'string');
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
-        setcookie('platform_translation_language', $language_key, 60*60*24*360, '/');
+        setcookie('platform_translation_language', $language_key, time()+60*60*24*360, '/');
     }
     
     /**
