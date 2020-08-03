@@ -42,6 +42,12 @@ class Datarecord implements DatarecordReferable {
     protected $access_mode = self::MODE_WRITE;
     
     /**
+     * Indicate if elements of this type is allowed to be copied
+     * @var boolean
+     */
+    protected static $allow_copy = false;
+    
+    /**
      * Database table to store records of this type.
      * @var string
      */
@@ -132,18 +138,6 @@ class Datarecord implements DatarecordReferable {
      * @var array 
      */
     private static $foreign_reference_buffer = array();
-    
-    /**
-     * URL to the datarecord provider for table
-     * @var string 
-     */
-    protected static $url_table_datarecord = '/Platform/Datarecord/php/table_datarecord.php';
-    
-    /**
-     * URL to the datarecord io handler
-     * @var string 
-     */
-    protected static $url_io_datarecord = '/Platform/Datarecord/php/io_datarecord.php';
     
     /**
      * Constructs the object and ensures that the structure is in place.
@@ -270,7 +264,7 @@ class Datarecord implements DatarecordReferable {
      * @return boolean
      */
     public static function canCopy() {
-        return false;
+        return static::$allow_copy;
     }
     
     /**
@@ -1407,6 +1401,14 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get a edit complex for this Datarecord
+     * @return \Platform\DatarecordEditComplex
+     */
+    public static function getEditComplex() {
+        return new DatarecordEditComplex(get_called_class());        
+    }
+    
+    /**
      * Get a readable text value from this object
      * @param string $field Field name
      * @return string Text string
@@ -1710,81 +1712,8 @@ class Datarecord implements DatarecordReferable {
      * @param array $parameters Additional params to the table
      */
     public static function renderEditComplex($parameters = array()) {
-        Errorhandler::checkParams($parameters, 'array');
-        // Get base class name
-        $class = static::getClassName();
-        // Get object name
-        $name = strtolower(static::getObjectName());
-        
-        // Prepare script
-        $script = static::getEditScript();
-        if ($script) \Platform\Design::JSFile ($script);
-        
-        // Create table
-        $datarecord_table = new Table($class.'_table');
-        $datarecord_table->setDefinitionFromDatarecord(get_called_class());
-        $datarecord_table->setOption('ajaxURL', static::$url_table_datarecord.'?class='.get_called_class());
-        $datarecord_table->setOption('placeholder', 'No '.$name);
-        $datarecord_table->setOption('show_selector', true);
-        $datarecord_table->setOption('movableColumns', true);
-        $datarecord_table->setOption('data', array('io_datarecord' => static::$url_io_datarecord));
-        
-        // Grouping
-        $groupfields = array();
-        foreach (static::$structure as $key => $definition) {
-            if ($definition['tablegroup']) $groupfields[] = $key;
-        }
-        if ($groupfields) $datarecord_table->setOption('groupBy', $groupfields);
-        
-        if (is_array($parameters['table']))
-            foreach ($parameters['table'] as $key => $parameter) {
-                $datarecord_table->setOption($key, $parameter);
-            }
-        
-        // Get form
-        $form = static::getForm();
-        
-        if (is_callable($parameters['form_function'])) call_user_func($parameters['form_function'], $form);
-        
-        echo '<div class="'.Design::getClass('datarecord_editcomplex', 'platform_render_edit_complex').'" data-name="'.$name.'" data-shortclass="'.$class.'" data-class="'.get_called_class().'">';
-        
-        $menu = array();
-        if (static::canCreate()) $menu[$class.'_new_button'] = 'Create new '.$name;
-        if (static::canCopy()) $menu[$class.'_copy_button'] = 'Copy selected '.$name;
-        $menu[$class.'_edit_button'] = 'Edit selected '.$name;
-        $menu[$class.'_delete_button'] = 'Delete selected '.$name;
-        $menu[$class.'_column_select_button'] = 'Select columns';
-
-        $datarecord_menu = new MenuButton();
-        $datarecord_menu->setElements($menu);
-        
-        $datarecord_menu->render();
-        
-        $datarecord_table->render();
-        
-        echo '</div>';
-
-        echo '<div id="'.$class.'_edit_dialog" title="Edit '.$name.'" class="platform_invisible">';
-        $form->render();
-        echo '</div>';
-        
-        $fields = static::getTableFields();
-
-        // We can only select columns within an instance.
-        if (Instance::getActiveInstanceID()) {
-            $table_configuration = UserProperty::getPropertyForCurrentUser('table_configuration', $class.'_table');
-            if (! is_array($table_configuration)) {
-                // Build default set
-                $table_configuration = array();
-                foreach ($fields as $field) {
-                    if (static::$structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE) $table_configuration[$field] = array('width' => 0);
-                }
-            }
-            echo '<div id="'.$class.'_column_dialog" title="'.$name.' columns" class="platform_invisible">';
-            $datarecord_table->renderColumnSelector();
-            echo '</div>';
-        }
-        
+        $edit_complex = static::getEditComplex($parameters);
+        $edit_complex->render();
     }
     
     /**

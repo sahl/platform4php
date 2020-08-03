@@ -5,25 +5,28 @@ class MenuTop extends Menu {
     
     public function renderContent() {
         // Resolve location
-        $selected_link = $this->getBestLink($_SERVER['PHP_SELF']);
+        $this->calculateSelectedMenuItemByLocation();
         echo '<div>';
-        foreach ($this->elements as $link => $title) {
-            if (is_array($title)) {
+        foreach ($this->elements as $menuitem) {
+            if ($menuitem->hasSubmenu()) {
                 // This is a dropdown menu
                 echo '<div class="'.Design::getClass('dropdown_menu').'">';
-                echo '<div class="'.Design::getClass('dropdown_menu_top_item').'">'.$link.'</div>';
+                echo '<div class="'.Design::getClass('dropdown_menu_top_item').'">';
+                $menuitem->render();
+                echo '</div>';
                 echo '<div class="'.Design::getClass('dropdown_menu_content').'">';
-                foreach ($title as $link => $subtitle) {
-                    $classes = $selected_link == $link ? ' '.Design::getClass('dropdown_menu_item_selected') : Design::getClass('dropdown_menu_item');
-                    echo '<a href="'.$link.'" class="'.$classes.'">'.$subtitle.'</a>';
+                foreach ($menuitem->submenu_items as $sub_menuitem) {
+                    $classes = $this->checkIfSelected($sub_menuitem) ? ' '.Design::getClass('dropdown_menu_item_selected') : Design::getClass('dropdown_menu_item');
+                    $sub_menuitem->addClass($classes);
+                    $sub_menuitem->render();
                 }
                 echo '</div>';
                 echo '</div>';
             } else {
                 echo '<div class="'.Design::getClass('dropdown_menu').'">';
-                $classes = $selected_link == $link ? ' '.Design::getClass('dropdown_menu_top_item_selected') : Design::getClass('dropdown_menu_top_item');
+                $classes = $this->checkIfSelected($menuitem) ? ' '.Design::getClass('dropdown_menu_top_item_selected') : Design::getClass('dropdown_menu_top_item');
                 echo '<div class="'.$classes.'">';
-                echo '<a href="'.$link.'">'.$title.'</a>';
+                $menuitem->render();
                 echo '</div>';
                 echo '</div>';
             }

@@ -2,10 +2,12 @@
 namespace Platform;
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
-$component = unserialize(base64_decode($_POST['object']));
-if (! $component instanceof \Platform\Component) die('Invalid component class');
+$class = $_POST['componentclass'];
+
+$component = new $class();
+$component->setPropertyMap(unserialize(base64_decode($_POST['componentproperties'])));
 $component->dontLoadScript();
 
-if ($component->is_secure && !Accesstoken::validateSession()) die('Must be logged in');
+if ($class::$is_secure && !Accesstoken::validateSession()) die('Must be logged in');
 
-echo $component->renderInnerDiv();
+echo $component->renderContent();

@@ -5,6 +5,8 @@ class Menu extends Component {
     
     protected $elements = array();
     
+    protected $select_menuitem = null;
+    
     protected static function compareLocations($real_location, $menu_link) {
         if (substr($real_location,-9) == 'index.php') $real_location = substr($real_location, 0, -9);
         if (substr($menu_link,-9) == 'index.php') $menu_link = substr($menu_link, 0, -9);
@@ -13,28 +15,47 @@ class Menu extends Component {
         return strpos($real_location, $menu_link) !== false;
     }
     
-    protected function getBestLink($current_location) {
+    protected function calculateSelectedMenuItemByLocation() {
+        // Current location
+        $current_location = $_SERVER['PHP_SELF'];
         // Extract links
-        $linklist = array();
-        foreach ($this->elements as $link => $title) {
-            if (is_array($title)) {
-                foreach ($title as $link => $subtitle) {
-                    $linklist[] = $link;
-                }
-            } else {
-                $linklist[] = $link;
-            }
-        }
+        $menuitems = $this->getAllMenuitems();
+        $best_menuitem = null;
         // Score links
-        $bestscore = 0; $bestlink = false;
-        foreach ($linklist as $link) {
+        $best_score = 0; $best_menuitem = false;
+        foreach ($menuitems as $menuitem) {
             // Check if we already have a better link
-            if (strlen($link) < $bestscore) continue;
-            if (self::compareLocations($current_location, $link)) {
-                $bestlink = $link; $bestscore = strlen($link);
+            if (strlen($menuitem->url) < $best_score) continue;
+            if (self::compareLocations($current_location, $menuitem->url)) {
+                $best_menuitem = $menuitem; $best_score = strlen($menuitem->url);
             }
         }
-        return $bestlink;
+        $this->select_menuitem = $best_menuitem;
+    }
+    
+    /**
+     * Check if the passed menuitem is the selected menu item
+     * @param MenuItem $menuitem
+     * @return boolean
+     */
+    public function checkIfSelected($menuitem) {
+        Errorhandler::checkParams($menuitem, 'Platform\MenuItem');
+        return $this->select_menuitem === $menuitem;
+    }
+    
+    /**
+     * Get all menu items in this menu as array. This includes menu items in submenus
+     * @param array $menu_items Menu items to examine. If false, then use builtin items
+     * @return array<MenuItem>
+     */
+    private function getAllMenuitems($menu_items = false) {
+        if ($menu_items === false) $menu_items = $this->elements;
+        $result = array();
+        foreach ($menu_items as $menu_item) {
+            $result[] = $menu_item;
+            if ($menu_item->hasSubmenu()) $result = array_merge($result, $this->getAllMenuitems ($menu_item->submenu_items));
+        }
+        return $result;
     }
     
     public function setClass($keyword, $classes) {
@@ -46,7 +67,11 @@ class Menu extends Component {
     }
     
     public function setElements($elements) {
-        $this->elements = $elements;
+        Errorhandler::checkParams($elements, 'array');
+        foreach ($elements as $element) {
+            if (! $element instanceof MenuItem) trigger_error('Invalid element passed to menu. Expected type MenuItem', E_USER_ERROR);
+            $this->elements[] = $element;
+        }
     }
     
     
