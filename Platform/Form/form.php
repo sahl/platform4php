@@ -461,6 +461,14 @@ class Form {
         $this->event = $event;
     }
     
+    /**
+     * Set the HTML ID of this form
+     * @param string $id
+     */
+    public function setID($id) {
+        $this->form_id = $id;
+    }
+    
     public function setScript($script) {
         Errorhandler::checkParams($script, 'string');
         $this->script = $script;

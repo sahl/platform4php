@@ -1,61 +1,125 @@
 <?php
 namespace Platform;
 
-class Table {
-    private $id = '';
-
-    private $options = array();
+class Table extends Component {
     
+    protected static $can_redraw = false;
+    
+    private $center_and_minimize = false;
+    
+    private $tabulator_options = array();
+
     /**
      * Construct a new table
      * @param string $id Table ID
      */
     public function __construct($id) {
         Errorhandler::checkParams($id, 'string');
-        $this->id = $id;
-        $this->setOption('layout', 'fitColumns');
-        $this->setOption('placeholder', 'No data');
+        $this->setID($id);
+        $this->setTabulatorOption('layout', 'fitColumns');
+        $this->setTabulatorOption('placeholder', 'No data');
+        self::requireJS('/Platform/Table/js/table.js');
     }
     
     /**
-     * Add a further table definition from a datarecord
-     * @param string $classname Class to build table from
-     */
-    public function addDefinitionFromDatarecord($classname) {
-        Errorhandler::checkParams($classname, 'string');
-        foreach (self::buildDefinitionFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
-            $this->options['columns'][] = $definition;
-        }
-        $this->adjustColumnsFromConfiguration();
-    }
-
-    /**
-     * Adjust table columns from an earlier saved configuration
+     * Adjust set columns from an earlier saved configuration
      */
     public function adjustColumnsFromConfiguration() {
         // Try to get configuration
-        $columns = $this->options['columns'];
+        $columns = $this->tabulator_options['columns'];
         if (! is_array($columns)) return;
-        $savedconfiguration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->id);
+        $table_configuration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->getID());
         // Bail if no saved configuration
-        if (! is_array($savedconfiguration)) return;
+        if (! is_array($table_configuration)) return;
         $sortcolumns = array();
         foreach ($columns as $column) {
-            if (isset($savedconfiguration[$column['field']]['visible'])) $column['visible'] = $savedconfiguration[$column['field']]['visible'];
-            if (isset($savedconfiguration[$column['field']]['width'])) $column['width'] = $savedconfiguration[$column['field']]['width'];
+            if (isset($table_configuration[$column['field']]['visible'])) $column['visible'] = $table_configuration[$column['field']]['visible'];
+            if (isset($table_configuration[$column['field']]['width'])) $column['width'] = $table_configuration[$column['field']]['width'];
             $sortcolumns[$column['field']] = $column;
         }
         // Sort into place
         $columns = array();
-        foreach (array_keys($savedconfiguration) as $field) {
+        foreach (array_keys($table_configuration) as $field) {
             if (! isset($sortcolumns[$field])) continue;
             $columns[] = $sortcolumns[$field];
         }
         // Append columns which weren't mentioned in the configuration
-        foreach ($this->options['columns'] as $column) {
-            if (! in_array($column['field'], array_keys($savedconfiguration))) $columns[] = $column;
+        foreach ($this->tabulator_options['columns'] as $column) {
+            if (! in_array($column['field'], array_keys($table_configuration))) $columns[] = $column;
         }
-        $this->options['columns'] = $columns;
+        $this->tabulator_options['columns'] = $columns;
+    }
+    
+    /**
+     * Build a table definition directly from a Datarecord object
+     * @param string $classname Name of class to build from
+     * @return array Column definition compatible with Tabulator
+     */
+    public static function buildColumnsFromDatarecord($classname, $prefix = '') {
+        Errorhandler::checkParams($classname, 'string', $prefix, 'string');
+        $columndef = array();
+        $structure = $classname::getStructure();
+        
+        // Get special configuration
+        $fields = $classname::getTableFields(false);
+        foreach ($fields as $field) {
+            $columndef[] = array(
+                'title' => $structure[$field]['label'],
+                'field' => $prefix.$field,
+                'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
+                'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
+                'formatter' => 'html',
+                'width' => $structure[$field]['width'] ?: 200
+            );
+        }
+        return $columndef;
+    }
+
+    /**
+     * Add a further table definition from a datarecord
+     * @param string $classname Class to build table from
+     */
+    public function getColumnsFromDatarecord($classname) {
+        Errorhandler::checkParams($classname, 'string');
+        foreach (self::buildColumnsFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
+            $this->options['columns'][] = $definition;
+        }
+        $groupfields = array();
+        foreach ($classname::getStructure() as $key => $definition) {
+            if ($definition['tablegroup']) $groupfields[] = $key;
+        }
+        if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
+        
+        $this->adjustColumnsFromConfiguration();
+    }
+    
+    /**
+     * Get a column selector component based on this table
+     * @return \Platform\TableColumnSelector
+     */
+    public function getColumnSelectComponent() {
+        return new TableColumnSelector($this);
+    }
+
+    /**
+     * Get a form for selecting columns in the table
+     * @return \Platform\Form
+     */
+    public function getColumnSelectForm() {
+        $form = new Form($this->getID().'_select_column_form');
+        
+        // Extract column names
+        $options = array(); $selected = array();
+        $columns = $this->getTabulatorOption('columns') ?: array();
+        foreach ($columns as $column) {
+            $options[$column['field']] = $column['title'];
+            if ($column['visible']) $selected[] = $column['field'];
+        }
+        asort($options);
+        
+        $form->addField(new FieldHidden('', 'table_id'));
+        $form->addField(new FieldMulticheckbox('Visible fields', 'fields', array('options' => $options, 'value' => $selected)));
+        return $form;
     }
     
     /**
@@ -83,13 +147,13 @@ class Table {
         $structure = $classname::getStructure();
         foreach ($collection->getAll() as $object) {
             $columns = array();
-            foreach ($object->getAsArray(array(), Datarecord::RENDER_TEXT) as $field => $value) {
+            foreach ($object->getAsArray(array(), Datarecord::RENDER_FULL) as $field => $value) {
                 switch ($structure[$field]['fieldtype']) {
                     case Datarecord::FIELDTYPE_KEY:
                         $columns['id'] = $value;
                         break;
                     default:
-                        $columns[$field] = $value;
+                        $columns[$field] = '<!--'.strip_tags($value).'-->'.$value;
                 }
             }
             // Add relation data (if any)
@@ -107,42 +171,18 @@ class Table {
     }
     
     /**
-     * Build a table definition directly from a Datarecord object
-     * @param string $classname Name of class to build from
-     * @return array Column definition compatible with Tabulator
-     */
-    public static function buildDefinitionFromDatarecord($classname, $prefix = '') {
-        Errorhandler::checkParams($classname, 'string', $prefix, 'string');
-        $columndef = array();
-        $structure = $classname::getStructure();
-        
-        // Get special configuration
-        $fields = $classname::getTableFields(false);
-        foreach ($fields as $field) {
-            $columndef[] = array(
-                'title' => $structure[$field]['label'],
-                'field' => $prefix.$field,
-                'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
-                'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
-                'width' => $structure[$field]['width'] ?: 200
-            );
-        }
-        return $columndef;
-    }
-    
-    /**
      * Set a default sort for this table, being either a previously saved sort or
      * the first titled column
      */
     private function defaultSort() {
         // Try to load from session
-        $savedconfiguration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->id);
-        $column = $savedconfiguration['sort_column'];
+        $table_configuration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->getID());
+        $column = $table_configuration['sort_column'];
         if ($this->hasColumn($column)) {
-            $this->setSort($column, $savedconfiguration['sort_direction']);
+            $this->setSort($column, $table_configuration['sort_direction']);
         } else {
             // Sort by first named column
-            foreach ($this->options['columns'] as $column) {
+            foreach ($this->tabulator_options['columns'] as $column) {
                 if ($column['title']) {
                     $this->setSort($column['field']);
                     return;
@@ -156,9 +196,9 @@ class Table {
      * @param string $option Option name
      * @return mixed
      */
-    public function getOption($option) {
+    public function getTabulatorOption($option) {
         Errorhandler::checkParams($option, 'string');
-        return $this->options[$option];
+        return $this->tabulator_options[$option];
     }
     
     /**
@@ -180,7 +220,7 @@ class Table {
      * @return boolean True if we have it
      */
     public function hasColumn($column_name) {
-        foreach ($this->options['columns'] as $column) {
+        foreach ($this->tabulator_options['columns'] as $column) {
             if ($column['field'] == $column_name) return true;
         }
         return false;
@@ -192,22 +232,27 @@ class Table {
      */
     public function hideColumns($hidden_columns) {
         Errorhandler::checkParams($hidden_columns, 'array');
-        $columns = $this->options['columns'];
+        $columns = $this->tabulator_options['columns'];
         if (! is_array($columns) || ! is_array($hidden_columns)) return;
         $new_columns = array();
         foreach ($columns as $column) {
             if (in_array($column['field'], $hidden_columns)) $column['visible'] = false;
             $new_columns[] = $column;
         }
-        $this->options['columns'] = $new_columns;
+        $this->tabulator_options['columns'] = $new_columns;
     }
     
+    public function prepareData() {
+        if (! $this->tabulator_options['initialSort']) $this->defaultSort ();
+        if ($this->center_and_minimize) $this->addClass('platform_table_center_and_minimize');
+    }
     
     /**
      * Render a form for selecting columns for this table.
      */
     public function renderColumnSelector() {
-        $columns = $this->getOption('columns');
+        $columns = $this->getTabulatorOption('columns') ?: array();
+        $elements = array();
         foreach ($columns as $column) {
             $checked = $column['visible'] ? ' checked' : '';
             $elements[$column['title'].$column['field']] = '<input type="checkbox" name="column[]" value="'.$column['field'].'"'.$checked.'> '.$column['title'].'<br>';
@@ -216,8 +261,8 @@ class Table {
         $elements = array_values($elements);
         $split = ceil(count($elements)/3);
 
-        echo '<form class="platform_column_select" id="'.$this->id.'_column_select_form">';
-        echo '<input type="hidden" name="id" value="'.$this->id.'">';
+        echo '<form class="platform_column_select" id="'.$this->getID().'_column_select_form">';
+        echo '<input type="hidden" name="id" value="'.$this->getID().'">';
         $e = 0;
         for ($i = 0; $i < 3; $i++) {
             echo '<div>';
@@ -232,55 +277,34 @@ class Table {
     /**
      * Render the table.
      */
-    public function render() {
-        $attributes = array(
-            'id' => $this->id,
-            'class' => Design::getClass('platform_table', 'platform_table platform_invisible')
-        );
-        if ($this->options['data']) {
-            foreach ($this->options['data'] as $key => $value) $attributes['data-'.$key] = $value;
-            unset ($this->options['data']);
-        }
-        
-        if ($this->options['sort'] && $this->hasColumn($this->options['sort'])) {
-            $this->setSort($this->options['sort'],$this->options['sort_direction']);
-        } else {
-            $this->defaultSort();
-        }
-        unset($this->options['sort']);
-        unset($this->options['sort-order']);
-        
-        echo '<div';
-        foreach ($attributes as $key => $value) echo ' '.$key.'="'.$value.'"';
-        echo '>';
-        echo json_encode($this->options).'</div>';
+    public function renderContent() {
+        echo json_encode($this->tabulator_options);
     }
     
     /**
-     * Only the named columns are shown
-     * @param array $show_columns Column names to show
+     * Set if this table should be shown in center and minimized
+     * @param type $set
      */
-    public function setColumns($show_columns) {
-        Errorhandler::checkParams($show_columns, 'array');
-        $columns = $this->options['columns'];
-        if (! is_array($columns) || ! is_array($show_columns)) return;
-        $new_columns = array();
-        foreach ($columns as $column) {
-            $column['visible'] = in_array($column['field'], $show_columns);
-            $new_columns[] = $column;
-        }
-        $this->options['columns'] = $new_columns;
+    public function setCenterAndMinimize($set = true) {
+        Errorhandler::checkParams($set, 'boolean');
+        $this->center_and_minimize = $set;
     }
-    
     
     /**
      * Set the table definition from a given Datarecord and also consider saved
      * configurations
      * @param string $classname Class to build table from
      */
-    public function setDefinitionFromDatarecord($classname) {
+    public function setColumnsFromDatarecord($classname) {
         Errorhandler::checkParams($classname, 'string');
-        $this->options['columns'] = self::buildDefinitionFromDatarecord($classname);
+        $this->tabulator_options['columns'] = self::buildColumnsFromDatarecord($classname);
+        
+        $groupfields = array();
+        foreach ($classname::getStructure() as $key => $definition) {
+            if ($definition['tablegroup']) $groupfields[] = $key;
+        }
+        if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
+        
         if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
 
@@ -289,17 +313,17 @@ class Table {
      * @param string $option Option keyword
      * @param mixed $value Option value
      */
-    public function setOption($option, $value) {
+    public function setTabulatorOption($option, $value) {
         Errorhandler::checkParams($option, 'string');
         switch ($option) {
             case 'filter':
                 if ($value instanceof Filter) {
-                    $this->options['ajaxConfig'] = 'post';
-                    $this->options['ajaxParams'] = array('filter' => $value->toJSON());
+                    $this->setTabulatorOption('ajaxConfig', 'post');
+                    $this->setTabulatorOption('ajaxParams', array('filter' => $value->toJSON()));
                 }
                 break;
             default:
-                $this->options[$option] = $value;
+                $this->tabulator_options[$option] = $value;
                 break;
         }
     }
@@ -314,7 +338,19 @@ class Table {
         if (! $this->hasColumn($column)) trigger_error('Illegal sort column set', E_USER_ERROR);
         $sort = array('column' => $column);
         $sort['dir'] = ($direction == 'desc') ? 'desc' : 'asc';
-        $this->options['initialSort'] = array($sort);
+        $this->tabulator_options['initialSort'] = array($sort);
+    }
+    
+    public function setVisibleColumns($visible_columns) {
+        Errorhandler::checkParams($visible_columns, 'array');
+        $columns = $this->tabulator_options['columns'];
+        if (! is_array($columns) || ! is_array($visible_columns)) return;
+        $new_columns = array();
+        foreach ($columns as $column) {
+            $column['visible'] = in_array($column['field'], $visible_columns);
+            $new_columns[] = $column;
+        }
+        $this->tabulator_options['columns'] = $new_columns;
     }
     
     /**
@@ -323,14 +359,14 @@ class Table {
      */
     public function showColumns($show_columns) {
         Errorhandler::checkParams($show_columns, 'array');
-        $columns = $this->options['columns'];
+        $columns = $this->tabulator_options['columns'];
         if (! is_array($columns) || ! is_array($show_columns)) return;
         $new_columns = array();
         foreach ($columns as $column) {
             if (in_array($column['field'], $show_columns)) $column['visible'] = true;
             $new_columns[] = $column;
         }
-        $this->options['columns'] = $new_columns;
+        $this->tabulator_options['columns'] = $new_columns;
     }
     
 }

@@ -7,6 +7,10 @@ addCustomPlatformFunction(function(item) {
             $('#'+formtopost).submit();
             return false;
         }
+        if (url.substr(0,12) == '!DIALOGOPEN=') {
+            var dialog_to_open = url.substr(12);
+            $('#'+dialog_to_open).dialog('open');
+        }
         return true;
      });
  });

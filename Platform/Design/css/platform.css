@@ -16,22 +16,6 @@
     display: none;
 }
 
-.platform_table {
-    height: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.platform_autocenter {
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.platform_autocenter .platform_table {
-    margin-left: auto;
-    margin-right: auto;
-}
-
 .platform_row {
     display: block;
 }
@@ -48,13 +32,3 @@
     margin-top: 8px;
 }
 
-@media (min-width: 980px) {
-    .platform_autocenter {
-        min-width: 980px;
-    }
-    
-    .platform_autocenter .platform_table {
-        min-width: 980px;
-    }
-    
-}

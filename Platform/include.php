@@ -46,7 +46,6 @@ Platform\Design::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 Platform\Design::queueJSFile('/Platform/Design/js/general.js');
 Platform\Design::queueCSSFile('/Platform/Menu/css/menu.css');
 
-Platform\Design::queueJSFile('/Platform/Datarecord/js/helper.js');
 Platform\Design::queueJSFile('/Platform/Dialog/js/dialog.js');
 Platform\Design::queueJSFile('/Platform/Menu/js/menuitem.js');
 Platform\Design::queueJSFile('/Platform/Form/js/form.js');
@@ -57,10 +56,10 @@ Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');
 Platform\Design::queueJSFile('/Platform/Field/js/texteditor.js');
 Platform\Design::queueCSSFile('/Platform/Field/css/texteditor.css');
 
+Platform\Design::queueJSFile('/Platform/Component/js/component.js');
+
 Platform\Design::queueJSFile('/Platform/Design/js/greyout.js');
 Platform\Design::queueCSSFile('/Platform/Design/css/greyout.css');
-
-Platform\Design::queueJSFile('/Platform/Table/js/table.js');
 
 Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
 Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');

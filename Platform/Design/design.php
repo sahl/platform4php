@@ -31,6 +31,10 @@ class Design {
         return trim(self::$style_array[$keyword].' '.$additional_classes);
     }
     
+    public static function isPageStarted() {
+        return self::$page_started;
+    }
+    
     /**
      * Shortcut for rendering a script tag directly to page. Will queue the
      * javascript if page isn't started.

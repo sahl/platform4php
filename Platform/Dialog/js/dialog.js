@@ -26,6 +26,9 @@ $.fn.platformDialog = function(buttons, opts) {
         };
         var opts2 = $.extend(standard_options, opts);
         dia.dialog(opts2);
+        dia.on('close', function() {
+            $(this).dialog('close');
+        })
     })
     return this;
 }
