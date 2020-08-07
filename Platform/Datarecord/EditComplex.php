@@ -38,11 +38,12 @@ class DatarecordEditComplex extends Component {
     protected static $url_io_datarecord = '/Platform/Datarecord/php/io_datarecord.php';
     
     
-    public function __construct($class) {
+    public function __construct($class, $table_parameters = array()) {
+        Errorhandler::checkParams($class, 'string', $table_parameters, 'array');
         $this->class = $class;
         if (! class_exists($this->class)) trigger_error('Invalid class passed to DatarecordEditComplex.', E_USER_ERROR);
         $this->setID($class::getClassName().'_editcomplex');
-        $this->constructTable();
+        $this->constructTable($table_parameters);
         $this->constructTableMenu();
         $this->constructEditDialog();
         
@@ -67,7 +68,8 @@ class DatarecordEditComplex extends Component {
         $this->edit_dialog = new Dialog($short_class.'_edit_dialog', 'Edit '.$this->class::getObjectName(), '', $buttons, $form);
     }
 
-    private function constructTable() {
+    private function constructTable($table_parameters = array()) {
+        Errorhandler::checkParams($table_parameters, 'array');
         $this->table = new Table($this->getID().'_table');
         $this->table->setColumnsFromDatarecord($this->class);
         $this->table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$this->class);
@@ -75,6 +77,9 @@ class DatarecordEditComplex extends Component {
         $this->table->setTabulatorOption('show_selector', true);
         $this->table->setTabulatorOption('movableColumns', true);
         $this->table->setTabulatorOption('data', array('io_datarecord' => static::$url_io_datarecord));
+        foreach ($table_parameters as $parameter => $value) {
+            $this->table->setTabulatorOption($parameter, $value);
+        }
         $this->table->setCenterAndMinimize();
     }
     

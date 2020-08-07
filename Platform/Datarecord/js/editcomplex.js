@@ -142,6 +142,7 @@ addPlatformComponentHandlerFunction('datarecordeditcomplex', function(element) {
             headerSort:false,
             align: 'center',
             cellClick: function(e, cell) {
+                if (cell.getValue() != 1) return;
                 launchDelete([cell.getRow().getIndex()]);
             }
         }, false, 'checkboxcolumn');
@@ -149,7 +150,7 @@ addPlatformComponentHandlerFunction('datarecordeditcomplex', function(element) {
             table.addColumn({
                 formatter: function(cell, formatterParams) {
                     if (cell.getValue() == 1)
-                        return '<i class="fa fa-clone"></i>';
+                        return '<i class="fa fa-plus"></i>';
                     else
                         return '';
                 },

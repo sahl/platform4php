@@ -264,6 +264,7 @@ class Time {
      */
     public function isAfter($other_time) {
         Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($this->timestamp === null || $other_time->getTimestamp() === null) return false;
         return $this->timestamp > $other_time->getTimestamp();
     }
     
@@ -274,6 +275,7 @@ class Time {
      */
     public function isBefore($other_time) {
         Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        if ($this->timestamp === null || $other_time->getTimestamp() === null) return false;
         return $this->timestamp < $other_time->getTimestamp();
     }
     

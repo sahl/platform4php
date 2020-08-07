@@ -1020,6 +1020,7 @@ class Datarecord implements DatarecordReferable {
         // Build form
         $form = new Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
+        $form->setScript(self::getEditScript());
         $form->addField(new FieldHidden('', static::getKeyField()));
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
@@ -1404,8 +1405,8 @@ class Datarecord implements DatarecordReferable {
      * Get a edit complex for this Datarecord
      * @return \Platform\DatarecordEditComplex
      */
-    public static function getEditComplex() {
-        return new DatarecordEditComplex(get_called_class());        
+    public static function getEditComplex($parameters = array()) {
+        return new DatarecordEditComplex(get_called_class(), $parameters);        
     }
     
     /**

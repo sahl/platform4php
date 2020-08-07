@@ -68,6 +68,7 @@ class Table extends Component {
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
+                'formatter' => 'html',
                 'width' => $structure[$field]['width'] ?: 200
             );
         }
@@ -146,13 +147,13 @@ class Table extends Component {
         $structure = $classname::getStructure();
         foreach ($collection->getAll() as $object) {
             $columns = array();
-            foreach ($object->getAsArray(array(), Datarecord::RENDER_TEXT) as $field => $value) {
+            foreach ($object->getAsArray(array(), Datarecord::RENDER_FULL) as $field => $value) {
                 switch ($structure[$field]['fieldtype']) {
                     case Datarecord::FIELDTYPE_KEY:
                         $columns['id'] = $value;
                         break;
                     default:
-                        $columns[$field] = $value;
+                        $columns[$field] = '<!--'.strip_tags($value).'-->'.$value;
                 }
             }
             // Add relation data (if any)
