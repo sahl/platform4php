@@ -11,7 +11,19 @@ class FieldDate extends Field {
         $this->classes[] = Design::getClass('formfield');
     }
     
+    public function setValue($value) {
+        Errorhandler::checkParams($value, '\\Platform\\Time');
+        $this->value = $value;
+    }
+    
+    public function parse($value) {
+        if (! parent::parse($value)) return false;
+        $this->value = new \Platform\Time($value);
+        return true;
+    }
+    
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value.'"'.$this->additional_attributes.'>';
+        $value = $this->value->getReadable('Y-m-d');
+        echo '<input class="'.$this->getClassString().'" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$value.'"'.$this->additional_attributes.'>';
     }
 }

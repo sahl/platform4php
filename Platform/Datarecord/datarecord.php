@@ -45,7 +45,7 @@ class Datarecord implements DatarecordReferable {
      * Indicate if elements of this type is allowed to be copied
      * @var boolean
      */
-    protected static $allow_copy = false;
+    protected static $allow_copy = true;
     
     /**
      * Database table to store records of this type.

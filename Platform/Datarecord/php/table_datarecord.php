@@ -6,7 +6,7 @@ if ($_POST['filter']) $filter = \Platform\Filter::getFilterFromJSON ($_POST['fil
 else $filter = new Platform\Filter($_GET['class']);
 $datacollection = $filter->execute();
 
-$result = Platform\Table::getDataFromDatarecordCollection($datacollection);
+$result = Platform\Table::getDataFromCollection($datacollection);
 
 header('Content-type: text/json');
 echo json_encode($result);

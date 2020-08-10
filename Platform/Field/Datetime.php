@@ -11,7 +11,17 @@ class FieldDatetime extends Field {
         $this->classes[] = Design::getClass('formfield');
     }
     
+    public function setValue($value) {
+        Errorhandler::checkParams($value, '\\Platform\\Time');
+        $this->value = $value;
+    }
+    
+    public function parse($value) {
+        $this->value = new \Platform\Time($value);
+    }
+
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value.'"'.$this->additional_attributes.'>';
+        $value = $this->value->getReadable();
+        echo '<input class="'.$this->getClassString().'" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$value.'"'.$this->additional_attributes.'>';
     }
 }

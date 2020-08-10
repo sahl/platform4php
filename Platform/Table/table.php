@@ -129,7 +129,7 @@ class Table extends Component {
      * relation of this field is resolved and the resulting data is also added.
      * @return array Array ready to use for table
      */
-    public static function getDataFromDatarecordCollection($collection, $resolve_relation_field = '') {
+    public static function getDataFromCollection($collection, $resolve_relation_field = '') {
         Errorhandler::checkParams($collection, '\\Platform\\Collection', $resolve_relation_field, 'string');
         $result = array(); $supplemental_data = array();
         $classname = $collection->getCollectionType();
