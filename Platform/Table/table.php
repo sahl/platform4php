@@ -82,11 +82,11 @@ class Table extends Component {
     public function getColumnsFromDatarecord($classname) {
         Errorhandler::checkParams($classname, 'string');
         foreach (self::buildColumnsFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
-            $this->options['columns'][] = $definition;
+            $this->tabulator_options['columns'][] = $definition;
         }
         $groupfields = array();
         foreach ($classname::getStructure() as $key => $definition) {
-            if ($definition['tablegroup']) $groupfields[] = $key;
+            if ($definition['tablegroup']) $groupfields[] = $classname::getClassName().'-'.$key;
         }
         if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
         

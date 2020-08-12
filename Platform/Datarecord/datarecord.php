@@ -1020,7 +1020,8 @@ class Datarecord implements DatarecordReferable {
         // Build form
         $form = new Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
-        $form->setScript(self::getEditScript());
+        $script = self::getEditScript();
+        if ($script instanceof Form) $form->setScript(self::getEditScript());
         $form->addField(new FieldHidden('', static::getKeyField()));
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {

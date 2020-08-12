@@ -145,11 +145,11 @@ function sizeTableContainer(table_container) {
     $(table_container).find('.tabulator-headers .tabulator-col:visible').each(function() {
         width += $(this).width()+1;
     });
-    var outer_container = table_container.closest('.platform_component_datarecordeditcomplex');
+    var outer_container = table_container.parent();
     outer_container.css('width', 'auto');
     var container_width = $(outer_container).width();
     $(table_container).width(Math.min(width, container_width)).css('margin-left', 'auto').css('margin-right', 'auto');
-    $(outer_container).width(Math.min(width, container_width)).css('margin-left', 'auto').css('margin-right', 'auto');
+    if (outer_container.hasClass('platform_component_datarecordeditcomplex')) $(outer_container).width(Math.min(width, container_width)).css('margin-left', 'auto').css('margin-right', 'auto');
     console.log('Inner width: '+width);
     console.log('Table container width: '+$(table_container).width());
 

@@ -2,6 +2,17 @@
 namespace Platform;
 
 class Errorhandler {
+    /**
+     * Used for setting a measure time limit.
+     * @var mixed
+     */
+    private static $measure_time_limit = false;
+    
+    /**
+     * Used for setting a measure start point
+     * @var mixed
+     */
+    private static $measure_time_start = false;
 
     /**
      * Check type of parameters. Pass sets of variables and type keywords.
@@ -96,6 +107,11 @@ class Errorhandler {
     
     public static function measure($text, $operation_count = false) {
         self::$measures[] = array('timestamp' => microtime(true), 'text' => $text, 'operation_count' => $operation_count);
+        // Check if the measure limit is set and if it is exceeded
+        if (self::$measure_time_limit !== false && self::$measure_time_start + self::$measure_time_limit < time()) {
+            self::renderMeasures();
+            exit;
+        }
     }
 
     /**
@@ -172,6 +188,17 @@ class Errorhandler {
             else $log->log(number_format($measure['timestamp']-$starttime, 5,'.',''),number_format($measure['timestamp']-$lasttime, 5,'.',''),$measure['text']);
             $lasttime = $measure['timestamp'];
         }
+    }
+    
+    /**
+     * Set a time limit for measuring. If this is exceeded and a measure is taken
+     * the script will abort and display the measure output
+     * @param int $seconds
+     */
+    public static function setMeasureTimeLimit($seconds = 60) {
+        self::checkParams($seconds, 'int');
+        self::$measure_time_limit = $seconds;
+        self::$measure_time_start = time();
     }
 
     /**
