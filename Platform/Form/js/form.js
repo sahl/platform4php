@@ -1,3 +1,8 @@
+$(function() {
+    // Focus first form field on page load
+    $('input[type!="hidden"]').first().focus();
+})
+
 addCustomPlatformFunction(function(item) {
      $('.platform_form',item).submit(function(e) {
         var allowsubmit = true;

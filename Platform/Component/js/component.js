@@ -2,7 +2,7 @@ var platform_component_handler_functions = [];
 
 addCustomPlatformFunction(function(item) {
     var elements = item.find('.platform_component');
-    if (item.hasClass('platform_component')) if (elements.length) elements.add(item); else elements = item;
+    if (item.hasClass('platform_component')) if (elements.length) elements = elements.add(item); else elements = item;
     elements.each(function() {
         var element = $(this);
         

@@ -82,7 +82,7 @@ class ConnectorMicrobizz {
         $action = $connect_testserver ? 'https://dev2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
         $request_form->addField(new \Platform\FieldHidden('', 'request', array('value' => json_encode($request))));
-        $request_form->addField(new \Platform\FieldSubmit($button_text, 'performlink'));
+        if ($button_text) $request_form->addField(new \Platform\FieldSubmit($button_text, 'performlink'));
         return $request_form;
     }
 

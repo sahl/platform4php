@@ -82,6 +82,24 @@ class Time {
     }
     
     /**
+     * Get this time as a string
+     * @param string $format Format to use
+     * @return string
+     */
+    public function get($format = 'Y-m-d H:i:s') {
+        Errorhandler::checkParams($format, 'string');
+        return $this->timestamp !== null ? date($format, $this->timestamp) : null;
+    }
+
+    /**
+     * Get date
+     * @return string
+     */
+    public function getDate() {
+        return date('Y-m-d', $this->timestamp);
+    }
+    
+    /**
      * Get day
      * @return int
      */
@@ -113,6 +131,38 @@ class Time {
         return $this->isBefore($other_time) ? $this : $other_time;
     }
 
+    /**
+     * Get days in this month
+     * @return int Days in month
+     */
+    public function getDaysInMonth() {
+        return date('t', $this->timestamp);
+    }
+    
+    /**
+     * Get the first day in this month
+     * @return \Platform\Mtime
+     */
+    public function getFirstDayInMonth() {
+        return $this->addDays(-($this->getDay())+1);
+    }
+    
+    /**
+     * Get the first day in this week
+     * @return \Platform\Time
+     */
+    public function getFirstDayInWeek() {
+        return $this->addDays(-($this->getWeekday()-1));
+    }
+    
+    /**
+     * Get the last day in this month
+     * @return \Platform\Time
+     */
+    public function getLastDayInMonth() {
+        return $this->add($this->getDaysInMonth()-$this->getDay());
+    }
+    
     /**
      * Get the latest of two times
      * @param \Platform\Time $other_time
@@ -147,56 +197,6 @@ class Time {
     }
     
     /**
-     * Get year
-     * @return int
-     */
-    public function getYear() {
-        return date('Y', $this->timestamp);
-    }
-    
-    /**
-     * Get the number of years until another time
-     * @param \Platform\Time $other_time
-     * @return boolean|int Number of months or false if cannot calculate
-     */
-    public function getYearsUntil($other_time) {
-        Errorhandler::checkParams($other_time, '\\Platform\\Time');
-        return (int)($this->getMonthsUntil($other_time)/12.0);
-    }
-    
-    /**
-     * Get days in this month
-     * @return int Days in month
-     */
-    public function getDaysInMonth() {
-        return date('t', $this->timestamp);
-    }
-    
-    /**
-     * Get the first day in this month
-     * @return \Platform\Mtime
-     */
-    public function getFirstDayInMonth() {
-        return $this->addDays(-($this->getDay())+1);
-    }
-    
-    /**
-     * Get the first day in this week
-     * @return \Platform\Time
-     */
-    public function getFirstDayInWeek() {
-        return $this->addDays(-($this->getWeekday()-1));
-    }
-    
-    /**
-     * Get the last day in this month
-     * @return \Platform\Time
-     */
-    public function getLastDayInMonth() {
-        return $this->add($this->getDaysInMonth()-$this->getDay());
-    }
-
-    /**
      * Get the number of minutes until another time
      * @param \Platform\Time $other_time
      * @return boolean|int Number of minutes or false if cannot calculate
@@ -224,21 +224,19 @@ class Time {
     }
     
     /**
+     * Get time
+     * @return string
+     */
+    public function getTime() {
+        return date('H:i:s', $this->timestamp);
+    }    
+
+    /**
      * Get the internal timestamp of this time
      * @return int
      */
     public function getTimestamp() {
         return $this->timestamp;
-    }
-    
-    /**
-     * Get this time as a string
-     * @param string $format Format to use
-     * @return string
-     */
-    public function getTime($format = 'Y-m-d H:i:s') {
-        Errorhandler::checkParams($format, 'string');
-        return $this->timestamp !== null ? date($format, $this->timestamp) : null;
     }
     
     /**
@@ -255,6 +253,24 @@ class Time {
      */
     public function getWeekday() {
         return date('N', $this->timestamp);
+    }
+    
+    /**
+     * Get year
+     * @return int
+     */
+    public function getYear() {
+        return date('Y', $this->timestamp);
+    }
+    
+    /**
+     * Get the number of years until another time
+     * @param \Platform\Time $other_time
+     * @return boolean|int Number of months or false if cannot calculate
+     */
+    public function getYearsUntil($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return (int)($this->getMonthsUntil($other_time)/12.0);
     }
     
     /**

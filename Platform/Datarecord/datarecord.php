@@ -998,13 +998,14 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_FLOAT:
                 return $value === null ? 'NULL' : (double)$value;
             case self::FIELDTYPE_ARRAY:
-            case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 return '\''.Database::escape(json_encode($value)).'\'';
+            case self::FIELDTYPE_OBJECT:
+                return '\''.Database::escape(serialize($value)).'\'';
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
                 $datetime = new Time($value);
-                return $datetime->getTimestamp() !== null ? '\''.$datetime->getTime().'\'' : 'NULL';
+                return $datetime->getTimestamp() !== null ? '\''.$datetime->get().'\'' : 'NULL';
             default:
                 return '\''.Database::escape($value).'\'';
         }
@@ -1597,9 +1598,11 @@ class Datarecord implements DatarecordReferable {
                     $this->values[$key] = $value;
                     break;
                 case self::FIELDTYPE_ARRAY:
-                case self::FIELDTYPE_OBJECT:
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
                     $this->setValue($key, json_decode($value, true));
+                    break;
+                case self::FIELDTYPE_OBJECT:
+                    $this->setValue($key, unserialize($value));
                     break;
                 default:
                     $this->setValue($key, $value);

@@ -20,6 +20,12 @@ class Filter {
      * @var Condition 
      */
     private $base_condition = null;
+    
+    /**
+     * Indicate if a condition forced a metadata search
+     * @var boolean
+     */
+    private $search_metadata = false;
         
     /**
      * Construct a filter
@@ -69,7 +75,15 @@ class Filter {
      * @return \Platform\Collection The result of the filter.
      */
     public function execute() {
-        return $this->base_object->getCollectionFromSQL($this->getSQL(), true);
+        $result = $this->base_object->getCollectionFromSQL($this->getSQL(), true);
+        if (! $this->search_metadata) return $result;
+        $filtered_datacollection = new Collection();
+        foreach ($result as $object) {
+            if ($this->base_condition->check($object)) {
+                $filtered_datacollection->add($object);
+            }
+        }
+        return $filtered_datacollection;
     }
     
     /**
@@ -95,6 +109,10 @@ class Filter {
         return $filter;
     }
     
+    /**
+     * Get the base class name of this filter.
+     * @return string
+     */
     public function getBaseClassName() {
         return $this->base_classname;
     }
@@ -116,8 +134,19 @@ class Filter {
         return $sql;
     }
     
+    /**
+     * Get a SQL Where string for this filter
+     * @return string
+     */
     public function getSQLWhere() {
         return $this->base_condition instanceof Condition ? ' WHERE '.$this->base_condition->getSQLFragment() : '';
+    }
+    
+    /**
+     * Set that this filter should search metadata.
+     */
+    public function setSearchMetadata() {
+        $this->search_metadata = true;
     }
     
     /**

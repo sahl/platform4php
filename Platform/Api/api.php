@@ -40,14 +40,14 @@ class Api {
                     break;
                 case Datarecord::FIELDTYPE_DATE:
                 case Datarecord::FIELDTYPE_DATETIME:
-                    $result[$key] = $object->getRawValue($key)->getTime();
+                    $result[$key] = $object->getRawValue($key)->get();
                     break;
                 default:
                     $result[$key] = $object->getRawValue($key);
             }
         }
         ksort($result);
-        $result['__api_generated'] = Time::now()->getTime();
+        $result['__api_generated'] = Time::now()->get();
         return $result;
     }
     
