@@ -110,7 +110,7 @@ addPlatformComponentHandlerFunction('datarecordeditcomplex', function(element) {
             launchDelete(ids);
             return false;
         });
-        $('#'+short_classname+'_copy_button').click(function() {
+        $('#'+short_classname+'_copy_button', menu).click(function() {
             var ids = [];
             $.each(table.getSelectedRows(), function(i, elements) {
               ids.push(elements._row.data.id);
@@ -121,7 +121,7 @@ addPlatformComponentHandlerFunction('datarecordeditcomplex', function(element) {
                 launchCopy(ids);
             }
         });
-        $('#'+short_classname+'_column_select_button').click(function() {
+        $('#'+short_classname+'_column_select_button', menu).click(function() {
             column_select_dialog.dialog('open');
             return false;
         });

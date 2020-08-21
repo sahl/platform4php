@@ -1,6 +1,6 @@
 $(function() {
     // Focus first form field on page load
-    $('input[type!="hidden"]').first().focus();
+    $('.platform_form input[type!="hidden"]').first().focus();
 })
 
 addCustomPlatformFunction(function(item) {

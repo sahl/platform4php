@@ -786,7 +786,7 @@ class Datarecord implements DatarecordReferable {
         $main_field = false; $search_fields = array();
         // Locate search fields
         foreach (static::getStructure() as $field => $definition) {
-            if ($definition['searchable']) {
+            if ($definition['searchable'] || $definition['is_title']) {
                 $search_fields[] = $field;
             }
         }
@@ -1022,7 +1022,7 @@ class Datarecord implements DatarecordReferable {
         $form = new Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
         $script = self::getEditScript();
-        if ($script instanceof Form) $form->setScript(self::getEditScript());
+        if ($script) $form->setScript($script);
         $form->addField(new FieldHidden('', static::getKeyField()));
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
@@ -1091,7 +1091,8 @@ class Datarecord implements DatarecordReferable {
                 $options['images_only'] = true;
                 return new FieldFile($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                return new FieldDatarecordcombobox($definition['label'], $name, array('class' => $definition['foreign_class']));
+                $options['class'] = $definition['foreign_class'];
+                return new FieldDatarecordcombobox($definition['label'], $name, $options);
                 /*
                 $fieldoptions = array();
                 // Get possibilities

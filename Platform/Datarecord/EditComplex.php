@@ -94,7 +94,7 @@ class DatarecordEditComplex extends Component {
         $menu[] = MenuItem::constructByID ('Select columns', $short_class.'_column_select_button');
 
         $this->table_menu = new MenuButton();
-        $this->table_menu->setID($name.'_table_menu');
+        $this->table_menu->setID($short_class.'_table_menu');
         $this->table_menu->setElements($menu);
     }
     
