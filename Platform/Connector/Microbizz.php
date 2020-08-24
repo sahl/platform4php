@@ -2,6 +2,37 @@
 namespace Platform;
 
 class ConnectorMicrobizz {
+
+    private $endpoint = '';
+    private $contract = '';
+    private $accesstoken = '';
+
+    public function __construct($endpoint, $contract, $accesstoken) {
+        $this->endpoint = $endpoint;
+        $this->contract = $contract;
+        $this->accesstoken = $accesstoken;
+    }
+    
+    /**
+     * Reports an error to a Microbizz update call and halts execution.
+     * @param string $error_text
+     */
+    public static function answerFailure($error_text) {
+        echo json_encode(array(
+            'status' => 0,
+            'error' => $error_text
+        ));
+        exit;
+    }
+    
+    /**
+     * Reports success to a Microbizz update call.
+     */
+    public static function answerSuccess() {
+        echo json_encode(array(
+            'status' => 1
+        ));
+    }
     
     /**
      * Build a permission request for Microbizz
@@ -13,6 +44,7 @@ class ConnectorMicrobizz {
      */
     public static function buildPermission($modcode, $hook, $title, $url) {
         Errorhandler::checkParams($modcode, 'string', $hook, 'string', $title, 'string', $url, 'string');
+        $url .= (strpos($url,'?') !== false ? '&' : '?').'instance_id='.Instance::getActiveInstanceID();
         return array(
             'modcode' => $modcode,
             'hook' => $hook,
@@ -32,7 +64,7 @@ class ConnectorMicrobizz {
         global $platform_configuration;
         $request = array(
             'publicid' => $platform_configuration['microbizz_public_id'],
-            'negotiateurl' => ($_SERVER['HTTPS'] ? 'https://' : 'http://').$_SERVER['HTTP_HOST'].'/Platform/Connector/php/microbizz_negotiate.php?instance_id='.Instance::getActiveInstanceID().'&token='.Accesstoken::getSavedTokenCode(),
+            'negotiateurl' => ($_SERVER['HTTPS'] ? 'https://' : 'http://').$_SERVER['HTTP_HOST'].'/Platform/Connector/php/microbizz_negotiate.php?instance_id='.Instance::getActiveInstanceID().'&token='.Accesstoken::getSavedTokenCode().'&userid='.Accesstoken::getCurrentUserID(),
             'returnurl' => $return_url
         );
         foreach ($permissions as $permission) {
@@ -45,9 +77,9 @@ class ConnectorMicrobizz {
      * Handles a request from Microbizz, by selecting the right instance and validating the session token.
      * @return boolean Always returns true otherwise execution is halted.
      */
-    public static function handleRequest() {
+    public function validateRequest() {
         // Switch to requested instance
-        $instance = new \App\Instance();
+        $instance = new \Platform\Instance();
         $instance->loadForRead($_GET['instance_id'] ?: $_SESSION['microbizz_stored_instance']);
         if (! $instance->isInDatabase()) die('Invalid instance.');
         $instance->activate();
@@ -55,11 +87,24 @@ class ConnectorMicrobizz {
         Design::queueCSSFile('/Platform/Connector/css/microbizz.css');
         
         if ($_SESSION['microbizz_validated_sessiontoken'] == $_GET['sessiontoken']) return true;
-        $result = self::query('ValidateSessionToken', array('sessiontoken' => $_GET['sessiontoken']));
+        $result = $this->query('ValidateSessionToken', array('sessiontoken' => $_GET['sessiontoken']));
         if (! $result['status'] || ! $result['result']) die('Could not validate session with Microbizz.');
         $_SESSION['microbizz_validated_sessiontoken'] = $_GET['sessiontoken'];
         $_SESSION['microbizz_stored_instance'] = $_GET['instance_id'];
         return true;
+    }
+    
+    /**
+     * Handle the return URL after connecting with Microbizz. Return an array consisting of endpoint, contract number
+     * and accesstoken on success or false if an error occured.
+     * @return array|boolean
+     */
+    public static function handleReturn() {
+        $filename = \Platform\File::getFullFolderPath('temp').'microbizz_credentials_user_'.Accesstoken::getCurrentUserID();
+        if (!file_exists($filename)) return false;
+        $data = file($filename);
+        if (count($data) <> 3) return false;
+        return array(trim($data[0]), trim($data[1]), trim($data[2]));
     }
     
     /**
@@ -87,49 +132,6 @@ class ConnectorMicrobizz {
     }
 
     /**
-     * Get the currently stored contract number for MB
-     * @return string|boolean The contract number or false if no number present
-     */
-    public static function getContract() {
-        return \Platform\UserProperty::getPropertyForUser(0, 'ConnectorMicrobizz', 'contract') ?: false;
-    }
-    
-    /**
-     * Get the currently stored endpoint for MB
-     * @return string|boolean The endpoint URL or false if no number present
-     */
-    public static function getEndpoint() {
-        return \Platform\UserProperty::getPropertyForUser(0, 'ConnectorMicrobizz', 'endpoint') ?: false;
-    }
-
-    /**
-     * Set a new accesstoken for Microbizz
-     * @param string $token The token or null to remove existing token.
-     */
-    public static function setAccessToken($token = null) {
-        Errorhandler::checkParams($token, 'string');
-        \Platform\UserProperty::setPropertyForUser(0, 'ConnectorMicrobizz', 'access_token', $token);
-    }
-    
-    /**
-     * Set a new contract for Microbizz
-     * @param string $contract The contract ID or null to remove existing contract.
-     */
-    public static function setContract($contract = null) {
-        Errorhandler::checkParams($contract, 'string');
-        \Platform\UserProperty::setPropertyForUser(0, 'ConnectorMicrobizz', 'contract', $contract);
-    }
-
-    /**
-     * Set a new endpoint for Microbizz
-     * @param string $endpoint The endpoint URL or null to remove existing URL.
-     */
-    public static function setEndpoint($endpoint = null) {
-        Errorhandler::checkParams($endpoint, 'string');
-        \Platform\UserProperty::setPropertyForUser(0, 'ConnectorMicrobizz', 'endpoint', $endpoint);
-    }
-    
-    /**
      * Solve a challenge from Microbizz.
      * @param string $challenge The challenge string
      * @return string The answer
@@ -146,21 +148,18 @@ class ConnectorMicrobizz {
      * @param array $parameters Parameters to the command
      * @return array Result array.
      */
-    public static function query($command, $parameters = array()) {
+    public function query($command, $parameters = array()) {
         Errorhandler::checkParams($command, 'string', $parameters, 'array');
-        $contract = self::getContract();
-        $endpoint = self::getEndpoint();
-        $access_token = self::getAccessToken();
         
-        if (! $endpoint) return array('status' => false, 'error' => 'No endpoint defined');
+        if (! $this->endpoint) return array('status' => false, 'error' => 'No endpoint defined');
         
         $commands = $parameters;
         $commands['command'] = $command;
         
-        $request = array('contract' => $contract, 'accesstoken' => $access_token, 'commands' => array($commands));
+        $request = array('contract' => $this->contract, 'accesstoken' => $this->accesstoken, 'commands' => array($commands));
 
         $ch = \curl_init();
-        curl_setopt($ch, CURLOPT_URL, $endpoint);
+        curl_setopt($ch, CURLOPT_URL, $this->endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, true);
 
