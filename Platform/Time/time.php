@@ -17,12 +17,13 @@ class Time {
     
     /**
      * Construct a new Time object
-     * @param mixed $time Either another time object to copy, a time string or "now" for current time.
+     * @param mixed $time Either another time object to copy, a time string, "now" for current time or "today" for today at midnight.
      */
     public function __construct($time = null) {
         Errorhandler::checkParams($time, array('string', '\\Platform\\Time'));
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
+        elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
         elseif ($time) $this->timestamp = strtotime($time);
     }
     
@@ -116,8 +117,7 @@ class Time {
         Errorhandler::checkParams($other_time, '\\Platform\\Time');
         if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
         $difference_in_seconds = $other_time->timestamp - $this->timestamp;
-        if ($difference_in_seconds < 0) return (int)(($res-12*60*60)/(60*60*24));
-        return (int)(($res+12*60*60)/(60*60*24));
+        return (int)($difference_in_seconds/(60*60*24));
     }
     
     /**
@@ -328,6 +328,14 @@ class Time {
      */
     public static function setDisplayTimeZone($display_time_zone) {
         self::$time_zone_object = new \DateTimeZone($display_time_zone);
+    }
+    
+    /**
+     * Return a new time with the current time at midnight today
+     * @return \Platform\Time
+     */
+    public static function today() {
+        return new Time('today');
     }
     
     /**
