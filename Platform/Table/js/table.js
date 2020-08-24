@@ -2,7 +2,7 @@ var tablebuffer = [];
 
 addPlatformComponentHandlerFunction('table', function(item) {
     var element = item;
-
+    var initial_sort_completed = false;
     // Resize this table if the window is resized.
     $(window).resize(function() {
         sizeTableContainer(element);
@@ -17,16 +17,20 @@ addPlatformComponentHandlerFunction('table', function(item) {
             saveTableLayout(element.attr('id'));
             sizeTableContainer(element);
         },
+        dataFiltered: function() {
+            sizeTableContainer(element);
+        },
         renderComplete: function() {
             sizeTableContainer(element);
         },
         dataLoaded: function() {
             sizeTableContainer(element);
         },
-        dataSorting: function(sorters) {
-            if (sorters.length) {
+        dataSorted: function(sorters) {
+            if (sorters.length && initial_sort_completed) {
                 saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
             }
+            initial_sort_completed = true;
         }
     }
 
@@ -171,7 +175,7 @@ function sizeTableContainer(table_container) {
     // TODO: These values are hardcoded and should be calculated
     var additional_height = container_width < width ? 20 : 3;
 
-    if (number_of_rows < 50) table_container.css('height', 'auto');
+    if (number_of_rows < 50) { table_container.css('height', 'auto'); console.log('Auto height');}
     else table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
 }   
 
