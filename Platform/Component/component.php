@@ -16,6 +16,12 @@ class Component {
     protected static $can_redraw = true;
     
     /**
+     * Indicate if this component should render
+     * @var boolean
+     */
+    protected $can_render = true;
+    
+    /**
      * Classes
      * @var array
      */
@@ -110,6 +116,14 @@ class Component {
         Errorhandler::checkParams($key, 'string');
         $this->data[$key] = $value;
     }
+    
+    /**
+     * Check if this component is allowed to render
+     * @return boolean True if this component will render.
+     */
+    public function canRender() {
+        return $this->can_render;
+    }
 
     /**
      * Call this for preventing loading of Javascript
@@ -149,6 +163,7 @@ class Component {
      * Renders the component
      */
     public function render() {
+        if (! $this->can_render) return;
         $this->prepareData();
         $classes = $this->classes;
         $classes[] = 'platform_component';
@@ -206,5 +221,14 @@ class Component {
     public function setPropertyMap($property_map) {
         Errorhandler::checkParams($property_map, 'array');
         $this->properties = $property_map;
+    }
+    
+    /**
+     * Set if this component should render.
+     * @param boolean $render false to prevent render.
+     */
+    public function setRender($render) {
+        Errorhandler::checkParams($render, 'boolean');
+        $this->can_render = $render;
     }
 }
