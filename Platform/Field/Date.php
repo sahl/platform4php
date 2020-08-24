@@ -9,6 +9,7 @@ class FieldDate extends Field {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         parent::__construct($label, $name, $options);
         $this->classes[] = Design::getClass('formfield');
+        $this->value = new \Platform\Time();
     }
     
     public function setValue($value) {

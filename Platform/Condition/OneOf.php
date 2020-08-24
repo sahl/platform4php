@@ -26,6 +26,7 @@ class ConditionOneOf extends Condition {
                 case Datarecord::FIELDTYPE_ARRAY:
                 case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
                     $sql[] = $this->fieldname.' REGEXP "[^0-9]'.$value.'[^0-9]"';
+                    break;
                 default:
                     $sql[] = $this->fieldname.' = '.$this->getSQLFieldValue($value);
             }

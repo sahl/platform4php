@@ -807,10 +807,13 @@ class Datarecord implements DatarecordReferable {
         }
         $results = $filter->execute();
         if ($output == 'autocomplete') {
-            $final_results = array();
+            $final_results = array(); $sort_array = array();
             foreach ($results->getAll() as $result) {
-                $final_results[] = array('value' => $result->getTitle(), 'label' => $result->getTitle(), 'real_id' => $result->getRawValue(static::getKeyField()));
+                $title = strip_tags(html_entity_decode($result->getTitle()));
+                $sort_array[] = $title;
+                $final_results[] = array('value' => $title, 'label' => $title, 'real_id' => $result->getRawValue(static::getKeyField()));
             }
+            array_multisort($sort_array, SORT_ASC, $final_results);
             return $final_results;
         } elseif ($output == 'array') {
             $final_results = array();
