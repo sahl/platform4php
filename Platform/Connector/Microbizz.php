@@ -6,7 +6,15 @@ class ConnectorMicrobizz {
     private $endpoint = '';
     private $contract = '';
     private $accesstoken = '';
+    
+    private $disable_callbacks = false;
 
+    /**
+     * Construct a new API connection
+     * @param string $endpoint Endpoint to talk to
+     * @param string $contract Contract number
+     * @param string $accesstoken Access token
+     */
     public function __construct($endpoint, $contract, $accesstoken) {
         $this->endpoint = $endpoint;
         $this->contract = $contract;
@@ -74,45 +82,10 @@ class ConnectorMicrobizz {
     }
     
     /**
-     * Handles a request from Microbizz, by selecting the right instance and validating the session token.
-     * @return boolean Always returns true otherwise execution is halted.
+     * Set the disable callback option on subsequent API communication
      */
-    public function validateRequest() {
-        // Switch to requested instance
-        $instance = new \Platform\Instance();
-        $instance->loadForRead($_GET['instance_id'] ?: $_SESSION['microbizz_stored_instance']);
-        if (! $instance->isInDatabase()) die('Invalid instance.');
-        $instance->activate();
-
-        Design::queueCSSFile('/Platform/Connector/css/microbizz.css');
-        
-        if ($_SESSION['microbizz_validated_sessiontoken'] == $_GET['sessiontoken']) return true;
-        $result = $this->query('ValidateSessionToken', array('sessiontoken' => $_GET['sessiontoken']));
-        if (! $result['status'] || ! $result['result']) die('Could not validate session with Microbizz.');
-        $_SESSION['microbizz_validated_sessiontoken'] = $_GET['sessiontoken'];
-        $_SESSION['microbizz_stored_instance'] = $_GET['instance_id'];
-        return true;
-    }
-    
-    /**
-     * Handle the return URL after connecting with Microbizz. Return an array consisting of endpoint, contract number
-     * and accesstoken on success or false if an error occured.
-     * @return array|boolean
-     */
-    public static function handleReturn() {
-        $filename = \Platform\File::getFullFolderPath('temp').'microbizz_credentials_user_'.Accesstoken::getCurrentUserID();
-        if (!file_exists($filename)) return false;
-        $data = file($filename);
-        if (count($data) <> 3) return false;
-        return array(trim($data[0]), trim($data[1]), trim($data[2]));
-    }
-    
-    /**
-     * Get the currently stored access token for Microbizz
-     * @return string|boolean The token or false if no token present
-     */
-    public static function getAccessToken() {
-        return \Platform\UserProperty::getPropertyForUser(0, 'ConnectorMicrobizz', 'access_token') ?: false;
+    public function disableCallbacks() {
+        $this->disable_callbacks = true;
     }
     
     /**
@@ -132,14 +105,32 @@ class ConnectorMicrobizz {
     }
 
     /**
-     * Solve a challenge from Microbizz.
-     * @param string $challenge The challenge string
-     * @return string The answer
+     * Handle the return URL after connecting with Microbizz. Return an array consisting of endpoint, contract number
+     * and accesstoken on success or false if an error occured.
+     * @return array|boolean
      */
-    public static function solveChallenge($challenge) {
-        Errorhandler::checkParams($challenge, 'string');
-        global $platform_configuration;
-        return sha1($challenge.$platform_configuration['microbizz_secret_token']);
+    public static function handleReturn() {
+        $filename = \Platform\File::getFullFolderPath('temp').'microbizz_credentials_user_'.Accesstoken::getCurrentUserID();
+        if (!file_exists($filename)) return false;
+        $data = file($filename);
+        if (count($data) <> 3) return false;
+        return array(trim($data[0]), trim($data[1]), trim($data[2]));
+    }
+    
+
+    /**
+     * Activates an instance based on a call from Microbizz, and queues the
+     * Microbizz CSS file
+     */
+    public static function prepareInstanceFromRequest() {
+        // Switch to requested instance
+        $instance = new \Platform\Instance();
+        $instance->loadForRead($_GET['instance_id'] ?: $_SESSION['microbizz_stored_instance']);
+        if (! $instance->isInDatabase()) die('Invalid instance.');
+        $instance->activate();
+
+        // Queue Microbizz design file
+        Design::queueCSSFile('/Platform/Connector/css/microbizz.css');
     }
     
     /**
@@ -157,11 +148,15 @@ class ConnectorMicrobizz {
         $commands['command'] = $command;
         
         $request = array('contract' => $this->contract, 'accesstoken' => $this->accesstoken, 'commands' => array($commands));
+        
+        if ($this->disable_callbacks) $request['disable_callbacks'] = true;
 
         $ch = \curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 60);
+
 
         $data = array(
             'json' => json_encode($request)
@@ -180,6 +175,30 @@ class ConnectorMicrobizz {
         if (! $result['status']) return array('status' => false, 'error' => $result['msg']);
         
         return array('status' => true, 'result' => $result);
+    }
+    
+    /**
+     * Solve a challenge from Microbizz.
+     * @param string $challenge The challenge string
+     * @return string The answer
+     */
+    public static function solveChallenge($challenge) {
+        Errorhandler::checkParams($challenge, 'string');
+        global $platform_configuration;
+        return sha1($challenge.$platform_configuration['microbizz_secret_token']);
+    }
+
+    /**
+     * Validates a session from Microbizz to ensure that it runs within a users space.
+     * @return boolean Always returns true otherwise execution is halted.
+     */
+    public function validateSession() {
+        if ($_GET['sessiontoken'] && $_SESSION['microbizz_validated_sessiontoken'] == $_GET['sessiontoken']) return true;
+        $result = $this->query('ValidateSessionToken', array('sessiontoken' => $_GET['sessiontoken']));
+        if (! $result['status'] || ! $result['result']) die('Could not validate session with Microbizz.');
+        $_SESSION['microbizz_validated_sessiontoken'] = $_GET['sessiontoken'];
+        $_SESSION['microbizz_stored_instance'] = $_GET['instance_id'];
+        return true;
     }
     
 }
