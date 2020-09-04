@@ -10,6 +10,12 @@ class Api {
     private $classes = array();
     
     /**
+     * Used to preset the instance id
+     * @var mixed
+     */
+    private $preset_instanceid = false;
+    
+    /**
      * Construct an API endpoint
      * @param array $classnames Classes to include in this endpoint
      */
@@ -57,10 +63,17 @@ class Api {
     public function handle() {
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
-        if (! preg_match('/^\\/(\\d+)\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
-        $instance_id = $m[1];
-        $object_name = $m[2];
-        $object_id = $m[4];
+        if ($this->preset_instanceid) {
+            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
+            $instance_id = $this->preset_instanceid;
+            $object_name = $m[1];
+            $object_id = $m[3];
+        } else {
+            if (! preg_match('/^\\/(\\d+)\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
+            $instance_id = $m[1];
+            $object_name = $m[2];
+            $object_id = $m[4];
+        }
         
         // Check for valid instance and activate it
         $instance = new Instance();
@@ -122,7 +135,17 @@ class Api {
                     }
                     self::respondAndDie(200, json_encode($response));
                 }
-                
+                break;
+            case 'DELETE':
+                if (! $object_id) self::respondAndDie (404, 'No object id specified.');
+                $object = new $class();
+                $object->loadForWrite($object_id);
+                if (! $object->canAccess()) self::respondAndDie(403, 'You don\'t have the permission to access this object.');
+                $result = $object->canDelete();
+                if ($result !== true) self::respondAndDie(403, 'You cannot delete object with id: '.$object_id.'. Reason: '.$result);
+                $result = $object->delete();
+                if ($result) self::respondAndDie (200, json_encode(true));
+                else self::respondAndDie (500, json_encode(false));
             default:
                 self::respondAndDie(405, 'Cannot handle request method: '.$_SERVER['REQUEST_METHOD']);
         }
@@ -139,6 +162,11 @@ class Api {
         http_response_code($code);
         echo $message;
         exit;
+    }
+    
+    public function setInstanceID($instance_id) {
+        Errorhandler::checkParams($instance_id, 'int');
+        $this->preset_instanceid = $instance_id;
     }
     
     /**
