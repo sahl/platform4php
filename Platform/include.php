@@ -28,8 +28,8 @@ session_start();
 if (\Platform\Translation::isEnabled()) {
     \Platform\Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);
     foreach ($preload_list as $script) \Platform\Translation::prepareTranslationsForFile(__DIR__.$script);
-    Platform\Design::queueJSFile('/Platform/Translation/js/translation.js');
 }
+Platform\Design::queueJSFile('/Platform/Translation/js/translation.js');
 
 // Register shutdown
 register_shutdown_function('Platform\\Errorhandler::shutdown');

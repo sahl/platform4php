@@ -5,6 +5,8 @@ $platform_language = array();
 
 class Translation {
     
+    private static $translations_loaded_file_table = array();
+    
     /**
      * Build CSV files ready for translation from the translation files already in the system.
      */
@@ -397,11 +399,27 @@ class Translation {
     public static function prepareTranslationsForFile($original_file) {
         global $platform_language;
         \Platform\Errorhandler::checkParams($original_file, 'string');
+        self::$translations_loaded_file_table[] = $original_file;
         foreach (self::getLanguagesToLoad() as $language_key) {
             $translation_file = self::getTranslationFileFromOriginalFile($original_file, $language_key);
+            if ($_POST['powerdebug']) echo "\nTrying: ".$translation_file;
             if (file_exists($translation_file)) {
                 include_once $translation_file;
+            } else {
+                if ($_POST['powerdebug']) echo "NOT FOUND!";
             }
+        }
+    }
+    
+    /**
+     * This will reload translations for all php files, where translations have
+     * already been loaded.
+     */
+    public static function reloadAllTranslations() {
+        self::$languages_to_load = false;
+        foreach (self::$translations_loaded_file_table as $original_file) {
+            if ($_POST['powerdebug']) echo "\nRELOAD FOR: ".$original_file;
+            self::prepareTranslationsForFile($original_file);
         }
     }
     
@@ -481,7 +499,10 @@ class Translation {
     public static function setInstanceLanguage($language_key) {
         \Platform\Errorhandler::checkParams($language_key, 'string');
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
+        // Check if this language is something which isn't loaded yet
+        $new_language = ! in_array($language_key, self::getLanguagesToLoad());
         \Platform\UserProperty::setPropertyForUser(0, 'instance_language', '', $language_key);
+        if ($new_language) self::reloadAllTranslations();
     }
     
     /**
@@ -491,7 +512,10 @@ class Translation {
     public static function setUserLanguage($language_key) {
         \Platform\Errorhandler::checkParams($language_key, 'string');
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
+        // Check if this language is something which isn't loaded yet
+        $new_language = ! in_array($language_key, self::getLanguagesToLoad());
         setcookie('platform_translation_language', $language_key, time()+60*60*24*360, '/');
+        if ($new_language) self::reloadAllTranslations();
     }
     
     /**
