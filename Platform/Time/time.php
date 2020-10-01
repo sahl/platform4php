@@ -296,6 +296,14 @@ class Time {
     }
     
     /**
+     * Check if this time is null ie. not set at all
+     * @return boolean True if not set
+     */
+    public function isNull() {
+        return $this->timestamp === null;
+    }
+    
+    /**
      * Check if this date is the same date as another time
      * @param \Platform\Time $other_time
      * @return boolean

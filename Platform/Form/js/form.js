@@ -83,6 +83,7 @@ $.fn.clearForm = function() {
     this.find('iframe').each(function() {
         $(this).prop('src', $(this).prop('src'));
     })
+    this.trigger('dataloaded');
     return this;
 }
 

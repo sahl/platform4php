@@ -1026,10 +1026,9 @@ class Datarecord implements DatarecordReferable {
         $form->setEvent('save_'.$baseclass);
         $script = self::getEditScript();
         if ($script) $form->setScript($script);
-        $form->addField(new FieldHidden('', static::getKeyField()));
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
-            if ($definition['readonly'] || $definition['invisible']) continue;
+            if ($definition['readonly']) continue;
             $field = static::getFormFieldFromDefinition($key, $definition);
             if ($field === null) continue;
             // Check for additional rendering
@@ -1066,6 +1065,9 @@ class Datarecord implements DatarecordReferable {
         Errorhandler::checkParams($name, 'string', $definition, 'array');
         $options = array();
         if ($definition['required']) $options['required'] = true;
+        if ($definition['invisible']) {
+            return new FieldHidden('', $name);
+        }
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_TEXT:
                 return new FieldText($definition['label'], $name, $options);
