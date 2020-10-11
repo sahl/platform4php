@@ -1,0 +1,22 @@
+body {
+    font-family: arial;
+    background: #A2E0BA;
+}
+
+.errors {
+    max-width: 650px;
+    margin: 40px auto 40px auto;
+    background: #FFDDDD;
+    padding: 20px;
+    border: 1px solid #FF0000;
+    box-shadow: 3px 3px 5px;    
+}
+
+.content {
+    max-width: 650px;
+    margin: 40px auto 40px auto;
+    background: #EEEEEE;
+    padding: 20px;
+    border: 1px solid #FFFFDD;
+    box-shadow: 3px 3px 5px;
+}
