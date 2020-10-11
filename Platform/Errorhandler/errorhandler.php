@@ -15,6 +15,20 @@ class Errorhandler {
     private static $measure_time_start = false;
 
     /**
+     * Check if we have the desired amount of memory available.
+     * @param float $needed_in_mb Memory needed in MB
+     * @param boolean $die_if_not_available If set to true, the script will terminate with an error, if we don't have the memory
+     * @return boolean
+     */
+    public static function checkMemory($needed_in_mb = 1, $die_if_not_available = true) {
+        $used_memory = memory_get_usage();
+        $requested_memory_in_bytes = $needed_in_mb * 1024 * 1024;
+        $memory_exceeded = ($used_memory + $requested_memory_in_bytes > self::getMemoryLimitInBytes());
+        if ($memory_exceeded && $die_if_not_available) trigger_error(number_format((self::getMemoryLimitInBytes()-memory_get_usage())/(1024*1024),2).' mb until out of memory.', E_USER_ERROR);
+        return ! $memory_exceeded;
+    }
+    
+    /**
      * Check type of parameters. Pass sets of variables and type keywords.
      */
     public static function checkParams() {
@@ -101,6 +115,32 @@ class Errorhandler {
     
     public static function getMeasures() {
         return self::$measures;
+    }
+    
+    /**
+     * Get maximum allowed memory size in bytes
+     * @return int
+     */
+    public static function getMemoryLimitInBytes() {
+        $memory_limit = ini_get('memory_limit');
+        if ($memory_limit == -1) return PHP_INT_MAX;
+        
+        $unit = strtolower(mb_substr($memory_limit, -1));
+        $bytes = (int)mb_substr($memory_limit, 0, -1);
+
+        switch ($unit) {
+            case 'k':
+                $bytes *= 1024;
+                break;
+            case 'm':
+                $bytes *= 1024*1024;
+              break;
+           case 'g':
+              $bytes *= 1024*1024*1024;
+              break;
+        }
+
+        return $bytes;
     }
     
     private static $measures = array();

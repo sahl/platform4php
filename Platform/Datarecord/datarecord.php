@@ -1002,6 +1002,7 @@ class Datarecord implements DatarecordReferable {
                 return $value === null ? 'NULL' : (double)$value;
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+            case self::FIELDTYPE_ENUMERATION_MULTI:
                 return '\''.Database::escape(json_encode($value)).'\'';
             case self::FIELDTYPE_OBJECT:
                 return '\''.Database::escape(serialize($value)).'\'';
@@ -1114,6 +1115,9 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_ENUMERATION:
                 $options['options'] = $definition['enumeration'];
                 return new FieldSelect($definition['label'], $name, $options);
+            case self::FIELDTYPE_ENUMERATION_MULTI:
+                $options['options'] = $definition['enumeration'];
+                return new FieldMulticheckbox($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 return new FieldMultidatarecordcombobox($definition['label'], $name, array('class' => $definition['foreign_class']));
                 /*
@@ -1164,6 +1168,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_DATE:
                 return $this->getRawValue($field)->getReadable('Y-m-d');
             case self::FIELDTYPE_ENUMERATION:
+            case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_HTMLTEXT:
                 return $this->getRawValue($field);
             case self::FIELDTYPE_FILE:
@@ -1197,6 +1202,13 @@ class Datarecord implements DatarecordReferable {
                 return $this->getRawValue($field) ? '<a href="mailto:'.$this->getRawValue($field).'">'.$this->getRawValue($field).'</a>' : '';
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
+            case self::FIELDTYPE_ENUMERATION_MULTI:
+                $result = array();
+                foreach ($this->getRawValue($field) as $item) {
+                    $result[] = static::$structure[$field]['enumeration'][$this->getRawValue($field)];
+                }
+                sort($result);
+                return $result;
             case self::FIELDTYPE_DATETIME:
                 return $this->getRawValue($field)->getReadable();
             case self::FIELDTYPE_DATE:
@@ -1350,6 +1362,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_DATETIME:
                 return 'DATETIME';
             case self::FIELDTYPE_ARRAY:
+            case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
             case self::FIELDTYPE_BIGTEXT:
@@ -1390,6 +1403,7 @@ class Datarecord implements DatarecordReferable {
         if (! isset(static::$structure[$field])) return null;
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_ARRAY:
+            case self::FIELDTYPE_ENUMERATION_MULTI:
                 return is_array($this->values[$field]) ? $this->values[$field] : array();
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
@@ -1475,6 +1489,7 @@ class Datarecord implements DatarecordReferable {
         foreach (static::$structure as $key => $definition) {
             switch ($definition['fieldtype']) {
                 case self::FIELDTYPE_ARRAY:
+                case self::FIELDTYPE_ENUMERATION_MULTI:
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
                     if (array_diff($this->values[$key], $this->values_on_load[$key]) || array_diff($this->values_on_load[$key], $this->values[$key])) return true;
                     break;
@@ -1604,6 +1619,7 @@ class Datarecord implements DatarecordReferable {
                     $this->values[$key] = $value;
                     break;
                 case self::FIELDTYPE_ARRAY:
+                case self::FIELDTYPE_ENUMERATION_MULTI:
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
                     $this->setValue($key, json_decode($value, true));
                     break;
@@ -1988,6 +2004,13 @@ class Datarecord implements DatarecordReferable {
                 if ($value !== null && ! isset(static::$structure[$field]['enumeration'][$value])) trigger_error('Tried to set invalid ENUMERATION value '.$value.' in field: '.$field, E_USER_ERROR);
                 $this->values[$field] = (int)$value;
                 break;
+            case self::FIELDTYPE_ENUMERATION_MULTI:
+                // Fail if trying to set invalid value.
+                Errorhandler::checkParams($value, 'array');
+                foreach ($value as $element)
+                    if (! isset(static::$structure[$field]['enumeration'][$element])) trigger_error('Tried to set invalid ENUMERATION value '.$element.' in field: '.$field, E_USER_ERROR);
+                $this->values[$field] = $value;
+                break;
             case self::FIELDTYPE_INTEGER:
                 $this->values[$field] = is_numeric($value) ? (int)$value : null;
                 break;
@@ -2150,6 +2173,7 @@ class Datarecord implements DatarecordReferable {
     const FIELDTYPE_ARRAY = 100;
     const FIELDTYPE_OBJECT = 103;
     const FIELDTYPE_ENUMERATION = 101;
+    const FIELDTYPE_ENUMERATION_MULTI = 102;
     
     
     const FIELDTYPE_PASSWORD = 300;
