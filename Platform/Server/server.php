@@ -35,12 +35,14 @@ class Server extends Datarecord {
     }
  
     /**
-     * Ensure that the server table holds at least one server, and tries to
-     * make it this server.
+     * Ensure that the server table holds the current server.
      */
     public static function ensureThisServer() {
-        if (! count(static::getTitleAsArray())) {
-            static::purge();
+        if (! $_SERVER['HTTP_HOST']) return;
+        $filter = new Filter('\\Platform\\Server');
+        $filter->addCondition(new ConditionMatch('hostname', $_SERVER['HTTP_HOST']));
+        $collection = $filter->execute();
+        if (! $collection->getCount()) {
             $server = new Server(array(
                 'title' => $_SERVER['SERVER_NAME'],
                 'hostname' => $_SERVER['HTTP_HOST'],
@@ -66,10 +68,9 @@ class Server extends Datarecord {
      * @return \Platform\Server
      */
     public static function getThisServer() {
-        global $platform_configuration;
-        $server = new Server();
-        $server->loadForRead($platform_configuration['server_id']);
-        return $server;
+        $filter = new Filter('\\Platform\\Server');
+        $filter->addCondition(new ConditionMatch('hostname', $_SERVER['HTTP_HOST']));
+        return $filter->executeAndGetFirst();
     }
     
     /**
@@ -78,7 +79,7 @@ class Server extends Datarecord {
      */
     public function isThisServer() {
         global $platform_configuration;
-        return $this->server_id = $platform_configuration['server_id'];
+        return $_SERVER['HTTP_HOST'] == $this->hostname;
     }
 
     /**

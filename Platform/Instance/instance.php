@@ -42,6 +42,7 @@ class Instance extends Datarecord {
     public function activate() {
         $_SESSION['platform']['activeinstance'] = $this->instance_id;
         $_SESSION['platform']['instancedatabase'] = $this->getDatabaseName();
+        Database::useInstance();
     }
     
     /**
@@ -50,7 +51,7 @@ class Instance extends Datarecord {
      */
     private function createDatabase() {
         if ($this->is_initiated || ! $this->isInDatabase()) return false;
-        $result = Database::globalQuery("CREATE DATABASE ".$this->getDatabaseName()." CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        $result = Database::localQuery("CREATE DATABASE ".$this->getDatabaseName()." CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
         if (! $result) return false;
         $this->is_initiated = true;
         return true;
@@ -82,7 +83,7 @@ class Instance extends Datarecord {
         $databasename = $this->getDatabaseName();
         $result = parent::delete($force_remove);
         if ($result && $this->is_initiated) {
-            Database::globalQuery("DROP DATABASE ".$this->getDatabaseName(), false);
+            Database::localQuery("DROP DATABASE ".$databasename, false);
         }
         return $result;
     }

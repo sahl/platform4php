@@ -399,7 +399,7 @@ class Translation {
     public static function prepareTranslationsForFile($original_file) {
         global $platform_language;
         \Platform\Errorhandler::checkParams($original_file, 'string');
-        self::$translations_loaded_file_table[] = $original_file;
+        if (! in_array($original_file, self::$translations_loaded_file_table)) self::$translations_loaded_file_table[] = $original_file;
         foreach (self::getLanguagesToLoad() as $language_key) {
             $translation_file = self::getTranslationFileFromOriginalFile($original_file, $language_key);
             if ($_POST['powerdebug']) echo "\nTrying: ".$translation_file;

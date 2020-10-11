@@ -10,10 +10,10 @@ class Database {
     private static $global_connection = false;
     
     /**
-     * Used to carry the instance database connection.
+     * Used to carry the local database connection.
      * @var resource
      */
-    private static $instance_connection = false;
+    private static $local_connection = false;
     
     /**
      * Id of connected instance.
@@ -54,35 +54,29 @@ class Database {
     /**
      * Connect to the global database
      * @global array $platform_configuration Global configuration
+     * @return boolean True if connected
      */
     public static function connectGlobal() {
         global $platform_configuration;
         if (self::$global_connection === false) {
-            self::$global_connection = mysqli_connect($platform_configuration['global_database_server'], $platform_configuration['global_database_username'], $platform_configuration['global_database_password'], $platform_configuration['global_database_name']);
-            if (! self::$global_connection) {
-                trigger_error('Failed to connect to database '.mysqli_error(self::$global_connection), E_USER_ERROR);
-            }
+            self::$global_connection = @mysqli_connect($platform_configuration['global_database_server'], $platform_configuration['global_database_username'], $platform_configuration['global_database_password']);
+            if (! self::$global_connection) return false;
             mysqli_set_charset(self::$global_connection,"utf8mb4");        
         }
+        return true;
     }
     
     /**
      * Connect to the global database
      * @global array $platform_configuration Global configuration
      */
-    public static function connectInstance() {
+    public static function connectLocal() {
         global $platform_configuration;
-        $instance = Instance::getActiveInstanceID();
-        if (! $instance) trigger_error('Tried to connect to instance database without having an active instance.', E_USER_ERROR);
-        if (self::$instance_connection === false) {
-            self::$instance_connection = mysqli_connect($platform_configuration['local_database_server'], $platform_configuration['local_database_username'], $platform_configuration['local_database_password'], Instance::getActiveDatabaseName());
-            if (! self::$instance_connection) {
-                trigger_error('Failed to connect to database '.mysqli_error(self::$instance_connection), E_USER_ERROR);
-            }
-            self::$connected_instance = $instance;
-            mysqli_set_charset(self::$instance_connection,"utf8mb4");        
+        if (self::$local_connection === false) {
+            self::$local_connection = @mysqli_connect($platform_configuration['local_database_server'], $platform_configuration['local_database_username'], $platform_configuration['local_database_password']);
+            if (! self::$local_connection) return false;
         }
-        if ($instance != self::$connected_instance) mysqli_select_db (self::$instance_connection, Instance::getActiveDatabaseName ());
+        return true;
     }
 
     /**
@@ -90,6 +84,15 @@ class Database {
      */
     public static function enableQueryCache() {
         self::$query_cache_enabled = true;
+    }
+    
+    /**
+     * Ensure that the global database exists and is created.
+     * @return boolean True if database exists or was created.
+     */
+    public static function ensureGlobalDatabase() {
+        global $platform_configuration;
+        return self::globalQuery("CREATE DATABASE IF NOT EXISTS ".$platform_configuration['global_database_name'], false) !== false;
     }
 
     /**
@@ -100,6 +103,22 @@ class Database {
     public static function escape($string) {
         Errorhandler::checkParams($string, 'string');
         return mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C]', '\\\0', $string);
+    }
+    
+    /**
+     * Get the last error message on the global connection
+     * @return string
+     */
+    public static function getLastGlobalError() {
+        return mysqli_error(self::$global_connection);
+    }
+    
+    /**
+     * Get the last error message on the local connection
+     * @return string
+     */
+    public static function getLastLocalError() {
+        return mysqli_error(self::$local_connection);
     }
     
     /**
@@ -150,7 +169,9 @@ class Database {
     public static function globalQuery($query, $fail_on_error = true) {
         Errorhandler::checkParams($query, 'string', $fail_on_error, 'boolean');
         if (self::$global_connection === false) {
-            self::connectGlobal();
+            $result = self::connectGlobal();
+            if (! $result) trigger_error('Could not connect to global database. Error: '.mysqli_error (self::$global_connection), E_USER_ERROR);
+            self::useGlobal();
         }
         $resultset = mysqli_query(self::$global_connection, $query);
         if (self::$query_cache_enabled) self::cacheQuery($query);
@@ -165,7 +186,7 @@ class Database {
      * @return int Number of rows affected
      */
     public static function instanceAffected() {
-        return mysqli_affected_rows(self::$instance_connection);
+        return mysqli_affected_rows(self::$local_connection);
     }
     
     /**
@@ -173,7 +194,7 @@ class Database {
      * @return int Inserted key
      */
     public static function instanceGetInsertedKey() {
-        return mysqli_insert_id(self::$instance_connection);
+        return mysqli_insert_id(self::$local_connection);
     }
     
     /**
@@ -190,20 +211,41 @@ class Database {
     }
     
     /**
-     * Query the global database
+     * Query the instance database
      * @param string $query SQL query to carry out
      * @param boolean $fail_on_error Set to true if a SQL error should trigger a php error.
      * @return boolean|resource Result set or false if an error occured.
      */
     public static function instanceQuery($query, $fail_on_error = true) {
         Errorhandler::checkParams($query, 'string', $fail_on_error, 'boolean');
-        if (self::$instance_connection === false) {
-            self::connectInstance();
+        if (self::$local_connection === false) {
+            $result = self::connectLocal();
+            if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$global_connection), E_USER_ERROR);
+            self::useInstance();
         }
-        $result_set = mysqli_query(self::$instance_connection, $query);
+        $result_set = mysqli_query(self::$local_connection, $query);
         if (self::$query_cache_enabled) self::cacheQuery($query);
-        if ($result_set === false && $fail_on_error) trigger_error('Database error: '.mysqli_error(self::$instance_connection).' when executing '.$query, E_USER_ERROR);
+        if ($result_set === false && $fail_on_error) trigger_error('Database error: '.mysqli_error(self::$local_connection).' when executing '.$query, E_USER_ERROR);
         self::$instance_queries++;
+        self::$total_queries++;
+        return $result_set;
+    }
+    
+    /**
+     * Query the local database
+     * @param string $query SQL query to carry out
+     * @param boolean $fail_on_error Set to true if a SQL error should trigger a php error.
+     * @return boolean|resource Result set or false if an error occured.
+     */
+    public static function localQuery($query, $fail_on_error = true) {
+        Errorhandler::checkParams($query, 'string', $fail_on_error, 'boolean');
+        if (self::$local_connection === false) {
+            $result = self::connectLocal();
+            if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$global_connection), E_USER_ERROR);
+        }
+        $result_set = mysqli_query(self::$local_connection, $query);
+        if (self::$query_cache_enabled) self::cacheQuery($query);
+        if ($result_set === false && $fail_on_error) trigger_error('Database error: '.mysqli_error(self::$local_connection).' when executing '.$query, E_USER_ERROR);
         self::$total_queries++;
         return $result_set;
     }
@@ -225,6 +267,35 @@ class Database {
      */
     public static function renderStats() {
         echo '<div><b>Total:</b> '.self::$total_queries.'</div>';
+    }
+
+    /**
+     * Use the global database on the global connection.
+     * @global array $platform_configuration Platform configuration
+     */
+    public static function useGlobal() {
+        global $platform_configuration;
+        if (self::$global_connection === false) {
+            $result = self::connectGlobal();
+            if (! $result) trigger_error('Failed to connect to global database '.mysqli_error(self::$global_connection), E_USER_ERROR);
+        }
+        $result = mysqli_select_db(self::$global_connection, $platform_configuration['global_database_name']);
+        if (! $result) trigger_error('Failed to use to global database '.mysqli_error(self::$global_connection), E_USER_ERROR);
+    }
+
+    /**
+     * Use the active instance database on the local connection. This will fail
+     * if an instance isn't activated yet.
+     */
+    public static function useInstance() {
+        $instance = Instance::getActiveInstanceID();
+        if (! $instance) trigger_error('Tried to use instance database without having an active instance.', E_USER_ERROR);
+        if ($instance == self::$connected_instance) return;
+        if (self::$local_connection === false) self::connectLocal();
+        $result = mysqli_select_db(self::$local_connection, Instance::getActiveDatabaseName());
+        if (! $result) trigger_error('Failed to use to instance database '.mysqli_error(self::$local_connection), E_USER_ERROR);
+        self::$connected_instance = $instance;
+        return true;
     }
     
 }
