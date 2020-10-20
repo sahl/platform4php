@@ -76,6 +76,7 @@ class Database {
             self::$local_connection = @mysqli_connect($platform_configuration['local_database_server'], $platform_configuration['local_database_username'], $platform_configuration['local_database_password']);
             if (! self::$local_connection) return false;
         }
+        mysqli_set_charset(self::$local_connection, 'utf8mb4');
         return true;
     }
 

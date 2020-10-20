@@ -769,7 +769,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function fillDefaultValues() {
         foreach ($this->getStructure() as $key => $definition) {
-            if ($definition['default_value']) $this->setValue($key, $definition['default_value']);
+            if (isset($definition['default_value'])) $this->setValue($key, $definition['default_value']);
         }
     }
 
