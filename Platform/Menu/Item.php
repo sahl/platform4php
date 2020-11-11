@@ -79,6 +79,25 @@ class MenuItem {
     }
     
     /**
+     * Get HTML for this menu item.
+     * @return string
+     */
+    public function getHTML() {
+        $result = '<a';
+        if ($this->url) $result .= ' href="'.$this->url.'"';
+        if ($this->id) $result .= ' id="'.$this->id.'"';
+        $result .= ' class="platform_menuitem';
+        if ($this->classes) $result .= ' '.$this->classes;
+        $result .= '"';
+        if (count($this->data))
+            foreach ($this->data as $key => $value) $result .= ' data-'.$key.'="'.$value.'"';
+        $result .= '>';
+        if ($this->icon) $result .= '<i class="fa '.$this->icon.'"></i> ';
+        $result .= $this->text.'</a>';
+        return $result;
+    }
+    
+    /**
      * Does this menuitem have a submenu
      * @return boolean
      */
@@ -90,16 +109,6 @@ class MenuItem {
      * Renders this menu item
      */
     public function render() {
-        echo '<a';
-        if ($this->url) echo ' href="'.$this->url.'"';
-        if ($this->id) echo ' id="'.$this->id.'"';
-        echo ' class="platform_menuitem';
-        if ($this->classes) echo ' '.$this->classes;
-        echo '"';
-        if (count($this->data))
-            foreach ($this->data as $key => $value) echo ' data-'.$key.'="'.$value.'"';
-        echo '>';
-        if ($this->icon) echo '<i class="fa '.$this->icon.'"></i> ';
-        echo $this->text.'</a>';
+        echo $this->getHTML();
     }
 }

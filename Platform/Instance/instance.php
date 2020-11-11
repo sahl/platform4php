@@ -51,7 +51,7 @@ class Instance extends Datarecord {
      */
     private function createDatabase() {
         if ($this->is_initiated || ! $this->isInDatabase()) return false;
-        $result = Database::localQuery("CREATE DATABASE ".$this->getDatabaseName()." CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+        $result = Database::localQuery("CREATE DATABASE ".$this->getDatabaseName()." CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", false);
         if (! $result) return false;
         $this->is_initiated = true;
         return true;

@@ -1424,6 +1424,17 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get a default filter for this class to use for current user. This can
+     * be used to improve performance, if the user is only allowed to see a 
+     * subset of the data.
+     * @return \Platform\Filter
+     */
+    public static function getDefaultFilter() {
+        $filter = new Filter(get_called_class());
+        return $filter;
+    }
+    
+    /**
      * Get a edit complex for this Datarecord
      * @return \Platform\DatarecordEditComplex
      */
@@ -1494,7 +1505,7 @@ class Datarecord implements DatarecordReferable {
                     if (array_diff($this->values[$key], $this->values_on_load[$key]) || array_diff($this->values_on_load[$key], $this->values[$key])) return true;
                     break;
                 case self::FIELDTYPE_DATETIME:
-                    if (! $this->values[$key]->equalTo($this->values_on_load[$key])) return true;
+                    if (! $this->values[$key]->isEqualTo($this->values_on_load[$key])) return true;
                     break;
                 default:
                     if ($this->values[$key] !== $this->values_on_load[$key]) return true;
@@ -1504,6 +1515,18 @@ class Datarecord implements DatarecordReferable {
         return false;
     }
     
+    /**
+     * Check if this object have changed since it was loaded (in regards to fields
+     * that are actually saved in the database).
+     */
+    public function isChanged() {
+        foreach (static::$structure as $key => $definition) {
+            if ($definition['store_in_database'] !== false && $this->values[$key] != $this->values_on_load[$key]) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     /**
      * Determines if this is stored in the database.
@@ -1596,7 +1619,14 @@ class Datarecord implements DatarecordReferable {
         $metadata = array();
         foreach (static::$structure as $key => $definition) {
             if (! $definition['store_in_metadata']) continue;
-            $metadata[$key] = $this->values[$key];
+            switch ($definition['fieldtype']) {
+                case self::FIELDTYPE_DATE:
+                case self::FIELDTYPE_DATETIME:
+                    $metadata[$key] = $this->values[$key]->get();
+                    break;
+                default:
+                    $metadata[$key] = $this->values[$key];
+            }
         }
         $this->setValue('metadata', $metadata);
     }
@@ -1755,6 +1785,21 @@ class Datarecord implements DatarecordReferable {
         $changed = static::ensureInDatabase();
         if ($changed) $errors[] = 'Database was changed even though there should be no changes. This is probably a problem with Platform.';
         
+        // Check definitions
+        $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'form_size', 'calculations', 'default_value', 'invisible',
+            'fieldtype', 'label', 'columnvisibility', 'default',
+            'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup');
+        
+        foreach (static::getStructure() as $field => $definition) {
+            foreach ($definition as $key => $value) {
+                if (! in_array($key, $valid_definitions)) $errors[] = $field.': Property '.$key.' is not a valid Platform property.';
+            }
+            // Do some specific integrity
+            if ($definition['fieldtype'] == self::FIELDTYPE_ENUMERATION && ! is_array($definition['enumeration'])) $errors[] = $field.': Enumeration type without enumeration table.';
+            if ($definition['fieldtype'] != self::FIELDTYPE_ENUMERATION && is_array($definition['enumeration'])) $errors[] = $field.': Enumeration table assigned to non-enumeration field.';
+            if ($definition['foreign_class'] && ! in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER))) $errors[] = $field.': A foreign class was provided but field is not relation type.';
+        }
+        
         // Check references
         foreach (static::getStructure() as $field => $definition) {
             switch ($definition['fieldtype']) {
@@ -1786,7 +1831,7 @@ class Datarecord implements DatarecordReferable {
             else {
                 $hit = false;
                 foreach ($foreign_class::getStructure() as $field => $definition) {
-                    if ($definition['foreign_class'] == get_called_class()) {
+                    if ($definition['foreign_class'] == get_called_class() || is_subclass_of(get_called_class(), $definition['foreign_class'])) {
                         $hit = true;
                         break;
                     }
@@ -1866,13 +1911,7 @@ class Datarecord implements DatarecordReferable {
         $change = true;
         if (! $force_save && $this->isInDatabase()) {
             // Check if anything have changed?
-            $change = false;
-            foreach (static::$structure as $key => $definition) {
-                if ($definition['store_in_database'] !== false && $this->values[$key] != $this->values_on_load[$key]) {
-                    $change = true;
-                    break;
-                }
-            }
+            $change = $this->isChanged();
             if (! $change) {
                 if (! $keep_open_for_write) $this->unlock();
                 return false;
