@@ -310,7 +310,11 @@ class Translation {
      */
     public static function getInstanceLanguage() {
         if (! \Platform\Instance::getActiveInstanceID()) return self::getConfiguration('default_language');
-        return \Platform\UserProperty::getPropertyForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
+        if (! $_SESSION['platform']['instance_language'] || \Platform\Instance::getActiveInstanceID() != $_SESSION['platform']['instance_language_id']) {
+            $_SESSION['platform']['instance_language_id'] = \Platform\Instance::getActiveInstanceID();
+            $_SESSION['platform']['instance_language'] = \Platform\UserProperty::getPropertyForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
+        }
+        return $_SESSION['platform']['instance_language'];
     }
 
     /**
@@ -351,8 +355,8 @@ class Translation {
     }
     
     /**
-     * Get the current user language. First try from cookie, then from browser and
-     * at last select the default language
+     * Get the current user language. First try from cookie, then from browser, then from instance
+     * and at last select the default language
      * @return string Language key
      */
     public static function getUserLanguage() {
@@ -361,7 +365,7 @@ class Translation {
         foreach (self::getLanguageCodeFromHTTP() as $language_key) {
             if (in_array($language_key, $valid_languages)) return $language_key;
         }
-        return self::getConfiguration('default_language');
+        return self::getInstanceLanguage();
     }
 
     /**
