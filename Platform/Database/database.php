@@ -242,7 +242,7 @@ class Database {
         Errorhandler::checkParams($query, 'string', $fail_on_error, 'boolean');
         if (self::$local_connection === false) {
             $result = self::connectLocal();
-            if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$global_connection), E_USER_ERROR);
+            if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$local_connection), E_USER_ERROR);
         }
         $result_set = mysqli_query(self::$local_connection, $query);
         if (self::$query_cache_enabled) self::cacheQuery($query);
