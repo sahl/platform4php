@@ -114,6 +114,14 @@ function install_test_all(&$errors) {
                 if ($result) {
                     $result = Database::instanceQuery("CREATE TABLE temp_table (id INT NOT NULL)", false);
                     if (! $result) $errors[] = 'Could not create table in newly created database. Error: '.Database::getLastLocalError();
+                    else {
+                        $result = Database::instanceQuery("INSERT INTO temp_table VALUES (24)", false);
+                        if (! $result) $errors[] = 'Could not insert into newly created database. Error: '.Database::getLastLocalError();
+                        else {
+                            $result = Database::instanceQuery("SELECT id FROM temp_table", false);
+                            if (! $result) $errors[] = 'Could not select from newly created database. Error: '.Database::getLastLocalError();
+                        }
+                    }
                 } else {
                     $errors[] = 'Could not use newly created database. Error: '.Database::getLastLocalError();
                 }
