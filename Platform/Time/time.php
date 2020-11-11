@@ -17,13 +17,14 @@ class Time {
     
     /**
      * Construct a new Time object
-     * @param mixed $time Either another time object to copy, a time string, "now" for current time or "today" for today at midnight.
+     * @param mixed $time Either another time object to copy, a time string, a time stamp, "now" for current time or "today" for today at midnight.
      */
     public function __construct($time = null) {
-        Errorhandler::checkParams($time, array('string', '\\Platform\\Time'));
+        Errorhandler::checkParams($time, array('string', '\\Platform\\Time', 'integer'));
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
         elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
+        elseif (is_integer($time)) $this->timestamp = $time;
         elseif ($time) $this->timestamp = strtotime($time);
     }
     
@@ -58,16 +59,6 @@ class Time {
         }
         $this->timestamp += 24*60*60*$days;
         return $this;
-    }
-    
-    /**
-     * Check if this timestamp is equal to another timestamp
-     * @param Time $other_time Other time
-     * @return boolean
-     */
-    public function equalTo($other_time) {
-        Errorhandler::checkParams($other_time, '\\Platform\\Time');
-        return $this->timestamp == $other_time->getTimestamp();
     }
     
     /**
@@ -294,6 +285,16 @@ class Time {
         if ($this->timestamp === null || $other_time->getTimestamp() === null) return false;
         return $this->timestamp < $other_time->getTimestamp();
     }
+    
+    /**
+     * Check if this timestamp is equal to another timestamp
+     * @param Time $other_time Other time
+     * @return boolean
+     */
+    public function isEqualTo($other_time) {
+        Errorhandler::checkParams($other_time, '\\Platform\\Time');
+        return $this->timestamp == $other_time->getTimestamp();
+    }    
     
     /**
      * Check if this time is null ie. not set at all
