@@ -46,18 +46,17 @@ class User extends DatarecordExtensible {
      * Try to login with a user name and password
      * @param string $username
      * @param string $password
-     * @param boolean $resume_if_possible If this is true, the system will try
-     * to return to a previously saved location.
+     * @param int $expire The number of seconds for the login to live
      * @return mixed An accesstoken or false if no login.
      */
-    public static function tryLogin($username, $password) {
+    public static function tryLogin($username, $password, $expire = 60*60*6) {
         $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('username', $username));
         $filter->addCondition(new ConditionMatch('password', $password));
         $result = $filter->execute();
         if ($result->getCount()) {
             $user = $result->get(0);
-            $token = Accesstoken::acquire($user, 60*60*6);
+            $token = Accesstoken::acquire($user, $expire);
             return $token;
         }
         return false;
