@@ -159,6 +159,15 @@ class File extends Datarecord {
     }
     
     /**
+     * Get the content of this file as binary data
+     * @return mixed binary data or false if no content
+     */
+    public function getFileContent() {
+        if (!file_exists($this->getCompleteFilename())) return false;
+        return file_get_contents($this->getCompleteFilename());
+    }
+    
+    /**
      * Get the current filename without extension
      * @return string
      */
