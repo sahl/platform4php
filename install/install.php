@@ -5,7 +5,7 @@ if (! $_SERVER['DOCUMENT_ROOT']) die('Couldn\'t read $_SERVER[\'DOCUMENT_ROOT\']
 
 // Check if platform is there
 $include_file = $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
-if (! file_exists($include_file)) die('Couldn\'t locate Platform4PHP in '.$_SERVER['DOCUMENT_ROOT'].'/Platform/');
+if (! file_exists($include_file)) die('Couldn\'t locate Platform4PHP in '.$_SERVER['DOCUMENT_ROOT'].'Platform/ (Are you missing a / on DOCUMENT_ROOT?)');
 
 // Direct test
 $perform_test = $_GET['dotest'] == 1;
@@ -23,7 +23,7 @@ if (! file_exists($configuration_file)) {
 include $include_file;
 
 // Check administrator login if configured.
-if ($platform_configuration['administrator_password']) Administrator::checkLogin ();
+if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
 
 // Get install configuration form
 $install_form = new Form('install_form', 'install.frm');
@@ -46,32 +46,29 @@ $install_form->setValues($platform_configuration);
 $errors = array();
 
 if ($install_form->isSubmitted() && $install_form->validate()) {
-    // Try to write configuration to file
-    $fh = fopen($configuration_file, 'w');
-    if ($fh !== false) {
-        fwrite($fh, "<?php\n\$platform_configuration = array(\n");
-        $form_values = $install_form->getValues();
-        foreach ($form_values as $key => $value) {
-            $platform_configuration[$key] = $value;
-            fwrite($fh, "\t'$key' => '".str_replace("'", "\\'", $value)."',\n");
-        }
-        fwrite($fh, ");\n");
-        fclose($fh);
-        $perform_test = true;
-    } else {
-        $errors[] = 'Could not open '.$configuration_file.' for writing. Configuration was not saved!';
-    }
+    $perform_test = true;
+    Platform::setConfigurationFromArray($install_form->getValues());
 }
 
 if ($perform_test) {
     // Time to test
     install_test_all($errors);
     
-    // Go to main if test was OK
-    if (! count($errors)) Page::redirect ('index.php');
+    // Continue if no errors
+    if (! count($errors)) {
+        // Delve and ensure server
+        $server_id = Server::ensureThisServer();
+        if (! $server_id) $errors[] = 'Could not identify server. Make sure HTTP_HOST is set.';
+        else {
+            Platform::setConfiguration('server_id', $server_id);
+            Platform::writeConfigurationFile();
+            sleep(1);
+            Page::redirect ('index.php');
+        }
+    }
 }
 
-Design::renderPagestart('Install Platform4PHP', 'index.js', 'index.css');
+Design::renderPagestart('Install Platform4PHP', 'install.js', 'install.css');
 
 if ($errors) {
     echo '<div class="errors">We encountered one or more errors trying to get Platform4PHP to work!<ul><li>';
@@ -82,6 +79,9 @@ if ($errors) {
 $install_form->render();
 
 Design::renderPageend();
+
+
+
 
 function install_get_config_file_name() {
     return install_get_parent_dir().'/platform_config.php';
@@ -185,7 +185,6 @@ function install_test_all(&$errors) {
         // We can do the last stuff
         Database::useGlobal();
         Server::ensureInDatabase();
-        Server::ensureThisServer();
         Instance::ensureInDatabase();
         Job::ensureInDatabase();
     }
