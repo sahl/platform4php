@@ -1003,7 +1003,14 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
             case self::FIELDTYPE_ENUMERATION_MULTI:
-                return '\''.Database::escape(json_encode($value)).'\'';
+                // Force string encoding
+                if (is_array($value)) {
+                    $finalvalue = array();
+                    foreach ($value as $k => $v) $finalvalue[$k] = (string)$v;
+                } else {
+                    $finalvalue = $value;
+                }
+                return '\''.Database::escape(json_encode($finalvalue)).'\'';
             case self::FIELDTYPE_OBJECT:
                 return '\''.Database::escape(serialize($value)).'\'';
             case self::FIELDTYPE_DATETIME:
@@ -1217,7 +1224,7 @@ class Datarecord implements DatarecordReferable {
                 return $this->getRawValue($field) ? '---' : '';
             case self::FIELDTYPE_TEXT:
             case self::FIELDTYPE_BIGTEXT:
-                return str_replace("\n", '<br>', htmlentities($this->getRawValue($field)));
+                return str_replace("\n", '<br>', $this->getRawValue($field));
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 'Yes' : 'No';
             default:
