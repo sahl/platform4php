@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class FieldDatarecordcombobox extends FieldCombobox {
+class FieldDatarecordcombobox extends FieldIndexedCombobox {
     
     protected $connected_class = false;
     
@@ -14,11 +14,6 @@ class FieldDatarecordcombobox extends FieldCombobox {
             unset($options['class']);
         }
         parent::__construct($label, $name, $options);
-    }
-    
-    public function getValue() {
-        if (is_array($this->value)) return $this->value['id'];
-        return 0;
     }
     
     public function parse($value) {
@@ -57,12 +52,6 @@ class FieldDatarecordcombobox extends FieldCombobox {
         }
         $this->setValue($value);
         return $result;
-    }
-    
-    public function renderInput() {
-        if (! is_array($this->value)) $this->value = array();
-        echo '<input type="hidden" name="'.$this->name.'[id]" value="'.$this->value['id'].'">';
-        echo '<input id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().'" type="text" data-realname="'.$this->name.'" name="'.$this->name.'[visual]" value="'.$this->value['visual'].'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
     }
     
     public function setValue($value) {
