@@ -11,6 +11,17 @@ class ConditionInCollection extends Condition {
         $this->collection = $collection;
     }
     
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function getAsArray() {
+        return array(
+            'type' => 'InFilter',
+            'filter' => $this->collection
+        );
+    }
+
     public function getSQLFragment() {
         $remote_class = $this->collection->getCollectionType();
         $class_of_field = $remote_class::getFieldDefinition($this->fieldname)['foreign_class'];
@@ -21,17 +32,5 @@ class ConditionInCollection extends Condition {
         if (! $this->collection->getCount()) return 'FALSE';
         
         return $this->filter->getBaseObject()->getKeyField().' IN ('.implode(',', $this->collection->getAllRawValues($this->fieldname)).')';
-
-    }
-    
-    /**
-     * Get this condition expressed as an array.
-     * @return array
-     */
-    public function toArray() {
-        return array(
-            'type' => 'InFilter',
-            'filter' => $this->collection
-        );
     }
 }

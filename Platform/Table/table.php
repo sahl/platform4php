@@ -319,7 +319,7 @@ class Table extends Component {
             case 'filter':
                 if ($value instanceof Filter) {
                     $this->setTabulatorOption('ajaxConfig', 'post');
-                    $this->setTabulatorOption('ajaxParams', array('filter' => $value->toJSON()));
+                    $this->setTabulatorOption('ajaxParams', array('filter' => $value->getAsJSON()));
                 }
                 break;
             default:

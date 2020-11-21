@@ -6,8 +6,6 @@ class ConditionAND extends Condition {
     private $condition1 = null, $condition2 = null;
     
     public function __construct($condition1, $condition2) {
-        Errorhandler::checkParams($condition1, '\\Platform\\Condition', $condition2, '\\Platform\\Condition');
-        
         $this->condition1 = $condition1;
         $this->condition2 = $condition2;
     }
@@ -18,25 +16,49 @@ class ConditionAND extends Condition {
      */
     public function attachFilter($filter) {
         Errorhandler::checkParams($filter, '\\Platform\\Filter');
-        $this->condition1->attachFilter($filter);
-        $this->condition2->attachFilter($filter);
+        if ($this->condition1 instanceof Condition) $this->condition1->attachFilter($filter);
+        if ($this->condition2 instanceof Condition) $this->condition2->attachFilter($filter);
         parent::attachFilter($filter);
-    }
-    
-    
-    public function getSQLFragment() {
-        return '('.$this->condition1->getSQLFragment().' AND '.$this->condition2->getSQLFragment().')';
     }
     
     /**
      * Get this condition expressed as an array.
      * @return array
      */
-    public function toArray() {
+    public function getAsArray() {
         return array(
             'type' => 'AND',
-            'condition1' => $this->condition1->toArray(),
-            'condition2' => $this->condition2->toArray()
+            'condition1' => $this->condition1->getAsArray(),
+            'condition2' => $this->condition2->getAsArray()
         );
+    }
+    
+    public function getSQLFragment() {
+        return '('.$this->condition1->getSQLFragment().' AND '.$this->condition2->getSQLFragment().')';
+    }
+    
+    public function match($object) {
+        // If we don't use metadata, then we used SQL.
+        if (! $this->manual_match) return true;
+        return $this->condition1->match($object) && $this->condition2->match($object);
+    }
+    
+    public function validate() {
+        $errors = array();
+        // Validation
+        if (! $this->condition1 instanceof Condition) $errors[] = 'Condition 1 in AND is not a valid condition';
+        if (! $this->condition2 instanceof Condition) $errors[] = 'Condition 2 in AND is not a valid condition';
+        if (! count($errors)) {
+            $result = $this->condition1->validate();
+            if (is_array($result)) $errors = array_merge($errors, $result);
+            $result = $this->condition2->validate();
+            if (is_array($result)) $errors = array_merge($errors, $result);
+        }
+        if (! count($errors)) {
+            // Determine SQL use
+            $this->setManualMatch($this->condition1->manual_match || $this->condition2->manual_match);
+            return true;
+        }
+        return $errors;
     }
 }

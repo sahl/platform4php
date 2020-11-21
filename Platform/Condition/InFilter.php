@@ -11,6 +11,17 @@ class ConditionInFilter extends Condition {
         $this->other_filter = $filter;
     }
     
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function getAsArray() {
+        return array(
+            'type' => 'InFilter',
+            'filter' => $this->other_filter
+        );
+    }
+    
     public function getSQLFragment() {
         $class_of_field = $this->other_filter->getBaseObject()->getFieldDefinition($this->fieldname)['foreign_class'];
         $class_of_filter = $this->filter->getBaseClassName();
@@ -19,16 +30,5 @@ class ConditionInFilter extends Condition {
         
         return $this->filter->getBaseObject()->getKeyField().' IN (SELECT DISTINCT '.$this->fieldname.' FROM '.$this->other_filter->getBaseObject()->getDatabaseTable().$this->other_filter->getSQLWhere().')';
 
-    }
-    
-    /**
-     * Get this condition expressed as an array.
-     * @return array
-     */
-    public function toArray() {
-        return array(
-            'type' => 'InFilter',
-            'filter' => $this->other_filter
-        );
     }
 }

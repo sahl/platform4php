@@ -11,7 +11,20 @@ class ConditionLike extends Condition {
         $this->value = $value;
     }
     
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function getAsArray() {
+        return array(
+            'type' => 'Like',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+    
     public function getSQLFragment() {
+        if ($this->manual_match) return 'TRUE';
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_TEXT:
@@ -21,17 +34,14 @@ class ConditionLike extends Condition {
                 return 'FALSE';
         }
     }
-    
-    /**
-     * Get this condition expressed as an array.
-     * @return array
-     */
-    public function toArray() {
-        return array(
-            'type' => 'Like',
-            'fieldname' => $this->fieldname,
-            'value' => $this->value
-        );
-    }
 
+    public function match($object) {
+        if (! $this->manual_match) return true;
+        $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
+        $value_to_check = $object->getRawValue($this->fieldname);
+        switch ($fieldtype) {
+            default:
+                return mb_strpos($value_to_check, $this->value) !== false;
+        }
+    }
 }

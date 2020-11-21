@@ -74,6 +74,10 @@ class Errorhandler {
                         if (is_array($value)) continue 3;
                         $checked[] = 'array';
                         break;
+                    case 'null':
+                        if ($value === null) continue 3;
+                        $checked[] = 'null';
+                        break;
                     default:
                         if ($value === null || is_a($value, $type)) continue 3;
                         $checked[] = 'object '.$type;

@@ -17,6 +17,18 @@ class ConditionOneOf extends Condition {
         $this->value = array_unique($this->value);
     }
     
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function getAsArray() {
+        return array(
+            'type' => 'OneOf',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+    
     public function getSQLFragment() {
         $sql = array();
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
@@ -33,17 +45,4 @@ class ConditionOneOf extends Condition {
         }
         return '('.implode(' OR ', $sql).')';
     }
-    
-    /**
-     * Get this condition expressed as an array.
-     * @return array
-     */
-    public function toArray() {
-        return array(
-            'type' => 'OneOf',
-            'fieldname' => $this->fieldname,
-            'value' => $this->value
-        );
-    }
-    
 }

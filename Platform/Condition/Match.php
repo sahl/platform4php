@@ -11,11 +11,25 @@ class ConditionMatch extends Condition {
         $this->value = $value;
     }
     
+    /**
+     * Get this condition expressed as an array.
+     * @return array
+     */
+    public function getAsArray() {
+        return array(
+            'type' => 'Match',
+            'fieldname' => $this->fieldname,
+            'value' => $this->value
+        );
+    }
+    
     public function getSQLFragment() {
+        if ($this->manual_match) return 'TRUE';
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_ARRAY:
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
+            case Datarecord::FIELDTYPE_ENUMERATION_MULTI:
                 return $this->fieldname.' LIKE \'%"'.$this->value.'"%\'';
             case Datarecord::FIELDTYPE_REFERENCE_HYPER:
                 if (is_array($this->value)) {
@@ -30,16 +44,36 @@ class ConditionMatch extends Condition {
         }
     }
     
-    /**
-     * Get this condition expressed as an array.
-     * @return array
-     */
-    public function toArray() {
-        return array(
-            'type' => 'Match',
-            'fieldname' => $this->fieldname,
-            'value' => $this->value
-        );
+    public function match($object) {
+        if (! $this->manual_match) return true;
+        $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
+        switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_ARRAY:
+            case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
+            case Datarecord::FIELDTYPE_ENUMERATION_MULTI:
+                return in_array($this->value, $object->getRawValue($this->fieldname));
+            case Datarecord::FIELDTYPE_DATETIME:
+            case Datarecord::FIELDTYPE_DATE:
+                $value = new Time($value);
+                return $object->getRawValue($this->fieldname)->isEqualTo($value);
+            default:
+                return $object->getRawValue($this->fieldname) == $this->value;
+        }
     }
     
+    public function validate() {
+        // Validation
+        $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
+        if (! $definition) return array('Invalid field '.$this->fieldname.' for match condition');
+        if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for match condition');
+        if (in_array(
+                $definition['fieldtype'], 
+                array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT)
+            ))
+            return array('Field '.$this->field.' does not work with match condition');
+        
+        // Determine SQL use
+        $this->setManualMatch($definition['store_in_metadata']);
+        return true;
+    }
 }
