@@ -12,6 +12,18 @@ class ApiClient {
     }
     
     /**
+     * Perform a filtered GET on a given object
+     * @param string $object The object to filter
+     * @param Condition $condition The condition to use
+     * @return array Hashed by code=http code  message=http message  headers=array of all headers
+     * body=body output  json=json decoded body output
+     */
+    public function filter($object, $condition) {
+        Errorhandler::checkParams($object, 'string', $condition, 'Platform\\Condition');
+        return $this->query($object, 'GET', 0, array('query' => $condition->getAsJSON()));
+    }
+    
+    /**
      * Parse a RAW HTTP response
      * @param string $http_output HTTP response
      * @return array Hashed by code=http code  message=http message  headers=array of all headers
@@ -67,8 +79,7 @@ class ApiClient {
         }
         
         // Prepare CURL
-        var_dump($endpoint);
-        $curl = curl_init($endpoint);
+        $curl = \curl_init($endpoint);
         $options = array(
             'Access-Token: ' . 'xxx',
             'Content-Type: application/json',
@@ -89,7 +100,7 @@ class ApiClient {
 
         $curlResponse = curl_exec($curl);
         curl_close($curl);
-
+        
         return $this->parseResponse($curlResponse);
     }
     

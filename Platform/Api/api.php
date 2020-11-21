@@ -10,6 +10,12 @@ class Api {
     private $classes = array();
     
     /**
+     * See if we should require an access token to access the API.
+     * @var boolean
+     */
+    protected $is_protected = true;
+    
+    /**
      * Used to preset the instance id
      * @var mixed
      */
@@ -112,17 +118,19 @@ class Api {
             $object_name = $m[1];
             $object_id = $m[3];
         } else {
-            if (! preg_match('/^\\/(\\d+)\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
-            $instance_id = $m[1];
-            $object_name = $m[2];
-            $object_id = $m[4];
+            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
+            $instance_id = $m[2];
+            $object_name = $m[3];
+            $object_id = $m[5];
         }
         
         // Check for valid instance and activate it
-        $instance = new Instance();
-        $instance->loadForRead($instance_id);
-        if (! $instance->isInDatabase()) self::respondAndDie (404, 'No such instance: '.$instance_id);
-        $instance->activate();
+        if ($instance_id) {
+            $instance = new Instance();
+            $instance->loadForRead($instance_id);
+            if (! $instance->isInDatabase()) self::respondAndDie (404, 'No such instance: '.$instance_id);
+            $instance->activate();
+        }
 
         // Get input
         $input = file_get_contents("php://input");
@@ -131,10 +139,12 @@ class Api {
         $this->customHandlerBeforeSecurity($object_name, $object_id, $method, $_GET, $input);
         
         // Check for valid access
-        $token_code = $_COOKIE['access_token'];
-        if (! $token_code) $token_code = $_GET['access_token'];
-        if (! $token_code) self::respondAndDie (401, 'No access token provided');
-        if (!Accesstoken::validateTokenCode($token_code)) self::respondAndDie (401, 'Invalid or expired access token');
+        if ($this->is_protected) {
+            $token_code = $_COOKIE['access_token'];
+            if (! $token_code) $token_code = $_GET['access_token'];
+            if (! $token_code) self::respondAndDie (401, 'No access token provided');
+            if (!Accesstoken::validateTokenCode($token_code)) self::respondAndDie (401, 'Invalid or expired access token');
+        }
         
         $this->customHandlerAfterSecurity($object_name, $object_id, $method, $_GET, $input);
         
@@ -178,6 +188,15 @@ class Api {
                     self::respondAndDie(200, json_encode($response));
                 } else {
                     $filter = $class::getDefaultFilter();
+                    if ($_GET['query']) {
+                        $query = json_decode($_GET['query'], true);
+                        if ($query === null) self::respondAndDie (400, 'Invalid query JSON');
+                        $additional_conditions = Condition::getConditionFromArray($query);
+                        $filter->addCondition($additional_conditions);
+                        if (! $filter->isValid()) {
+                            self::respondAndDie(400, 'There was problems with your query: '.implode(', ', $filter->getErrors()));
+                        }
+                    }
                     $collection = $filter->execute();
                     $response = array();
                     foreach($collection->getAll() as $object) {
@@ -217,6 +236,15 @@ class Api {
     public function setInstanceID($instance_id) {
         Errorhandler::checkParams($instance_id, 'int');
         $this->preset_instanceid = $instance_id;
+    }
+    
+    /**
+     * Set if this endpoint should be protected by an access token requirement
+     * @param boolean $is_protected True if protection should be enabled.
+     */
+    public function setProtection($is_protected) {
+        Errorhandler::checkParams($is_protected, 'boolean');
+        $this->is_protected = $is_protected;
     }
     
     /**
