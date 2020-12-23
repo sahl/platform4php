@@ -73,6 +73,7 @@ function platformAutoLoad($class) {
     // Delve root from current location
     $root = substr(__DIR__,0,strrpos(__DIR__, '/'));
     if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
+        $match[1] = str_replace('\\', '/', $match[1]);
         if ($match[3]) $file = $root.'/'.$match[1].'/'.$match[2].'/'.$match[3].'.php';
         else $file = $root.'/'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
         if (file_exists($file)) {
