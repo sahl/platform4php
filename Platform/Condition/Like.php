@@ -44,4 +44,21 @@ class ConditionLike extends Condition {
                 return mb_strpos($value_to_check, $this->value) !== false;
         }
     }
+    
+    public function validate() {
+        // Validation
+        $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
+        if (! $definition) return array('Invalid field '.$this->fieldname.' for like condition');
+        if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for like condition');
+        if (in_array(
+                $definition['fieldtype'], 
+                array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT)
+            ))
+            return array('Field '.$this->field.' does not work with like condition');
+        
+        // Determine SQL use
+        $this->setManualMatch($definition['store_in_metadata'] ? true : false);
+        return true;
+    }
+    
 }

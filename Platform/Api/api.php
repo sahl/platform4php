@@ -113,12 +113,12 @@ class Api {
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
         if ($this->preset_instanceid) {
-            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
+            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $this->preset_instanceid;
             $object_name = $m[1];
             $object_id = $m[3];
         } else {
-            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondAndDie (404, 'Invalid API path');
+            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $m[2];
             $object_name = $m[3];
             $object_id = $m[5];
@@ -128,7 +128,7 @@ class Api {
         if ($instance_id) {
             $instance = new Instance();
             $instance->loadForRead($instance_id);
-            if (! $instance->isInDatabase()) self::respondAndDie (404, 'No such instance: '.$instance_id);
+            if (! $instance->isInDatabase()) self::respondErrorAndDie (404, 'No such instance: '.$instance_id);
             $instance->activate();
         }
 
@@ -142,30 +142,30 @@ class Api {
         if ($this->is_protected) {
             $token_code = $_COOKIE['access_token'];
             if (! $token_code) $token_code = $_GET['access_token'];
-            if (! $token_code) self::respondAndDie (401, 'No access token provided');
-            if (!Accesstoken::validateTokenCode($token_code)) self::respondAndDie (401, 'Invalid or expired access token');
+            if (! $token_code) self::respondErrorAndDie (401, 'No access token provided');
+            if (!Accesstoken::validateTokenCode($token_code)) self::respondErrorAndDie (401, 'Invalid or expired access token');
         }
         
         $this->customHandlerAfterSecurity($object_name, $object_id, $method, $_GET, $input);
         
         // Check for valid object
-        if (! isset($this->classes[$object_name])) self::respondAndDie (404, 'No such object type: '.$object_name);
+        if (! isset($this->classes[$object_name])) self::respondErrorAndDie (404, 'No such object type: '.$object_name);
         $class = $this->classes[$object_name];
         
         switch ($method) {
             case 'POST':
-                if (! $input) self::respondAndDie(400, 'No post data received');
+                if (! $input) self::respondErrorAndDie(400, 'No post data received');
                 $json = json_decode($input, true);
-                if ($json === null) self::respondAndDie(400, 'Data was received, but wasn\'t valid json');
+                if ($json === null) self::respondErrorAndDie(400, 'Data was received, but wasn\'t valid json');
                 // Check if we are looking to update something specific
                 $updated_object = new $class();
                 if ($object_id) {
                     $updated_object->loadForWrite($object_id);
-                    if (! $updated_object->isInDatabase()) self::respondAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
-                    if (! $updated_object->canAccess()) self::respondAndDie(403, 'You don\'t have the permission to access this object.');
-                    if (! $updated_object->canEdit()) self::respondAndDie(403, 'You don\'t have the permission to edit this object.');
+                    if (! $updated_object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
+                    if (! $updated_object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
+                    if (! $updated_object->canEdit()) self::respondErrorAndDie(403, 'You don\'t have the permission to edit this object.');
                 } else {
-                    if (! $class::canCreate()) self::respondAndDie(403, 'You don\'t have the permission to create an object of this type.');
+                    if (! $class::canCreate()) self::respondErrorAndDie(403, 'You don\'t have the permission to create an object of this type.');
                 }
                 $is_new_object = ! $updated_object->isInDatabase();
                 $result = self::updateObject($class, $updated_object, $json, $is_new_object);
@@ -174,7 +174,7 @@ class Api {
                     $response = self::getApiObject($class, $updated_object);
                     self::respondAndDie($is_new_object ? 201 : 200, json_encode($response));
                 } else {
-                    self::respondAndDie(400, 'Post data wasn\'t valid: '.implode(', ',$result));
+                    self::respondErrorAndDie(400, 'Post data wasn\'t valid: '.implode(', ',$result));
                 }
                 break;
             case 'GET':
@@ -182,12 +182,13 @@ class Api {
                 if ($object_id) {
                     $object = new $class();
                     $object->loadForRead($object_id);
-                    if (! $object->isInDatabase()) self::respondAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
-                    if (! $object->canAccess()) self::respondAndDie(403, 'You don\'t have the permission to access this object.');
+                    if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
+                    if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                     $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
                     self::respondAndDie(200, json_encode($response));
                 } else {
                     $filter = $class::getDefaultFilter();
+                    $filter->setPerformAccessCheck(true);
                     if ($_GET['query']) {
                         $query = json_decode($_GET['query'], true);
                         if ($query === null) self::respondAndDie (400, 'Invalid query JSON');
@@ -206,19 +207,19 @@ class Api {
                 }
                 break;
             case 'DELETE':
-                if (! $object_id) self::respondAndDie (404, 'No object id specified.');
+                if (! $object_id) self::respondErrorAndDie (404, 'No object id specified.');
                 $object = new $class();
                 $object->loadForWrite($object_id);
-                if (! $object->canAccess()) self::respondAndDie(403, 'You don\'t have the permission to access this object.');
+                if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                 $result = $object->canDelete();
-                if ($result !== true) self::respondAndDie(403, 'You cannot delete object with id: '.$object_id.'. Reason: '.$result);
+                if ($result !== true) self::respondErrorAndDie(403, 'You cannot delete object with id: '.$object_id.'. Reason: '.$result);
                 $result = $object->delete();
-                if ($result) self::respondAndDie (200, json_encode(true));
-                else self::respondAndDie (500, json_encode(false));
+                if ($result) self::respondAndDie (200, json_encode(array('file_deleted' => true)));
+                else self::respondErrorAndDie (500, 'Could not delete file');
             default:
-                self::respondAndDie(405, 'Cannot handle request method: '.$method);
+                self::respondErrorAndDie(405, 'Cannot handle request method: '.$method);
         }
-        self::respondAndDie(500, 'Unspecified error - Ran through!');
+        self::respondErrorAndDie(500, 'Unspecified error - Ran through!');
     }
     
     /**
@@ -230,6 +231,18 @@ class Api {
         Errorhandler::checkParams($code, 'int', $message, 'string');
         http_response_code($code);
         echo $message;
+        exit;
+    }
+
+    /**
+     * Sends a HTTP response assuming it to be an error.
+     * @param int $code HTTP response code
+     * @param string $error_message Content to transmit
+     */
+    protected static function respondErrorAndDie($code, $error_message) {
+        Errorhandler::checkParams($code, 'int', $message, 'string');
+        http_response_code($code);
+        echo json_encode(array('error' => true, 'http_response_code' => $code, 'message' => $error_message));
         exit;
     }
     
@@ -352,7 +365,7 @@ class Api {
                             // Store binary content in temporary file
                             $temp_file_name = \Platform\File::getTempFilename();
                             $fh = fopen($temp_file_name, 'w');
-                            if (! $fh) $this->respondAndDie(500, 'Error writing temporary file handling field '.$key);
+                            if (! $fh) $this->respondErrorAndDie(500, 'Error writing temporary file handling field '.$key);
                             fwrite($fh, $binary_data);
                             fclose($fh);
                             // Build compatible input array
@@ -365,7 +378,7 @@ class Api {
                         }
                     } else {
                         $file = new File();
-                        $file->loadForRead($value);
+                        $file->loadForRead((int)$value);
                         if (! $file->isInDatabase()) {
                             $errors[] = $value.' isn\'t a valid reference in field '.$key;
                             continue;

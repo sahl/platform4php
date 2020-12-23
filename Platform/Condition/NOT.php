@@ -49,7 +49,7 @@ class ConditionNOT extends Condition {
         }
         if (! count($errors)) {
             // Determine SQL use
-            $this->setManualMatch($this->condition->manual_match);
+            $this->setManualMatch($this->condition->manual_match ? true : false);
             return true;
         }
         return $errors;

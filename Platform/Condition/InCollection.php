@@ -16,13 +16,11 @@ class ConditionInCollection extends Condition {
      * @return array
      */
     public function getAsArray() {
-        return array(
-            'type' => 'InFilter',
-            'filter' => $this->collection
-        );
+        trigger_error('Condition inCollection cannot be saved as an array.', E_USER_ERROR);
     }
 
     public function getSQLFragment() {
+        if ($this->manual_match) return 'TRUE';
         $remote_class = $this->collection->getCollectionType();
         $class_of_field = $remote_class::getFieldDefinition($this->fieldname)['foreign_class'];
         $class_of_filter = $this->filter->getBaseClassName();
@@ -33,4 +31,20 @@ class ConditionInCollection extends Condition {
         
         return $this->filter->getBaseObject()->getKeyField().' IN ('.implode(',', $this->collection->getAllRawValues($this->fieldname)).')';
     }
+    
+    private $collection_content = false;
+    
+    public function match($object) {
+        if (! $this->manual_match) return true;
+        if (! $this->collection_content) {
+            $this->collection_content = $this->collection->getAllRawValues($this->fieldname);
+        }
+        return in_array($object->getRawValue($this->filter->getBaseObject()->getKeyField()), $this->collection_content);
+    }
+    
+    public function validate() {
+        // Validation
+        return true;
+    }
+    
 }

@@ -264,7 +264,7 @@ class Datarecord implements DatarecordReferable {
      * @return boolean
      */
     public static function canCopy() {
-        return static::$allow_copy;
+        return $this->canCreate() && static::$allow_copy;
     }
     
     /**
@@ -2081,7 +2081,7 @@ class Datarecord implements DatarecordReferable {
                 $final = array();
                 foreach ($value as $v) {
                     if (is_numeric($v)) $final[] = (int)$v;
-                    elseif (get_class($v) == static::$structure[$field]['foreign_class']) $final[] = (int)$v->getValue($value->getKeyField());
+                    elseif ($v !== null && get_class($v) == static::$structure[$field]['foreign_class']) $final[] = (int)$v->getValue($value->getKeyField());
                     elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreign_class'].' but got '.get_class($v), E_USER_ERROR);
                 }
                 $this->values[$field] = $final;

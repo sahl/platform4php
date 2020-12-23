@@ -55,6 +55,7 @@ class Log {
         }
         // Render to file
         $fh = fopen($this->logdir.'/'.date('Y-m-d').'-'.$this->logname.'.log', 'a');
+        if ($fh === false) trigger_error('Could not open logfile '.$this->logdir.'/'.date('Y-m-d').'-'.$this->logname.'.log for writing', E_USER_ERROR);
         foreach ($columns as $line) {
             for ($i = -1; $i < func_num_args(); $i++) {
                 $string = $line[$i];

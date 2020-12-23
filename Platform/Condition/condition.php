@@ -82,7 +82,7 @@ class Condition {
             case 'OneOf':
                 return new ConditionOneOf($array['fieldname'], $array['value']);
             case 'InFilter':
-                return new ConditionInFilter($array['fieldname'], $array['filter']);
+                return new ConditionInFilter($array['fieldname'], Filter::getFilterFromArray($array['filter']));
             default:
                 return new Condition();
         }
@@ -135,7 +135,7 @@ class Condition {
      * @param type $manual_match
      */
     public function setManualMatch($manual_match = true) {
-        Errorhandler::checkParams($match, 'bool');
+        Errorhandler::checkParams($manual_match, 'boolean');
         $this->manual_match = $manual_match;
     }
     

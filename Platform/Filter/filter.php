@@ -28,6 +28,12 @@ class Filter {
     protected $errors = array();
     
     /**
+     * Indicate if we should perform an access check
+     * @var boolean
+     */
+    protected $perform_access_check = false;
+    
+    /**
      * Indicate if a condition forced a metadata search
      * @var boolean
      */
@@ -93,7 +99,7 @@ class Filter {
      */
     public function execute() {
         if (! $this->isValid()) return false;
-        $result = $this->base_object->getCollectionFromSQL($this->getSQL(), true);
+        $result = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
         if (! $this->search_metadata) return $result;
         $filtered_datacollection = new Collection();
         foreach ($result as $object) {
@@ -109,9 +115,21 @@ class Filter {
      * @return Datarecord First result or empty object of same type.
      */
     public function executeAndGetFirst() {
-        $collection = $this->base_object->getCollectionFromSQL($this->getSQL());
+        $collection = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
         if (! $collection->getCount()) return new $this->base_classname();
         return $collection->get(0);
+    }
+    
+    /**
+     * Get this filter as an array
+     * @return array
+     */
+    public function getAsArray() {
+        $result = array('base_classname' => $this->base_classname);
+        if ($this->base_condition instanceof Condition) {
+            $result['base_condition'] = $this->base_condition->getAsArray();
+        }
+        return $result;
     }
     
     /**
@@ -119,11 +137,7 @@ class Filter {
      * @return string
      */
     public function getAsJSON() {
-        $result = array('base_classname' => $this->base_classname);
-        if ($this->base_condition instanceof Condition) {
-            $result['base_condition'] = $this->base_condition->getAsArray();
-        }
-        return json_encode($result);
+        return json_encode($this->getAsArray());
     }
 
     /**
@@ -134,6 +148,22 @@ class Filter {
         return $this->errors;
     }
     
+    /**
+     * Get a filter from an array
+     * @param string $filter_data Array as prepared by the getAsArray function
+     * @return \Platform\Filter
+     */
+    public static function getFilterFromArray($array) {
+        Errorhandler::checkParams($array, 'array');
+        if ($array === null) return false;
+        if (! class_exists($array['base_classname'])) return false;
+        $filter = new Filter($array['base_classname']);
+        if ($array['base_condition']) {
+            $filter->addCondition(Condition::getConditionFromArray($array['base_condition']));
+        }
+        return $filter;
+    }
+
     /**
      * Get a filter from a JSON string
      * @param string $json JSON string as prepared by the toJSON function
@@ -199,9 +229,26 @@ class Filter {
     }
     
     /**
+     * Set if this filter should perform an access check when running
+     * @param boolean $perform_access_check
+     */
+    public function setPerformAccessCheck($perform_access_check) {
+        Errorhandler::checkParams($perform_access_check, 'boolean');
+        $this->perform_access_check = $perform_access_check;
+    }
+    
+    /**
      * Set that this filter should search metadata.
      */
     public function setSearchMetadata() {
         $this->search_metadata = true;
+    }
+    
+    /**
+     * Check if this filter will search metadata (and therefore can't rely on SQL only).
+     * @return boolean
+     */
+    public function willSearchMetadata() {
+        return $this->search_metadata;
     }
 }

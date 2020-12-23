@@ -63,7 +63,7 @@ class ConditionLesser extends Condition {
             return array('Field '.$this->field.' does not work with lesser condition');
         
         // Determine SQL use
-        $this->setManualMatch($definition['store_in_metadata']);
+        $this->setManualMatch($definition['store_in_metadata'] ? true : false);
         return true;
     }
 }

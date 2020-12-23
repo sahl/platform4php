@@ -30,6 +30,7 @@ class ConditionOneOf extends Condition {
     }
     
     public function getSQLFragment() {
+        if ($this->manual_match) return 'TRUE';
         $sql = array();
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         if (! count($this->value)) return 'FALSE';
@@ -44,5 +45,26 @@ class ConditionOneOf extends Condition {
             }
         }
         return '('.implode(' OR ', $sql).')';
+    }
+    
+    public function match($object) {
+        if (! $this->manual_match) return true;
+        return in_array($object->getRawValue($this->fieldname), $this->value);
+    }
+    
+    public function validate() {
+        // Validation
+        $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
+        if (! $definition) return array('Invalid field '.$this->fieldname.' for oneof condition');
+        if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for oneof condition');
+        if (in_array(
+                $definition['fieldtype'], 
+                array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT)
+            ))
+            return array('Field '.$this->field.' does not work with oneof condition');
+        
+        // Determine SQL use
+        $this->setManualMatch($definition['store_in_metadata'] ? true : false);
+        return true;
     }
 }

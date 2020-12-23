@@ -39,6 +39,8 @@ class ConditionMatch extends Condition {
                 } else {
                     return 'false';
                 }
+            case Datarecord::FIELDTYPE_BOOLEAN:
+                return $this->fieldname.' = '.$this->getSQLFieldValue($this->value ? 1 : 0);
             default:
                 return $this->fieldname.' = '.$this->getSQLFieldValue($this->value);
         }
@@ -73,7 +75,7 @@ class ConditionMatch extends Condition {
             return array('Field '.$this->field.' does not work with match condition');
         
         // Determine SQL use
-        $this->setManualMatch($definition['store_in_metadata']);
+        $this->setManualMatch($definition['store_in_metadata'] ? true : false);
         return true;
     }
 }

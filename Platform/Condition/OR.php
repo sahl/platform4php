@@ -67,7 +67,7 @@ class ConditionOR extends Condition {
         }
         if (! count($errors)) {
             // Determine SQL use
-            $this->setManualMatch($this->condition1->manual_match || $this->condition2->manual_match);
+            $this->setManualMatch(($this->condition1->manual_match || $this->condition2->manual_match) ? true : false);
             return true;
         }
         return $errors;

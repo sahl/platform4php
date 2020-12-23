@@ -155,9 +155,8 @@ class Instance extends Datarecord {
      * @return array Instance ids on this server
      */
     public static function getIdsOnThisServer() {
-        $server = Server::getThisServer();
-        if (! $server->isInDatabase()) trigger_error('Could not determine this server.', E_USER_ERROR);
-        return self::getIdsByServerId($server->server_id);
+        $server_id = Server::getThisServer();
+        return self::getIdsByServerId($server_id);
     }
     
     /**

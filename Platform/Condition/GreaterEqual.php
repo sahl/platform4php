@@ -64,7 +64,7 @@ class ConditionGreaterEqual extends Condition {
             return array('Field '.$this->field.' does not work with greaterequal condition');
         
         // Determine SQL use
-       $this->setManualMatch($definition['store_in_metadata']);
+       $this->setManualMatch($definition['store_in_metadata'] ? true : false);
        return true;
     }
 }
