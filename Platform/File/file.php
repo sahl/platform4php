@@ -36,6 +36,16 @@ class File extends Datarecord {
     }
     
     /**
+     * Attach binary data to this File object. When saved the binary data will be
+     * written to the instance store.
+     * @param string $binary_data
+     */
+    public function attachBinaryData($binary_data) {
+        $this->content_source = 'binary_data';
+        $this->content = $binary_data;
+    }
+    
+    /**
      * Attach a file to this File object. When saved the file will be copied to
      * instance store.
      * @param string $filename Full path of file to attach.
@@ -292,7 +302,14 @@ class File extends Datarecord {
                     $result = copy($this->content, $this->getCompleteFilename());
                     if (! $result) trigger_error('Couldn\'t copy '.$this->content.' to '.$this->getCompleteFilename(), E_USER_ERROR);
                 }
-            break;
+                break;
+            case 'binary_data':
+                $this->ensureFolderInStore($this->getCompleteFolderPath());
+                $fh = fopen($this->getCompleteFilename(), 'w');
+                if (! $fh) trigger_error('Couldn\'t write binary data to '.$this->getCompleteFilename (), E_USER_ERROR);
+                fwrite($fh, $this->content);
+                fclose($fh);
+                break;
         }
         return $result;
     }
