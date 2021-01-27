@@ -83,7 +83,7 @@ class Component {
      */
     public function __get($property) {
         Errorhandler::checkParams($property, 'string');
-        if (! isset($this->properties[$property])) trigger_error('Tried to read invalid property: '.$property, E_USER_ERROR);
+        if (! array_key_exists($property, $this->properties)) trigger_error('Tried to read invalid property: '.$property, E_USER_ERROR);
         return $this->properties[$property];
     }
     
@@ -94,7 +94,7 @@ class Component {
      */
     public function __set($property, $value) {
         Errorhandler::checkParams($property, 'string');
-        if (! isset($this->properties[$property])) trigger_error('Tried to set invalid property: '.$property, E_USER_ERROR);
+        if (! array_key_exists($property, $this->properties)) trigger_error('Tried to set invalid property: '.$property, E_USER_ERROR);
         $this->properties[$property] = $value;
     }
 
