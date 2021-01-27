@@ -59,6 +59,20 @@ class Accesstoken extends Datarecord {
         return $accesstoken;
     }
     
+    public static function acquireAnonymous($seconds_to_live = 3600) {
+        Errorhandler::checkParams($seconds_to_live, 'int');
+        $accesstoken = new Accesstoken();
+        if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
+        $accesstoken->generateTokenCode();
+        $timestamp = new Time('now');
+        $accesstoken->expire_date = $timestamp->add($seconds_to_live);
+        $accesstoken->seconds_to_live = $seconds_to_live;
+        $accesstoken->save();
+        Semaphore::release('accesstoken_generator');
+        $accesstoken->setSession();
+        return $accesstoken;
+    }
+    
     /**
      * Clear token information from session.
      * @param boolean $destroy_entire_session If this is set to true, then we destroy the entire PHP session
