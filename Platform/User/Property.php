@@ -45,7 +45,9 @@ class UserProperty extends Datarecord {
      */
     public static function getPropertyForCurrentUser($property, $subproperty = '') {
         Errorhandler::checkParams($property, 'string', $subproperty, 'string');
-        return static::getPropertyForUser(Accesstoken::getCurrentUserID(), $property, $subproperty);
+        $current_user_id = Accesstoken::getCurrentUserID();
+        if (! $current_user_id) return false;
+        return static::getPropertyForUser($current_user_id, $property, $subproperty);
     }
     
     /**
@@ -71,7 +73,9 @@ class UserProperty extends Datarecord {
      */
     public static function setPropertyForCurrentUser($property, $subproperty, $value = null) {
         Errorhandler::checkParams($property, 'string', $subproperty, 'string');
-        static::setPropertyForUser(Accesstoken::getCurrentUserID(), $property, $subproperty, $value);
+        $current_user_id = Accesstoken::getCurrentUserID();
+        if (! $current_user_id) return;
+        static::setPropertyForUser($current_user_id, $property, $subproperty, $value);
     }
 
     /**
