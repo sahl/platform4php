@@ -64,7 +64,7 @@ class Api {
      * @param Boolean $retrieve_binary_data If true, then pass file and image fields as binary data
      * @return array An API object expressed as an array
      */
-    private static function getApiObject($class, $object, $retrieve_binary_data = false) {
+    protected static function getApiObject($class, $object, $retrieve_binary_data = false) {
         Errorhandler::checkParams($class, 'string', $object, '\\Platform\\Datarecord');
         $result = array();
         foreach ($class::getStructure() as $key => $definition) {
@@ -201,7 +201,7 @@ class Api {
                     $collection = $filter->execute();
                     $response = array();
                     foreach($collection->getAll() as $object) {
-                        $response[] = self::getApiObject($class, $object);
+                        $response[] = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
                     }
                     self::respondAndDie(200, json_encode($response));
                 }
