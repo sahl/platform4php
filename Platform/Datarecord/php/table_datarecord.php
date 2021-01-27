@@ -4,6 +4,7 @@ if (! Platform\Accesstoken::validateSession() && !\Platform\Administrator::isLog
 
 if ($_POST['filter']) $filter = \Platform\Filter::getFilterFromJSON ($_POST['filter']);
 else $filter = new Platform\Filter($_GET['class']);
+$filter->setPerformAccessCheck(true);
 $datacollection = $filter->execute();
 
 $result = Platform\Table::getDataFromCollection($datacollection);

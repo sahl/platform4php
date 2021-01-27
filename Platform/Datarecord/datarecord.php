@@ -263,7 +263,7 @@ class Datarecord implements DatarecordReferable {
      * This is a soft check, which doesn't affect the inner workings of this object.
      * @return boolean
      */
-    public static function canCopy() {
+    public function canCopy() {
         return $this->canCreate() && static::$allow_copy;
     }
     
@@ -794,7 +794,7 @@ class Datarecord implements DatarecordReferable {
             if ($output == 'DatarecordCollection') return new Collection();
             return array();
         }
-        $filter = new Filter(get_called_class());
+        $filter = static::getDefaultFilter();
         $parsed_keywords = self::parseKeywords($keywords);
         foreach ($parsed_keywords as $keyword) {
             $previouscondition = false;
@@ -805,6 +805,7 @@ class Datarecord implements DatarecordReferable {
             }
             $filter->addCondition($condition);
         }
+        $filter->setPerformAccessCheck(true);
         $results = $filter->execute();
         if ($output == 'autocomplete') {
             $final_results = array(); $sort_array = array();
@@ -895,7 +896,7 @@ class Datarecord implements DatarecordReferable {
     public function getAsArrayForForm() {
         $result = array();
         foreach (static::$structure as $fieldname => $data) {
-            if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
+            //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
             $result[$fieldname] = $this->getValue($fieldname, self::RENDER_FORM);
         }
         return $result;
@@ -910,6 +911,20 @@ class Datarecord implements DatarecordReferable {
     private static function getAssignmentForDatabase($field, $value) {
         Errorhandler::checkParams($field, 'string');
         return $field.'='.self::getFieldForDatabase($field, $value);
+    }
+    
+    /**
+     * Get all fields that were changed since this object was loaded. This only
+     * returns fields which are saved in the database.
+     */
+    public function getChangedFields() {
+        $result = array();
+        foreach (static::$structure as $key => $definition) {
+            if ($definition['store_in_database'] !== false && $this->values[$key] != $this->values_on_load[$key]) {
+                $result[] = $key;
+            }
+        }
+        return $result;
     }
     
     /**
@@ -1536,6 +1551,14 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Check if copy is generally allowed of this object type
+     * @return boolean
+     */
+    public static function isCopyAllowed() {
+        return static::$allow_copy;
+    }
+    
+    /**
      * Determines if this is stored in the database.
      * @return boolean True if stored in database
      */
@@ -1618,6 +1641,20 @@ class Datarecord implements DatarecordReferable {
             trigger_error('Failed to lock '.get_called_class().' ('.$this->getValue($this->getKeyField()).') within reasonable time / '.$this->getLockFileName(), E_USER_ERROR);
         }
     }    
+    
+    /**
+     * Called after object is saved.
+     * @param array $changed_fields Array of fields which were changed
+     */
+    public function onAfterSave($changed_fields) {
+    }
+
+    /**
+     * Called when object is saved.
+     * @param array $changed_fields Array of fields which were changed
+     */
+    public function onSave($changed_fields) {
+    }
     
     /**
      * Pack metadata according to structure definition
@@ -1915,34 +1952,35 @@ class Datarecord implements DatarecordReferable {
         Errorhandler::checkParams($force_save, 'boolean', $keep_open_for_write, 'boolean');
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to save object '.static::$database_table.' in read mode', E_USER_ERROR);
         
-        $change = true;
+        $changed_fields = $this->getChangedFields();
+        
+        $this->onSave($changed_fields);
+        
         if (! $force_save && $this->isInDatabase()) {
-            // Check if anything have changed?
-            $change = $this->isChanged();
+            // We don't save if nothing is changed?
+            $change = count($changed_fields) > 0;
             if (! $change) {
                 if (! $keep_open_for_write) $this->unlock();
                 return false;
             }
         }
         // See if we should calculate anything
-        if ($change) {
-            foreach(static::$structure as $key => $definition) {
-                if ($definition['calculations']) {
-                    if (! is_array($definition['calculations'])) $definition['calculations'] = array($definition['calculations']);
-                    $foreign_ids = array();
-                    if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
-                        $foreign_ids[] = $this->values[$key];
-                        $foreign_ids[] = $this->values_on_load[$key];
-                    } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
-                        if (is_array($this->values[$key])) foreach ($this->values[$key] as $v) $foreign_ids[] = $v;
-                        if (is_array($this->values_on_load[$key])) foreach ($this->values_on_load[$key] as $v) $foreign_ids[] = $v;
-                    }
-                    $foreign_ids = array_unique($foreign_ids);
-                    foreach ($definition['calculations'] as $calculation) {
-                        foreach ($foreign_ids as $foreign_id) {
-                            if (! $foreign_id) continue;
-                            self::$requested_calculation_buffer[$definition['foreign_class']][$calculation][$foreign_id] = true;
-                        }
+        foreach(static::$structure as $key => $definition) {
+            if ($definition['calculations']) {
+                if (! is_array($definition['calculations'])) $definition['calculations'] = array($definition['calculations']);
+                $foreign_ids = array();
+                if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE) {
+                    $foreign_ids[] = $this->values[$key];
+                    $foreign_ids[] = $this->values_on_load[$key];
+                } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
+                    if (is_array($this->values[$key])) foreach ($this->values[$key] as $v) $foreign_ids[] = $v;
+                    if (is_array($this->values_on_load[$key])) foreach ($this->values_on_load[$key] as $v) $foreign_ids[] = $v;
+                }
+                $foreign_ids = array_unique($foreign_ids);
+                foreach ($definition['calculations'] as $calculation) {
+                    foreach ($foreign_ids as $foreign_id) {
+                        if (! $foreign_id) continue;
+                        self::$requested_calculation_buffer[$definition['foreign_class']][$calculation][$foreign_id] = true;
                     }
                 }
             }
@@ -1984,6 +2022,9 @@ class Datarecord implements DatarecordReferable {
         }
         // Update reference buffer
         self::$foreign_reference_buffer[get_called_class()][$this->values[static::getKeyField()]] = $this->getTitle();
+        
+        $this->onAfterSave($changed_fields);
+        
         return true;
     }
     

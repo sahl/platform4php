@@ -88,7 +88,7 @@ class DatarecordEditComplex extends Component {
         $name = $this->class::getObjectName();
         $short_class = $this->class::getClassName();
         if ($this->class::canCreate()) $menu[] = MenuItem::constructByID ('Create new '.$name, $short_class.'_new_button');
-        if ($this->class::canCopy()) $menu[] = MenuItem::constructByID ('Copy selected '.$name, $short_class.'_copy_button');
+        if ($this->class::isCopyAllowed()) $menu[] = MenuItem::constructByID ('Copy selected '.$name, $short_class.'_copy_button');
         $menu[] = MenuItem::constructByID ('Edit selected '.$name, $short_class.'_edit_button');
         $menu[] = MenuItem::constructByID ('Delete selected '.$name, $short_class.'_delete_button');
         $menu[] = MenuItem::constructByID ('Select columns', $short_class.'_column_select_button');
