@@ -8,6 +8,10 @@ class Datarecord implements DatarecordReferable {
     const COLUMN_HIDDEN = 2;
     const COLUMN_VISIBLE = 0;
     
+    const DELETE_MODE_DELETE = 0;
+    const DELETE_MODE_EMPTY = 1;
+    
+    // Delete strategies
     const DELETE_STRATEGY_BLOCK = 0;
     const DELETE_STRATEGY_PURGE_REFERERS = 1;
     
@@ -52,6 +56,12 @@ class Datarecord implements DatarecordReferable {
      * @var string
      */
     protected static $database_table = '';
+    
+    /**
+     * Store the delete mode for this object
+     * @var int
+     */
+    protected static $delete_mode = self::DELETE_MODE_DELETE;
     
     /**
      * Set a delete strategy for this object
@@ -223,6 +233,17 @@ class Datarecord implements DatarecordReferable {
             static::$structure[$field] = $data;
         }
     }
+
+    /**
+     * Build something to the default filter
+     * @param Filter $filter
+     */
+    protected static function buildDefaultFilter($filter) {
+        Errorhandler::checkParams($filter, 'Platform\\Filter');
+        if (static::$delete_mode == self::DELETE_MODE_EMPTY) {
+            $filter->addCondition(new ConditionMatch('is_deleted', false));
+        }
+    }
     
     /**
      * Override to extend the object structure
@@ -247,6 +268,16 @@ class Datarecord implements DatarecordReferable {
                 'fieldtype' => self::FIELDTYPE_DATETIME
             )
         ));
+        
+        if (static::$delete_mode == self::DELETE_MODE_EMPTY) {
+            static::addStructure(array(
+                'is_deleted' => array(
+                    'invisible' => true,
+                    'fieldtype' => self::FIELDTYPE_BOOLEAN,
+                    'default_value' => false
+                )
+            ));
+        }
     }
     
     /**
@@ -405,12 +436,17 @@ class Datarecord implements DatarecordReferable {
                 $file->delete();
             }
         }
-        
-        self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
-        $deleted_id = $this->values[static::getKeyField()];
-        unset($this->values[static::getKeyField()]);
-        $this->access_mode = self::MODE_READ;
-        $this->unlock();
+        if (static::$delete_mode == self::DELETE_MODE_DELETE) {
+            self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
+            $deleted_id = $this->values[static::getKeyField()];
+            unset($this->values[static::getKeyField()]);
+            $this->access_mode = self::MODE_READ;
+            $this->unlock();
+        } else {
+            $this->reset();
+            $this->is_deleted = 1;
+            $this->save();
+        }
         
         $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
         
@@ -607,8 +643,6 @@ class Datarecord implements DatarecordReferable {
             $job->save();
         }
     }
-    
-    
     
     /**
      * Ensure that the database can store this object
@@ -1451,8 +1485,9 @@ class Datarecord implements DatarecordReferable {
      * subset of the data.
      * @return \Platform\Filter
      */
-    public static function getDefaultFilter() {
+    public static final function getDefaultFilter() {
         $filter = new Filter(get_called_class());
+        static::buildDefaultFilter($filter);
         return $filter;
     }
     
@@ -1899,6 +1934,16 @@ class Datarecord implements DatarecordReferable {
         if (! $this->isInDatabase()) return false;
         self::$requested_calculation_buffer[get_called_class()][$calculation][$this->getRawValue($this->getKeyField())] = true;
         return true;
+    }
+
+    /**
+     * Reset all fields in object except the key, create date and change date
+     */
+    public function reset() {
+        $fields_to_keep = array('create_date', 'change_date');
+        foreach (static::$structure as $key => $field_definition) {
+            if ($field_definition['fieldtype'] != self::FIELDTYPE_KEY && ! in_array($key, $fields_to_keep)) $this->setValue($key, null);
+        }
     }
     
     /**
