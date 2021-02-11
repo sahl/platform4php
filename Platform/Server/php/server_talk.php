@@ -14,7 +14,7 @@ $result = array(
 
 switch ($json['event']) {
     case 'create_instance':
-        $server = Server::getThisServer();
+        $server = Server::getThisServerID();
         if (! $server->isInDatabase()) {
             $result['error'] = 'Couldn\'t identify server.';
         } else {

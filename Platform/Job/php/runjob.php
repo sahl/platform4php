@@ -11,10 +11,12 @@ $job = new \Platform\Job();
 $job->loadForRead($id);
 if ($job->isInDatabase()) {
     $job->log('RUNNING', 'Job is running', $job);
-    // Activate instance
-    $instance = new \Platform\Instance();
-    $instance->loadForRead($job->instance_ref);
-    $instance->activate();
+    // Activate instance if instance job
+    if ($job->instance_ref) {
+        $instance = new \Platform\Instance();
+        $instance->loadForRead($job->instance_ref);
+        $instance->activate();
+    }
     // Call desired function
     $func = array($job->class, $job->function);
     if (is_callable($func)) call_user_func($func, $job);

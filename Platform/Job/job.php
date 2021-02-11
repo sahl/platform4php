@@ -37,6 +37,11 @@ class Job extends \Platform\Datarecord {
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
                 'foreign_class' => 'Platform\Instance'
             ),
+            'server_ref' => array(
+                'invisible' => true,
+                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
+                'foreign_class' => 'Platform\Server'
+            ),
             'class' => array(
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_TEXT
@@ -104,6 +109,47 @@ class Job extends \Platform\Datarecord {
     }
     
     /**
+     * Get a new or existing job matching class and function
+     * @param string $class Class to call
+     * @param string $function Function to call in the class.
+     * @param int $frequency Job frequency
+     * @param boolean $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
+     * @param int $slot_size Slot size of the job
+     * @param int $max_runtime Max allowed run time in realtime minutes.
+     * @return \Platform\Job The job
+     */
+    private function adjustData($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, $slot_size = -1, $max_runtime = -1) {
+        Errorhandler::checkParams($class, 'string', $frequency, 'int', $frequency_offset_from_end, array('int', 'boolean'), $slot_size, 'int', $max_runtime, 'int');
+        if (! $function && strpos($class, '::')) {
+            $elements = explode('::', $class);
+            $class = $elements[0]; $function = $elements[1];
+        }
+        // Check functions
+        if (!is_callable(array($class,$function))) trigger_error('Tried creating a job on un-callable function '.$class.'::'.$function, E_USER_ERROR);
+        // Create basic job
+        if ($this->isInDatabase()) {
+            if ($frequency != self::FREQUENCY_NOCHANGE) $this->frequency = $frequency;
+            if ($frequency_offset_from_end !== -1) $this->frequency_offset_from_end = $frequency_offset_from_end;
+            if ($slot_size != -1) $this->slot_size = $slot_size;
+            if ($max_runtime != -1) $this->max_runtime = $max_runtime;
+        } else {
+            // Populate basic fields
+            $this->class = $class;
+            $this->function = $function;
+            $this->error_count = 0;
+            $this->run_count = 0;
+            $this->last_run_time = 0;
+            $this->average_run_time = 0.0;
+            $this->kill_count = 0;
+            $this->frequency = $frequency == self::FREQUENCY_NOCHANGE ? self::FREQUENCY_PAUSED : $frequency;
+            $this->frequency_offset_from_end = $frequency_offset_from_end !== -1 ? $frequency_offset_from_end : false;
+            $this->slot_size = $slot_size != -1 ? $slot_size : 10;
+            $this->max_runtime = $max_runtime != -1 ? $max_runtime : 10;
+            $this->process_id = 0;
+        }
+    }    
+
+    /**
      * Clean up after a job by reading output, resetting the job object and 
      * take statistics.
      */
@@ -152,40 +198,37 @@ class Job extends \Platform\Datarecord {
      */
     public static function getJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, $slot_size = -1, $max_runtime = -1) {
         Errorhandler::checkParams($class, 'string', $frequency, 'int', $frequency_offset_from_end, array('int', 'boolean'), $slot_size, 'int', $max_runtime, 'int');
-        if (! $function && strpos($class, '::')) {
-            $elements = explode('::', $class);
-            $class = $elements[0]; $function = $elements[1];
-        }
-        // Check functions
-        if (!is_callable(array($class,$function))) trigger_error('Tried creating a job on un-callable function '.$class.'::'.$function, E_USER_ERROR);
         // Create basic job
         $job = new Job();
         $instance_id = Instance::getActiveInstanceID();
         $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
-        if ($qr) {
-            $job->loadForWrite($qr['job_id']);
-            if ($frequency != self::FREQUENCY_NOCHANGE) $job->frequency = $frequency;
-            if ($frequency_offset_from_end !== -1) $job->frequency_offset_from_end = $frequency_offset_from_end;
-            if ($slot_size != -1) $job->slot_size = $slot_size;
-            if ($max_runtime != -1) $job->max_runtime = $max_runtime;
-        } else {
-            // Populate basic fields
-            $job->instance_ref = $instance_id;
-            $job->class = $class;
-            $job->function = $function;
-            $job->error_count = 0;
-            $job->run_count = 0;
-            $job->last_run_time = 0;
-            $job->average_run_time = 0.0;
-            $job->kill_count = 0;
-            $job->frequency = $frequency == self::FREQUENCY_NOCHANGE ? self::FREQUENCY_PAUSED : $frequency;
-            $job->frequency_offset_from_end = $frequency_offset_from_end !== -1 ? $frequency_offset_from_end : false;
-            $job->slot_size = $slot_size != -1 ? $slot_size : 10;
-            $job->max_runtime = $max_runtime != -1 ? $max_runtime : 10;
-            $job->process_id = 0;
-        }
+        if ($qr) $job->loadForWrite($qr['job_id']);
+        $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
+        $job->instance_ref = $instance_id;
         return $job;
     }
+    
+    /**
+     * Get a new or existing job matching class and function
+     * @param string $class Class to call
+     * @param string $function Function to call in the class.
+     * @param int $frequency Job frequency
+     * @param boolean $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
+     * @param int $slot_size Slot size of the job
+     * @param int $max_runtime Max allowed run time in realtime minutes.
+     * @return \Platform\Job The job
+     */
+    public static function getServerJob($class, $function, $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, $slot_size = -1, $max_runtime = -1) {
+        Errorhandler::checkParams($class, 'string', $frequency, 'int', $frequency_offset_from_end, array('int', 'boolean'), $slot_size, 'int', $max_runtime, 'int');
+        // Create basic job
+        $job = new Job();
+        $server_id = Server::getThisServerID();
+        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE server_ref = ".((int)$server_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
+        if ($qr) $job->loadForWrite($qr['job_id']);
+        $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
+        $job->server_ref = $server_id;
+        return $job;
+    }    
     
     /**
      * Get the name for the output file for this job
@@ -204,7 +247,12 @@ class Job extends \Platform\Datarecord {
     public static function getRunningJobs() {
         $filter = new Filter('Platform\\Job');
         $filter->addCondition(new ConditionGreater('process_id', 0));
-        $filter->addCondition(new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()));
+        $filter->addCondition(
+                new ConditionOR(
+                    new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()),
+                    new ConditionMatch('server_ref', Server::getThisServerID())
+                )
+            );
         return $filter->execute()->getAll();
     }
     
@@ -225,7 +273,12 @@ class Job extends \Platform\Datarecord {
         $filter->addCondition(new ConditionMatch('process_id', 0));
         $filter->addCondition(new ConditionNOT(new ConditionMatch('frequency', 0)));
         $filter->addCondition(new ConditionLesserEqual('next_start', new Time('now')));
-        $filter->addCondition(new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()));
+        $filter->addCondition(
+                new ConditionOR(
+                    new ConditionOneOf('instance_ref', Instance::getIdsOnThisServer()),
+                    new ConditionMatch('server_ref', Server::getThisServerID())
+                )
+            );
         return $filter->execute()->getAll();
     }
     
@@ -365,5 +418,4 @@ class Job extends \Platform\Datarecord {
         }
         $this->save();
     }
-    
 }

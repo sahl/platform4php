@@ -155,7 +155,7 @@ class Instance extends Datarecord {
      * @return array Instance ids on this server
      */
     public static function getIdsOnThisServer() {
-        $server_id = Server::getThisServer();
+        $server_id = Server::getThisServerID();
         return self::getIdsByServerId($server_id);
     }
     

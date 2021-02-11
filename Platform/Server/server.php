@@ -39,7 +39,9 @@ class Server extends Datarecord {
      */
     public static function ensureThisServer() {
         if (! $_SERVER['HTTP_HOST']) return false;
-        $server = self::getThisServer();
+        $filter = new Filter('Platform\\Server');
+        $filter->addCondition(new ConditionMatch('hostname', $_SERVER['HTTP_HOST']));
+        $server = $filter->executeAndGetFirst();
         if (! $server->isInDatabase()) {
             $server->setFromArray(array(
                 'title' => $_SERVER['SERVER_NAME'],
@@ -63,10 +65,10 @@ class Server extends Datarecord {
     }
     
     /**
-     * Get this server (based on host)
+     * Get the ID of this server
      * @return \Platform\Server
      */
-    public static function getThisServer() {
+    public static function getThisServerID() {
         return Platform::getConfiguration('server_id');
     }
     
