@@ -87,6 +87,15 @@ $.fn.clearForm = function() {
     return this;
 }
 
+$.fn.attachErrors = function(errors) {
+    var form = this;
+    $.each(errors, function(form_id, error_message) {
+        form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
+        $('#'+form_id, form).setError(error_message);
+    })
+    
+}
+
 $.fn.attachValues = function(values) {
     var element = this;
     $.each(values, function(key, value) {

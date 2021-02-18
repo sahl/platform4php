@@ -317,8 +317,8 @@ class Field {
      */
     public function renderLabel() {
         if (! $this->label) return;
-        echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label;
-        if ($this->is_required) echo ' (<span style="color:red">*</span>)';
+        echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label.':';
+        if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
         echo '</label>';
     }
     
