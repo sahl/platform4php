@@ -10,6 +10,7 @@ class MenuItem {
     public $icon = '';
     public $data = array();
     public $submenu_items = array();
+    public $target = '';
     
     /**
      * Construct a menu item
@@ -84,6 +85,7 @@ class MenuItem {
      */
     public function getHTML() {
         $result = '<a';
+        if ($this->target) $result .= ' target="'.$this->target.'"';
         if ($this->url) $result .= ' href="'.$this->url.'"';
         if ($this->id) $result .= ' id="'.$this->id.'"';
         $result .= ' class="platform_menuitem';
