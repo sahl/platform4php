@@ -79,6 +79,17 @@ class Api {
                 case Datarecord::FIELDTYPE_DATETIME:
                     $result[$key] = $object->getRawValue($key)->get();
                     break;
+                case Datarecord::FIELDTYPE_REFERENCE_HYPER:
+                    $remote_object = $object->getRawValue($key.'_foreign_class');
+                    if (!class_exists($remote_object)) $result[$key] = null;
+                    else {
+                        $short_class = $remote_object::getClassName();
+                        $result[$key] = array(
+                            'object' => $short_class,
+                            'id' => $object->getRawValue($key.'_reference')
+                        );
+                    }
+                    break;
                 case Datarecord::FIELDTYPE_IMAGE:
                 case Datarecord::FIELDTYPE_FILE:
                     if ($retrieve_binary_data) {
