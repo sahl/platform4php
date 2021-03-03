@@ -38,6 +38,16 @@ class UserProperty extends Datarecord {
     }
     
     /**
+     * Get a shared property - a property for all users
+     * @param string $property Property to return
+     * @param string $subproperty Subproperty to return
+     * @return mixed Property value
+     */
+    public static function getPropertyForAll($property, $subproperty = '') {
+        return static::getPropertyForUser(0, $property, $subproperty);
+    }
+    
+    /**
      * Get a property for the current user
      * @param string $property Property to return
      * @param string $subproperty Subproperty to return
@@ -65,6 +75,17 @@ class UserProperty extends Datarecord {
         return $userproperty->value;
     }
     
+    /**
+     * Set a shared property - a property for all users
+     * @param string $property Property to set
+     * @param string $subproperty Subproperty to set
+     * @param mixed $value Value to set (or null to remove existing)
+     */
+    public static function setPropertyForAll($property, $subproperty, $value = null) {
+        Errorhandler::checkParams($property, 'string', $subproperty, 'string');
+        static::setPropertyForUser(0, $property, $subproperty, $value);
+    }
+
     /**
      * Set a property for the current user
      * @param string $property Property to set
@@ -102,6 +123,4 @@ class UserProperty extends Datarecord {
             $userproperty->save(true);
         }
     }
-    
-    
 }
