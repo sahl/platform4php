@@ -693,7 +693,7 @@ class Datarecord implements DatarecordReferable {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
-                    $default = $element['default_value'] ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
+                    $default = isset($element['default_value']) ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
                     self::query('ALTER TABLE '.static::$database_table.' ADD '.$key.' '.$definition.$default);
                     $changed = true;
                     
