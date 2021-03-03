@@ -3,6 +3,9 @@ namespace Platform;
 
 class Mail extends \Platform\Datarecord {
     
+    const FORMAT_TEXT = 0;
+    const FORMAT_HTML = 1;
+    
     /**
      * Name of table in database
      * @var string 
@@ -74,7 +77,8 @@ class Mail extends \Platform\Datarecord {
             'format' => array(
                 'label' => 'Mail format',
                 'fieldtype' => self::FIELDTYPE_ENUMERATION,
-                'enumeration' => array('text' => 'Text', 'html' => 'Html')
+                'enumeration' => array(self::FORMAT_TEXT => 'Text', self::FORMAT_HTML => 'Html'),
+                'default_value' => self::FORMAT_HTML
             ),
             'is_sent' => array(
                 'label' => 'Is sent?',
@@ -136,7 +140,7 @@ class Mail extends \Platform\Datarecord {
                 }
                 
                 $mailer->CharSet = 'UTF-8';
-                $mailer->isHTML($mail->format == 'html');
+                $mailer->isHTML($mail->format == self::FORMAT_HTML);
                 $mailer->setFrom($mail->from_email, $mail->from_name);
                 $mailer->addAddress($mail->to_email, $mail->to_name);
                 $mailer->Subject = $mail->subject;
@@ -180,7 +184,7 @@ class Mail extends \Platform\Datarecord {
             'file_ref' => $attachments,
             'is_sent' => false,
             'error_count' => 0,
-            'format' => 'html',
+            'format' => self::FORMAT_HTML,
             'scheduled_for' => new Time('now')
         ));
         $mail->save();
@@ -190,7 +194,7 @@ class Mail extends \Platform\Datarecord {
     public static function setupQueue() {
         $job = Job::getJob('Platform\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
         // Check for next run time
-        $qr = Database::instanceFastQuery("SELECT MIN(scheduled_for) as next_start FROM mails WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
+        $qr = Database::instanceFastQuery("SELECT MIN(scheduled_for) as next_start FROM ".self::$database_table." WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
         if ($qr) {
             $job->next_start = new Time($qr['next_start']);
             $job->frequency = Job::FREQUENCY_ONCE;
