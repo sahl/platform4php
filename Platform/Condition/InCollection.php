@@ -21,7 +21,10 @@ class ConditionInCollection extends Condition {
 
     public function getSQLFragment() {
         if ($this->manual_match) return 'TRUE';
+        // If collection is empty this can never match.
+        if ($this->collection->getCount() == 0) return 'FALSE';
         $remote_class = $this->collection->getCollectionType();
+        if (!class_exists($remote_class)) trigger_error('Class '.$remote_class.' does not exists!', E_USER_ERROR);
         $class_of_field = $remote_class::getFieldDefinition($this->fieldname)['foreign_class'];
         $class_of_filter = $this->filter->getBaseClassName();
         
@@ -36,6 +39,7 @@ class ConditionInCollection extends Condition {
     
     public function match($object) {
         if (! $this->manual_match) return true;
+        if ($this->collection->getCount() == 0) return false;
         if (! $this->collection_content) {
             $this->collection_content = $this->collection->getAllRawValues($this->fieldname);
         }
