@@ -43,7 +43,7 @@ class Instance extends Datarecord {
         // Check if initiated
         if (! $this->is_initiated) trigger_error('This instance is not initiated yet!'. E_USER_ERROR);
         // Check if we are on the right server
-        //if ($this->server_ref != Server::getThisServerID()) trigger_error('You cannot activate this instance on this server!', E_USER_ERROR);
+        if ($this->server_ref != Server::getThisServerID()) trigger_error('You cannot activate this instance on this server!', E_USER_ERROR);
         $_SESSION['platform']['activeinstance'] = $this->instance_id;
         $_SESSION['platform']['instancedatabase'] = $this->getDatabaseName();
         Database::useInstance();

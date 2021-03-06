@@ -1085,7 +1085,7 @@ class Datarecord implements DatarecordReferable {
         if ($script) $form->setScript($script);
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
-            if ($definition['readonly']) continue;
+            if ($definition['readonly'] || $key == 'metadata') continue;
             $field = static::getFormFieldFromDefinition($key, $definition);
             if ($field === null) continue;
             // Check for additional rendering
@@ -1099,9 +1099,8 @@ class Datarecord implements DatarecordReferable {
             }
             // Check if we need to start a new row
             if ($percentleft == 100) {
-                $form->addHTML('<div class="'.Design::getClass('datarecord_row').'">');
+                $form->addHTML('<div class="platform_row">');
             }
-            $field->addContainerClass(Design::getClass('datarecord_column'));
             $field->addContainerStyle('width: '.$size.'%');
             $percentleft -= $size;
 
@@ -1109,6 +1108,8 @@ class Datarecord implements DatarecordReferable {
         }
         // End row in progress
         $form->addHTML('</div>');
+        // Add custom form validator
+        $form->addValidationFunction(get_called_class().'::validateForm');
         return $form;
     }
     

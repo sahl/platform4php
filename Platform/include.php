@@ -3,9 +3,6 @@ $configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
 
 require_once $configfile;
 
-ini_set('display_errors', 'On');
-error_reporting(E_ALL & ~E_NOTICE);
-
 // We need to load some classes before the autoloader can work
 $preload_list = array(
     '/Errorhandler/errorhandler.php',
@@ -29,7 +26,7 @@ if (\Platform\Translation::isEnabled()) {
     \Platform\Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);
     foreach ($preload_list as $script) \Platform\Translation::prepareTranslationsForFile(__DIR__.$script);
 }
-Platform\Design::queueJSFile('/Platform/Translation/js/translation.js');
+Platform\Page::queueJSFile('/Platform/Translation/js/translation.js');
 
 // Register shutdown
 register_shutdown_function('Platform\\Errorhandler::shutdown');
@@ -40,32 +37,32 @@ set_error_handler('Platform\\Errorhandler::handler');
 umask(002);
 
 // Load includes
-Platform\Design::queueJSFile('/Platform/Jquery/js/jquery.js');
-Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
-Platform\Design::queueJSFile('/Platform/Jquery/js/serialize2json.js');
-Platform\Design::queueJSFile('/Platform/Design/js/general.js');
-Platform\Design::queueCSSFile('/Platform/Menu/css/menu.css');
+Platform\Page::queueJSFile('/Platform/Jquery/js/jquery.js');
+Platform\Page::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
+Platform\Page::queueJSFile('/Platform/Jquery/js/serialize2json.js');
+Platform\Page::queueJSFile('/Platform/Design/js/general.js');
+Platform\Page::queueCSSFile('/Platform/Menu/css/menu.css');
 
-Platform\Design::queueJSFile('/Platform/Dialog/js/dialog.js');
-Platform\Design::queueJSFile('/Platform/Menu/js/menuitem.js');
-Platform\Design::queueJSFile('/Platform/Form/js/form.js');
-Platform\Design::queueJSFile('/Platform/Form/js/autosize.js');
+Platform\Page::queueJSFile('/Platform/Dialog/js/dialog.js');
+Platform\Page::queueJSFile('/Platform/Menu/js/menuitem.js');
+Platform\Page::queueJSFile('/Platform/Form/js/form.js');
+Platform\Page::queueJSFile('/Platform/Form/js/autosize.js');
 
-Platform\Design::queueJSFile('/Platform/Field/js/multiplier.js');
-Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');
-Platform\Design::queueJSFile('/Platform/Field/js/texteditor.js');
-Platform\Design::queueCSSFile('/Platform/Field/css/texteditor.css');
+Platform\Page::queueJSFile('/Platform/Field/js/multiplier.js');
+Platform\Page::queueJSFile('/Platform/Field/js/combobox.js');
+Platform\Page::queueJSFile('/Platform/Field/js/texteditor.js');
+Platform\Page::queueCSSFile('/Platform/Field/css/texteditor.css');
 
-Platform\Design::queueJSFile('/Platform/Component/js/component.js');
+Platform\Page::queueJSFile('/Platform/Component/js/component.js');
 
-Platform\Design::queueJSFile('/Platform/Design/js/greyout.js');
-Platform\Design::queueCSSFile('/Platform/Design/css/greyout.css');
+Platform\Page::queueJSFile('/Platform/Design/js/greyout.js');
+Platform\Page::queueCSSFile('/Platform/Design/css/greyout.css');
 
-Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
-Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
+Platform\Page::queueJSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
+Platform\Page::queueCSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
 
-Platform\Design::queueJSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
-Platform\Design::queueCSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
+Platform\Page::queueJSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
+Platform\Page::queueCSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
 
 
 

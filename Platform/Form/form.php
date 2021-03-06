@@ -150,7 +150,15 @@ class Form {
         $html = ob_get_clean();
         return $html;
     }
-    
+
+    /**
+     * Get the event of this form (if it was posted)
+     * @return string|boolean Event name or false if this form wasn't posted.
+     */
+    public function getEvent() {
+        return $this->isSubmitted() ? $_POST['form_event'] : false;
+    }
+
     /**
      * Get a field from the form by name. If a multiplier is present in the form
      * a field from that can be found by using a name on the following form:
@@ -397,7 +405,7 @@ class Form {
      * Render the form
      */
     public function render() {
-        if ($this->script) Design::JSFile ($this->script);
+        if ($this->script) Page::JSFile ($this->script);
         echo '<form id="'.$this->form_id.'" method="post" class="platform_form" action="'.$this->action.'">';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
         echo '<input type="hidden" name="form_event" value="'.$this->event.'">';

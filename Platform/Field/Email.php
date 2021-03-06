@@ -6,7 +6,6 @@ class FieldEmail extends Field {
     public function __construct($label, $name, $options = array()) {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         parent::__construct($label, $name, $options);
-        $this->classes[] = Design::getClass('formfield');
     }
     
     public function parse($value) {
