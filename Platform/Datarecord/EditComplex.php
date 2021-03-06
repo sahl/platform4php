@@ -4,6 +4,8 @@ namespace Platform;
 
 class DatarecordEditComplex extends Component {
     
+    protected static $js_files = ['/Platform/Datarecord/js/editcomplex.js'];
+    
     protected static $can_redraw = false;
     
     private $class;
@@ -40,6 +42,7 @@ class DatarecordEditComplex extends Component {
     
     public function __construct($class, $table_parameters = array()) {
         Errorhandler::checkParams($class, 'string', $table_parameters, 'array');
+        parent::__construct();
         $this->class = $class;
         if (! class_exists($this->class)) trigger_error('Invalid class passed to DatarecordEditComplex.', E_USER_ERROR);
         $this->setID($class::getClassName().'_editcomplex');
@@ -53,8 +56,6 @@ class DatarecordEditComplex extends Component {
         $this->addData('shortclass', $class::getClassName());
         $this->addData('class', $class);
         $this->addData('io_datarecord', self::$url_io_datarecord);
-        
-        $this->requireJS('/Platform/Datarecord/js/editcomplex.js');
     }
     
     private function constructEditDialog() {

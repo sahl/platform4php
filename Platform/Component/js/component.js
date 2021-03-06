@@ -7,27 +7,7 @@ addCustomPlatformFunction(function(item) {
         var element = $(this);
         
         // Remove events if they exists
-        $(this).off('disable enable disable_others enable_others redraw');
-        
-        $(this).on('disable', function(e) {
-            $(this).greyOut(true);
-            e.stopPropagation();
-        });
-        
-        $(this).on('enable', function(e) {
-            $(this).greyOut(false);
-            e.stopPropagation();
-        });
-        
-        $(this).on('disable_others', function(e) {
-            $('.platform_component.platform_component_candisable').not(element).trigger('disable');
-            e.stopPropagation();
-        });
-        
-        $(this).on('enable_others', function(e) {
-            $('.platform_component.platform_component_candisable').not(element).trigger('enable');
-            e.stopPropagation();
-        });
+        $(this).off('redraw');
         
         $(this).on('redraw', function(e) {
             var componentproperties = $(this).data('componentproperties');

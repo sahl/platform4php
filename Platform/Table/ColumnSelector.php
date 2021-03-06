@@ -3,16 +3,18 @@ namespace Platform;
 
 class TableColumnSelector extends Component {
     
+    protected static $js_files = ['/Platform/Table/js/columnselector.js'];
+    
     protected $table = null;
     protected $dialog = null;
     
     protected static $can_redraw = false;
 
     public function __construct($table) {
+        parent::__construct();
         if (! $table instanceof Table) trigger_error('Invalid table object', E_USER_ERROR);
         $this->table = $table;
         $this->setID($table->getID().'_component_select');
-        $this->requireJS('/Platform/Table/js/columnselector.js');
         $this->addData('table_id', $table->getID());
         $this->buildDialog();
     }

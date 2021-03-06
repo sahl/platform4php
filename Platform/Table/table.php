@@ -3,6 +3,8 @@ namespace Platform;
 
 class Table extends Component {
     
+    protected static $js_files = ['/Platform/Table/js/table.js'];
+    
     protected static $can_redraw = false;
     
     private $center_and_minimize = false;
@@ -14,11 +16,11 @@ class Table extends Component {
      * @param string $id Table ID
      */
     public function __construct($id) {
+        parent::__construct();
         Errorhandler::checkParams($id, 'string');
         $this->setID($id);
         $this->setTabulatorOption('layout', 'fitColumns');
         $this->setTabulatorOption('placeholder', 'No data');
-        self::requireJS('/Platform/Table/js/table.js');
     }
     
     /**

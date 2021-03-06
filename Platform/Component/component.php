@@ -38,6 +38,12 @@ class Component {
      * @var boolean|string 
      */
     private $component_id = false;
+    
+    /**
+     * CSS files to use for this component
+     * @var array
+     */
+    protected static $css_files = [];
 
     /**
      * Data for html tag
@@ -53,16 +59,10 @@ class Component {
     public static $is_secure = true;
 
     /**
-     * List of component javascript already loaded
+     * List of javascript to load for this component
      * @var array
      */
-    public static $js_file_loaded = array();
-
-    /**
-     * Indicate if we shouldn't load javascript
-     * @var boolean 
-     */
-    private static $prevent_js_load = false;
+    protected static $js_files = [];
 
     /**
      * Properties of the component
@@ -75,6 +75,12 @@ class Component {
      * @var string
      */
     protected static $redraw_url = '/Platform/Component/php/get_content.php';
+    
+    public function __construct() {
+        foreach (static::$js_files as $js_file) Page::queueJSFile ($js_file);
+        foreach (static::$css_files as $css_file) Page::queueCSSFile ($css_file);
+        $this->prepareData();
+    }
 
     /**
      * Read a property of the component
@@ -126,13 +132,6 @@ class Component {
     }
 
     /**
-     * Call this for preventing loading of Javascript
-     */
-    public function dontLoadScript() {
-        self::$prevent_js_load = true;
-    }
-
-    /**
      * Get HTML ID of this component
      * @return string
      */
@@ -164,7 +163,6 @@ class Component {
      */
     public function render() {
         if (! $this->can_render) return;
-        $this->prepareData();
         $classes = $this->classes;
         $classes[] = 'platform_component';
         $classes[] = 'platform_component_'.$this->getName();
@@ -191,18 +189,6 @@ class Component {
      */
     public function renderContent() {
         echo 'Override me';
-    }
-    
-    /**
-     * Require a javascript file to display component
-     * @param string $js_file
-     */
-    public static function requireJS($js_file) {
-        // Check if already loaded
-        if (in_array($js_file, self::$js_file_loaded)) return;
-        if (Design::isPageStarted()) Design::JSFile($js_file);
-        else Design::queueJSFile($js_file);
-        self::$js_file_loaded[] = $js_file;
     }
     
     /**
