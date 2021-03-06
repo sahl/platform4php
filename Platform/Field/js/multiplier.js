@@ -14,7 +14,6 @@ addCustomPlatformFunction(function(item) {
 
 function platform_add_multiplier_functionality(element) {
     $(element).find('input[type!="checkbox"],textarea').blur(platform_handle_multiplier_change);
-    $(element).find('input[type!="checkbox"],textarea').keyup(platform_handle_multiplier_expand);
     $(element).find('input[type="checkbox"]').click(platform_handle_multiplier_change);
     $(element).find('select').change(platform_handle_multiplier_change);
 }
@@ -35,32 +34,11 @@ function platform_detect_values(element) {
     return result;
 }
 
-function platform_handle_multiplier_expand() {
-    var row = $(this).closest('.platform_form_multiplier_element');
-    // Check if we need to expand
-    if (row.next().is(':last-child') && $(this).val() != '') {
-        // We need to expand.
-        var new_row = row.clone();
-        // Destroy existing editors in new row
-        new_row.find('.note-editor').remove();
-        new_row.insertAfter(row);
-        new_row.find('textarea,input[type!="checkbox"]').val('');
-        new_row.find('input[type="checkbox"]').attr('checked', false);
-        new_row.find('.formfield_error').removeClass('formfield_error');
-        new_row.find('.formfield_error_container').hide();
-        platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));
-        new_row.applyPlatformFunctions();
-        platform_add_multiplier_functionality(new_row);
-        row.closest('.platform_form_multiplier').trigger('row_added');
-    }
-    return true;
-}
-
 function platform_handle_multiplier_change() {
     console.log('change '+$(this).attr('id'));
     var row = $(this).closest('.platform_form_multiplier_element');
     // Check if we need to expand
-    if (row.next().is(':last-child') && $(this).val() != '') {
+    if ((row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)')) && $(this).val() != '') {
         console.log('change-exp '+$(this).attr('id'));
         // We need to expand.
         var new_row = row.clone();
@@ -72,11 +50,11 @@ function platform_handle_multiplier_change() {
         row.closest('.platform_form_multiplier').trigger('row_added');
         platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));
     } else {
-        // Check if we need to collapse
-        if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! row.next().is(':last-child')) {
+        // We need to remove this row if it's empty, except if it is the last row or the last row of it's kind
+        if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {
             console.log('change-col '+$(this).attr('id'));
             var container = $(this).closest('.platform_form_multiplier');
-            if (row.next().is(':last-child'))
+            if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
                 row.prev().find('input:first').focus();
             else
                 row.next().find('input:first').focus();
@@ -89,6 +67,7 @@ function platform_handle_multiplier_change() {
 }
 
 function platform_multiplier_fixnames(element) {
+    console.log('Fix names');
     // We need to determine what level we are operating on
     var level = 0;
     var parent_multiplier = element.parent();
@@ -106,16 +85,14 @@ function platform_multiplier_fixnames(element) {
     var regexp = eval(regexp_string);
     var i = 0;
     element.children('.platform_form_multiplier_element').each(function() {
+        console.log('Loop is '+i);
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
             var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('name', new_name).prop('id', new_id);
-//            if ($(this).parent().is('.platform_formfield_container') && ! $(this).parent().find('.file_select_frame').length) {
-//                $(this).parent().prop('id', new_name+'_container');
-//                $(this).parent().find('label').prop('for', new_name);
-//            }
+            $(this).closest('.platform_form_field_container').find('label').prop('for', new_name);
         })
         $(this).find('.platform_formfield_container').each(function() {
             var id = $(this).prop('id');

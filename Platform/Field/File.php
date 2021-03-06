@@ -42,7 +42,7 @@ class FieldFile extends Field {
         echo '<input type="hidden" name="'.$this->getName().'[status]" value="'.$value['status'].'">';
         echo '<input type="hidden" name="'.$this->getName().'[original_file]" value="'.$value['original_file'].'">';
         echo '<input type="hidden" name="'.$this->getName().'[temp_file]" value="'.$value['temp_file'].'">';
-        echo '<br><iframe id="'.$this->getFieldIdForHTML().'" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Field/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 width=100% height=50 style="vertical-align: top;"></iframe>';
+        echo '<iframe id="'.$this->getFieldIdForHTML().'" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Field/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 width=100% height=36 style="vertical-align: top;"></iframe>';
     }
     
     public function setValue($value) {

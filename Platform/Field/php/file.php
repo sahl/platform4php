@@ -3,7 +3,7 @@ namespace Platform;
 
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
-Design::renderPagestart('File upload', '/Platform/Field/js/file.js');
+Page::renderPagestart('File upload', ['/Platform/Field/js/file.js']);
 
 $current_file_name = '';
 
@@ -43,9 +43,9 @@ if ($_POST['action'] == 'send_file') {
 
 if ($current_file_name) {
     if ($file instanceof File) {
-        echo '<a href="'.$file->getURL().'" target="_blank"><img border=0 style="vertical-align: baseline;" src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'"></a>';
+        echo '<a href="'.$file->getURL().'" target="_blank"><img border=0 style="vertical-align: top;" src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'"></a>';
     } else {
-        echo '<img style="vertical-align: baseline;" src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'">';
+        echo '<img style="vertical-align: top;" src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'">';
     }
     echo $current_file_name;
     echo ' <span class="fa fa-minus-circle" id="file_delete" style="color: red"> </span>';
@@ -62,4 +62,6 @@ if ($current_file_name) {
     echo '</form>';
 }
 
-Design::renderPageend();
+echo '<div id="upload_message" class="platform_invisible">File is uploading...</div>';
+
+Page::renderPageend();

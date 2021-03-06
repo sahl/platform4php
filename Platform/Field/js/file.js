@@ -1,6 +1,7 @@
 $(function() {
     $('input[name="file"]').change(function() {
-        $(this).closest('form').submit();
+        $(this).closest('form').hide().submit();
+        $('#upload_message').show();
     })
     
     $('#file_delete').click(function() {

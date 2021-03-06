@@ -1,7 +1,9 @@
 <?php
 namespace Platform;
 
-class Dialog {
+class Dialog extends Component {
+    
+    protected static $js_files = ['/Platform/Dialog/js/dialog.js'];
     
     private $id;
     private $title;

@@ -1,7 +1,19 @@
 <?php
 namespace Platform;
 
-class Form {
+class Form extends Component {
+    
+    protected static $css_files = ['/Platform/Form/css/form.css', 
+        '/Platform/Field/css/texteditor.css',
+        'https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css'];
+
+    
+    protected static $js_files = ['/Platform/Form/js/form.js',
+        '/Platform/Form/js/autosize.js',
+        '/Platform/Field/js/multiplier.js',
+        '/Platform/Field/js/combobox.js',
+        '/Platform/Field/js/texteditor.js',
+        'https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js'];
     
     private $form_id = array();
 
@@ -16,6 +28,7 @@ class Form {
     private $event = 'submit';
     
     public function __construct($form_id, $filename = '') {
+        parent::__construct();
         Errorhandler::checkParams($form_id, 'string', $filename, 'string');
         $this->form_id = $form_id;
         if ($filename) $this->getFromFile ($filename);
@@ -404,7 +417,7 @@ class Form {
     /**
      * Render the form
      */
-    public function render() {
+    public function renderContent() {
         if ($this->script) Page::JSFile ($this->script);
         echo '<form id="'.$this->form_id.'" method="post" class="platform_form" action="'.$this->action.'">';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';

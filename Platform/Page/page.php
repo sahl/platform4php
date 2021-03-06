@@ -73,9 +73,7 @@ class Page {
         
         if (! is_array($css_files)) $css_files = array($css_files);
         $css_files = array_merge(array(
-            'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css',
-            '/Platform/Jquery/css/jquery-ui.css',
-            '/Platform/Design/css/platform.css',
+            
         ), self::$css_files_to_load, $css_files);
         foreach ($css_files as $css_file) {
             echo '<link rel="stylesheet" href="'.$css_file.'" type="text/css">';

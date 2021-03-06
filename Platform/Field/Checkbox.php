@@ -15,15 +15,6 @@ class FieldCheckbox extends Field {
         return true;
     }    
     
-    public function render() {
-        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
-        $this->renderLabel();
-        $this->renderInput();
-        $this->renderErrorContainer($this->errortext);
-        echo '</div>';
-    }
-    
-    
     public function renderInput() {
         $checked = $this->value ? ' checked' : '';
         echo '<input class="'.$this->getClassString().'" type="checkbox" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="1"'.$this->additional_attributes.$checked.'> ';

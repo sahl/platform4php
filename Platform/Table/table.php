@@ -3,7 +3,10 @@ namespace Platform;
 
 class Table extends Component {
     
-    protected static $js_files = ['/Platform/Table/js/table.js'];
+    protected static $css_files = ['https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css'];
+    
+    protected static $js_files = ['https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js',
+        '/Platform/Table/js/table.js'];
     
     protected static $can_redraw = false;
     
