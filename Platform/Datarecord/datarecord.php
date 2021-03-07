@@ -1844,16 +1844,6 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
-     * Render an edit complex for this object type showing a table with all objects,
-     * and an option to create, edit, delete them.
-     * @param array $parameters Additional params to the table
-     */
-    public static function renderEditComplex($parameters = array()) {
-        $edit_complex = static::getEditComplex($parameters);
-        $edit_complex->render();
-    }
-    
-    /**
      * Render an integrity check of this class.
      */
     public static function renderIntegrityCheck() {
