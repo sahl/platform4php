@@ -50,6 +50,7 @@ Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
 // General Platform
 Page::queueJSFile('/Platform/Page/js/general.js');
 Page::queueCSSFile('/Platform/Page/css/platform.css');
+Page::queueJSFile('/Platform/Menu/js/menuitem.js');
 
 // Components
 Page::queueCSSFile('/Platform/Component/css/component.css');
