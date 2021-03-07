@@ -199,6 +199,14 @@ class Form extends Component {
     }
     
     /**
+     * Get the ID of the form
+     * @return int
+     */
+    public function getFormId() {
+        return $this->form_id;
+    }    
+    
+    /**
      * Get form fields from a file
      * @param string $filename
      */
@@ -209,14 +217,6 @@ class Form extends Component {
         foreach (static::parseFieldsFromText($text) as $field) {
             $this->addField($field);
         }
-    }
-    
-    /**
-     * Get the ID of the form
-     * @return int
-     */
-    public function getId() {
-        return $this->form_id;
     }
     
     /**

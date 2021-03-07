@@ -5,25 +5,24 @@ class Dialog extends Component {
     
     protected static $js_files = ['/Platform/Dialog/js/dialog.js'];
     
-    private $id;
-    private $title;
-    private $text;
-    private $form;
-    private $buttons;
+    protected $properties = [
+        'title' => '',
+        'text' => '',
+        'form' => null
+    ];
     
     public function __construct($id, $title, $text, $buttons = array(), $form = false) {
-        $this->id = $id;
+        parent::__construct();
+        $this->setID($id);
         $this->title = $title;
         $this->text = $text;
-        $this->buttons = $buttons;
+        $this->addData('buttons', $buttons);
         $this->form = $form;
     }
     
-    public function render() {
-        echo '<div class="platform_dialog" id="'.$this->id.'" title="'.$this->title.'" data-buttons="'.htmlentities(json_encode($this->buttons)).'">';
+    public function renderContent() {
         echo $this->text;
         if ($this->form instanceof Form) $this->form->render();
-        echo '</div>';
     }
     
 }

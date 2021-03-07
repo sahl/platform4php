@@ -287,7 +287,7 @@ class Field {
      * @return string
      */
     public function getFieldIdForHTML() {
-        if ($this->form) return $this->form->getId().'_'.$this->getName();
+        if ($this->form) return $this->form->getFormId().'_'.$this->getName();
         return $this->name;
     }
 

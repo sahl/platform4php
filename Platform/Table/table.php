@@ -247,7 +247,7 @@ class Table extends Component {
         $this->tabulator_options['columns'] = $new_columns;
     }
     
-    public function prepareData() {
+    public function prepareTableData() {
         if (! $this->tabulator_options['initialSort']) $this->defaultSort ();
         if ($this->center_and_minimize) $this->addClass('platform_table_center_and_minimize');
     }

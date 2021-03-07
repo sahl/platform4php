@@ -33,8 +33,8 @@ $.fn.platformDialog = function(buttons, opts) {
     return this;
 }
 
-addCustomPlatformFunctionLast(function(item) {
-     $('.platform_dialog',item).each(function(e) {
+addPlatformComponentHandlerFunction('dialog', function(item) {
+     $(item).each(function(e) {
          var buttons = [];
          var dialog = $(this);
          $.each($(this).data('buttons'), function(event, title) {

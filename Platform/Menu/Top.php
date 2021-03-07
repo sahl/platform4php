@@ -8,10 +8,10 @@ class MenuTop extends Menu {
         $this->calculateSelectedMenuItemByLocation();
         echo '<div>';
         foreach ($this->elements as $menuitem) {
+            echo '<div class="platform_dropdown_menu">';
             if ($menuitem->hasSubmenu()) {
-                // This is a dropdown menu
-                echo '<div class="platform_dropdown_menu">';
-                echo '<div class="platform_menu_top_item">';
+                $classes = $this->checkIfSelected($menuitem) ? ' platform_dropdown_menu_top_item_selected platform_dropdown_menu_top_item' : 'platform_dropdown_menu_top_item';
+                echo '<div class="'.$classes.'">';
                 $menuitem->render();
                 echo '</div>';
                 echo '<div class="platform_dropdown_menu_content">';
@@ -21,15 +21,13 @@ class MenuTop extends Menu {
                     $sub_menuitem->render();
                 }
                 echo '</div>';
-                echo '</div>';
             } else {
-                echo '<div class="'.Design::getClass('platform_dropdown_menu').'">';
-                $classes = $this->checkIfSelected($menuitem) ? ' platform_dropdown_menu_top_item_selected' : 'platform_dropdown_menu_top_item';
+                $classes = $this->checkIfSelected($menuitem) ? ' platform_dropdown_menu_top_item_selected platform_dropdown_menu_top_item' : 'platform_dropdown_menu_top_item';
                 echo '<div class="'.$classes.'">';
                 $menuitem->render();
                 echo '</div>';
-                echo '</div>';
             }
+            echo '</div>';
         }
         echo '</div>';
     }

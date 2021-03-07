@@ -13,7 +13,7 @@ addCustomPlatformFunction(function(item) {
 
 
 function platform_add_multiplier_functionality(element) {
-    $(element).find('input[type!="checkbox"],textarea').blur(platform_handle_multiplier_change);
+    $(element).find('input[type!="checkbox"],textarea').keyup(platform_handle_multiplier_change);
     $(element).find('input[type="checkbox"]').click(platform_handle_multiplier_change);
     $(element).find('select').change(platform_handle_multiplier_change);
 }
@@ -46,9 +46,14 @@ function platform_handle_multiplier_change() {
         //new_row.appendTo($(this).closest('.platform_form_multiplier'));
         new_row.find('textarea,input[type!="checkbox"]').val('');
         new_row.find('input[type="checkbox"]').attr('checked', false);
+        new_row.find('.formfield_error').removeClass('formfield_error');
+        new_row.find('.formfield_error_container').hide();
+        new_row.applyPlatformFunctions();
         platform_add_multiplier_functionality(new_row);
         row.closest('.platform_form_multiplier').trigger('row_added');
         platform_multiplier_fixnames($(this).closest('.platform_form_multiplier'));
+        
+        
     } else {
         // We need to remove this row if it's empty, except if it is the last row or the last row of it's kind
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {

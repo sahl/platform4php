@@ -2,9 +2,8 @@ $(function() {
     // Focus first form field on page load
     $('.platform_form input[type!="hidden"]').first().focus();
 })
-
-addCustomPlatformFunction(function(item) {
-     $('.platform_form',item).submit(function(e) {
+addPlatformComponentHandlerFunction('form', function(item) {
+     $(item).submit(function(e) {
         var allowsubmit = true;
 
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
@@ -131,7 +130,8 @@ $.fn.attachValues = function(values) {
                     });
                 } else {
                     // Try for multiplier
-                    var el = element.find('#'+element.attr('id')+'_'+key+'_container.platform_form_multiplier');
+                    console.log('Finding multiplier: '+'#'+element.attr('id')+'_'+key+'_container');
+                    var el = element.find('#'+element.attr('id')+'_'+key+'_container .platform_form_multiplier');
                     if (el.length) {
                         $.each(value, function(key, val) {
                             el.find('input[type="hidden"]:last').val(val.id);
