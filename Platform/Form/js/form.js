@@ -1,9 +1,12 @@
 $(function() {
     // Focus first form field on page load
     $('.platform_form input[type!="hidden"]').first().focus();
-})
+    // Focus on auto-focus field
+    $('.platform_autofocus:first').focus();
+});
+
 addPlatformComponentHandlerFunction('form', function(item) {
-     $(item).submit(function(e) {
+    $('form', item).submit(function(e) {
         var allowsubmit = true;
 
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
@@ -52,9 +55,6 @@ addPlatformComponentHandlerFunction('form', function(item) {
          $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
          return true;
      });
-     
-     // Focus on auto-focus field
-     $('.platform_autofocus:first').focus();
      
      // Autosize required textareas
      autosize($('textarea.autosize', item));
