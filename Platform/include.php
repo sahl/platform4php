@@ -55,6 +55,7 @@ Page::queueJSFile('/Platform/Menu/js/menuitem.js');
 // Components
 Page::queueCSSFile('/Platform/Component/css/component.css');
 Page::queueJSFile('/Platform/Component/js/component.js');
+Page::queueJSFile('/Platform/Dialog/js/dialog.js');
 
 // Font awesome
 Page::queueCSSFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');

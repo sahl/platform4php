@@ -69,6 +69,12 @@ class Component {
      * @var array
      */
     protected $properties = array();
+
+    /**
+     * Styles of this component
+     * @var array
+     */
+    protected $styles = array();
     
     /**
      * URL used for component redrawing
@@ -122,6 +128,14 @@ class Component {
         Errorhandler::checkParams($key, 'string');
         $this->data[$key] = $value;
     }
+
+    /**
+     * Add a style to this component
+     * @param string $style
+     */
+    public function addStyle(string $style) {
+        $this->styles[] = $style;
+    }
     
     /**
      * Check if this component is allowed to render
@@ -153,6 +167,27 @@ class Component {
     }
     
     /**
+     * Get the styles of this component
+     * @return array
+     */
+    public function getStyles() : array {
+        return $this->styles;
+    }
+    
+    /**
+     * Get the style of this component as a string
+     * @return string
+     */
+    public function getStyleString() : string {
+        $result = '';
+        foreach ($this->getStyles() as $style) {
+            if ($result != '' && substr($style,-1) != ';') $result .= ';';
+            $result = trim($result.$style);
+        }
+        return $result;
+    }
+    
+    /**
      * Override to prepare internal data in this component (if any)
      */
     public function prepareData() {
@@ -179,6 +214,8 @@ class Component {
             if (is_array($data)) $data = json_encode($data);
             echo ' data-'.$key.'="'.htmlentities($data, ENT_QUOTES).'"';
         }
+        $style_string = $this->getStyleString();
+        if ($style_string) echo ' style="'.$style_string.'"';
         echo '>';
         $this->renderContent();
         echo '</div>';
@@ -216,5 +253,13 @@ class Component {
     public function setRender($render) {
         Errorhandler::checkParams($render, 'boolean');
         $this->can_render = $render;
+    }
+    
+    /**
+     * Set the style of this component
+     * @param string $style
+     */
+    public function setStyle(string $style) {
+        $this->styles = [$style];
     }
 }

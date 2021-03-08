@@ -1,3 +1,8 @@
+$(function() {
+    $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div></div>');
+    $('#platform_allpurpose_dialog').platformDialog([]);
+});
+
 $.fn.platformDialog = function(buttons, opts) {
     var dialog_buttons = [];
     for (var txt in buttons) {
@@ -33,27 +38,6 @@ $.fn.platformDialog = function(buttons, opts) {
     return this;
 }
 
-addPlatformComponentHandlerFunction('dialog', function(item) {
-     $(item).each(function(e) {
-         var buttons = [];
-         var dialog = $(this);
-         $.each($(this).data('buttons'), function(event, title) {
-             buttons.push({
-                 text: title,
-                 click: function() {dialog.trigger(event); console.log('Firex '+event);}
-             });
-         });
-         console.log('Build dialog');
-         $(this).platformDialog(buttons);
-     })
- });
-
-
-$(function() {
-    $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div></div>');
-    $('#platform_allpurpose_dialog').platformDialog([]);
-});
-
 
 function warningDialog(title, text, callback) {
     $('#platform_allpurpose_text').html(text);
@@ -87,4 +71,21 @@ function confirmDialog(title, text, callback_ok, callback_cancel) {
         }        
     ]).dialog('open');
 }
+
+
+addCustomPlatformFunctionLast(function(item) {
+     $('.platform_component_dialog',item).each(function(e) {
+         var buttons = [];
+         var dialog = $(this);
+         $.each($(this).data('buttons'), function(event, title) {
+             buttons.push({
+                 text: title,
+                 click: function() {dialog.trigger(event); console.log('Firex '+event);}
+             });
+         });
+         $(this).platformDialog(buttons);
+         console.log('Build dialog '+$(this).prop('id'));
+     })
+ });
+
 

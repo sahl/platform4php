@@ -22,8 +22,7 @@ class MenuItem {
      * @param array $data Data on html tag with values hashed by keys
      * @param array $submenu_items An array with MenuItem's intended as submenu to this item
      */
-    public function __construct($text, $url = '', $id = '', $classes = '', $icon = '', $data = array(), $submenu_items = array()) {
-        Errorhandler::checkParams($text, 'string', $url, 'string', $id, 'string', $classes, 'string', $icon, 'string', $data, 'array');
+    public function __construct(string $text, string $url = '', string $id = '', string $classes = '', string $icon = '', array $data = array(), array $submenu_items = array()) {
         $this->text = $text;
         $this->url = $url;
         $this->id = $id;

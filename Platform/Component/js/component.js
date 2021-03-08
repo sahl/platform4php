@@ -1,4 +1,5 @@
 var platform_component_handler_functions = [];
+var platform_component_handler_class_names = [];
 
 addCustomPlatformFunction(function(item) {
     var elements = item.find('.platform_component');
@@ -24,7 +25,9 @@ addCustomPlatformFunction(function(item) {
         })
 
         $.each(platform_component_handler_functions, function(key, array_element) {
-            if (element.hasClass('platform_component_'+array_element.class_name)) array_element.func(element);
+            if (element.hasClass('platform_component_'+array_element.class_name)) {
+                array_element.func(element);
+            }
         });
         
         $(this).trigger('component_ready');
@@ -32,9 +35,13 @@ addCustomPlatformFunction(function(item) {
 })
 
 function addPlatformComponentHandlerFunction(class_name, func) {
+    // Ensure we only add everything once.
+    if (platform_component_handler_class_names.includes(class_name)) return;
+    
     var handler_element = {
         class_name: class_name,
         func: func
     };
     platform_component_handler_functions.push(handler_element);
+    platform_component_handler_class_names.push(class_name);
 }
