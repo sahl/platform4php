@@ -3,18 +3,6 @@ namespace Platform;
 
 class Form extends Component {
     
-    protected static $css_files = ['/Platform/Form/css/form.css', 
-        '/Platform/Field/css/texteditor.css',
-        'https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css'];
-
-    
-    protected static $js_files = ['/Platform/Form/js/form.js',
-        '/Platform/Form/js/autosize.js',
-        '/Platform/Field/js/multiplier.js',
-        '/Platform/Field/js/combobox.js',
-        '/Platform/Field/js/texteditor.js',
-        'https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js'];
-    
     private $form_id = array();
 
     private $fields = array();
@@ -28,6 +16,16 @@ class Form extends Component {
     private $event = 'submit';
     
     public function __construct($form_id, $filename = '') {
+        Page::JSFile('/Platform/Form/js/form.js');
+        Page::JSFile('/Platform/Form/js/autosize.js');
+        Page::JSFile('/Platform/Field/js/multiplier.js');
+        Page::JSFile('/Platform/Field/js/combobox.js');
+        Page::JSFile('/Platform/Field/js/texteditor.js');
+        Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
+        Page::CSSFile('/Platform/Form/css/form.css');
+        Page::CSSFile('/Platform/Field/css/texteditor.css');
+        Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
+        
         parent::__construct();
         Errorhandler::checkParams($form_id, 'string', $filename, 'string');
         $this->form_id = $form_id;

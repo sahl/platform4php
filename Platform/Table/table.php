@@ -3,11 +3,6 @@ namespace Platform;
 
 class Table extends Component {
     
-    protected static $css_files = ['https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css'];
-    
-    protected static $js_files = ['https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js',
-        '/Platform/Table/js/table.js'];
-    
     protected static $can_redraw = false;
     
     private $center_and_minimize = false;
@@ -19,6 +14,9 @@ class Table extends Component {
      * @param string $id Table ID
      */
     public function __construct($id) {
+        Page::JSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
+        Page::JSFile('/Platform/Table/js/table.js');
+        Page::CSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
         parent::__construct();
         Errorhandler::checkParams($id, 'string');
         $this->setID($id);

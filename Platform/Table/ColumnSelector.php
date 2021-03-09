@@ -3,14 +3,13 @@ namespace Platform;
 
 class TableColumnSelector extends Component {
     
-    protected static $js_files = ['/Platform/Table/js/columnselector.js'];
-    
     protected $table = null;
     protected $dialog = null;
     
     protected static $can_redraw = false;
 
     public function __construct($table) {
+        Page::JSFile('/Platform/Table/js/columnselector.js');
         parent::__construct();
         if (! $table instanceof Table) trigger_error('Invalid table object', E_USER_ERROR);
         $this->table = $table;

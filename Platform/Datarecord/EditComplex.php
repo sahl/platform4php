@@ -4,8 +4,6 @@ namespace Platform;
 
 class DatarecordEditComplex extends Component {
     
-    protected static $js_files = ['/Platform/Datarecord/js/editcomplex.js'];
-    
     protected static $can_redraw = false;
     
     private $class;
@@ -41,6 +39,7 @@ class DatarecordEditComplex extends Component {
     
     
     public function __construct($class, $table_parameters = array()) {
+        Page::JSFile('/Platform/Datarecord/js/editcomplex.js');
         Errorhandler::checkParams($class, 'string', $table_parameters, 'array');
         parent::__construct();
         $this->class = $class;

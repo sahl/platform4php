@@ -40,12 +40,6 @@ class Component {
     private $component_id = false;
     
     /**
-     * CSS files to use for this component
-     * @var array
-     */
-    protected static $css_files = [];
-
-    /**
      * Data for html tag
      * @var type 
      */
@@ -57,12 +51,6 @@ class Component {
      * @var boolean
      */
     public static $is_secure = true;
-
-    /**
-     * List of javascript to load for this component
-     * @var array
-     */
-    protected static $js_files = [];
 
     /**
      * Properties of the component
@@ -83,8 +71,6 @@ class Component {
     protected static $redraw_url = '/Platform/Component/php/get_content.php';
     
     public function __construct() {
-        foreach (static::$js_files as $js_file) Page::queueJSFile ($js_file);
-        foreach (static::$css_files as $css_file) Page::queueCSSFile ($css_file);
         $this->prepareData();
     }
 
@@ -127,6 +113,15 @@ class Component {
     public function addData($key, $value) {
         Errorhandler::checkParams($key, 'string');
         $this->data[$key] = $value;
+    }
+    
+    /**
+     * Add a map of properties to this object. It will be appended to existing properties.
+     * @param array $propertymap
+     */
+    public function addPropertyMap(array $propertymap) {
+        foreach ($propertymap as $key => $value)
+            $this->properties[$key] = $value;
     }
 
     /**
