@@ -409,6 +409,7 @@ class Field {
             break;
             case self::LABEL_ALIGN_NONE:
                 $this->renderInput();
+                $this->renderErrorContainer($this->errortext);
             break;
         }
         

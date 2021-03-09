@@ -9,11 +9,6 @@ addPlatformComponentHandlerFunction('form', function(item) {
     $('form', item).submit(function(e) {
         var allowsubmit = true;
 
-        // Hide last item of multipliers as these should always be empty and not submitted or validated.
-        $('.platform_form_multiplier_element', $(this)).each(function() {
-            if ($(this).next().is(':last-child')) $(this).hide();
-        });
-
         // Check required fields
         $('.form_required_field', $(this)).each(function() {
             if ($(this).val().length == 0 && $(this).is(':visible')) {
