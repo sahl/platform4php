@@ -38,7 +38,7 @@ class Component {
      * @var boolean|string 
      */
     private $component_id = false;
-
+    
     /**
      * Data for html tag
      * @var type 
@@ -53,28 +53,26 @@ class Component {
     public static $is_secure = true;
 
     /**
-     * List of component javascript already loaded
-     * @var array
-     */
-    public static $js_file_loaded = array();
-
-    /**
-     * Indicate if we shouldn't load javascript
-     * @var boolean 
-     */
-    private static $prevent_js_load = false;
-
-    /**
      * Properties of the component
      * @var array
      */
     protected $properties = array();
+
+    /**
+     * Styles of this component
+     * @var array
+     */
+    protected $styles = array();
     
     /**
      * URL used for component redrawing
      * @var string
      */
     protected static $redraw_url = '/Platform/Component/php/get_content.php';
+    
+    public function __construct() {
+        $this->prepareData();
+    }
 
     /**
      * Read a property of the component
@@ -118,18 +116,28 @@ class Component {
     }
     
     /**
+     * Add a map of properties to this object. It will be appended to existing properties.
+     * @param array $propertymap
+     */
+    public function addPropertyMap(array $propertymap) {
+        foreach ($propertymap as $key => $value)
+            $this->properties[$key] = $value;
+    }
+
+    /**
+     * Add a style to this component
+     * @param string $style
+     */
+    public function addStyle(string $style) {
+        $this->styles[] = $style;
+    }
+    
+    /**
      * Check if this component is allowed to render
      * @return boolean True if this component will render.
      */
     public function canRender() {
         return $this->can_render;
-    }
-
-    /**
-     * Call this for preventing loading of Javascript
-     */
-    public function dontLoadScript() {
-        self::$prevent_js_load = true;
     }
 
     /**
@@ -154,6 +162,27 @@ class Component {
     }
     
     /**
+     * Get the styles of this component
+     * @return array
+     */
+    public function getStyles() : array {
+        return $this->styles;
+    }
+    
+    /**
+     * Get the style of this component as a string
+     * @return string
+     */
+    public function getStyleString() : string {
+        $result = '';
+        foreach ($this->getStyles() as $style) {
+            if ($result != '' && substr($style,-1) != ';') $result .= ';';
+            $result = trim($result.$style);
+        }
+        return $result;
+    }
+    
+    /**
      * Override to prepare internal data in this component (if any)
      */
     public function prepareData() {
@@ -164,7 +193,6 @@ class Component {
      */
     public function render() {
         if (! $this->can_render) return;
-        $this->prepareData();
         $classes = $this->classes;
         $classes[] = 'platform_component';
         $classes[] = 'platform_component_'.$this->getName();
@@ -181,6 +209,8 @@ class Component {
             if (is_array($data)) $data = json_encode($data);
             echo ' data-'.$key.'="'.htmlentities($data, ENT_QUOTES).'"';
         }
+        $style_string = $this->getStyleString();
+        if ($style_string) echo ' style="'.$style_string.'"';
         echo '>';
         $this->renderContent();
         echo '</div>';
@@ -191,18 +221,6 @@ class Component {
      */
     public function renderContent() {
         echo 'Override me';
-    }
-    
-    /**
-     * Require a javascript file to display component
-     * @param string $js_file
-     */
-    public static function requireJS($js_file) {
-        // Check if already loaded
-        if (in_array($js_file, self::$js_file_loaded)) return;
-        if (Design::isPageStarted()) Design::JSFile($js_file);
-        else Design::queueJSFile($js_file);
-        self::$js_file_loaded[] = $js_file;
     }
     
     /**
@@ -230,5 +248,13 @@ class Component {
     public function setRender($render) {
         Errorhandler::checkParams($render, 'boolean');
         $this->can_render = $render;
+    }
+    
+    /**
+     * Set the style of this component
+     * @param string $style
+     */
+    public function setStyle(string $style) {
+        $this->styles = [$style];
     }
 }

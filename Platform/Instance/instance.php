@@ -40,6 +40,10 @@ class Instance extends Datarecord {
      * Activate this instance as the current instance
      */
     public function activate() {
+        // Check if initiated
+        if (! $this->is_initiated) trigger_error('This instance is not initiated yet!'. E_USER_ERROR);
+        // Check if we are on the right server
+        if ($this->server_ref != Server::getThisServerID()) trigger_error('You cannot activate this instance on this server!', E_USER_ERROR);
         $_SESSION['platform']['activeinstance'] = $this->instance_id;
         $_SESSION['platform']['instancedatabase'] = $this->getDatabaseName();
         Database::useInstance();
@@ -245,12 +249,10 @@ class Instance extends Datarecord {
      * Login to this instance
      * @param string $username Username to try
      * @param string $password Password to try
-     * @param string $continue_url URL to go to if success
-     * @return boolean
+     * @return boolean|array array with keys server=server to go to, token_code=token code to use
      */
-    public function login($username, $password, $continue_url = '') {
-        Errorhandler::checkParams($username, 'string', $password, 'string', $continue_url, 'string');
-        if (mb_substr($continue_url,0,1) != '/') $continue_url = '/'.$continue_url;
+    public function login($username, $password) {
+        Errorhandler::checkParams($username, 'string', $password, 'string');
         $server = new Server();
         $server->loadForRead($this->server_ref);
         if (! $server->isThisServer()) {
@@ -264,19 +266,28 @@ class Instance extends Datarecord {
             );
             $result = $server->talk($request);
             if ($result === false || ! $result['status']) return false;
-            $continue_url .= ((mb_strpos($continue_url,'?') !== false) ? '&' : '?').'token_code='.$result['token_code'].'&instance_id='.$this->instance_id;
-            header('location: https://'.$server->hostname.$continue_url);
-            exit;
+            return array('hostname' => $server->hostname, 'token_code' => $result['token_code']);
         }
         $this->activate();
-        $result = static::tryLogin($username, $password);
+        $result = User::tryLogin($username, $password);
         if ($result === false) return false;
-        // Ensure database structures
-        $this->initializeDatabase();
-        // Ensure jobs
-        $this->ensureJobs();
-        Accesstoken::resumeLocation();
-        header('location: '.$continue_url);
+        return array('hostname' => $server->hostname, 'token_code' => $result->token_code);
+    }
+    
+    /**
+     * Login to this instance and continue
+     * @param string $username User name to use for login
+     * @param string $password Password to use for login
+     * @param string $continue_url URL to continue to, if logged in
+     * @return boolean false if invalid login. Otherwise the user is redirected to the continue-URL.
+     */
+    public function loginAndContinue($username, $password, $continue_url = '') {
+        Errorhandler::checkParams($username, 'string', $password, 'string', $continue_url, 'string');
+        if (mb_substr($continue_url,0,1) != '/') $continue_url = '/'.$continue_url;
+        $result = $this->login($username, $password);
+        if ($result === false) return false;
+        $continue_url .= ((mb_strpos($continue_url,'?') !== false) ? '&' : '?').'token_code='.$result['token_code'].'&instance_id='.$this->instance_id;
+        header('location: https://'.$result['hostname'].$continue_url);
         exit;
     }
     
@@ -288,7 +299,7 @@ class Instance extends Datarecord {
      * @param string $continue_url URL to go to if success
      * @return boolean
      */
-    public function loginToInstance($title, $username, $password, $continue_url = '') {
+    public function loginToInstanceAndContinue($title, $username, $password, $continue_url = '') {
         Errorhandler::checkParams($title, 'string', $username, 'string', $password, 'string', $continue_url, 'string');
         $instance = Instance::getByTitle($title);
         if (! $instance->isInDatabase()) return false;
@@ -308,16 +319,5 @@ class Instance extends Datarecord {
         if (! $this->is_initiated) {
             if ($this->createDatabase()) parent::save($force_save);
         }
-    }
-
-    /**
-     * Try a login
-     * @param string $username
-     * @param string $password
-     * @return mixed Accesstoken on success, otherwise false.
-     */
-    public function tryLogin($username, $password) {
-        Errorhandler::checkParams($username, 'string', $password, 'string');
-        return User::tryLogin($username, $password);
     }
 }

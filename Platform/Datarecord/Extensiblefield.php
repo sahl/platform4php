@@ -131,7 +131,7 @@ class DatarecordExtensiblefield extends \Platform\Datarecord {
         $parameters['form_function'] = function($form) use ($class) {
             $form->setValues(array('class' => $class));
         };
-        Design::JSFile('/Platform/Datarecord/js/edit_extensible.js');
+        Page::JSFile('/Platform/Datarecord/js/edit_extensible.js');
         static::renderEditComplex($parameters);
     }
     

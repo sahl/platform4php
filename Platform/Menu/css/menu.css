@@ -1,3 +1,7 @@
+.platform_component_uitopmenu {
+    background: #AAAAAA;
+}
+
 .platform_dropdown_menu {
     display: inline-block;
     text-decoration: none;
@@ -44,6 +48,6 @@
     
 }
 
-.platform_dropdown_menu_top_item > a {
+.platform_dropdown_menu a {
     text-decoration: none;
 }

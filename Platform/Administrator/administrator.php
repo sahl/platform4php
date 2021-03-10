@@ -25,10 +25,10 @@ class Administrator {
                 $form->getFieldByName('administrator_password')->triggerError('Invalid password');
             }
             
-            \Platform\Design::renderPagestart('Administrator login required');
+            \Platform\Page::renderPagestart('Administrator login required');
             echo '<p>Log in as administrator to continue.';
             $form->render();
-            \Platform\Design::renderPageend();
+            \Platform\Page::renderPageend();
             exit();
         }
     }

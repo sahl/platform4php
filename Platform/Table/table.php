@@ -14,11 +14,14 @@ class Table extends Component {
      * @param string $id Table ID
      */
     public function __construct($id) {
+        Page::JSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
+        Page::JSFile('/Platform/Table/js/table.js');
+        Page::CSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
+        parent::__construct();
         Errorhandler::checkParams($id, 'string');
         $this->setID($id);
         $this->setTabulatorOption('layout', 'fitColumns');
         $this->setTabulatorOption('placeholder', 'No data');
-        self::requireJS('/Platform/Table/js/table.js');
     }
     
     /**
@@ -242,7 +245,7 @@ class Table extends Component {
         $this->tabulator_options['columns'] = $new_columns;
     }
     
-    public function prepareData() {
+    public function prepareTableData() {
         if (! $this->tabulator_options['initialSort']) $this->defaultSort ();
         if ($this->center_and_minimize) $this->addClass('platform_table_center_and_minimize');
     }

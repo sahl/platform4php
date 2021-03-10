@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class Form {
+class Form extends Component {
     
     private $form_id = array();
 
@@ -16,6 +16,17 @@ class Form {
     private $event = 'submit';
     
     public function __construct($form_id, $filename = '') {
+        Page::JSFile('/Platform/Form/js/form.js');
+        Page::JSFile('/Platform/Form/js/autosize.js');
+        Page::JSFile('/Platform/Field/js/multiplier.js');
+        Page::JSFile('/Platform/Field/js/combobox.js');
+        Page::JSFile('/Platform/Field/js/texteditor.js');
+        Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
+        Page::CSSFile('/Platform/Form/css/form.css');
+        Page::CSSFile('/Platform/Field/css/texteditor.css');
+        Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
+        
+        parent::__construct();
         Errorhandler::checkParams($form_id, 'string', $filename, 'string');
         $this->form_id = $form_id;
         if ($filename) $this->getFromFile ($filename);
@@ -150,7 +161,15 @@ class Form {
         $html = ob_get_clean();
         return $html;
     }
-    
+
+    /**
+     * Get the event of this form (if it was posted)
+     * @return string|boolean Event name or false if this form wasn't posted.
+     */
+    public function getEvent() {
+        return $this->isSubmitted() ? $_POST['form_event'] : false;
+    }
+
     /**
      * Get a field from the form by name. If a multiplier is present in the form
      * a field from that can be found by using a name on the following form:
@@ -178,6 +197,14 @@ class Form {
     }
     
     /**
+     * Get the ID of the form
+     * @return int
+     */
+    public function getFormId() {
+        return $this->form_id;
+    }    
+    
+    /**
      * Get form fields from a file
      * @param string $filename
      */
@@ -188,14 +215,6 @@ class Form {
         foreach (static::parseFieldsFromText($text) as $field) {
             $this->addField($field);
         }
-    }
-    
-    /**
-     * Get the ID of the form
-     * @return int
-     */
-    public function getId() {
-        return $this->form_id;
     }
     
     /**
@@ -396,8 +415,8 @@ class Form {
     /**
      * Render the form
      */
-    public function render() {
-        if ($this->script) Design::JSFile ($this->script);
+    public function renderContent() {
+        if ($this->script) Page::JSFile ($this->script);
         echo '<form id="'.$this->form_id.'" method="post" class="platform_form" action="'.$this->action.'">';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
         echo '<input type="hidden" name="form_event" value="'.$this->event.'">';

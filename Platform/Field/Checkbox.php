@@ -6,7 +6,7 @@ class FieldCheckbox extends Field {
     public function __construct($label, $name, $options = array()) {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
         parent::__construct($label, $name, $options);
-        $this->classes[] = Design::getClass('formfield_checkbox');
+        $this->classes[] = 'platform_checkbox';
     }
     
     public function parse($value) {
@@ -14,15 +14,6 @@ class FieldCheckbox extends Field {
         $this->value = (int)$this->value;
         return true;
     }    
-    
-    public function render() {
-        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
-        $this->renderLabel();
-        $this->renderInput();
-        $this->renderErrorContainer($this->errortext);
-        echo '</div>';
-    }
-    
     
     public function renderInput() {
         $checked = $this->value ? ' checked' : '';

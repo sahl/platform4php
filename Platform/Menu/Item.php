@@ -10,6 +10,7 @@ class MenuItem {
     public $icon = '';
     public $data = array();
     public $submenu_items = array();
+    public $target = '';
     
     /**
      * Construct a menu item
@@ -21,8 +22,7 @@ class MenuItem {
      * @param array $data Data on html tag with values hashed by keys
      * @param array $submenu_items An array with MenuItem's intended as submenu to this item
      */
-    public function __construct($text, $url = '', $id = '', $classes = '', $icon = '', $data = array(), $submenu_items = array()) {
-        Errorhandler::checkParams($text, 'string', $url, 'string', $id, 'string', $classes, 'string', $icon, 'string', $data, 'array');
+    public function __construct(string $text, string $url = '', string $id = '', string $classes = '', string $icon = '', array $data = array(), array $submenu_items = array()) {
         $this->text = $text;
         $this->url = $url;
         $this->id = $id;
@@ -84,6 +84,7 @@ class MenuItem {
      */
     public function getHTML() {
         $result = '<a';
+        if ($this->target) $result .= ' target="'.$this->target.'"';
         if ($this->url) $result .= ' href="'.$this->url.'"';
         if ($this->id) $result .= ' id="'.$this->id.'"';
         $result .= ' class="platform_menuitem';

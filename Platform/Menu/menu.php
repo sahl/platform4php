@@ -3,6 +3,8 @@ namespace Platform;
 
 class Menu extends Component {
     
+    protected static $css_files = ['/Platform/Menu/css/menu.css'];
+    
     protected $elements = array();
     
     protected $select_menuitem = null;

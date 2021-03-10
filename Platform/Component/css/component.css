@@ -1,0 +1,7 @@
+.platform_component {
+    box-sizing: border-box;
+}
+
+.platform_component * {
+    box-sizing: inherit;
+}

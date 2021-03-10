@@ -1,16 +1,13 @@
 $(function() {
     // Focus first form field on page load
     $('.platform_form input[type!="hidden"]').first().focus();
-})
+    // Focus on auto-focus field
+    $('.platform_autofocus:first').focus();
+});
 
-addCustomPlatformFunction(function(item) {
-     $('.platform_form',item).submit(function(e) {
+addPlatformComponentHandlerFunction('form', function(item) {
+    $('form', item).submit(function(e) {
         var allowsubmit = true;
-
-        // Hide last item of multipliers as these should always be empty and not submitted or validated.
-        $('.platform_form_multiplier_element', $(this)).each(function() {
-            if ($(this).next().is(':last-child')) $(this).hide();
-        });
 
         // Check required fields
         $('.form_required_field', $(this)).each(function() {
@@ -50,12 +47,9 @@ addCustomPlatformFunction(function(item) {
           
      // Indicate on password-field when it is updated.
      $('.platform-password',item).change(function() {
-         $(this).closest('.platform_formfield_container').find('input[type="hidden"]').val(1);
+         $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
          return true;
      });
-     
-     // Focus on auto-focus field
-     $('.platform_autofocus:first').focus();
      
      // Autosize required textareas
      autosize($('textarea.autosize', item));
@@ -63,12 +57,12 @@ addCustomPlatformFunction(function(item) {
 
 
 $.fn.setError = function(text) {
-    this.addClass('formfield_error').closest('.platform_formfield_container').find('.formfield_error_container').html(text).slideDown();
+    this.addClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_field_error_container').html(text).slideDown();
     return this;
 }
 
 $.fn.clearError = function() {
-    this.filter('.formfield_error').removeClass('formfield_error').closest('.platform_formfield_container').find('.formfield_error_container').slideUp();
+    this.filter('.platform_form_field_error').removeClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_field_error_container').slideUp();
     return this;
 }
 
@@ -85,6 +79,15 @@ $.fn.clearForm = function() {
     })
     this.trigger('dataloaded');
     return this;
+}
+
+$.fn.attachErrors = function(errors) {
+    var form = this;
+    $.each(errors, function(form_id, error_message) {
+        form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
+        $('#'+form_id, form).setError(error_message);
+    })
+    
 }
 
 $.fn.attachValues = function(values) {
@@ -122,7 +125,8 @@ $.fn.attachValues = function(values) {
                     });
                 } else {
                     // Try for multiplier
-                    var el = element.find('#'+element.attr('id')+'_'+key+'_container.platform_form_multiplier');
+                    console.log('Finding multiplier: '+'#'+element.attr('id')+'_'+key+'_container');
+                    var el = element.find('#'+element.attr('id')+'_'+key+'_container .platform_form_multiplier');
                     if (el.length) {
                         $.each(value, function(key, val) {
                             el.find('input[type="hidden"]:last').val(val.id);

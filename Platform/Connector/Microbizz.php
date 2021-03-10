@@ -130,7 +130,7 @@ class ConnectorMicrobizz {
         $instance->activate();
 
         // Queue Microbizz design file
-        Design::queueCSSFile('/Platform/Connector/css/microbizz.css');
+        Page::queueCSSFile('/Platform/Connector/css/microbizz.css');
     }
     
     /**

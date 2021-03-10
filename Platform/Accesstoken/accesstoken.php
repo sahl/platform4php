@@ -217,6 +217,7 @@ class Accesstoken extends Datarecord {
         if ($_GET['token_code']) {
             $token = self::getByTokencode($_GET['token_code']);
             $token->setSession();
+            Page::redirectToCurrent();
         }
         $valid = true;
         // Check if we have a valid instance

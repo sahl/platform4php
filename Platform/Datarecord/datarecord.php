@@ -693,7 +693,7 @@ class Datarecord implements DatarecordReferable {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
-                    $default = $element['default_value'] ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
+                    $default = isset($element['default_value']) ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
                     self::query('ALTER TABLE '.static::$database_table.' ADD '.$key.' '.$definition.$default);
                     $changed = true;
                     
@@ -944,7 +944,7 @@ class Datarecord implements DatarecordReferable {
      */
     private static function getAssignmentForDatabase($field, $value) {
         Errorhandler::checkParams($field, 'string');
-        return $field.'='.self::getFieldForDatabase($field, $value);
+        return "`$field`=".self::getFieldForDatabase($field, $value);
     }
     
     /**
@@ -1085,7 +1085,7 @@ class Datarecord implements DatarecordReferable {
         if ($script) $form->setScript($script);
         $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
-            if ($definition['readonly']) continue;
+            if ($definition['readonly'] || $key == 'metadata') continue;
             $field = static::getFormFieldFromDefinition($key, $definition);
             if ($field === null) continue;
             // Check for additional rendering
@@ -1099,16 +1099,27 @@ class Datarecord implements DatarecordReferable {
             }
             // Check if we need to start a new row
             if ($percentleft == 100) {
-                $form->addHTML('<div class="'.Design::getClass('datarecord_row').'">');
+                $form->addHTML('<div class="platform_form_line_air">');
             }
-            $field->addContainerClass(Design::getClass('datarecord_column'));
+            // Check if we need spacing
+            $spacing = $size < $percentleft && $size > 5;
+            if ($spacing) $size -= 5;
+            
             $field->addContainerStyle('width: '.$size.'%');
-            $percentleft -= $size;
 
             $form->addField($field);
+            
+            if ($spacing) {
+                $form->addHTML('<div style="width: 5%;"></div>');
+                $size += 5;
+            }
+            $percentleft -= $size;
+            
         }
         // End row in progress
         $form->addHTML('</div>');
+        // Add custom form validator
+        $form->addValidationFunction(get_called_class().'::validateForm');
         return $form;
     }
     
@@ -2050,7 +2061,7 @@ class Datarecord implements DatarecordReferable {
             $fieldlist = array(); $fieldvalues = array();
             foreach (static::$structure as $key => $definition) {
                 if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
-                    $fieldlist[] = $key; 
+                    $fieldlist[] = "`$key`"; 
                     $fieldvalues[] = ($definition['fieldtype'] == self::FIELDTYPE_KEY) ? 'NULL' : self::getFieldForDatabase($key, $this->values[$key]);
                 }
             }
@@ -2122,6 +2133,7 @@ class Datarecord implements DatarecordReferable {
         if (! isset(static::$structure[$field])) trigger_error('Tried setting invalid field: '.$field.' in class '. get_called_class(), E_USER_ERROR);
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
+                if ($value === null) break;
                 $this->values[$field] = $value ? md5($value.$platform_configuration['password_salt']) : '';
                 break;
             case self::FIELDTYPE_TEXT:

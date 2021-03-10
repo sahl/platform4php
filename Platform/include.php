@@ -1,10 +1,9 @@
 <?php
+namespace Platform;
+
 $configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
 
 require_once $configfile;
-
-ini_set('display_errors', 'On');
-error_reporting(E_ALL & ~E_NOTICE);
 
 // We need to load some classes before the autoloader can work
 $preload_list = array(
@@ -20,16 +19,14 @@ foreach ($preload_list as $script) {
 }
 
 // Register autoloader
-spl_autoload_register("platformAutoLoad");
-
+spl_autoload_register("\\Platform\\AutoLoad");
 session_start();
 
 // Load languages
-if (\Platform\Translation::isEnabled()) {
-    \Platform\Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);
-    foreach ($preload_list as $script) \Platform\Translation::prepareTranslationsForFile(__DIR__.$script);
+if (Translation::isEnabled()) {
+    Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);
+    foreach ($preload_list as $script) Translation::prepareTranslationsForFile(__DIR__.$script);
 }
-Platform\Design::queueJSFile('/Platform/Translation/js/translation.js');
 
 // Register shutdown
 register_shutdown_function('Platform\\Errorhandler::shutdown');
@@ -38,38 +35,32 @@ register_shutdown_function('Platform\\Errorhandler::shutdown');
 set_error_handler('Platform\\Errorhandler::handler');
 
 umask(002);
+// INCLUDES
+        
+// Translation system
+Page::queueJSFile('/Platform/Translation/js/translation.js');
+        
+// Jquery        
+Page::queueJSFile('/Platform/Jquery/js/jquery.js');
+Page::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
+Page::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 
-// Load includes
-Platform\Design::queueJSFile('/Platform/Jquery/js/jquery.js');
-Platform\Design::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
-Platform\Design::queueJSFile('/Platform/Jquery/js/serialize2json.js');
-Platform\Design::queueJSFile('/Platform/Design/js/general.js');
-Platform\Design::queueCSSFile('/Platform/Menu/css/menu.css');
+Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
 
-Platform\Design::queueJSFile('/Platform/Dialog/js/dialog.js');
-Platform\Design::queueJSFile('/Platform/Menu/js/menuitem.js');
-Platform\Design::queueJSFile('/Platform/Form/js/form.js');
-Platform\Design::queueJSFile('/Platform/Form/js/autosize.js');
+// General Platform
+Page::queueJSFile('/Platform/Page/js/general.js');
+Page::queueCSSFile('/Platform/Page/css/platform.css');
+Page::queueJSFile('/Platform/Menu/js/menuitem.js');
 
-Platform\Design::queueJSFile('/Platform/Field/js/multiplier.js');
-Platform\Design::queueJSFile('/Platform/Field/js/combobox.js');
-Platform\Design::queueJSFile('/Platform/Field/js/texteditor.js');
-Platform\Design::queueCSSFile('/Platform/Field/css/texteditor.css');
+// Components
+Page::queueCSSFile('/Platform/Component/css/component.css');
+Page::queueJSFile('/Platform/Component/js/component.js');
+Page::queueJSFile('/Platform/Dialog/js/dialog.js');
 
-Platform\Design::queueJSFile('/Platform/Component/js/component.js');
+// Font awesome
+Page::queueCSSFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
 
-Platform\Design::queueJSFile('/Platform/Design/js/greyout.js');
-Platform\Design::queueCSSFile('/Platform/Design/css/greyout.css');
-
-Platform\Design::queueJSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
-Platform\Design::queueCSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
-
-Platform\Design::queueJSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
-Platform\Design::queueCSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
-
-
-
-function platformAutoLoad($class) {
+function AutoLoad($class) {
     // Delve root from current location
     $root = substr(__DIR__,0,strrpos(__DIR__, '/'));
     if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
@@ -78,7 +69,7 @@ function platformAutoLoad($class) {
         else $file = $root.'/'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
         if (file_exists($file)) {
             require_once $file;
-            if (\Platform\Translation::isEnabled()) \Platform\Translation::prepareTranslationsForFile ($file);
+            if (Translation::isEnabled()) Translation::prepareTranslationsForFile ($file);
             return;
         }
     }

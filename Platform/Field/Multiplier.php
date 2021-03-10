@@ -9,13 +9,13 @@ class FieldMultiplier extends Field {
     
     public function __construct($label = '', $name = '', $options = array()) {
         Errorhandler::checkParams($label, 'string', $name, 'string', $options, 'array');
-        $this->classes[] = 'platform_form_multiplier_element platform_formfield_container';
-        $this->container_classes[] = 'platform_form_multiplier';
+        $this->classes[] = 'platform_formfield_container';
         $this->value = array();
         if ($options['sortable']) {
             $this->container_classes[] = 'platform_sortable';
             unset($options['sortable']);
         }
+        // No label for this field?
         parent::__construct($label, $name, $options);
     }
     
@@ -98,6 +98,10 @@ class FieldMultiplier extends Field {
     
     
     public function parse($values) {
+
+        // Determine hidden fields
+        $hiddenfields = $_POST['form_hiddenfields'] ? explode(' ', $_POST['form_hiddenfields']) : array();
+        
         $totalresult = true;
         // Always remove last entry as it is empty
         array_pop($values);
@@ -105,8 +109,9 @@ class FieldMultiplier extends Field {
         // Validate section fields
         for ($i = 0; $i < count($values); $i++) {
             foreach ($this->contained_fields as $field) {
+                $adjustedname = $this->getName().'['.$i.']['.$field->getName().']';
                 // Bail in certain cases
-                if ($field instanceof FieldHTML) continue;
+                if ($field instanceof FieldHTML || in_array($adjustedname, $hiddenfields) && ! $field instanceof FieldHidden) continue;
                 // Parse value for this field
                 $result = $field->parse($values[$i][$field->getName()]);
                 // Extract value to own cache
@@ -135,8 +140,9 @@ class FieldMultiplier extends Field {
     }
     
     public function renderInput() {
+        echo '<div class="platform_form_multiplier" class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" '.$this->additional_attributes.'>';
         for ($i = 0; $i < count($this->value)+1; $i++) {
-            echo '<div class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" '.$this->additional_attributes.'>';
+            echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {
                 // Store old field name
                 $old_field_name = $field->getName();
@@ -161,6 +167,7 @@ class FieldMultiplier extends Field {
             }
             echo '</div>';
         }
+        echo '</div>';
     }
     
     public function setValue($value) {

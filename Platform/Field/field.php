@@ -3,6 +3,13 @@ namespace Platform;
 
 class Field {
     
+    const LABEL_ALIGN_TOP = 1;
+    const LABEL_ALIGN_LEFT = 2;
+    const LABEL_ALIGN_BOTTOM = 3;
+    const LABEL_ALIGN_RIGHT = 4;
+    const LABEL_ALIGN_NONE = 5;
+    const LABEL_ALIGN_AUTO = 10;
+    
     /**
      * Classes to add to form field
      * @var array 
@@ -13,13 +20,19 @@ class Field {
      * Classes to add to form field container
      * @var array
      */
-    protected $container_classes = array('platform_formfield_container');
+    protected $container_classes = array('platform_form_field_container');
     
     /**
      * Special styles for the container
      * @var array
      */
     protected $container_styles = array();
+    
+    /**
+     * The current default label placement
+     * @var int 
+     */
+    private static $default_label_alignment = self::LABEL_ALIGN_AUTO;
 
     /**
      * Field error message
@@ -56,6 +69,12 @@ class Field {
      * @var string 
      */
     protected $label = '';
+    
+    /**
+     * Label placement of this component
+     * @var int
+     */
+    protected $label_alignment = self::LABEL_ALIGN_AUTO;
 
     /**
      * Field name (in HTML)
@@ -92,6 +111,9 @@ class Field {
         if (in_array($name, array('form_event', 'form_name', 'form_hidden_fields'))) trigger_error('Used reserved form name', E_USER_ERROR);
         $this->label = $label;
         $this->name = $name;
+        
+        $this->setLabelAlignment(self::getDefaultLabelAlignment());
+        
         if ($options['required']) {
             $this->is_required = true;
             unset($options['required']);
@@ -116,10 +138,39 @@ class Field {
             $this->addClass($options['class']);
             unset($options['class']);
         }
-        if ($options['containerclass']) {
+        if ($options['container-class']) {
             $this->addContainerClass($options['containerclass']);
             unset($options['containerclass']);
         }        
+        if ($options['container-style']) {
+            $this->container_styles[] = $options['container-style'];
+            unset($options['container-style']);
+        }        
+        if ($options['label-alignment']) {
+            switch (strtolower($options['label-alignment'])) {
+                case 'auto': 
+                    $this->setLabelAlignment(self::LABEL_ALIGN_AUTO);
+                    break;
+                case 'top': 
+                    $this->setLabelAlignment(self::LABEL_ALIGN_TOP);
+                    break;
+                case 'bottom': 
+                    $this->setLabelAlignment(self::LABEL_ALIGN_BOTTOM);
+                    break;
+                case 'left': 
+                    $this->setLabelAlignment(self::LABEL_ALIGN_LEFT);
+                    break;
+                case 'right': 
+                    $this->setLabelAlignment(self::LABEL_ALIGN_RIGHT);
+                    break;
+                case 'none': 
+                    $this->setLabelAlignment(self::LABEL_ALIGN_NONE);
+                    break;
+                default:
+                    trigger_error('Unknown alignment: '.$options['label-alignment'], E_USER_ERROR);
+            }
+            unset($options['label-alignment']);
+        }
         
         if ($options['autofocus']) {
             $this->addClass('platform_autofocus');
@@ -127,8 +178,6 @@ class Field {
         }
         
         if ($this->is_required) $this->classes[] = 'form_required_field';
-        
-        $this->addContainerClass(Design::getClass('formfield_container'));
         
         foreach ($options as $key => $val) {
             $this->additional_attributes .= ' '.$key.'="'.$val.'"';
@@ -193,6 +242,10 @@ class Field {
         $this->errortext = '';
     }
     
+    protected function getAutoLabelAlignment() {
+        return self::LABEL_ALIGN_LEFT;
+    }
+    
     /**
      * Get a string with all classes.
      * @return string
@@ -208,6 +261,14 @@ class Field {
     public function getContainerClassString() {
         return implode(' ',$this->container_classes);
     }    
+    
+    /**
+     * Get the default label placement
+     * @return int
+     */
+    public static function getDefaultLabelAlignment() {
+        return self::$default_label_alignment;
+    }
     
     public function getStyleString() {
         return implode(';',$this->container_styles);
@@ -226,8 +287,24 @@ class Field {
      * @return string
      */
     public function getFieldIdForHTML() {
-        if ($this->form) return $this->form->getId().'_'.$this->getName();
+        if ($this->form) return $this->form->getFormId().'_'.$this->getName();
         return $this->name;
+    }
+
+    /**
+     * Get the final label alignment of this field, resolving auto labels
+     * @return int
+     */
+    public function getFinalLabelAlignment() {
+        return $this->label_alignment == self::LABEL_ALIGN_AUTO ? $this->getAutoLabelAlignment() : $this->label_alignment;
+    }
+    
+    /**
+     * Get the label alignment of this field
+     * @return int
+     */
+    public function getLabelAlignment() {
+        return $this->label_alignment;
     }
     
     /**
@@ -270,6 +347,10 @@ class Field {
         return $this->is_error;
     }
     
+    private static function isValidLabelPlacement($label_placement) {
+        return in_array($label_placement, [self::LABEL_ALIGN_TOP, self::LABEL_ALIGN_LEFT, self::LABEL_ALIGN_BOTTOM, self::LABEL_ALIGN_RIGHT, self::LABEL_ALIGN_NONE, self::LABEL_ALIGN_AUTO]);
+    }
+    
     /**
      * Parse a value and validates it against the field
      * @param object $value
@@ -289,9 +370,49 @@ class Field {
      */
     public function render() {
         echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
-        $this->renderLabel();
-        $this->renderInput();
-        $this->renderErrorContainer($this->errortext);
+
+        // Handle alignment
+        if (! $this->getLabel()) $this->setLabelAlignment (self::LABEL_ALIGN_NONE);
+        
+        switch ($this->getFinalLabelAlignment()) {
+            case self::LABEL_ALIGN_LEFT:
+                echo '<div class="platform_field_label_container">';
+                $this->renderLabel();
+                echo '<div class="platform_field_input_container">';
+                $this->renderInput();
+                $this->renderErrorContainer($this->errortext);
+                echo '</div>';
+                echo '</div>';
+            break;
+            case self::LABEL_ALIGN_TOP:
+                $this->renderLabel();
+                echo '<div class="platform_field_input_container">';
+                $this->renderInput();
+                echo '</div>';
+                $this->renderErrorContainer($this->errortext);
+            break;
+            case self::LABEL_ALIGN_BOTTOM:
+                echo '<div class="platform_field_input_container">';
+                $this->renderInput();
+                $this->renderErrorContainer($this->errortext);
+                echo '</div>';
+                $this->renderLabel();
+            break;
+            case self::LABEL_ALIGN_RIGHT:
+                echo '<div class="platform_field_label_container">';
+                echo '<div class="platform_field_input_container">';
+                $this->renderInput();
+                $this->renderErrorContainer($this->errortext);
+                echo '</div>';
+                $this->renderLabel();
+                echo '</div>';
+            break;
+            case self::LABEL_ALIGN_NONE:
+                $this->renderInput();
+                $this->renderErrorContainer($this->errortext);
+            break;
+        }
+        
         echo '</div>';
     }
     
@@ -302,7 +423,7 @@ class Field {
     public function renderErrorContainer($text = '') {
         Errorhandler::checkParams($text, array('string', 'boolean'));
         $add = $text ? ' style="display:block;"' : '';
-        echo '<div class="formfield_error_container"'.$add.'>'.$text.'</div>';
+        echo '<div class="platform_field_error_container"'.$add.'>'.$text.'</div>';
     }
     
     /**
@@ -317,9 +438,25 @@ class Field {
      */
     public function renderLabel() {
         if (! $this->label) return;
-        echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label;
-        if ($this->is_required) echo ' (<span style="color:red">*</span>)';
-        echo '</label>';
+        switch ($this->getFinalLabelAlignment()) {
+            case self::LABEL_ALIGN_TOP:
+            case self::LABEL_ALIGN_LEFT:
+                echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label;
+                if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
+                echo ':</label>';
+            break;
+            case self::LABEL_ALIGN_RIGHT:
+                echo '<label for="'.$this->getFieldIdForHTML().'" class="platform_right_label"> - '.$this->label;
+                if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
+                echo '</label>';
+            break;
+            case self::LABEL_ALIGN_BOTTOM:
+                echo '<label for="'.$this->getFieldIdForHTML().'" class="platform_bottom_label">'.$this->label;
+                if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
+                echo '</label>';
+            break;
+        }
+        
     }
     
     /**
@@ -330,14 +467,31 @@ class Field {
         Errorhandler::checkParams($classes, 'array');
         $this->container_classes = $classes;
     }
+    
+    /**
+     * Set the default label alignment
+     * @param int $label_alignment Label alignment
+     */
+    public static function setDefaultLabelAlignment(int $label_alignment) {
+        if (! self::isValidLabelPlacement($label_alignment)) trigger_error('Invalid label placement: '.$label_alignment, E_USER_ERROR);
+        self::$default_label_alignment = $label_alignment;
+    }
 
     /**
      * Set the heading of the field
      * @param string $heading
      */
-    public function setHeading($heading) {
-        Errorhandler::checkParams($heading, 'string');
+    public function setHeading(string $heading) {
         $this->heading = $heading;
+    }
+    
+    /**
+     * Set label alignment of this component
+     * @param int $label_alignment
+     */
+    public function setLabelAlignment(int $label_alignment) {
+        if (! self::isValidLabelPlacement($label_alignment)) trigger_error('Invalid label placement: '.$label_alignment, E_USER_ERROR);
+        $this->label_alignment = $label_alignment;
     }
     
     /**
