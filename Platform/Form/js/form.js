@@ -57,12 +57,12 @@ addPlatformComponentHandlerFunction('form', function(item) {
 
 
 $.fn.setError = function(text) {
-    this.addClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_form_error_container').html(text).slideDown();
+    this.addClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_field_error_container').html(text).slideDown();
     return this;
 }
 
 $.fn.clearError = function() {
-    this.filter('.platform_form_field_error').removeClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_form_error_container').slideUp();
+    this.filter('.platform_form_field_error').removeClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_field_error_container').slideUp();
     return this;
 }
 

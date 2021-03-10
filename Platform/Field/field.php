@@ -413,8 +413,6 @@ class Field {
             break;
         }
         
-        echo '<div class="platform_form_field_inner_container">';
-        echo '</div>';
         echo '</div>';
     }
     
@@ -425,7 +423,7 @@ class Field {
     public function renderErrorContainer($text = '') {
         Errorhandler::checkParams($text, array('string', 'boolean'));
         $add = $text ? ' style="display:block;"' : '';
-        echo '<div class="platform_form_error_container"'.$add.'>'.$text.'</div>';
+        echo '<div class="platform_field_error_container"'.$add.'>'.$text.'</div>';
     }
     
     /**

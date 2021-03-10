@@ -80,11 +80,10 @@ addCustomPlatformFunctionLast(function(item) {
          $.each($(this).data('buttons'), function(event, title) {
              buttons.push({
                  text: title,
-                 click: function() {dialog.trigger(event); console.log('Firex '+event);}
+                 click: function() {dialog.trigger(event);}
              });
          });
          $(this).platformDialog(buttons);
-         console.log('Build dialog '+$(this).prop('id'));
      })
  });
 

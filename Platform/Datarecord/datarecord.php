@@ -2133,6 +2133,7 @@ class Datarecord implements DatarecordReferable {
         if (! isset(static::$structure[$field])) trigger_error('Tried setting invalid field: '.$field.' in class '. get_called_class(), E_USER_ERROR);
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
+                if ($value === null) break;
                 $this->values[$field] = $value ? md5($value.$platform_configuration['password_salt']) : '';
                 break;
             case self::FIELDTYPE_TEXT:
