@@ -201,7 +201,7 @@ class Job extends \Platform\Datarecord {
         // Create basic job
         $job = new Job();
         $instance_id = Instance::getActiveInstanceID();
-        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
+        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND `function` = '".Database::escape($function)."'");
         if ($qr) $job->loadForWrite($qr['job_id']);
         $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
         $job->instance_ref = $instance_id;
@@ -223,7 +223,7 @@ class Job extends \Platform\Datarecord {
         // Create basic job
         $job = new Job();
         $server_id = Server::getThisServerID();
-        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE server_ref = ".((int)$server_id)." AND class = '".Database::escape($class)."' AND function = '".Database::escape($function)."'");
+        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE server_ref = ".((int)$server_id)." AND class = '".Database::escape($class)."' AND `function` = '".Database::escape($function)."'");
         if ($qr) $job->loadForWrite($qr['job_id']);
         $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
         $job->server_ref = $server_id;

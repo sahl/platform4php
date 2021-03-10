@@ -944,7 +944,7 @@ class Datarecord implements DatarecordReferable {
      */
     private static function getAssignmentForDatabase($field, $value) {
         Errorhandler::checkParams($field, 'string');
-        return $field.'='.self::getFieldForDatabase($field, $value);
+        return "`$field`=".self::getFieldForDatabase($field, $value);
     }
     
     /**
@@ -2061,7 +2061,7 @@ class Datarecord implements DatarecordReferable {
             $fieldlist = array(); $fieldvalues = array();
             foreach (static::$structure as $key => $definition) {
                 if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
-                    $fieldlist[] = $key; 
+                    $fieldlist[] = "`$key`"; 
                     $fieldvalues[] = ($definition['fieldtype'] == self::FIELDTYPE_KEY) ? 'NULL' : self::getFieldForDatabase($key, $this->values[$key]);
                 }
             }
