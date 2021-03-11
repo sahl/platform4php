@@ -1,0 +1,4 @@
+<text label="Name" name="name">
+<number label="Min. age" name="min_age">
+<number label="Max. age" name="max_age">
+<submit label="Search">

@@ -1,8 +1,12 @@
 <?php
+include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+Platform\Accesstoken::validateSession('/login/');
 
+Platform\Page::renderPagestart('Log in');
+
+echo '<h1>Employees</h1>';
+
+\People\Employee::renderEditComplex();
+
+Platform\Page::renderPageend();

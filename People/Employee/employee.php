@@ -30,6 +30,16 @@ class Employee extends \Platform\Datarecord {
                 'is_title' => true,
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
+            'age' => array(
+                'label' => 'Age',
+                'required' => true,
+                'fieldtype' => self::FIELDTYPE_INTEGER
+            ),
+            'profile_pic' => array(
+                'label' => 'Profile picture',
+                'fieldtype' => self::FIELDTYPE_IMAGE,
+                'folder' => 'profile_pictures'
+            ),
             'department_ref' => array(
                 'label' => 'Department',
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
