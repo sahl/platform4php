@@ -34,7 +34,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
         }
     }
 
-    $.each(JSON.parse(item.html()), function(key, element) {
+    $.each(JSON.parse(item.find('.table_configuration').html()), function(key, element) {
         table_configuration[key] = element;
     })
 
@@ -114,9 +114,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
     });
     if (show_selector)
         table.addColumn({
-            formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerSort:false, width: 15, cellClick:function(e, cell){
-                cell.getRow().toggleSelect();
-            }
+            formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerHozAlign: 'center', headerSort:false, width: 15
         }, true);
 
     if (typeof callback == 'function') {
