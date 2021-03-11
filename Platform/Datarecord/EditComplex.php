@@ -68,19 +68,8 @@ class DatarecordEditComplex extends Component {
         $this->edit_dialog = new Dialog($short_class.'_edit_dialog', 'Edit '.$this->class::getObjectName(), '', $buttons, $form);
     }
 
-    private function constructTable($table_parameters = array()) {
-        Errorhandler::checkParams($table_parameters, 'array');
-        $this->table = new Table($this->getID().'_table');
-        $this->table->setColumnsFromDatarecord($this->class);
-        $this->table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$this->class);
-        $this->table->setTabulatorOption('placeholder', 'No '.$this->class::getObjectName());
-        $this->table->setTabulatorOption('show_selector', true);
-        $this->table->setTabulatorOption('movableColumns', true);
-        $this->table->setTabulatorOption('data', array('io_datarecord' => static::$url_io_datarecord));
-        foreach ($table_parameters as $parameter => $value) {
-            $this->table->setTabulatorOption($parameter, $value);
-        }
-        $this->table->setCenterAndMinimize();
+    private function constructTable(array $table_parameters = []) {
+        $this->table = Table::getTableFromClass($this->getID().'_table', $this->class, $table_parameters);
     }
     
     private function constructTableMenu() {

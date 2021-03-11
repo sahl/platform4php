@@ -3,6 +3,12 @@ namespace Platform;
 
 class Table extends Component {
     
+    /**
+     * URL to the datarecord provider for table
+     * @var string 
+     */
+    protected static $url_table_datarecord = '/Platform/Table/php/table_datarecord.php';
+    
     protected static $can_redraw = false;
     
     private $center_and_minimize = false;
@@ -14,9 +20,10 @@ class Table extends Component {
      * @param string $id Table ID
      */
     public function __construct($id) {
-        Page::JSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/js/tabulator.min.js');
+        Page::JSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js');
         Page::JSFile('/Platform/Table/js/table.js');
-        Page::CSSFile('https://unpkg.com/tabulator-tables@4.7.0/dist/css/tabulator.min.css');
+        Page::CSSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css');
+        Page::CSSFile('/Platform/Table/css/table.css');
         parent::__construct();
         Errorhandler::checkParams($id, 'string');
         $this->setID($id);
@@ -195,6 +202,28 @@ class Table extends Component {
     }
     
     /**
+     * Return a table ready for display based on the given class
+     * @param string $id Id of table
+     * @param string $class Class name to configure off
+     * @param array $table_parameters Additional parameters to table
+     * @return \Platform\Table
+     */
+    public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
+        if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
+        $table = new Table($id);
+        $table->setColumnsFromDatarecord($class);
+        $table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$class);
+        $table->setTabulatorOption('placeholder', 'No '.$class::getObjectName());
+        $table->setTabulatorOption('show_selector', true);
+        $table->setTabulatorOption('movableColumns', true);
+        foreach ($table_parameters as $parameter => $value) {
+            $table->setTabulatorOption($parameter, $value);
+        }
+        $table->setCenterAndMinimize();
+        return $table;
+    }
+    
+    /**
      * Get an option from this table
      * @param string $option Option name
      * @return mixed
@@ -281,7 +310,9 @@ class Table extends Component {
      * Render the table.
      */
     public function renderContent() {
+        echo '<div class="platform_invisible table_configuration">';
         echo json_encode($this->tabulator_options);
+        echo '</div>';
     }
     
     /**
@@ -311,24 +342,19 @@ class Table extends Component {
         if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
 
+    
+    public function setFilter(Filter $filter) {
+        $this->setTabulatorOption('ajaxConfig', 'post');
+        $this->setTabulatorOption('ajaxParams', array('filter' => $filter->getAsJSON()));
+    }
+
     /**
      * Set an option for this table
      * @param string $option Option keyword
      * @param mixed $value Option value
      */
-    public function setTabulatorOption($option, $value) {
-        Errorhandler::checkParams($option, 'string');
-        switch ($option) {
-            case 'filter':
-                if ($value instanceof Filter) {
-                    $this->setTabulatorOption('ajaxConfig', 'post');
-                    $this->setTabulatorOption('ajaxParams', array('filter' => $value->getAsJSON()));
-                }
-                break;
-            default:
-                $this->tabulator_options[$option] = $value;
-                break;
-        }
+    public function setTabulatorOption(string $option, $value) {
+        $this->tabulator_options[$option] = $value;
     }
 
     /**
