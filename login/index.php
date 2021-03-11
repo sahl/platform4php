@@ -13,7 +13,7 @@ if ($form->isSubmitted() && $form->validate()) {
   if (! $instance->isInDatabase()) {
     $form->getFieldByName('company_name')->triggerError('We don\'t have such an instance!');
   } else {
-    $instance->login($values['email'], $values['password'], '/application/');
+    $instance->loginAndContinue($values['email'], $values['password'], '/application/');
     $form->getFieldByName('email')->triggerError('Invalid username or password');
     $form->getFieldByName('password')->triggerError('Invalid username or password');
   }
@@ -21,7 +21,7 @@ if ($form->isSubmitted() && $form->validate()) {
 
 
 
-Platform\Design::renderPagestart('Log in');
+Platform\Page::renderPagestart('Log in');
 
 echo '<h1>Log in</h1>';
 
@@ -29,5 +29,5 @@ $form->render();
 
 echo '<p><a href="register.php">Press here to register instead</a>';
 
-Platform\Design::renderPageend();
+Platform\Page::renderPageend();
 
