@@ -3,11 +3,14 @@ namespace Platform;
 
 class Menu extends Component {
     
-    protected static $css_files = ['/Platform/Menu/css/menu.css'];
-    
     protected $elements = array();
     
     protected $select_menuitem = null;
+    
+    public function __construct() {
+        Page::CSSFile('/Platform/Menu/css/menu.css');
+        parent::__construct();
+    }
     
     protected static function compareLocations($real_location, $menu_link) {
         if (substr($real_location,-9) == 'index.php') $real_location = substr($real_location, 0, -9);
