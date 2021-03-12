@@ -127,10 +127,6 @@ class Page {
         echo '</body></html>';
     }
     
-    public static function setPagestarted(bool $started = true) {
-        self::$page_started = $started;
-    }    
-    
     /**
      * Redirect to another page
      * @param string $url Url to page
@@ -147,6 +143,23 @@ class Page {
         header('location: '.$_SERVER['PHP_SELF']);
         exit;
     }
+    
+    /**
+     * Reload this page, by redirecting to itself including GET parameters
+     */
+    public static function reload() {
+        header('location: '.$_SERVER['PHP_SELF'].($_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : ''));
+        exit;
+    }
+
+    /**
+     * Indicate that the head is already rendered.
+     * @param bool $started
+     */
+    public static function setPagestarted(bool $started = true) {
+        self::$page_started = $started;
+    }    
+    
 }
 
 ?>
