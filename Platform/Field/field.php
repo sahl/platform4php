@@ -75,6 +75,12 @@ class Field {
      * @var int
      */
     protected $label_alignment = self::LABEL_ALIGN_AUTO;
+    
+    /**
+     * Label width
+     * @var int
+     */
+    protected $label_width = 130;
 
     /**
      * Field name (in HTML)
@@ -170,6 +176,11 @@ class Field {
                     trigger_error('Unknown alignment: '.$options['label-alignment'], E_USER_ERROR);
             }
             unset($options['label-alignment']);
+        }
+        
+        if ($options['label-width']) {
+            $this->setLabelWidth($options['label-width']);
+            unset($options['label-width']);
         }
         
         if ($options['autofocus']) {
@@ -441,17 +452,17 @@ class Field {
         switch ($this->getFinalLabelAlignment()) {
             case self::LABEL_ALIGN_TOP:
             case self::LABEL_ALIGN_LEFT:
-                echo '<label for="'.$this->getFieldIdForHTML().'">'.$this->label;
+                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo ':</label>';
             break;
             case self::LABEL_ALIGN_RIGHT:
-                echo '<label for="'.$this->getFieldIdForHTML().'" class="platform_right_label"> - '.$this->label;
+                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_right_label"> - '.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
             case self::LABEL_ALIGN_BOTTOM:
-                echo '<label for="'.$this->getFieldIdForHTML().'" class="platform_bottom_label">'.$this->label;
+                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_bottom_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
@@ -511,6 +522,14 @@ class Field {
     public function setOptions($options) {
         Errorhandler::checkParams($options, 'array');
         $this->options = $options;
+    }
+    
+    /**
+     * Set the label width of this field
+     * @param int $label_width Label width in px
+     */
+    public function setLabelWidth(int $label_width) {
+        $this->label_width = $label_width;
     }
     
     /**

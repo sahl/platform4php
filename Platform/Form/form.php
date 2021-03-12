@@ -404,7 +404,7 @@ class Form extends Component {
             return;
         }
         /* @var $field Field */
-        $newfields = $this->fields;
+        $newfields = [];
         foreach ($this->fields as $field) {
             if ($fieldname != $field->getName()) $newfields[] = $field;
         }
@@ -488,8 +488,19 @@ class Form extends Component {
         $this->form_id = $id;
     }
     
-    public function setScript($script) {
-        Errorhandler::checkParams($script, 'string');
+    /**
+     * Set label width for all fields added to this form
+     * @param int $width
+     */
+    public function setLabelWidth(int $width) {
+        foreach ($this->fields as $field) $field->setLabelWidth ($width);
+    }
+    
+    /**
+     * Set a script for handling this form
+     * @param string $script
+     */
+    public function setScript(string $script) {
         $this->script = $script;
     }
     
