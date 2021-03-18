@@ -15,6 +15,8 @@ class Form extends Component {
     
     private $event = 'submit';
     
+    private static $field_name_space = ['Platform'];
+    
     public function __construct($form_id, $filename = '') {
         Page::JSFile('/Platform/Form/js/form.js');
         Page::JSFile('/Platform/Form/js/autosize.js');
@@ -104,7 +106,15 @@ class Form extends Component {
             }
         }
         $this->fields = $newfields;
-    }    
+    }
+
+    /**
+     * Add a namespace to search for form fields when parsing fields from html files
+     * @param string $namespace Namespace to search
+     */
+    public static function addFormFieldNameSpace(string $namespace) {
+        self::$field_name_space[] = $namespace;
+    }
     
     /**
      * Add a validation function to this form.
@@ -267,7 +277,10 @@ class Form extends Component {
             $tag = self::parseTag($element);
             // Check for special tag
             if (substr($tag['tag'],0,1) != '/') {
-                $class = 'Platform\\Field'.ucfirst($tag['tag']);
+                foreach (self::$field_name_space as $name_space) {
+                    $class = $name_space.'\\Field'.ucfirst($tag['tag']);
+                    if (class_exists($class)) break;
+                }
                 if (class_exists($class)) {
                     $label = $tag['properties']['label'];
                     $name = $tag['properties']['name'];
