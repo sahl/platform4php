@@ -11,7 +11,7 @@ class Table extends Component {
     
     protected static $can_redraw = false;
     
-    private $center_and_minimize = false;
+    private $actionbuttons = [];
     
     private $tabulator_options = array();
 
@@ -24,11 +24,17 @@ class Table extends Component {
         Page::JSFile('/Platform/Table/js/table.js');
         Page::CSSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css');
         Page::CSSFile('/Platform/Table/css/table.css');
+        Page::JSFile('https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js');
         parent::__construct();
         Errorhandler::checkParams($id, 'string');
         $this->setID($id);
         $this->setTabulatorOption('layout', 'fitColumns');
         $this->setTabulatorOption('placeholder', 'No data');
+    }
+    
+    public function addActionButton(string $icon, string $javascript_function_name) {
+        $this->actionbuttons[$icon] = $javascript_function_name;
+        $this->setTabulatorOption('action_buttons', $this->actionbuttons);
     }
     
     /**
@@ -65,7 +71,7 @@ class Table extends Component {
      * @param string $classname Name of class to build from
      * @return array Column definition compatible with Tabulator
      */
-    public static function buildColumnsFromDatarecord($classname, $prefix = '') {
+    public static function getColumnDefinitionsFromDatarecord($classname, $prefix = '') {
         Errorhandler::checkParams($classname, 'string', $prefix, 'string');
         $columndef = array();
         $structure = $classname::getStructure();
@@ -78,7 +84,7 @@ class Table extends Component {
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
-                'formatter' => 'html',
+                'formatter' => $structure[$field]['fieldtype'] == Datarecord::FIELDTYPE_TEXT ? 'html' : 'plaintext',
                 'width' => $structure[$field]['width'] ?: 200
             );
         }
@@ -89,9 +95,9 @@ class Table extends Component {
      * Add a further table definition from a datarecord
      * @param string $classname Class to build table from
      */
-    public function getColumnsFromDatarecord($classname) {
+    public function addColumnsFromDatarecord($classname) {
         Errorhandler::checkParams($classname, 'string');
-        foreach (self::buildColumnsFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
+        foreach (self::getColumnDefinitionsFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
             $this->tabulator_options['columns'][] = $definition;
         }
         $groupfields = array();
@@ -101,6 +107,14 @@ class Table extends Component {
         if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
         
         $this->adjustColumnsFromConfiguration();
+    }
+    
+    /**
+     * Attach a control form to this table
+     * @param Form $form
+     */
+    public function attachForm(Form $form) {
+        $this->setTabulatorOption('control_form', $form->getFormId());
     }
     
     /**
@@ -162,8 +176,15 @@ class Table extends Component {
                     case Datarecord::FIELDTYPE_KEY:
                         $columns['id'] = $value;
                         break;
+                    case Datarecord::FIELDTYPE_TEXT:
+                        $columns[$field] = '<!--'.$object->getTextValue($field).'-->'.$value;
+                        break;
+                    case Datarecord::FIELDTYPE_BIGTEXT:
+                        $text = substr($this->getTextValue($field),0,250);
+                        $columns[$field] = $text;
+                        break;
                     default:
-                        $columns[$field] = '<!--'.strip_tags($value).'-->'.$value;
+                        $columns[$field] = $value;
                 }
             }
             // Add relation data (if any)
@@ -186,17 +207,19 @@ class Table extends Component {
      */
     private function defaultSort() {
         // Try to load from session
-        $table_configuration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->getID());
-        $column = $table_configuration['sort_column'];
-        if ($this->hasColumn($column)) {
-            $this->setSort($column, $table_configuration['sort_direction']);
-        } else {
-            // Sort by first named column
-            foreach ($this->tabulator_options['columns'] as $column) {
-                if ($column['title']) {
-                    $this->setSort($column['field']);
-                    return;
-                }
+        if (Instance::getActiveInstanceID()) {
+            $table_configuration = UserProperty::getPropertyForCurrentUser('tableconfiguration', $this->getID());
+            $column = $table_configuration['sort_column'];
+            if ($this->hasColumn($column)) {
+                $this->setSort($column, $table_configuration['sort_direction']);
+                return;
+            }
+        }
+        // Sort by first named column
+        foreach ($this->tabulator_options['columns'] as $column) {
+            if ($column['title']) {
+                $this->setSort($column['field']);
+                return;
             }
         }
     }
@@ -210,6 +233,7 @@ class Table extends Component {
      */
     public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
+        if ($class::getLocation() == Datarecord::LOCATION_GLOBAL) trigger_error('For security reasons this only works with Datarecords stored in the Instance', E_USER_ERROR);
         $table = new Table($id);
         $table->setColumnsFromDatarecord($class);
         $table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$class);
@@ -219,7 +243,6 @@ class Table extends Component {
         foreach ($table_parameters as $parameter => $value) {
             $table->setTabulatorOption($parameter, $value);
         }
-        $table->setCenterAndMinimize();
         return $table;
     }
     
@@ -241,8 +264,16 @@ class Table extends Component {
     private static function getSorter($fieldtype) {
         Errorhandler::checkParams($fieldtype, 'string');
         switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_DATE:
+                return 'date';
+            case Datarecord::FIELDTYPE_DATETIME:
+                return 'datetime';
+            case Datarecord::FIELDTYPE_CURRENCY:
+            case Datarecord::FIELDTYPE_FLOAT:
+            case Datarecord::FIELDTYPE_INTEGER:
+                return 'number';
             default:
-                return 'string';
+                return 'alphanum';
         }
     }
     
@@ -276,7 +307,6 @@ class Table extends Component {
     
     public function prepareTableData() {
         if (! $this->tabulator_options['initialSort']) $this->defaultSort ();
-        if ($this->center_and_minimize) $this->addClass('platform_table_center_and_minimize');
     }
     
     /**
@@ -310,18 +340,10 @@ class Table extends Component {
      * Render the table.
      */
     public function renderContent() {
+        $this->prepareTableData();
         echo '<div class="platform_invisible table_configuration">';
         echo json_encode($this->tabulator_options);
         echo '</div>';
-    }
-    
-    /**
-     * Set if this table should be shown in center and minimized
-     * @param type $set
-     */
-    public function setCenterAndMinimize($set = true) {
-        Errorhandler::checkParams($set, 'boolean');
-        $this->center_and_minimize = $set;
     }
     
     /**
@@ -331,7 +353,7 @@ class Table extends Component {
      */
     public function setColumnsFromDatarecord($classname) {
         Errorhandler::checkParams($classname, 'string');
-        $this->tabulator_options['columns'] = self::buildColumnsFromDatarecord($classname);
+        $this->tabulator_options['columns'] = self::getColumnDefinitionsFromDatarecord($classname);
         
         $groupfields = array();
         foreach ($classname::getStructure() as $key => $definition) {
@@ -342,6 +364,13 @@ class Table extends Component {
         if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
 
+    /**
+     * Set the data URL for this table
+     * @param string $data_url
+     */
+    public function setDataURL(string $data_url) {
+        $this->setTabulatorOption('ajaxURL', $data_url);
+    }
     
     public function setFilter(Filter $filter) {
         $this->setTabulatorOption('ajaxConfig', 'post');
@@ -396,6 +425,14 @@ class Table extends Component {
             $new_columns[] = $column;
         }
         $this->tabulator_options['columns'] = $new_columns;
+    }
+    
+    /**
+     * Indicate if we should show selectors for each row.
+     * @param bool $show
+     */
+    public function showSelector(bool $show = true) {
+        $this->setTabulatorOption('show_selector', $show);        
     }
     
 }

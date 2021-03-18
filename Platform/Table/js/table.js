@@ -3,28 +3,13 @@ var tablebuffer = [];
 addPlatformComponentHandlerFunction('table', function(item) {
     var element = item;
     var initial_sort_completed = false;
-    // Resize this table if the window is resized.
-    $(window).resize(function() {
-        sizeTableContainer(element);
-    })
 
     var table_configuration = {
         columnResized: function() {
             saveTableLayout(element.attr('id'));
-            sizeTableContainer(element);
         },
         columnMoved: function() {
             saveTableLayout(element.attr('id'));
-            sizeTableContainer(element);
-        },
-        dataFiltered: function() {
-            sizeTableContainer(element);
-        },
-        renderComplete: function() {
-            sizeTableContainer(element);
-        },
-        dataLoaded: function() {
-            sizeTableContainer(element);
         },
         dataSorted: function(sorters) {
             if (sorters.length && initial_sort_completed) {
@@ -51,15 +36,19 @@ addPlatformComponentHandlerFunction('table', function(item) {
     }
 
     var control_form = false;
-    if (table_configuration['controlform']) {
-        control_form = $('#'+table_configuration['controlform']);
-        delete table_configuration['controlform'];
+    var data_url = false;
+    if (table_configuration['control_form']) {
+        control_form = $('#'+table_configuration['control_form']);
+        // Hijack the data URL to prevent initial display.
+        data_url = table_configuration['ajaxURL'];
+        delete table_configuration['ajaxURL'];
+        delete table_configuration['control_form'];
     }
 
     var filter_field = false;
-    if (table_configuration['filterfield']) {
-        filter_field = $('#'+table_configuration['filterfield']);
-        delete table_configuration['filterfield'];
+    if (table_configuration['filter_field']) {
+        filter_field = $('#'+table_configuration['filter_field']);
+        delete table_configuration['filter_field'];
     }
 
     var callback = false;
@@ -70,7 +59,6 @@ addPlatformComponentHandlerFunction('table', function(item) {
 
     table_configuration.data = [];
 
-    console.log(item.attr('id'));
     var table = new Tabulator('#'+item.attr('id'), table_configuration);
 
     // Buffer the table, so we can get the table object using the DOM node id
@@ -86,7 +74,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
         }
 
         control_form.submit(function() {
-            table.setData(table.getAjaxUrl(), makeObject(control_form.serializeArray()), "post");
+            table.setData(data_url, makeObject(control_form.serializeArray()), "post");
             return false;
         })
     }
@@ -137,45 +125,6 @@ addPlatformComponentHandlerFunction('table', function(item) {
    }
 
 })
-
-function sizeTableContainer(table_container) {
-    console.log('Resize req');
-    if (! table_container.hasClass('platform_table_center_and_minimize')) return;
-    console.log('Resize grant');
-    // Find table width
-    var width = 0;
-    $(table_container).find('.tabulator-headers .tabulator-col:visible').each(function() {
-        width += $(this).width()+1;
-    });
-    var outer_container = table_container.parent();
-    outer_container.css('width', 'auto');
-    var container_width = $(outer_container).width();
-    $(table_container).width(Math.min(width, container_width)).css('margin-left', 'auto').css('margin-right', 'auto');
-    if (outer_container.hasClass('platform_component_datarecordeditcomplex')) $(outer_container).width(Math.min(width, container_width)).css('margin-left', 'auto').css('margin-right', 'auto');
-    console.log('Inner width: '+width);
-    console.log('Table container width: '+$(table_container).width());
-
-    var id = table_container.attr('id');
-    var table = getTableByID('#'+id);
-    var number_of_rows = table.getDataCount(true);
-    var header_height = table_container.find('.tabulator-headers').height();
-    // Special zero result case
-    if (! number_of_rows) {
-        table_container.css('height', 90);
-        return;
-    }
-    var row_height = table_container.find('.tabulator-row').height();
-    var max_height = parseInt(table_container.css('max-height'));
-    if (! max_height) max_height = 500;
-    console.log('We have '+number_of_rows+' rows available and they are '+row_height+'px high.');
-    console.log('Max allowed height is: '+max_height);
-    // Calculate additional height based of if a scrollbar is shown
-    // TODO: These values are hardcoded and should be calculated
-    var additional_height = container_width < width ? 20 : 3;
-
-    if (number_of_rows < 50) { table_container.css('height', 'auto'); console.log('Auto height');}
-    else table_container.css('height', Math.max(150, Math.min(max_height, number_of_rows*row_height+header_height+additional_height)));
-}   
 
 function filterTable(table, string) {
     var filter_elements = [];
