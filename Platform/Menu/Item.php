@@ -8,8 +8,8 @@ class MenuItem {
     public $id = '';
     public $classes = '';
     public $icon = '';
-    public $data = array();
-    public $submenu_items = array();
+    public $data = [];
+    public $submenu_items = [];
     public $target = '';
     
     /**
@@ -96,6 +96,14 @@ class MenuItem {
         if ($this->icon) $result .= '<i class="fa '.$this->icon.'"></i> ';
         $result .= $this->text.'</a>';
         return $result;
+    }
+    
+    /**
+     * Return all submenu items
+     * @return array
+     */
+    public function getSubmenu() : array {
+        return $this->submenu_items;
     }
     
     /**
