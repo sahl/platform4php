@@ -11,7 +11,8 @@ class Server extends Datarecord {
 
     
     protected static $referring_classes = array(
-        'Platform\\Instance'
+        'Platform\\Instance',
+        'Platform\\Job'
     );
     
 
