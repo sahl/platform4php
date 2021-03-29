@@ -42,33 +42,23 @@ class Accesstoken extends Datarecord {
      * @param int $seconds_to_live Seconds for the token to live.
      * @return \Platform\Accesstoken The token
      */
-    public static function acquire($user, $seconds_to_live = 3600) {
-        Errorhandler::checkParams($user, '\\Platform\\User', $seconds_to_live, 'int');
+    public static function acquire(User $user, int $seconds_to_live = 3600) : Accesstoken {
         if (! $user->isInDatabase()) trigger_error('Tried to acquire token for unsaved user!', E_USER_ERROR);
-        $accesstoken = new Accesstoken();
-        if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
-        $accesstoken->generateTokenCode();
+        $accesstoken = self::generateBaseToken($seconds_to_live);
         $accesstoken->user_ref = $user->user_id;
-        $timestamp = new Time('now');
-        $accesstoken->expire_date = $timestamp->add($seconds_to_live);
-        $accesstoken->seconds_to_live = $seconds_to_live;
         $accesstoken->save();
-        Semaphore::release('accesstoken_generator');
         $accesstoken->setSession();
         self::$current_user_id = $accesstoken->user_ref;
         return $accesstoken;
     }
-    
-    public static function acquireAnonymous($seconds_to_live = 3600) {
-        Errorhandler::checkParams($seconds_to_live, 'int');
-        $accesstoken = new Accesstoken();
-        if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
-        $accesstoken->generateTokenCode();
-        $timestamp = new Time('now');
-        $accesstoken->expire_date = $timestamp->add($seconds_to_live);
-        $accesstoken->seconds_to_live = $seconds_to_live;
-        $accesstoken->save();
-        Semaphore::release('accesstoken_generator');
+
+    /**
+     * Acquire an anonymous token, which isn't tied to any user.
+     * @param int $seconds_to_live Seconds for the token to live.
+     * @return Accesstoken The token
+     */
+    public static function acquireAnonymous(int $seconds_to_live = 3600) : Accesstoken {
+        $accesstoken = self::generateBaseToken($seconds_to_live);
         $accesstoken->setSession();
         return $accesstoken;
     }
@@ -105,6 +95,24 @@ class Accesstoken extends Datarecord {
         // Destroy it
         Accesstoken::deleteByID($accesstoken->token_id);
         Accesstoken::clearSession($destroy_entire_session);
+    }
+    
+    /**
+     * Generate a base token and saves it. The token is returned in write mode.
+     * @param int $seconds_to_live The number of seconds the token should be valid
+     * @return Accesstoken The generated access token
+     */
+    public static function generateBaseToken(int $seconds_to_live = 3600) : Accesstoken {
+        $class = get_called_class();
+        $accesstoken = new $class();
+        if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
+        $accesstoken->generateTokenCode();
+        $timestamp = new Time('now');
+        $accesstoken->expire_date = $timestamp->add($seconds_to_live);
+        $accesstoken->seconds_to_live = $seconds_to_live;
+        $accesstoken->save(true, true);
+        Semaphore::release('accesstoken_generator');
+        return $accesstoken;
     }
 
     /**
