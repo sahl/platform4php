@@ -1,5 +1,6 @@
 <?php
-namespace Platform;
+use Platform\Translation;
+use Platform\Page;
 
 $configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
 
@@ -19,7 +20,7 @@ foreach ($preload_list as $script) {
 }
 
 // Register autoloader
-spl_autoload_register("\\Platform\\AutoLoad");
+spl_autoload_register("PlatformAutoLoad");
 session_start();
 
 // Load languages
@@ -60,7 +61,7 @@ Page::queueJSFile('/Platform/Dialog/js/dialog.js');
 // Font awesome
 Page::queueCSSFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
 
-function AutoLoad($class) {
+function PlatformAutoLoad($class) {
     // Delve root from current location
     $root = substr(__DIR__,0,strrpos(__DIR__, '/'));
     if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
