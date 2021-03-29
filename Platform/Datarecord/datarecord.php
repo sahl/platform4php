@@ -1897,7 +1897,19 @@ class Datarecord implements DatarecordReferable {
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
                     if (! $definition['foreign_class']) $errors[] = $field.': Reference without foreign class';
                     elseif (!class_exists($definition['foreign_class'])) $errors[] = $field.': Reference to class which doesn\'t exists.';
-                    elseif (! in_array(get_called_class(), $definition['foreign_class']::$referring_classes) && ! in_array(get_called_class(), $definition['foreign_class']::$depending_classes)) $errors[] = 'Remote class '.$definition['foreign_class'].' doesn\'t list this as a referer or dependent class, even though we refer in field: <i>'.$field.'</i>';
+                    else {
+                        $match = false;
+                        // Get array of all classes listed in the foreign class
+                        $total_class_array = array_merge($definition['foreign_class']::$referring_classes, $definition['foreign_class']::$depending_classes);
+                        // Loop and check if this class (or a parent class) is mentioned at least once.
+                        foreach ($total_class_array as $class) {
+                            if (is_subclass_of(get_called_class(), $class) || get_called_class() == $class) {
+                                $match = true;
+                                break;
+                            }
+                        }
+                        if (! $match) $errors[] = 'Remote class '.$definition['foreign_class'].' doesn\'t list this as a referer or dependent class, even though we refer in field: <i>'.$field.'</i>.';
+                    }
                     break;
             }
         }
@@ -1907,7 +1919,7 @@ class Datarecord implements DatarecordReferable {
             else {
                 $hit = false;
                 foreach ($foreign_class::getStructure() as $field => $definition) {
-                    if ($definition['foreign_class'] == get_called_class()) {
+                    if ($definition['foreign_class'] == get_called_class() || is_subclass_of(get_called_class(), $definition['foreign_class'])) {
                         $hit = true;
                         break;
                     }
