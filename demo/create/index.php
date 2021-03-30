@@ -1,13 +1,13 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-\Platform\Design::renderPagestart('Create new instance');
+\Platform\Page::renderPagestart('Create new instance');
 
 $new_instance_form = new \Platform\Form('new_instance_form', 'new_instance.frm');
 
 $new_instance_form->addValidationFunction(function($new_instance_form) {
     // Check if instance if taken
-    if (\Platform\Instance::getByTitle($_POST['instancetitle'])->isInDatabase()) {
+    if (\Platform\Server\Instance::getByTitle($_POST['instancetitle'])->isInDatabase()) {
         $new_instance_form->getFieldByName('instancetitle')->triggerError('Instance name already in use');
         return false;
     }
@@ -16,11 +16,11 @@ $new_instance_form->addValidationFunction(function($new_instance_form) {
 
 if ($new_instance_form->isSubmitted() && $new_instance_form->validate()) {
     $values = $new_instance_form->getValues();
-    $instance = \Platform\Instance::initialize($values['instancetitle'], $values['username'], $values['password']);
-    if ($instance instanceof \Platform\Instance) {
+    $instance = \Platform\Server\Instance::initialize($values['instancetitle'], $values['username'], $values['password']);
+    if ($instance instanceof \Platform\Server\Instance) {
         // Instance was created. Login and continue.
         $instance->activate();
-        $instance->login($values['username'], $values['password'], '/demo/app/');
+        $instance->loginAndContinue($values['username'], $values['password'], '/demo/app/');
         $new_instance_form->getFieldByName('instancetitle')->triggerError('Instance was created, but a login couldn\'t be performed.');
     } else {
         $new_instance_form->getFieldByName('instancetitle')->triggerError('A new instance couldn\'t be initialized!');
@@ -35,4 +35,4 @@ echo '<div style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
 
-\Platform\Design::renderPageend();
+\Platform\Page::renderPageend();

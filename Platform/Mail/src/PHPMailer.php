@@ -4075,7 +4075,7 @@ class PHPMailer
      * ```
      *
      * @param string        $html     The HTML text to convert
-     * @param bool|callable $advanced Any boolean value to use the internal converter,
+     * @param bool|callable $advanced Any bool value to use the internal converter,
      *                                or provide your own callable for custom conversion
      *
      * @return string

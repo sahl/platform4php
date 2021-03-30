@@ -214,7 +214,7 @@ class SMTP
      * Indexes of the array are extension names.
      * Value at index 'HELO' or 'EHLO' (according to command that was sent)
      * represents the server name. In case of HELO it is the only element of the array.
-     * Other values can be boolean TRUE or an array containing extension options.
+     * Other values can be bool TRUE or an array containing extension options.
      * If null, no HELO/EHLO string has yet been received.
      *
      * @var array|null
@@ -1084,7 +1084,7 @@ class SMTP
      *   1. HELO/EHLO has not been sent - returns null and populates $this->error.
      *   2. HELO has been sent -
      *     $name == 'HELO': returns server name
-     *     $name == 'EHLO': returns boolean false
+     *     $name == 'EHLO': returns bool false
      *     $name == any other string: returns null and populates $this->error
      *   3. EHLO has been sent -
      *     $name == 'HELO'|'EHLO': returns the server name

@@ -3,6 +3,8 @@ namespace Platform;
 // Check if we can decide a root
 if (! $_SERVER['DOCUMENT_ROOT']) die('Couldn\'t read $_SERVER[\'DOCUMENT_ROOT\']');
 
+use Platform\Security\Administrator;
+
 // Check if platform is there
 $include_file = $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 if (! file_exists($include_file)) die('Couldn\'t locate Platform4PHP in '.$_SERVER['DOCUMENT_ROOT'].'/Platform/');
@@ -12,7 +14,7 @@ include $include_file;
 // Check administrator login if configured.
 Administrator::checkLogin ();
 
-Design::renderPagestart('Platform4PHP', '', 'install.css');
+Page::renderPagestart('Platform4PHP', [], ['install.css']);
 
 echo '<div class="content">';
 echo '<h1>Platform4PHP</h1>';
@@ -23,4 +25,4 @@ echo '<li><a href="/demo/">Go to the demo</a>';
 echo '</ul>';
 echo '</div>';
 
-Design::renderPageend();
+Page::renderPageend();
