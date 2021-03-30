@@ -4,7 +4,7 @@ include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 use Platform\Page;
 use Platform\File;
 
-Page::renderPagestart('File upload', ['/Platform/Field/js/file.js']);
+Page::renderPagestart('File upload', ['/Platform/Form/js/file.js']);
 
 $current_file_name = '';
 
