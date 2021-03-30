@@ -71,7 +71,6 @@ class Component {
     protected static $redraw_url = '/Platform/Component/php/get_content.php';
     
     public function __construct() {
-        $this->prepareData();
     }
 
     /**
@@ -192,6 +191,7 @@ class Component {
      * Renders the component
      */
     public function render() {
+        $this->prepareData();
         if (! $this->can_render) return;
         $classes = $this->classes;
         $classes[] = 'platform_component';
