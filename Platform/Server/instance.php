@@ -4,8 +4,7 @@ namespace Platform\Server;
 use Platform\Filter;
 use Platform\Platform;
 use Platform\Server;
-use Platform\Security\User;
-use Platform\Security\Property;
+use Platform\User;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Database;
 
@@ -235,8 +234,8 @@ class Instance extends \Platform\Datarecord {
         \Platform\Security\Accesstoken::ensureInDatabase();
         \Platform\File::ensureInDatabase();
         \Platform\ExtensibleField::ensureInDatabase();
-        \Platform\Security\User::ensureInDatabase();
-        \Platform\Security\Property::ensureInDatabase();
+        \Platform\User::ensureInDatabase();
+        \Platform\Property::ensureInDatabase();
     }
     
     /**

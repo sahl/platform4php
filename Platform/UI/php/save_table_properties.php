@@ -3,7 +3,7 @@ include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 if (!\Platform\Security\Accesstoken::validateSession()) die('');
 
-$existingproperties = \Platform\Security\Property::getForCurrentUser('tableconfiguration', $_POST['id']);
+$existingproperties = \Platform\Property::getForCurrentUser('tableconfiguration', $_POST['id']);
 if (! is_array($existingproperties)) $existingproperties = array();
 
 if ($_POST['action'] == 'saveorderandwidth') {
@@ -15,7 +15,7 @@ if ($_POST['action'] == 'saveorderandwidth') {
         if (isset($existingproperties[$element['field']]['visible'])) $properties['visible'] = $existingproperties[$element['field']]['visible'];
         $newproperties[$element['field']] = $properties;
     }
-    \Platform\Security\Property::setForCurrentUser('tableconfiguration', $_POST['id'], $newproperties);
+    \Platform\Property::setForCurrentUser('tableconfiguration', $_POST['id'], $newproperties);
 }
 if ($_POST['action'] == 'savevisibility') {
     foreach ($existingproperties as $field => $element) {
@@ -25,10 +25,10 @@ if ($_POST['action'] == 'savevisibility') {
     foreach ($_POST['visible'] as $element => $isvisible) {
         if (! isset($existingproperties[$element])) $existingproperties[$element]['visible'] = $isvisible == 1;
     }
-    \Platform\Security\Property::setForCurrentUser('tableconfiguration', $_POST['id'], $existingproperties);
+    \Platform\Property::setForCurrentUser('tableconfiguration', $_POST['id'], $existingproperties);
 }
 if ($_POST['action'] == 'savesort') {
     $existingproperties['sort_column'] = $_POST['column'];
     $existingproperties['sort_direction'] = $_POST['direction'];
-    \Platform\Security\Property::setForCurrentUser('tableconfiguration', $_POST['id'], $existingproperties);
+    \Platform\Property::setForCurrentUser('tableconfiguration', $_POST['id'], $existingproperties);
 }
