@@ -1,7 +1,7 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-Platform\Accesstoken::validateSession('/login/');
+Platform\Security\Accesstoken::validateSession('/login/');
 
 $form = new Platform\Form('search_form', 'search.form');
 

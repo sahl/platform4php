@@ -1,11 +1,11 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-Platform\Accesstoken::validateSession('/login/');
+Platform\Security\Accesstoken::validateSession('/login/');
 
-$instance_id = Platform\Instance::getActiveInstanceID();
+$instance_id = People\Instance::getActiveInstanceID();
 
-Platform\Design::renderPagestart('Build / update database');
+Platform\Page::renderPagestart('Build / update database');
 
 if ($instance_id !== false) {
     $instance = new People\Instance();
@@ -16,4 +16,4 @@ if ($instance_id !== false) {
     echo '<p>An error occurred.';
 }
 
-Platform\Design::renderPageend();
+Platform\Page::renderPageend();

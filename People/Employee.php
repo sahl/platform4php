@@ -49,7 +49,4 @@ class Employee extends \Platform\Datarecord {
         self::addStructure($structure);
         parent::buildStructure();
     }
-    
-    // Remember to add the ::ensureInDatabase to either the instance or
-    // globally
 }

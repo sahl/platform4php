@@ -2,10 +2,10 @@
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
 $form = new \Platform\Form('registration_form');
-$form->addField(new \Platform\FieldText('Company name', 'company_name', array('required' => true)));
-$form->addField(new \Platform\FieldText('Your email', 'email', array('required' => true)));
-$form->addField(new \Platform\FieldPassword('Your password', 'password', array('required' => true)));
-$form->addField(new \Platform\FieldSubmit('Register', 'register'));
+$form->addField(new \Platform\Form\TextField('Company name', 'company_name', array('required' => true)));
+$form->addField(new \Platform\Form\TextField('Your email', 'email', array('required' => true)));
+$form->addField(new \Platform\Form\PasswordField('Your password', 'password', array('required' => true)));
+$form->addField(new \Platform\Form\SubmitButton('Register', 'register'));
 
 if ($form->isSubmitted() && $form->validate()) {
   $values = $form->getValues();
@@ -20,11 +20,11 @@ if ($form->isSubmitted() && $form->validate()) {
 
 
 
-Platform\Design::renderPagestart('Register');
+Platform\Page::renderPagestart('Register');
 
 echo '<h1>Register</h1>';
 
 $form->render();
 
-Platform\Design::renderPageend();
+Platform\Page::renderPageend();
 
