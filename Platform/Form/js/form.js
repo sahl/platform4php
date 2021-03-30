@@ -134,10 +134,10 @@ $.fn.attachValues = function(values) {
                         });
                     } else {
                         // Try for file field
-                        var el = element.find('#'+element.attr('id')+'_'+key+'.file_select_frame');
+                        var el = element.find('#'+element.attr('id')+'_'+key+'.platform_file_input_frame');
                         if (el.length) {
                             // Recode url
-                            el.prop('src', '/Platform/Field/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
+                            el.prop('src', '/Platform/Form/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
                         }
                     }
                 }

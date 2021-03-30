@@ -1,6 +1,9 @@
 <?php
 namespace Platform;
 
+use Platform\Server\Instance;
+use Platform\Utilities\Semaphore;
+
 class File extends Datarecord {
     
     protected static $database_table = 'platform_files';
@@ -147,10 +150,9 @@ class File extends Datarecord {
      * @return string
      */
     public function getCompleteFolderPath(bool $use_current_value = true) : string {
-        global $platform_configuration;
         $instance = Instance::getActiveInstanceID();
         if (! $instance) trigger_error('Couldn\'t detect an instance!', E_USER_ERROR);
-        $folder = $platform_configuration['dir_store'];
+        $folder = Platform::getConfiguration('dir_store');
         if (! substr($folder,-1) == '/') $folder .= '/';
         $folder .= $instance.'/';
         if ($use_current_value) {
@@ -240,7 +242,7 @@ class File extends Datarecord {
      */
     public function getURL() : string {
         if (! $this->isInDatabase()) return '';
-        return '/Platform/file.php/'.Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename;
+        return '/Platform/File/php/file.php/'.\Platform\Server\Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename;
     }
 
     /**
