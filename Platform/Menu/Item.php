@@ -8,6 +8,7 @@ class MenuItem {
     public $id = '';
     public $classes = '';
     public $icon = '';
+    public $image = '';
     public $data = [];
     public $submenu_items = [];
     public $target = '';
@@ -18,7 +19,7 @@ class MenuItem {
      * @param string $url URL to point to
      * @param string $id ID on menu item html
      * @param string $classes Class on menu item html
-     * @param string $icon FA icon name
+     * @param string $icon FA icon name or image file
      * @param array $data Data on html tag with values hashed by keys
      * @param array $submenu_items An array with MenuItem's intended as submenu to this item
      */
@@ -27,7 +28,8 @@ class MenuItem {
         $this->url = $url;
         $this->id = $id;
         $this->classes = $classes;
-        $this->icon = $icon;
+        if (self::isImage($icon)) $this->image = $icon;
+        else $this->icon = $icon;
         $this->data = $data;
         $this->submenu_items = $submenu_items;
     }
@@ -94,6 +96,7 @@ class MenuItem {
             foreach ($this->data as $key => $value) $result .= ' data-'.$key.'="'.$value.'"';
         $result .= '>';
         if ($this->icon) $result .= '<i class="fa '.$this->icon.'"></i> ';
+        if ($this->image) $result .= '<img src="'.$this->image.'" style="height: 1em; border: none;"> ';
         $result .= $this->text.'</a>';
         return $result;
     }
@@ -112,6 +115,15 @@ class MenuItem {
      */
     public function hasSubmenu() {
         return count($this->submenu_items) > 0;
+    }
+    
+    /**
+     * Check if the string contains an image file. We do this by detecting a dot in the filename
+     * @param string $string String to check
+     * @return bool True if image
+     */
+    private static function isImage(string $string) : bool {
+        return strpos($string,'.') !== false;
     }
     
     /**
