@@ -1,7 +1,16 @@
 <?php
-namespace Platform;
+namespace Platform\Connector;
 
-class ConnectorMicrobizz {
+use Platform\Platform;
+use Platform\File\File;
+use Platform\Form\Form;
+use Platform\Form\Field\Hidden;
+use Platform\Form\Field\Submit;
+use Platform\Page\Page;
+use Platform\Security\Accesstoken;
+use Platform\Server\Instance;
+
+class Microbizz {
 
     private $endpoint = '';
     private $contract = '';
@@ -15,7 +24,7 @@ class ConnectorMicrobizz {
      * @param string $contract Contract number
      * @param string $accesstoken Access token
      */
-    public function __construct($endpoint, $contract, $accesstoken) {
+    public function __construct(string $endpoint, string $contract, string $accesstoken) {
         $this->endpoint = $endpoint;
         $this->contract = $contract;
         $this->accesstoken = $accesstoken;
@@ -25,7 +34,7 @@ class ConnectorMicrobizz {
      * Reports an error to a Microbizz update call and halts execution.
      * @param string $error_text
      */
-    public static function answerFailure($error_text) {
+    public static function answerFailure(string $error_text) {
         echo json_encode(array(
             'status' => 0,
             'error' => $error_text
@@ -50,8 +59,7 @@ class ConnectorMicrobizz {
      * @param string $url Url to request when using hook
      * @return array
      */
-    public static function buildPermission($modcode, $hook, $title, $url) {
-        Errorhandler::checkParams($modcode, 'string', $hook, 'string', $title, 'string', $url, 'string');
+    public static function buildPermission(string $modcode, string $hook, string $title, string $url) : array {
         $url .= (strpos($url,'?') !== false ? '&' : '?').'instance_id='.Instance::getActiveInstanceID();
         return array(
             'modcode' => $modcode,
@@ -67,11 +75,9 @@ class ConnectorMicrobizz {
      * @param array $permissions The permissions to request. Each of these can be build with buildPermission function
      * @return array The request
      */
-    public static function buildRequest($return_url, $permissions = array()) {
-        Errorhandler::checkParams($return_url, 'string', $permissions, 'array');
-        global $platform_configuration;
+    public static function buildRequest(string $return_url, array $permissions = array()) : array {
         $request = array(
-            'publicid' => $platform_configuration['microbizz_public_id'],
+            'publicid' => Platform::getConfiguration('microbizz_public_id'),
             'negotiateurl' => ($_SERVER['HTTPS'] ? 'https://' : 'http://').$_SERVER['HTTP_HOST'].'/Platform/Connector/php/microbizz_negotiate.php?instance_id='.Instance::getActiveInstanceID().'&token='.Accesstoken::getSavedTokenCode().'&userid='.Accesstoken::getCurrentUserID(),
             'returnurl' => $return_url
         );
@@ -92,25 +98,24 @@ class ConnectorMicrobizz {
      * Get a form for connecting with Microbizz (consisting only of a button)
      * @param array $request The connection request, which can be retrieved from buildRequest function
      * @param string $button_text The button text
-     * @param boolean $connect_testserver Indicate if the Microbizz test environment should be used
+     * @param bool $connect_testserver Indicate if the Microbizz test environment should be used
      */
-    public static function getConnectForm($request, $button_text = 'Link to Microbizz', $connect_testserver = false) {
-        Errorhandler::checkParams($request, 'array', $button_text, 'string', $connect_testserver, 'boolean');
-        $request_form = new \Platform\Form('microbizz_connect_form');
+    public static function getConnectForm(array $request, string $button_text = 'Link to Microbizz', bool $connect_testserver = false) : Form {
+        $request_form = new Form('microbizz_connect_form');
         $action = $connect_testserver ? 'https://dev2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
-        $request_form->addField(new \Platform\FieldHidden('', 'request', array('value' => json_encode($request))));
-        if ($button_text) $request_form->addField(new \Platform\FieldSubmit($button_text, 'performlink'));
+        $request_form->addField(new Hidden('', 'request', array('value' => json_encode($request))));
+        if ($button_text) $request_form->addField(new Submit($button_text, 'performlink'));
         return $request_form;
     }
 
     /**
      * Handle the return URL after connecting with Microbizz. Return an array consisting of endpoint, contract number
      * and accesstoken on success or false if an error occured.
-     * @return array|boolean
+     * @return array|bool
      */
-    public static function handleReturn() {
-        $filename = \Platform\File::getFullFolderPath('temp').'microbizz_credentials_user_'.Accesstoken::getCurrentUserID();
+    public static function handleReturn() : array {
+        $filename = File::getFullFolderPath('temp').'microbizz_credentials_user_'.Accesstoken::getCurrentUserID();
         if (!file_exists($filename)) return false;
         $data = file($filename);
         if (count($data) <> 3) return false;
@@ -124,13 +129,13 @@ class ConnectorMicrobizz {
      */
     public static function prepareInstanceFromRequest() {
         // Switch to requested instance
-        $instance = new \Platform\Instance();
+        $instance = new Instance();
         $instance->loadForRead($_GET['instance_id'] ?: $_SESSION['microbizz_stored_instance']);
         if (! $instance->isInDatabase()) die('Invalid instance.');
         $instance->activate();
 
         // Queue Microbizz design file
-        Page::queueCSSFile('/Platform/Connector/css/microbizz.css');
+        Page::CSSFile('/Platform/Connector/css/microbizz.css');
     }
     
     /**
@@ -139,9 +144,7 @@ class ConnectorMicrobizz {
      * @param array $parameters Parameters to the command
      * @return array Result array.
      */
-    public function query($command, $parameters = array()) {
-        Errorhandler::checkParams($command, 'string', $parameters, 'array');
-        
+    public function query(string $command, array $parameters = array()) : array {
         if (! $this->endpoint) return array('status' => false, 'error' => 'No endpoint defined');
         
         $commands = $parameters;
@@ -151,7 +154,7 @@ class ConnectorMicrobizz {
         
         if ($this->disable_callbacks) $request['disable_callbacks'] = true;
 
-        $ch = \curl_init();
+        $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, true);
@@ -182,17 +185,15 @@ class ConnectorMicrobizz {
      * @param string $challenge The challenge string
      * @return string The answer
      */
-    public static function solveChallenge($challenge) {
-        Errorhandler::checkParams($challenge, 'string');
-        global $platform_configuration;
-        return sha1($challenge.$platform_configuration['microbizz_secret_token']);
+    public static function solveChallenge(string $challenge) : string {
+        return sha1($challenge.Platform::getConfiguration('microbizz_secret_token'));
     }
 
     /**
      * Validates a session from Microbizz to ensure that it runs within a users space.
-     * @return boolean Always returns true otherwise execution is halted.
+     * @return bool Always returns true otherwise execution is halted.
      */
-    public function validateSession() {
+    public function validateSession() : bool {
         if ($_GET['sessiontoken'] && $_SESSION['microbizz_validated_sessiontoken'] == $_GET['sessiontoken']) return true;
         $result = $this->query('ValidateSessionToken', array('sessiontoken' => $_GET['sessiontoken']));
         if (! $result['status'] || ! $result['result']) die('Could not validate session with Microbizz.');

@@ -7,10 +7,6 @@
     align-items: baseline;
 }
 
-.platform_field_label_container > label {
-    width: 130px;
-}
-
 .platform_field_label_container > .platform_field_input_container {
     flex-grow: 1;
 }

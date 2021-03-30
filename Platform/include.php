@@ -1,5 +1,6 @@
 <?php
-namespace Platform;
+use Platform\Utilities\Translation;
+use Platform\Page;
 
 $configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
 
@@ -7,11 +8,12 @@ require_once $configfile;
 
 // We need to load some classes before the autoloader can work
 $preload_list = array(
-    '/Errorhandler/errorhandler.php',
-    '/Datarecord/Referable.php',
-    '/Datarecord/datarecord.php',
-    '/Instance/instance.php',
-    '/Translation/translation.php',
+    '/Platform.php',
+    '/Utilities/errorhandler.php',
+    '/DatarecordReferable.php',
+    '/Datarecord.php',
+    '/Server/Instance.php',
+    '/Utilities/Translation.php',
 );
 // Load scripts
 foreach ($preload_list as $script) {
@@ -19,7 +21,7 @@ foreach ($preload_list as $script) {
 }
 
 // Register autoloader
-spl_autoload_register("\\Platform\\AutoLoad");
+spl_autoload_register("PlatformAutoLoad");
 session_start();
 
 // Load languages
@@ -29,16 +31,16 @@ if (Translation::isEnabled()) {
 }
 
 // Register shutdown
-register_shutdown_function('Platform\\Errorhandler::shutdown');
+register_shutdown_function('Platform\\Utilities\\Errorhandler::shutdown');
 
 // Register error handler
-set_error_handler('Platform\\Errorhandler::handler');
+set_error_handler('Platform\\Utilities\\Errorhandler::handler');
 
 umask(002);
 // INCLUDES
         
 // Translation system
-Page::queueJSFile('/Platform/Translation/js/translation.js');
+Page::queueJSFile('/Platform/Utilities/js/translation.js');
         
 // Jquery        
 Page::queueJSFile('/Platform/Jquery/js/jquery.js');
@@ -50,28 +52,25 @@ Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
 // General Platform
 Page::queueJSFile('/Platform/Page/js/general.js');
 Page::queueCSSFile('/Platform/Page/css/platform.css');
-Page::queueJSFile('/Platform/Menu/js/menuitem.js');
+Page::queueJSFile('/Platform/Page/js/menuitem.js');
 
 // Components
-Page::queueCSSFile('/Platform/Component/css/component.css');
-Page::queueJSFile('/Platform/Component/js/component.js');
-Page::queueJSFile('/Platform/Dialog/js/dialog.js');
+Page::queueCSSFile('/Platform/UI/css/component.css');
+Page::queueJSFile('/Platform/UI/js/component.js');
+Page::queueJSFile('/Platform/UI/js/dialog.js');
 
 // Font awesome
 Page::queueCSSFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
 
-function AutoLoad($class) {
+function PlatformAutoLoad($class) {
     // Delve root from current location
     $root = substr(__DIR__,0,strrpos(__DIR__, '/'));
-    if (preg_match('/^(.*)\\\\([A-Z][A-Z]?[a-z0-9]*)([A-Z]*.*)$/', $class, $match)) {
-        $match[1] = str_replace('\\', '/', $match[1]);
-        if ($match[3]) $file = $root.'/'.$match[1].'/'.$match[2].'/'.$match[3].'.php';
-        else $file = $root.'/'.$match[1].'/'.$match[2].'/'.strtolower($match[2]).'.php';
-        if (file_exists($file)) {
-            require_once $file;
-            if (Translation::isEnabled()) Translation::prepareTranslationsForFile ($file);
-            return;
-        }
+    // Find wanted filename
+    $requested_file = $root.'/'.str_replace('\\', '/', $class).'.php';
+    if (file_exists($requested_file)) {
+        require_once $requested_file;
+        if (Translation::isEnabled()) Translation::prepareTranslationsForFile ($file);
+        return;
     }
 }
 

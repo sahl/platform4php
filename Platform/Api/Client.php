@@ -1,7 +1,9 @@
 <?php
-namespace Platform;
+namespace Platform\Api;
 
-class ApiClient {
+use Platform\Data\Condition\Condition;
+
+class Client {
     
     protected $endpoint = false;
     
@@ -14,12 +16,11 @@ class ApiClient {
     /**
      * Perform a filtered GET on a given object
      * @param string $object The object to filter
-     * @param Condition $condition The condition to use
+     * @param \Platform\Data\Condition\Condition $condition The condition to use
      * @return array Hashed by code=http code  message=http message  headers=array of all headers
      * body=body output  json=json decoded body output
      */
-    public function filter($object, $condition) {
-        Errorhandler::checkParams($object, 'string', $condition, 'Platform\\Condition');
+    public function filter(string $object, Condition $condition) : array {
         return $this->query($object, 'GET', 0, array('query' => $condition->getAsJSON()));
     }
     
@@ -29,7 +30,7 @@ class ApiClient {
      * @return array Hashed by code=http code  message=http message  headers=array of all headers
      * body=body output  json=json decoded body output
      */
-    public static function parseResponse($http_output) {
+    public static function parseResponse(string $http_output) : array {
         $lines = explode("\n", $http_output);
         $parsingheader = true; $canswitch = false;
         $result = array();
@@ -68,7 +69,7 @@ class ApiClient {
      * @return array Hashed by code=http code  message=http message  headers=array of all headers
      * body=body output  json=json decoded body output
      */
-    public function query($object, $method = 'GET', $id = 0, $parameters = array()) {
+    public function query(string $object, string $method = 'GET', int $id = 0, array $parameters = []) : array {
         $endpoint = $this->endpoint;
         if (substr($endpoint,-1,1) != '/') $endpoint .= '/';
         $endpoint .= $object;
@@ -79,9 +80,8 @@ class ApiClient {
         }
         
         // Prepare CURL
-        $curl = \curl_init($endpoint);
+        $curl = curl_init($endpoint);
         $options = array(
-            'Access-Token: ' . 'xxx',
             'Content-Type: application/json',
             'Accept: application/json'
         );
@@ -106,9 +106,9 @@ class ApiClient {
     
     /**
      * Set the access token to use for logging in with the API
-     * @param type $token_code
+     * @param string $token_code
      */
-    public function setAccessToken($token_code) {
+    public function setAccessToken(string $token_code) {
         $this->token_code = $token_code;
     }
     

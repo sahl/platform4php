@@ -1,5 +1,4 @@
 <?php
-namespace Platform;
 // Check if we can decide a root
 if (! $_SERVER['DOCUMENT_ROOT']) die('Couldn\'t read $_SERVER[\'DOCUMENT_ROOT\']');
 
@@ -21,6 +20,16 @@ if (! file_exists($configuration_file)) {
     fclose($fh);
 }
 include $include_file;
+
+use Platform\Platform;
+use Platform\Server;
+use Platform\Server\Instance;
+use Platform\Server\Job;
+use Platform\Security\Administrator;
+use Platform\Utilities\Database;
+use Platform\Utilities\Errorhandler;
+use Platform\Form;
+use Platform\Page;
 
 // Check administrator login if configured.
 if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
@@ -63,12 +72,15 @@ if ($perform_test) {
             Platform::setConfiguration('server_id', $server_id);
             Platform::writeConfigurationFile();
             sleep(1);
-            Page::redirect ('index.php');
+            Page::renderPagestart('Continue');
+            echo "<script type=\"text/javascript\">\ndocument.location = '/install/index.php';\n</script><a href=\"index.php\">Continue</a>";
+            Page::renderPageend();
+            exit;
         }
     }
 }
 
-Design::renderPagestart('Install Platform4PHP', 'install.js', 'install.css');
+Page::renderPagestart('Install Platform4PHP', ['install.js'], ['install.css']);
 
 if ($errors) {
     echo '<div class="errors">We encountered one or more errors trying to get Platform4PHP to work!<ul><li>';
@@ -78,7 +90,7 @@ if ($errors) {
 
 $install_form->render();
 
-Design::renderPageend();
+Page::renderPageend();
 
 
 
@@ -95,19 +107,17 @@ function install_get_parent_dir() {
     return substr($root, 0, strrpos($root,'/'));
 }
 
-function install_test_all(&$errors) {
-    global $platform_configuration;
-    Errorhandler::checkParams($errors, 'array');
+function install_test_all(array &$errors) {
     // Try global connect
     $result = Database::connectGlobal();
     if ($result) {
         $result = Database::ensureGlobalDatabase();
-        if (! $result) $errors[] = 'The global database '.$platform_configuration['global_database_name'].' did not exist, and we couldn\'t create it. Error: '.Database::getLastGlobalError();
+        if (! $result) $errors[] = 'The global database '.Platform::getConfiguration('global_database_name').' did not exist, and we couldn\'t create it. Error: '.Database::getLastGlobalError();
         // Try local connect
         $result = Database::connectLocal();
         if ($result) {
             // Now see if we can create a local database
-            $temp_database_name = $platform_configuration['instance_database_name'].'_tempdatabase';
+            $temp_database_name = Platform::getConfiguration('instance_database_name').'_tempdatabase';
             $result = Database::instanceQuery("CREATE DATABASE ".$temp_database_name, false);
             if ($result) {
                 $result = Database::instanceQuery("USE ".$temp_database_name, false);
@@ -131,15 +141,15 @@ function install_test_all(&$errors) {
                 $errors[] = 'Could not create a new database on the local connection. Does it have the correct permissions? Error: '.Database::getLastLocalError();
             }
         } else {
-            $errors[] = 'Could not connect local database '.$platform_configuration['local_database_server'].' ('.$platform_configuration['local_database_username'].'/XXXXXXX)';
+            $errors[] = 'Could not connect local database '.Platform::getConfiguration('local_database_server').' ('.Platform::getConfiguration('local_database_username').'/XXXXXXX)';
         } 
     } else {
-        $errors[] = 'Could not connect global database '.$platform_configuration['global_database_server'].' ('.$platform_configuration['global_database_username'].'/XXXXXXX)';
+        $errors[] = 'Could not connect global database '.$platform_configuration['global_database_server'].' ('.Platform::getConfiguration('global_database_username').'/XXXXXXX)';
     }
     
     // Check directories
     foreach (array('dir_store', 'dir_temp', 'dir_log') as $dir_name) {
-        $directory = $platform_configuration[$dir_name];
+        $directory = Platform::getConfiguration($dir_name);
         if (substr($directory,-1,1) != '/') {
             $errors[] = 'Invalid directory '.$directory.'. Directories must end with a /';
             continue;
