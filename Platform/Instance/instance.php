@@ -269,7 +269,7 @@ class Instance extends Datarecord {
             return array('hostname' => $server->hostname, 'token_code' => $result['token_code']);
         }
         $this->activate();
-        $result = User::tryLogin($username, $password);
+        $result = $this->userLogin($username, $password);
         if ($result === false) return false;
         return array('hostname' => $server->hostname, 'token_code' => $result->token_code);
     }
@@ -319,5 +319,15 @@ class Instance extends Datarecord {
         if (! $this->is_initiated) {
             if ($this->createDatabase()) parent::save($force_save);
         }
+    }
+    
+    /**
+     * Try login as a user
+     * @param string $username User name
+     * @param string $password Password
+     * @return bool True if success
+     */
+    public function userLogin(string $username, string $password) {
+        return User::tryLogin($username, $password);
     }
 }
