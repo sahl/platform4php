@@ -2,7 +2,7 @@
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
 use Platform\Security\Accesstoken;
-use Platform\Security\User;
+use Platform\User;
 use Platform\Server\Instance;
 use Platform\Page;
 
