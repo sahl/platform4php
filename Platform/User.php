@@ -1,5 +1,7 @@
 <?php
-namespace Platform\Security;
+namespace Platform;
+
+Use Platform\Security\Accesstoken;
 
 class User extends \Platform\DatarecordExtensible {
     

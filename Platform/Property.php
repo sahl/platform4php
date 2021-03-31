@@ -1,7 +1,8 @@
 <?php
-namespace Platform\Security;
+namespace Platform;
 
 use Platform\Utilities\Database;
+use Platform\Security\Accesstoken;
 
 class Property extends \Platform\Datarecord {
     
