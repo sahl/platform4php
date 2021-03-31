@@ -45,7 +45,6 @@ class MultiplierSection extends Field {
      * @param array|Field $fields One or more fields to add
      */
     public function addFields($fields) {
-        Errorhandler::checkParams($classes, array('array', '\\Platform\\Form\\Field'));
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
             //if ($field instanceof FieldMultiplier) trigger_error('You cannot add a multiplier to another multiplier!', E_USER_ERROR);
@@ -146,7 +145,7 @@ class MultiplierSection extends Field {
                 // Generate new field name
                 $field->setName($this->getName().'['.$i.']['.$old_field_name.']');
                 // Set value and trigger error if any
-                if (! $field instanceof FieldHTML) {
+                if (! $field instanceof HTML) {
                     if (isset($this->value[$i][$old_field_name])) {
                         $field->setValue($this->value[$i][$old_field_name]);
                     } else {

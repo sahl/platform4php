@@ -46,7 +46,7 @@ class ConditionOneOf extends Condition {
         return '('.implode(' OR ', $sql).')';
     }
     
-    public function match($object) : bool {
+    public function match(Datarecord $object) : bool {
         if (! $this->manual_match) return true;
         return in_array($object->getRawValue($this->fieldname), $this->value);
     }

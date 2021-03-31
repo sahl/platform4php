@@ -97,7 +97,7 @@ class Time {
     
     /**
      * Get the number of days until another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool|int Number of days or false if cannot calculate
      */
     public function getDaysUntil(Time $other_time) {
@@ -108,8 +108,8 @@ class Time {
     
     /**
      * Get the earliest of two times
-     * @param \Platform\Time $other_time
-     * @return bool|\Platform\Time The earliest time or false if cannot determine
+     * @param \Platform\Utilities\Time $other_time
+     * @return bool|\Platform\Utilities\Time The earliest time or false if cannot determine
      */
     public function getEarliest(Time $other_time) {
         if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
@@ -134,7 +134,7 @@ class Time {
     
     /**
      * Get the first day in this week
-     * @return \Platform\Time
+     * @return \Platform\Utilities\Time
      */
     public function getFirstDayInWeek() : Time {
         return $this->addDays(-($this->getWeekday()-1));
@@ -142,7 +142,7 @@ class Time {
     
     /**
      * Get the last day in this month
-     * @return \Platform\Time
+     * @return \Platform\Utilities\Time
      */
     public function getLastDayInMonth() : Time {
         return $this->add($this->getDaysInMonth()-$this->getDay());
@@ -150,8 +150,8 @@ class Time {
     
     /**
      * Get the latest of two times
-     * @param \Platform\Time $other_time
-     * @return bool|\Platform\Time The latest time or false if cannot determine
+     * @param \Platform\Utilities\Time $other_time
+     * @return bool|\Platform\Utilities\Time The latest time or false if cannot determine
      */
     public function getLatest(Time $other_time) {
         if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
@@ -168,7 +168,7 @@ class Time {
     
     /**
      * Get the number of months until another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool|int Number of months or false if cannot calculate
      */
     public function getMonthsUntil(Time $other_time) {
@@ -181,7 +181,7 @@ class Time {
     
     /**
      * Get the number of minutes until another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool|int Number of minutes or false if cannot calculate
      */
     public function getMinutesUntil(Time $other_time) {
@@ -246,7 +246,7 @@ class Time {
     
     /**
      * Get the number of years until another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool|int Number of months or false if cannot calculate
      */
     public function getYearsUntil(Time $other_time) {
@@ -256,7 +256,7 @@ class Time {
     
     /**
      * Check if this time is after another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool
      */
     public function isAfter(Time $other_time) {
@@ -266,7 +266,7 @@ class Time {
     
     /**
      * Check if this time is before another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool
      */
     public function isBefore(Time $other_time) {
@@ -293,7 +293,7 @@ class Time {
     
     /**
      * Check if this date is the same date as another time
-     * @param \Platform\Time $other_time
+     * @param \Platform\Utilities\Time $other_time
      * @return bool
      */
     public function isSameDate(Time $other_time) {
@@ -311,7 +311,7 @@ class Time {
     
     /**
      * Return a new time with the current time
-     * @return \Platform\Time
+     * @return \Platform\Utilities\Time
      */
     public static function now() {
         return new Time('now');
@@ -327,7 +327,7 @@ class Time {
     
     /**
      * Return a new time with the current time at midnight today
-     * @return \Platform\Time
+     * @return \Platform\Utilities\Time
      */
     public static function today() : Time {
         return new Time('today');

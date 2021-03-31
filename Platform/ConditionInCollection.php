@@ -37,7 +37,7 @@ class ConditionInCollection extends Condition {
     
     private $collection_content = false;
     
-    public function match($object) : bool {
+    public function match(Datarecord $object) : bool {
         if (! $this->manual_match) return true;
         if ($this->collection->getCount() == 0) return false;
         if (! $this->collection_content) {

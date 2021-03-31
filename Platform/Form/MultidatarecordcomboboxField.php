@@ -1,10 +1,10 @@
 <?php
 namespace Platform\Form;
 
-class MultidatarecordcomboboxField extends MultiplierField {
+class MultidatarecordcomboboxField extends MultiplierSection {
     
     public function __construct(string $label, string $name, array $options = array()) {
-        $datarecordcombobox = new Form\DatarecordcomboboxField('', 'innercombobox', array('class' => $options['class']));
+        $datarecordcombobox = new DatarecordcomboboxField('', 'innercombobox', array('class' => $options['class']));
         $datarecordcombobox->setContainerClasses(array());
         unset($options['class']);
         parent::__construct($label, $name, $options);

@@ -5,7 +5,7 @@ use Platform\Utilities\Database;
 use Platform\Server\Job;
 use Platform\Utilities\Time;
 
-class Mail extends \Platform\Data\Datarecord {
+class Mail extends \Platform\Datarecord {
     
     const FORMAT_TEXT = 0;
     const FORMAT_HTML = 1;

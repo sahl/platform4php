@@ -303,8 +303,8 @@ class Form extends \Platform\UI\Component {
                         }
                 }
                 if (class_exists($class)) {
-                    $label = $tag['properties']['label'];
-                    $name = $tag['properties']['name'];
+                    $label = (string)$tag['properties']['label'];
+                    $name = (string)$tag['properties']['name'];
                     unset($tag['properties']['label']);
                     unset($tag['properties']['name']);
                     $fields[] = new $class($label, $name, $tag['properties']);

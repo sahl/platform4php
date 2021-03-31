@@ -33,7 +33,7 @@ class ConditionNOT extends Condition {
         return 'NOT ('.$this->condition->getSQLFragment().')';
     }
     
-    public function match($object) : bool {
+    public function match(Datarecord $object) : bool {
         if (! $this->manual_match) return true;
         return ! $this->condition->match($object);
     }

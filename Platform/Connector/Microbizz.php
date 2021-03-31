@@ -2,11 +2,11 @@
 namespace Platform\Connector;
 
 use Platform\Platform;
-use Platform\File\File;
-use Platform\Form\Form;
-use Platform\Form\Field\Hidden;
-use Platform\Form\Field\Submit;
-use Platform\Page\Page;
+use Platform\File;
+use Platform\Form;
+use Platform\Form\HiddenField;
+use Platform\Form\SubmitButton;
+use Platform\Page;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
 
@@ -104,8 +104,8 @@ class Microbizz {
         $request_form = new Form('microbizz_connect_form');
         $action = $connect_testserver ? 'https://dev2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
-        $request_form->addField(new Hidden('', 'request', array('value' => json_encode($request))));
-        if ($button_text) $request_form->addField(new Submit($button_text, 'performlink'));
+        $request_form->addField(new HiddenField('', 'request', array('value' => json_encode($request))));
+        if ($button_text) $request_form->addField(new SubmitButton($button_text, 'performlink'));
         return $request_form;
     }
 

@@ -1113,7 +1113,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $definition Field definition
      * @return \Platform\Form\Field
      */
-    public static function getFormFieldFromDefinition(string $name, array $definition) : \Platform\Form\Field {
+    public static function getFormFieldFromDefinition(string $name, array $definition) {
         $options = array();
         if ($definition['required']) $options['required'] = true;
         if ($definition['invisible']) {
@@ -1828,8 +1828,8 @@ class Datarecord implements DatarecordReferable {
                 if (! in_array($key, $valid_definitions)) $errors[] = $field.': Property '.$key.' is not a valid Platform property.';
             }
             // Do some specific integrity
-            if ($definition['fieldtype'] == self::FIELDTYPE_ENUMERATION && ! is_array($definition['enumeration'])) $errors[] = $field.': Enumeration type without enumeration table.';
-            if ($definition['fieldtype'] != self::FIELDTYPE_ENUMERATION && is_array($definition['enumeration'])) $errors[] = $field.': Enumeration table assigned to non-enumeration field.';
+            if (in_array($definition['fieldtype'], [self::FIELDTYPE_ENUMERATION, self::FIELDTYPE_ENUMERATION_MULTI]) && ! is_array($definition['enumeration'])) $errors[] = $field.': Enumeration type without enumeration table.';
+            if (! in_array($definition['fieldtype'], [self::FIELDTYPE_ENUMERATION, self::FIELDTYPE_ENUMERATION_MULTI]) && is_array($definition['enumeration'])) $errors[] = $field.': Enumeration table assigned to non-enumeration field.';
             if ($definition['foreign_class'] && ! in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER))) $errors[] = $field.': A foreign class was provided but field is not relation type.';
         }
         

@@ -14,7 +14,6 @@ addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
         });
         // Save it
         $.post('/Platform/UI/php/save_table_properties.php', {action: 'savevisibility', id: item.data('table_id'), visible: visible});
-        sizeTableContainer($('#'+item.data('table_id')));
         return false;
     });
     

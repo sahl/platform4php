@@ -3,7 +3,7 @@ include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
-use Platform\File\File;
+use Platform\File;
 use Platform\Connector\Microbizz;
 
 // Switch to requested instance

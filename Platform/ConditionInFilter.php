@@ -44,7 +44,7 @@ class ConditionInFilter extends Condition {
     
     private $filter_result = false;
     
-    public function match($object) : bool {
+    public function match(Datarecord $object) : bool {
         if (! $this->manual_match) return true;
         // Manual match
         if (! $this->filter_result) {

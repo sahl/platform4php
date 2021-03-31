@@ -34,7 +34,7 @@ class ConditionLike extends Condition {
         }
     }
 
-    public function match($object) : bool {
+    public function match(Datarecord $object) : bool {
         if (! $this->manual_match) return true;
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         $value_to_check = $object->getRawValue($this->fieldname);

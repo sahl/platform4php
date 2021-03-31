@@ -36,8 +36,10 @@ class Condition {
     public function attachFilter(Filter $filter) {
         $this->filter = $filter;
         
-        $field_definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
-        $this->manual_match = $field_definition['store_in_metadata'];
+        if ($this->fieldname) {
+            $field_definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
+            $this->manual_match = $field_definition['store_in_metadata'];
+        }
         if ($this->manual_match) $filter->setSearchMetadata();
     }
     

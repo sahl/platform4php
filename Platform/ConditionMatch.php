@@ -45,7 +45,7 @@ class ConditionMatch extends Condition {
         }
     }
     
-    public function match($object) : bool {
+    public function match(Datarecord $object) : bool {
         if (! $this->manual_match) return true;
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
