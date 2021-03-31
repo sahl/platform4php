@@ -9,7 +9,7 @@ require_once $configfile;
 // We need to load some classes before the autoloader can work
 $preload_list = array(
     '/Platform.php',
-    '/Utilities/errorhandler.php',
+    '/Utilities/Errorhandler.php',
     '/DatarecordReferable.php',
     '/Datarecord.php',
     '/Server/Instance.php',
@@ -69,7 +69,7 @@ function PlatformAutoLoad($class) {
     $requested_file = $root.'/'.str_replace('\\', '/', $class).'.php';
     if (file_exists($requested_file)) {
         require_once $requested_file;
-        if (Translation::isEnabled()) Translation::prepareTranslationsForFile ($file);
+        if (Translation::isEnabled()) Translation::prepareTranslationsForFile ($requested_file);
         return;
     }
 }

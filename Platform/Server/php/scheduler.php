@@ -4,4 +4,4 @@ include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 if ($argv[1]) $_SERVER['HTTP_HOST'] = $argv[1];
 
-Platform\Job::process();
+Platform\Server\Job::process();

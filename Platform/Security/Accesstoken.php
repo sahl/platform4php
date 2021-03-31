@@ -3,6 +3,7 @@ namespace Platform\Security;
 
 use Platform\Filter;
 use Platform\Page;
+use Platform\User;
 use Platform\Server\Instance;
 use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
@@ -48,7 +49,7 @@ class Accesstoken extends \Platform\Datarecord {
      * Acquire a token which grants the given user access to the system.
      * @param \Platform\User $user User to grant access
      * @param int $seconds_to_live Seconds for the token to live.
-     * @return \Platform\Accesstoken The token
+     * @return \Platform\Security\Accesstoken The token
      */
     public static function acquire(User $user, int $seconds_to_live = 3600) : Accesstoken {
         if (! $user->isInDatabase()) trigger_error('Tried to acquire token for unsaved user!', E_USER_ERROR);

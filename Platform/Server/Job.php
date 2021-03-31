@@ -7,6 +7,9 @@ use Platform\ConditionOR;
 use Platform\ConditionMatch;
 use Platform\ConditionLesserEqual;
 use Platform\ConditionNOT;
+use Platform\Server;
+use Platform\Utilities\Database;
+use Platform\Utilities\Time;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Log;
 // TODO: Handle daemons
@@ -125,7 +128,7 @@ class Job extends \Platform\Datarecord {
      * @param bool $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
      * @param int $slot_size Slot size of the job
      * @param int $max_runtime Max allowed run time in realtime minutes.
-     * @return \Platform\Job The job
+     * @return \Platform\Server\Job The job
      */
     private function adjustData(string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) {
         if (! $function && strpos($class, '::')) {
@@ -201,7 +204,7 @@ class Job extends \Platform\Datarecord {
      * @param bool $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
      * @param int $slot_size Slot size of the job
      * @param int $max_runtime Max allowed run time in realtime minutes.
-     * @return \Platform\Job The job
+     * @return \Platform\Server\Job The job
      */
     public static function getJob(string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) {
         // Create basic job
@@ -222,7 +225,7 @@ class Job extends \Platform\Datarecord {
      * @param bool $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
      * @param int $slot_size Slot size of the job
      * @param int $max_runtime Max allowed run time in realtime minutes.
-     * @return \Platform\Job The job
+     * @return \Platform\Server\Job The job
      */
     public static function getServerJob(string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) {
         // Create basic job
@@ -321,7 +324,7 @@ class Job extends \Platform\Datarecord {
      * Write job system log events
      * @param string $event Short string for event type
      * @param string $text Longer event text
-     * @param \Platform\Job $job The job the event is about
+     * @param \Platform\Server\Job $job The job the event is about
      */
     public static function log(string $event, string $text = '', $job = false) {
         if (! self::$log) self::$log = new Log('job_scheduler', array(8, 15, 55), false);

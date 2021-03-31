@@ -4,7 +4,7 @@ namespace Platform\UI;
 use Platform\Form;
 use Platform\Filter;
 use Platform\Server\Instance;
-use Platform\Security\Property;
+use Platform\Property;
 use Platform\Datarecord;
 
 class Table extends Component {

@@ -5,6 +5,7 @@ use Platform\Server\Job;
 use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
+use Platform\Utilities\Errorhandler;
 use Platform\UI\EditComplex;
 
 class Datarecord implements DatarecordReferable {
@@ -1050,7 +1051,7 @@ class Datarecord implements DatarecordReferable {
                 $datetime = new Time($value);
                 return $datetime->getTimestamp() !== null ? '\''.$datetime->get().'\'' : 'NULL';
             default:
-                return '\''.Database::escape($value).'\'';
+                return '\''.Database::escape((string)$value).'\'';
         }
     }
     
@@ -2181,7 +2182,7 @@ class Datarecord implements DatarecordReferable {
                     if (static::$structure[$field]['fieldtype'] == self::FIELDTYPE_IMAGE && static::$structure[$field]['image_max_width'] && static::$structure[$field]['image_max_height']) {
                         $max_width = static::$structure[$field]['image_max_width'];
                         $max_height = static::$structure[$field]['image_max_height'];
-                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: \Platform\Image::RESIZE_STRATEGY_FILL;
+                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: \Platform\File\Image::RESIZE_STRATEGY_FILL;
                         $image = new Image();
                         $result = $image->attachFile($file, true);
                         if ($result) {

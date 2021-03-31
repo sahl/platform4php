@@ -216,7 +216,7 @@ class Time {
      * Get the internal timestamp of this time
      * @return int
      */
-    public function getTimestamp() : int {
+    public function getTimestamp() {
         return $this->timestamp;
     }
     

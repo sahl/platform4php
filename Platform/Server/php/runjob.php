@@ -7,13 +7,13 @@ $id = $argv[1];
 // Sleep a little to let the scheduler finish writing the job
 sleep(2);
 
-$job = new \Platform\Job();
+$job = new \Platform\Server\Job();
 $job->loadForRead($id);
 if ($job->isInDatabase()) {
     $job->log('RUNNING', 'Job is running', $job);
     // Activate instance if instance job
     if ($job->instance_ref) {
-        $instance = new \Platform\Instance();
+        $instance = new \Platform\Server\Instance();
         $instance->loadForRead($job->instance_ref);
         $instance->activate();
     }

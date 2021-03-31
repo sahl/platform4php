@@ -1,6 +1,8 @@
 <?php
 namespace Platform\Utilities;
 
+use Platform\Server\Instance;
+
 $platform_language = array();
 
 class Translation {
@@ -302,10 +304,10 @@ class Translation {
      * @return string Language key
      */
     public static function getInstanceLanguage() : string {
-        if (! \Platform\Instance::getActiveInstanceID()) return self::getConfiguration('default_language');
-        if (! $_SESSION['platform']['instance_language'] || \Platform\Instance::getActiveInstanceID() != $_SESSION['platform']['instance_language_id']) {
-            $_SESSION['platform']['instance_language_id'] = \Platform\Instance::getActiveInstanceID();
-            $_SESSION['platform']['instance_language'] = \Platform\UserProperty::getPropertyForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
+        if (! \Platform\Server\Instance::getActiveInstanceID()) return self::getConfiguration('default_language');
+        if (! $_SESSION['platform']['instance_language'] || \Platform\Server\Instance::getActiveInstanceID() != $_SESSION['platform']['instance_language_id']) {
+            $_SESSION['platform']['instance_language_id'] = \Platform\Server\Instance::getActiveInstanceID();
+            $_SESSION['platform']['instance_language'] = \Platform\Property::getForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
         }
         return $_SESSION['platform']['instance_language'];
     }
@@ -500,7 +502,7 @@ class Translation {
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
         // Check if this language is something which isn't loaded yet
         $new_language = ! in_array($language_key, self::getLanguagesToLoad());
-        \Platform\UserProperty::setPropertyForUser(0, 'instance_language', '', $language_key);
+        \Platform\Property::setForUser(0, 'instance_language', '', $language_key);
         if ($new_language) self::reloadAllTranslations();
     }
     
