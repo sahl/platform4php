@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+use Platform\Utilities\Database;
+
 class ConditionMatch extends Condition {
     
     public function __construct(string $fieldname, $value) {

@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+use Platform\Utilities\Database;
+
 class ExtensibleField extends Datarecord {
     
     /**
