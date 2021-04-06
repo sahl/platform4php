@@ -996,7 +996,7 @@ class Datarecord implements DatarecordReferable {
      */
     public static function getFieldDefinition(string $field) : array {
         static::ensureStructure();
-        return static::$structure[$field];
+        return static::$structure[$field] ?: [];
     }
     
     /**

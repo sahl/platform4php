@@ -122,7 +122,7 @@ class Table extends Component {
     
     /**
      * Get a column selector component based on this table
-     * @return \Platform\TableColumnSelector
+     * @return \Platform\UI\TableColumnSelector
      */
     public function getColumnSelectComponent() {
         return new TableColumnSelector($this);
@@ -159,7 +159,7 @@ class Table extends Component {
     public static function getDataFromCollection(\Platform\Collection $collection, string $resolve_relation_field = '') {
         $result = array(); $supplemental_data = array();
         $classname = $collection->getCollectionType();
-        if ($classname === false) return array();
+        if (! $classname) return array();
         // Resolve relation (if any)
         if ($resolve_relation_field) {
             if (! in_array($classname::getStructure()[$resolve_relation_field]['fieldtype'], array(Datarecord::FIELDTYPE_REFERENCE_SINGLE))) trigger_error('getDataFromDatarecordCollection can only resolve single reference fields and '.$resolve_relation_field.' is not of this type.', E_USER_ERROR);
@@ -231,7 +231,7 @@ class Table extends Component {
      * @param string $id Id of table
      * @param string $class Class name to configure off
      * @param array $table_parameters Additional parameters to table
-     * @return \Platform\Table
+     * @return \Platform\UI\Table
      */
     public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
