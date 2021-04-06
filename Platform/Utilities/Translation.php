@@ -575,8 +575,8 @@ class Translation {
                     // Write new phrases where they are needed.
                     $newphrases = array();
                     foreach ($phrases as $original_phrase => $translated_phrase) {
-                        if (isset($translations[$original_phrase])) $newphrases[$original_phrase] = $translations[$original_phrase];
-                        else $newphrases[$original_phrase] = '';
+                        if (isset($translations[$original_phrase]) && trim($translations[$original_phrase]) != '') $newphrases[$original_phrase] = $translations[$original_phrase];
+                        else $newphrases[$original_phrase] = (string)$translated_phrase;
                     }
                     // Write new file
                     self::saveTranslationFile($file, $language_key, $newphrases);
