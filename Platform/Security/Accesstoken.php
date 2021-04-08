@@ -153,7 +153,7 @@ class Accesstoken extends \Platform\Datarecord {
     public static function getCurrentUserID() {
         if (! self::$current_user_id) {
             // Try to acquire from current accesstoken
-            $token = self::getByTokencode(self::getSavedTokenCode());            
+            $token = self::getByTokencode((string)self::getSavedTokenCode());            
             if ($token->isValid()) self::$current_user_id = $token->user_ref;
         }
         return self::$current_user_id;
@@ -164,7 +164,7 @@ class Accesstoken extends \Platform\Datarecord {
      * @return string
      */
     public static function getSavedTokenCode() {
-        return $_SESSION['token_code'];
+        return $_SESSION['token_code'] ?: '';
     }
     
     /**

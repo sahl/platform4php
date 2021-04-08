@@ -2,9 +2,11 @@
 namespace Platform\Api;
 
 use Platform\Datarecord;
+use Platform\Condition;
 use Platform\Server\Instance;
 use Platform\Security\Accesstoken;
 use Platform\Utilities\Time;
+use Platform\File;
 
 class Endpoint {
     
@@ -97,7 +99,8 @@ class Endpoint {
                 case Datarecord::FIELDTYPE_FILE:
                     if ($retrieve_binary_data) {
                         $file = new File();
-                        $file->loadForRead($object->getRawValue($key));
+                        $id = $object->getRawValue($key);
+                        if ($id) $file->loadForRead($id);
                         if ($file->isInDatabase() && $file->canAccess()) {
                             $result[$key] = array(
                                 'filename' => $file->filename,

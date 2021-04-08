@@ -19,7 +19,7 @@ class TableColumnSelector extends Component {
 
     /**
      * Get a dialog for selecting columns
-     * @return \Platform\Dialog
+     * @return \Platform\UI\Dialog
      */
     public function buildDialog() {
         $this->dialog = new Dialog($this->getID().'_dialog', 'Select columns', '', array('save_columns' => 'Select columns', 'close' => 'Cancel'), $this->table->getColumnSelectForm());

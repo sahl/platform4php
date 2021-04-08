@@ -1,7 +1,7 @@
 <?php
 namespace Platform\Api;
 
-use Platform\Data\Condition\Condition;
+use Platform\Condition;
 
 class Client {
     

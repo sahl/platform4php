@@ -125,7 +125,7 @@ class ExtensibleField extends Datarecord {
     public static function renderEditComplexForClass(string $class, array $parameters = array()) {
         if (substr($class,0,1) == '\\') $class = substr($class,1);
 
-        $filter = new Filter('\\Platform\\Data\\Extensiblefield');
+        $filter = new Filter('\\Platform\\ExtensibleField');
         $filter->addCondition(new ConditionMatch('class', $class));
         $parameters['table']['filter'] = $filter;
         

@@ -2,6 +2,7 @@
 namespace Platform;
 
 use Platform\Form\HTML;
+use Platform\Form\Field;
 use Platform\Utilities\Errorhandler;
 
 class Form extends \Platform\UI\Component {

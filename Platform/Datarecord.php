@@ -1468,7 +1468,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Text string
      */
     public function getTextValue(string $field) : string {
-        if (! isset(static::$structure[$field])) return null;
+        if (! isset(static::$structure[$field])) return '';
         switch (static::$structure[$field]['fieldtype']) {
             default:
                 return strip_tags(html_entity_decode($this->getFullValue($field)));

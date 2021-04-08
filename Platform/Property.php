@@ -71,6 +71,7 @@ class Property extends \Platform\Datarecord {
      * @return mixed Property value
      */
     public static function getForUser(int $userid, string $property, string $subproperty = '') {
+        if (Server\Instance::getActiveInstanceID() === false) return false;
         $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         $userproperty = new Property();
         $userproperty->loadFromDatabaseRow($qr);
@@ -107,6 +108,7 @@ class Property extends \Platform\Datarecord {
      * @param mixed $value Value to set (or null to remove existing)
      */
     public static function setForUser(int $userid, string $property, string $subproperty, $value = null) {
+        if (Server\Instance::getActiveInstanceID() === false) return;
         $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         $userproperty = new Property();
         $userproperty->loadFromDatabaseRow($qr);
