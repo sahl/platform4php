@@ -63,28 +63,28 @@ class Condition {
     public static function getConditionFromArray(array $array) : Condition {
         if ($array === null) return null;
         switch ($array['type']) {
-            case 'Both':
-                return new Both(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
-            case 'Not':
-                return new Not(self::getConditionFromArray($array['condition']));
-            case 'Either':
-                return new Either(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
+            case 'AND':
+                return new ConditionAND(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
+            case 'NOT':
+                return new ConditionNOT(self::getConditionFromArray($array['condition']));
+            case 'OR':
+                return new ConditionOR(self::getConditionFromArray($array['condition1']), self::getConditionFromArray($array['condition2']));
             case 'Greater':
-                return new Greater($array['fieldname'], $array['value']);
+                return new ConditionGreater($array['fieldname'], $array['value']);
             case 'GreaterEqual':
-                return new GreaterEqual($array['fieldname'], $array['value']);
+                return new ConditionGreaterEqual($array['fieldname'], $array['value']);
             case 'Lesser':
-                return new Lesser($array['fieldname'], $array['value']);
+                return new ConditionLesser($array['fieldname'], $array['value']);
             case 'LesserEqual':
-                return new LesserEqual($array['fieldname'], $array['value']);
+                return new ConditionLesserEqual($array['fieldname'], $array['value']);
             case 'Like':
-                return new Like($array['fieldname'], $array['value']);
-            case 'Matches':
-                return new Matches($array['fieldname'], $array['value']);
+                return new ConditionLike($array['fieldname'], $array['value']);
+            case 'Match':
+                return new ConditionMatch($array['fieldname'], $array['value']);
             case 'OneOf':
-                return new OneOf($array['fieldname'], $array['value']);
+                return new ConditionOneOf($array['fieldname'], $array['value']);
             case 'InFilter':
-                return new InFilter($array['fieldname'], Filter::getFilterFromArray($array['filter']));
+                return new ConditionInFilter($array['fieldname'], Filter::getFilterFromArray($array['filter']));
             default:
                 return new Condition();
         }
