@@ -24,7 +24,7 @@ class ConditionOR extends Condition {
      * Get this condition expressed as an array.
      * @return array
      */
-    public function getAsArray() {
+    public function getAsArray() : array {
         return array(
             'type' => 'OR',
             'condition1' => $this->condition1->getAsArray(),

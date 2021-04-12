@@ -93,7 +93,7 @@ class Filter {
      * Execute this filter
      * @return Collection The result of the filter.
      */
-    public function execute() : Collection {
+    public function execute() {
         if (! $this->isValid()) return false;
         $result = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
         if (! $this->search_metadata) return $result;

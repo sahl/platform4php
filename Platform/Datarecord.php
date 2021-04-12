@@ -454,7 +454,7 @@ class Datarecord implements DatarecordReferable {
             $referer_field_found = false;
             $filter = new Filter($depending_class);
             foreach ($depending_class::getStructure() as $key => $definition) {
-                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class()) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE)) && $definition['foreign_class'] == get_called_class() && $definition['store_in_database'] !== false) {
                     $filter->addConditionOR(new ConditionMatch($key, $deleted_id));
                     $referer_field_found = true;
                 }
@@ -1458,7 +1458,7 @@ class Datarecord implements DatarecordReferable {
      * Get a edit complex for this Datarecord
      * @return \Platform\UI\EditComplex
      */
-    public static function getEditComplex(array $parameters = array()) : EditComplex {
+    public static function getEditComplex(array $parameters = array()) : UI\EditComplex {
         return new UI\EditComplex(get_called_class(), $parameters);        
     }
     
