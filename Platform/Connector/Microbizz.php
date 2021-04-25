@@ -174,10 +174,10 @@ class Microbizz {
         
         if (! $result['status']) return array('status' => false, 'error' => $result['msg']);
         
-        $result = $result['results'][0];
-        if (! $result['status']) return array('status' => false, 'error' => $result['msg']);
+        $inner_result = $result['results'][0];
+        if (! $inner_result['status']) return array('status' => false, 'error' => $inner_result['msg']);
         
-        return array('status' => true, 'result' => $result);
+        return array('status' => true, 'result' => $inner_result, 'date' => $result['date'], 'time' => $result['time']);
     }
     
     /**
