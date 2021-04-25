@@ -570,7 +570,7 @@ class Form extends \Platform\UI\Component {
         
         foreach ($this->fields as $field) {
             /* @var $field Field */
-            if ($field instanceof FieldHTML || in_array($field->getName(), $hiddenfields) && ! $field instanceof FieldHidden) continue;
+            if ($field instanceof Form\HTML || in_array($field->getName(), $hiddenfields) && ! $field instanceof Form\HiddenField) continue;
             $result = $field->parse(self::extractValue($field->getName(), $_POST)) && $result;
         }
         foreach ($this->validationfunctions as $validationfunction) {

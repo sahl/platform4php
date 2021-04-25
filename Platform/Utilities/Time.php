@@ -24,7 +24,7 @@ class Time {
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
         elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
-        elseif (is_integer($time)) $this->timestamp = $time;
+        elseif (is_numeric($time)) $this->timestamp = (int)$time;
         elseif ($time) $this->timestamp = strtotime($time);
     }
     
@@ -80,7 +80,7 @@ class Time {
     }
 
     /**
-     * Get date
+     * Get date on form YYYY-MM-DD
      * @return string
      */
     public function getDate() : string {
@@ -205,7 +205,7 @@ class Time {
     }
     
     /**
-     * Get time
+     * Get time on form HH:MM:SS
      * @return string
      */
     public function getTime() : string {
