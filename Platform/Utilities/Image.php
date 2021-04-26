@@ -1,5 +1,5 @@
 <?php
-namespace Platform\File;
+namespace Platform\Utilities;
 
 use Platform\File;
 use Platform\Platform;
