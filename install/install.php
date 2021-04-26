@@ -56,7 +56,7 @@ $errors = array();
 
 if ($install_form->isSubmitted() && $install_form->validate()) {
     $perform_test = true;
-    Platform::setConfigurationFromArray($install_form->getValues());
+    Platform::setConfigurationFromArray($install_form->getValues(), true);
 }
 
 if ($perform_test) {

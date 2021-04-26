@@ -240,7 +240,7 @@ class Form extends \Platform\UI\Component {
        $result = array();
        foreach ($this->fields as $field) {
             /* @var $field Field */
-            if ($field instanceof FieldHTML) continue;
+            if ($field instanceof HTML) continue;
             $value = $field->getValue();
             if ($value !== null) self::injectValue($field->getName(), $result, $value);
        }
@@ -570,7 +570,7 @@ class Form extends \Platform\UI\Component {
         
         foreach ($this->fields as $field) {
             /* @var $field Field */
-            if ($field instanceof Form\HTML || in_array($field->getName(), $hiddenfields) && ! $field instanceof Form\HiddenField) continue;
+            if ($field instanceof HTML || in_array($field->getName(), $hiddenfields) && ! $field instanceof Form\HiddenField) continue;
             $result = $field->parse(self::extractValue($field->getName(), $_POST)) && $result;
         }
         foreach ($this->validationfunctions as $validationfunction) {

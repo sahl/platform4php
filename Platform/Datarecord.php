@@ -2182,7 +2182,7 @@ class Datarecord implements DatarecordReferable {
                     if (static::$structure[$field]['fieldtype'] == self::FIELDTYPE_IMAGE && static::$structure[$field]['image_max_width'] && static::$structure[$field]['image_max_height']) {
                         $max_width = static::$structure[$field]['image_max_width'];
                         $max_height = static::$structure[$field]['image_max_height'];
-                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: \Platform\File\Image::RESIZE_STRATEGY_FILL;
+                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: \Platform\Utilities\Image::RESIZE_STRATEGY_FILL;
                         $image = new Image();
                         $result = $image->attachFile($file, true);
                         if ($result) {
