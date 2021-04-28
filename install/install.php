@@ -70,12 +70,14 @@ if ($perform_test) {
         if (! $server_id) $errors[] = 'Could not identify server. Make sure HTTP_HOST is set.';
         else {
             Platform::setConfiguration('server_id', $server_id);
-            Platform::writeConfigurationFile();
-            sleep(1);
-            Page::renderPagestart('Continue');
-            echo "<script type=\"text/javascript\">\ndocument.location = '/install/index.php';\n</script><a href=\"index.php\">Continue</a>";
-            Page::renderPageend();
-            exit;
+            if (! Platform::writeConfigurationFile()) $errors[] = 'Couldn\'t open '.$configuration_file.' for writing. We need to be able to do that!';
+            else {
+                sleep(1);
+                Page::renderPagestart('Continue');
+                echo "<script type=\"text/javascript\">\ndocument.location = '/install/index.php';\n</script><a href=\"index.php\">Continue</a>";
+                Page::renderPageend();
+                exit;
+            }
         }
     }
 }
