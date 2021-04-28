@@ -7,6 +7,11 @@ addCustomPlatformFunction(function(item) {
             $('#'+formtopost).submit();
             return false;
         }
+        if (url.substr(0,9) == '#TRIGGER=') {
+            var eventname = url.substr(9);
+            $(this).trigger(eventname);
+            return false;
+        }
         if (url.substr(0,12) == '#DIALOGOPEN=') {
             var dialog_to_open = url.substr(12);
             $('#'+dialog_to_open).dialog('open');
