@@ -44,7 +44,13 @@ class Component {
      * @var type 
      */
     protected $data = array();
-   
+
+    /**
+     * URL used for component redrawing
+     * @var string
+     */
+    protected static $io_url = '/Platform/UI/php/component_io.php';
+    
     /**
      * Indicate if this component have readied its data
      * @var bool
@@ -65,16 +71,17 @@ class Component {
     protected $properties = array();
 
     /**
+     * URL used for component redrawing
+     * @var string
+     */
+    protected static $redraw_url = '/Platform/UI/php/component_get_content.php';
+
+    /**
      * Styles of this component
      * @var array
      */
     protected $styles = array();
     
-    /**
-     * URL used for component redrawing
-     * @var string
-     */
-    protected static $redraw_url = '/Platform/UI/php/get_content.php';
     
     public function __construct() {
     }
@@ -179,6 +186,14 @@ class Component {
     }
     
     /**
+     * Override to handle component IO
+     * @return array
+     */
+    public function handleIO() : array {
+        return [];
+    }
+    
+    /**
      * Get the style of this component as a string
      * @return string
      */
@@ -219,6 +234,7 @@ class Component {
         
         if (static::$can_redraw) {
             $this->addData('redraw_url', static::$redraw_url);
+            $this->addData('io_url', static::$io_url);
             $this->addData('componentclass', get_called_class());
             $this->addData('componentproperties', base64_encode(serialize($this->properties)));
         }

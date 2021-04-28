@@ -45,3 +45,34 @@ function addPlatformComponentHandlerFunction(class_name, func) {
     platform_component_handler_functions.push(handler_element);
     platform_component_handler_class_names.push(class_name);
 }
+
+$.fn.componentIOForm = function(form, func) {
+    var component = this;
+    // This only works on components.
+    if (! component.hasClass('platform_component')) return;
+    // Add custom submit function
+    form.submit(function() {
+        // Inject class field if not present
+        if (! form.find('input[name="componentclass"]').length) form.append('<input type="hidden" name="componentclass" value="'+component.data('componentclass')+'">');
+        // Post
+        $.post(component.data('io_url'), form.serialize(), function(data) {
+            // Handle form error
+            if (! data.status) {
+                form.attachErrors(data.form_errors);
+            } else if (typeof func == 'function') func(data);
+        }, 'json')
+        return false;
+    })
+}
+
+$.fn.componentIO = function(values, func) {
+    var component = this;
+    // This only works on components.
+    if (! component.hasClass('platform_component')) return;
+    // Inject class field
+    values['componentclass'] = component.data('componentclass');
+    // Post
+    $.post(component.data('io_url'), values, function(data) {
+        if (typeof func == 'function') func(data);
+    }, 'json');
+}
