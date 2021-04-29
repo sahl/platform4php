@@ -89,8 +89,6 @@ function datarecord_list_edit_complex(name, classname, list_view, edit_dialog, c
         }
     }, false, 'checkboxcolumn');
     
-    console.log(table.getColumns());
-    
     // Capture edit form
     var form = $(edit_dialog).find('form');
     // Set objective

@@ -57,6 +57,7 @@ Page::queueJSFile('/Platform/Page/js/menuitem.js');
 // Components
 Page::queueCSSFile('/Platform/UI/css/component.css');
 Page::queueJSFile('/Platform/UI/js/component.js');
+Page::queueJSFile('/Platform/Form/js/form.js');
 Page::queueJSFile('/Platform/UI/js/dialog.js');
 
 // Font awesome

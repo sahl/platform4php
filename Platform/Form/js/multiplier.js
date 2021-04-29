@@ -35,11 +35,9 @@ function platform_detect_values(element) {
 }
 
 function platform_handle_multiplier_change() {
-    console.log('change '+$(this).attr('id'));
     var row = $(this).closest('.platform_form_multiplier_element');
     // Check if we need to expand
     if ((row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)')) && $(this).val() != '') {
-        console.log('change-exp '+$(this).attr('id'));
         // We need to expand.
         var new_row = row.clone();
         new_row.insertAfter(row);
@@ -57,7 +55,6 @@ function platform_handle_multiplier_change() {
     } else {
         // We need to remove this row if it's empty, except if it is the last row or the last row of it's kind
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {
-            console.log('change-col '+$(this).attr('id'));
             var container = $(this).closest('.platform_form_multiplier');
             if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
                 row.prev().find('input:first').focus();
@@ -72,7 +69,6 @@ function platform_handle_multiplier_change() {
 }
 
 function platform_multiplier_fixnames(element) {
-    console.log('Fix names');
     // We need to determine what level we are operating on
     var level = 0;
     var parent_multiplier = element.parent();
@@ -90,7 +86,6 @@ function platform_multiplier_fixnames(element) {
     var regexp = eval(regexp_string);
     var i = 0;
     element.children('.platform_form_multiplier_element').each(function() {
-        console.log('Loop is '+i);
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
@@ -113,9 +108,6 @@ function platform_multiplier_fixnames(element) {
             $(this).prop('id', new_id);
             // Recode url if source changed
             var src = '/Platform/Field/php/file.php?form_name='+$(this).closest('form').attr('id')+'&field_name='+new_name;
-            console.log('Compare');
-            console.log(name);
-            console.log(new_name);
             if (name != new_name) $(this).prop('src', src);
         })
         i++;

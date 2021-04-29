@@ -4,6 +4,8 @@ var platform_component_handler_class_names = [];
 addCustomPlatformFunction(function(item) {
     var elements = item.find('.platform_component');
     if (item.hasClass('platform_component')) if (elements.length) elements = elements.add(item); else elements = item;
+    
+    // General functions on elements
     elements.each(function() {
         var element = $(this);
         
@@ -23,16 +25,25 @@ addCustomPlatformFunction(function(item) {
             });
             e.stopPropagation();
         })
-
-        $.each(platform_component_handler_functions, function(key, array_element) {
+    });
+    
+    // Apply special functions in the same order they was included to ensure proper event stacking
+    $.each(platform_component_handler_functions, function(key, array_element) {
+        elements.each(function() {
+            var element = $(this);
             if (element.hasClass('platform_component_'+array_element.class_name)) {
                 array_element.func(element);
             }
         });
-        
+    });
+    
+    
+    // Fire component ready on all
+    elements.each(function() {
+        var element = $(this);
         $(this).trigger('component_ready');
-    })
-})
+    });
+});
 
 function addPlatformComponentHandlerFunction(class_name, func) {
     // Ensure we only add everything once.

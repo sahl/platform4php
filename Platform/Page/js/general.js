@@ -14,6 +14,7 @@ $.fn.applyPlatformFunctions = function() {
     custom_platform_functions_last.forEach(function(item) {
         item(object);
     })
+    return this;
 }
 
 function addCustomPlatformFunction(fn) {

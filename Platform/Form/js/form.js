@@ -36,7 +36,6 @@ addPlatformComponentHandlerFunction('form', function(item) {
 
          // Show multipliers again
         $('.platform_form_multiplier_element', $(this)).show();
-         
         return allowsubmit;
      });
 
@@ -125,7 +124,6 @@ $.fn.attachValues = function(values) {
                     });
                 } else {
                     // Try for multiplier
-                    console.log('Finding multiplier: '+'#'+element.attr('id')+'_'+key+'_container');
                     var el = element.find('#'+element.attr('id')+'_'+key+'_container .platform_form_multiplier');
                     if (el.length) {
                         $.each(value, function(key, val) {
@@ -165,8 +163,6 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
 function add_errors_to_form(form, errors) {
     $.each(errors, function(form_id, error_message) {
         form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
-        console.log('Trying to assign error '+error_message+' to ID: '+form_id);
-        console.log('Searching got '+$('#'+form_id).length+' results');
         $('#'+form_id, form).setError(error_message);
     })
 }
