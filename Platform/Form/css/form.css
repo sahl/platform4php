@@ -37,7 +37,7 @@
     background: #FFDDDD;
 }
 
-.platform_form_error_container {
+.platform_field_error_container {
     font-size: 0.7em;
     color: red;
     display: none;
