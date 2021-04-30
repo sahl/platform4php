@@ -7,6 +7,7 @@ use Platform\Form;
 use Platform\Form\HiddenField;
 use Platform\Form\SubmitButton;
 use Platform\Page;
+use Platform\Property;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
 
@@ -108,18 +109,39 @@ class Microbizz {
         if ($button_text) $request_form->addField(new SubmitButton($button_text, 'performlink'));
         return $request_form;
     }
+    
+    /**
+     * Get the standard connection (if any). Return the standard Microbizz connection or false if one isn't configured.
+     * @return boolean|\Platform\Connector\Microbizz
+     */
+    public static function getStandardConnection() {
+        $parameters = Property::getForAll('platform', 'microbizz_standard_connection');
+        if (! is_array($parameters) || count($parameters) <> 3) return false;
+        return new Microbizz($parameters[0], $parameters[1], $parameters[2]);
+    }
 
     /**
      * Handle the return URL after connecting with Microbizz. Return an array consisting of endpoint, contract number
      * and accesstoken on success or false if an error occured.
      * @return array|bool
      */
-    public static function handleReturn() : array {
+    public static function handleReturn() {
         $filename = File::getFullFolderPath('temp').'microbizz_credentials_user_'.Accesstoken::getCurrentUserID();
         if (!file_exists($filename)) return false;
         $data = file($filename);
         if (count($data) <> 3) return false;
         return array(trim($data[0]), trim($data[1]), trim($data[2]));
+    }
+    
+    /**
+     * Handle the return URL after connecting with Microbizz and stored the connection info as the standard connection.
+     * @return bool True if successfully connected.
+     */
+    public static function handleReturnAsStandard() : bool {
+        $result = self::handleReturn();
+        if ($result === false) return false;
+        Property::setForAll('platform', 'microbizz_standard_connection', $result);
+        return true;
     }
     
 
