@@ -152,7 +152,7 @@ class Component {
      * Queue a CSS file for load
      * @param string $css_file
      */
-    public function CSSFile(string $css_file) {
+    public static function CSSFile(string $css_file) {
         \Platform\Page::CSSFile($css_file);
     }
 
@@ -210,7 +210,7 @@ class Component {
      * Queue a JS file for load
      * @param string $js_file
      */
-    public function JSFile(string $js_file) {
+    public static function JSFile(string $js_file) {
         \Platform\Page::JSFile($js_file);
     }    
     
