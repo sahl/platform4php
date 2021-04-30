@@ -250,7 +250,7 @@ class Instance extends \Platform\Datarecord {
      * Login to this instance
      * @param string $username Username to try
      * @param string $password Password to try
-     * @return bool|array array with keys server=server to go to, token_code=token code to use
+     * @return bool|array array with keys server=server to go to, token_code=token code to use, instance_id=ID of instance
      */
     public function login(string $username, string $password) {
         $server = new Server();
@@ -266,12 +266,12 @@ class Instance extends \Platform\Datarecord {
             );
             $result = $server->talk($request);
             if ($result === false || ! $result['status']) return false;
-            return array('hostname' => $server->hostname, 'token_code' => $result['token_code']);
+            return array('hostname' => $server->hostname, 'token_code' => $result['token_code'], 'instance_id' => $this->instance_id);
         }
         $this->activate();
         $result = $this->userLogin($username, $password);
         if ($result === false) return false;
-        return array('hostname' => $server->hostname, 'token_code' => $result->token_code);
+        return array('hostname' => $server->hostname, 'token_code' => $result->token_code, 'instance_id' => $this->instance_id);
     }
     
     /**
