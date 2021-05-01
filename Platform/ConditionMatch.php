@@ -28,6 +28,10 @@ class ConditionMatch extends Condition {
         if ($this->manual_match) return 'TRUE';
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_REFERENCE_SINGLE:
+                $result = $this->fieldname.' = '.$this->getSQLFieldValue($this->value);
+                if (! $this->value) $result = '('.$result.' OR '.$this->fieldname.' IS NULL)';
+                return $result;
             case Datarecord::FIELDTYPE_ARRAY:
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
             case Datarecord::FIELDTYPE_ENUMERATION_MULTI:
