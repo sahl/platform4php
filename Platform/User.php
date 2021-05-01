@@ -46,6 +46,30 @@ class User extends \Platform\DatarecordExtensible {
     }
     
     /**
+     * Get ID of current user (if a user is logged in)
+     * @return int ID of current user
+     */
+    public static function getCurrentUserID() : int {
+        return Accesstoken::getCurrentUserID();
+    }
+    
+    private static $current_user_object = false;
+    
+    
+    /**
+     * Get the current user object (if a user is logged in)
+     * @return User Current user object or empty user object
+     */
+    public static function getCurrentUser() : User {
+        if (self::$current_user_object === false) {
+            self::$current_user_object = new User();
+            $user_id = self::getCurrentUserID();
+            if ($user_id) self::$current_user_object->loadForRead($user_id);
+        }
+        return self::$current_user_object;
+    }
+    
+    /**
      * Try to login with a user name and password
      * @param string $username
      * @param string $password
