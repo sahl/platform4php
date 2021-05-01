@@ -1,7 +1,16 @@
 <?php
 namespace Platform\UI;
 
+use Platform\Page;
+use Platform\Form;
+
 class Component {
+    
+    /**
+     * Used to store an attached form ID
+     * @var string
+     */
+    private $attached_form_id = false;
     
     /**
      * Indicate if this component can be disabled.
@@ -75,6 +84,12 @@ class Component {
      * @var string
      */
     protected static $redraw_url = '/Platform/UI/php/component_get_content.php';
+    
+    /**
+     * Keeping registered events
+     * @var array
+     */
+    protected $registered_events = [];
 
     /**
      * Styles of this component
@@ -141,6 +156,14 @@ class Component {
     }
     
     /**
+     * Attach a form for using IO functions
+     * @param Form $form
+     */
+    public function attachIOForm(Form $form) {
+        $this->attached_form_id = $form->getFormId();
+    }
+    
+    /**
      * Check if this component is allowed to render
      * @return bool True if this component will render.
      */
@@ -153,7 +176,7 @@ class Component {
      * @param string $css_file
      */
     public static function CSSFile(string $css_file) {
-        \Platform\Page::CSSFile($css_file);
+        Page::CSSFile($css_file);
     }
 
     /**
@@ -211,7 +234,7 @@ class Component {
      * @param string $js_file
      */
     public static function JSFile(string $js_file) {
-        \Platform\Page::JSFile($js_file);
+        Page::JSFile($js_file);
     }    
     
     /**
@@ -220,6 +243,14 @@ class Component {
     public function prepareData() {
         $this->is_ready = true;
     }
+    
+    /**
+     * Register an event to be passed to the backend
+     * @param string $event
+     */
+    public function registerEvent(string $event) {
+        $this->registered_events[] = $event;
+    }
 
     /**
      * Renders the component
@@ -227,6 +258,7 @@ class Component {
     public function render() {
         if (! $this->is_ready) $this->prepareData();
         if (! $this->can_render) return;
+        if ($this->attached_form_id) $this->addData('attached_form_id', $this->attached_form_id);
         $classes = $this->classes;
         $classes[] = 'platform_component';
         $classes[] = 'platform_component_'.$this->getName();
@@ -238,6 +270,8 @@ class Component {
             $this->addData('componentclass', get_called_class());
             $this->addData('componentproperties', base64_encode(serialize($this->properties)));
         }
+        
+        if (count($this->registered_events)) $this->addData('registered_events', implode(',',$this->registered_events));
         
         echo '<div class="'.implode(' ',$classes).'" id="'.$this->getID().'"';
         foreach ($this->data as $key => $data) {

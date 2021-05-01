@@ -24,7 +24,17 @@ addCustomPlatformFunction(function(item) {
                 element.html(data).applyPlatformFunctions();
             });
             e.stopPropagation();
-        })
+        });
+        
+        // Pass custom events to backend
+        if (element.data('registered_events')) {
+            $.each(element.data('registered_events').split(','), function(index, value) {
+                element.on(value, function() {element.componentIO({event: value})});
+            })
+        }
+        
+        // Check if a form is registered for IO
+        if (element.data('attached_form_id')) element.componentIOForm($('#'+element.data('attached_form_id'), element));
     });
     
     // Apply special functions in the same order they was included to ensure proper event stacking
@@ -65,12 +75,18 @@ $.fn.componentIOForm = function(form, func) {
     form.submit(function() {
         // Inject class field if not present
         if (! form.find('input[name="componentclass"]').length) form.append('<input type="hidden" name="componentclass" value="'+component.data('componentclass')+'">');
+        // Inject properties field if not present
+        if (! form.find('input[name="componentproperties"]').length) form.append('<input type="hidden" name="componentproperties" value="'+component.data('componentproperties')+'">');
         // Post
         $.post(component.data('io_url'), form.serialize(), function(data) {
             // Handle form error
             if (! data.status) {
+                if (data.script) eval(data.script);
                 form.attachErrors(data.form_errors);
-            } else if (typeof func == 'function') func(data);
+            } else {
+                if (data.script) eval(data.script);
+                if (typeof func == 'function') func(data);
+            }
         }, 'json')
         return false;
     })
@@ -82,8 +98,11 @@ $.fn.componentIO = function(values, func) {
     if (! component.hasClass('platform_component')) return;
     // Inject class field
     values['componentclass'] = component.data('componentclass');
+    // Inject properties
+    values['componentproperties'] = component.data('componentproperties');
     // Post
     $.post(component.data('io_url'), values, function(data) {
+        if (data.script) eval(data.script);
         if (typeof func == 'function') func(data);
     }, 'json');
 }

@@ -6,6 +6,7 @@ $class = $_POST['componentclass'];
 if (!class_exists($class)) die('Class does not exist');
 
 $component = new $class();
+$component->setPropertyMap(unserialize(base64_decode($_POST['componentproperties'])));
 
 if (! $component instanceof \Platform\UI\Component) die('Not a component');
 
