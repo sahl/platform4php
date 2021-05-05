@@ -178,6 +178,14 @@ class Component {
     public static function CSSFile(string $css_file) {
         Page::CSSFile($css_file);
     }
+    
+    /**
+     * Get the properties of this component encoded for frontend
+     * @return string
+     */
+    public function getEncodedProperties() : string {
+        return base64_encode(serialize($this->properties));
+    }
 
     /**
      * Get HTML ID of this component
@@ -268,7 +276,7 @@ class Component {
             $this->addData('redraw_url', static::$redraw_url);
             $this->addData('io_url', static::$io_url);
             $this->addData('componentclass', get_called_class());
-            $this->addData('componentproperties', base64_encode(serialize($this->properties)));
+            $this->addData('componentproperties', $this->getEncodedProperties());
         }
         
         if (count($this->registered_events)) $this->addData('registered_events', implode(',',$this->registered_events));

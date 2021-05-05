@@ -29,6 +29,7 @@ addCustomPlatformFunction(function(item) {
         // Pass custom events to backend
         if (element.data('registered_events')) {
             $.each(element.data('registered_events').split(','), function(index, value) {
+                element.off(value);
                 element.on(value, function() {element.componentIO({event: value})});
             })
         }
@@ -82,9 +83,13 @@ $.fn.componentIOForm = function(form, func) {
             // Handle form error
             if (! data.status) {
                 if (data.script) eval(data.script);
+                if (data.properties) component.data('componentproperties', data.properties);
+                if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
             } else {
                 if (data.script) eval(data.script);
+                if (data.properties) component.data('componentproperties', data.properties);
+                if (data.redraw) component.trigger('redraw');
                 if (typeof func == 'function') func(data);
             }
         }, 'json')
@@ -103,6 +108,8 @@ $.fn.componentIO = function(values, func) {
     // Post
     $.post(component.data('io_url'), values, function(data) {
         if (data.script) eval(data.script);
+        if (data.properties) component.data('componentproperties', data.properties);
+        if (data.redraw) component.trigger('redraw');
         if (typeof func == 'function') func(data);
     }, 'json');
 }
