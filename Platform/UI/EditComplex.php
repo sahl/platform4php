@@ -41,6 +41,7 @@ class EditComplex extends Component {
     
     public function __construct(string $class, array $table_parameters = array()) {
         self::JSFile('/Platform/UI/js/editcomplex.js');
+        self::CSSFile('/Platform/UI/css/EditComplex.css');
         parent::__construct();
         $this->class = $class;
         if (! class_exists($this->class)) trigger_error('Invalid class passed to EditComplex.', E_USER_ERROR);
@@ -85,12 +86,15 @@ class EditComplex extends Component {
 
         $this->table_menu = new ButtonMenu();
         $this->table_menu->setID($short_class.'_table_menu');
-        $this->table_menu->setElements($menu);
+        $this->table_menu->addMenuItems($menu);
     }
     
     public function renderContent() {
+        echo '<div class="container">';
         $this->table_menu->render();
         $this->table->render();
+        echo '</div>';
+
         $this->edit_dialog->render();
         
         $this->column_selector->render();
