@@ -9,7 +9,7 @@ class DatarecordcomboboxField extends IndexedComboboxField {
         $this->classes[] = 'platform_datarecord_combobox';
         if ($options['class']) {
             $this->connected_class = $options['class'];
-            $this->setDatasource('/Platform/Field/php/io_combobox.php?class='.$this->connected_class);
+            $this->setDatasource('/Platform/Form/php/io_combobox.php?class='.$this->connected_class);
             unset($options['class']);
         }
         parent::__construct($label, $name, $options);
