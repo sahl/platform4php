@@ -122,7 +122,7 @@ class ExtensibleField extends Datarecord {
      * @param string $class Class
      * @param array $parameters
      */
-    public static function renderEditComplexForClass(string $class, array $parameters = array()) {
+    public static function getEditComplexForClass(string $class, array $parameters = array()) {
         if (substr($class,0,1) == '\\') $class = substr($class,1);
 
         $filter = new Filter('\\Platform\\ExtensibleField');
@@ -133,7 +133,12 @@ class ExtensibleField extends Datarecord {
             $form->setValues(array('class' => $class));
         };
         Page::JSFile('/Platform/Datarecord/js/edit_extensible.js');
-        static::renderEditComplex($parameters);
+        return static::getEditComplex($parameters);
+    }
+    
+    public static function renderEditComplexForClass(string $class, array $parameters = []) {
+        $edit_complex = self::getEditComplexForClass($class, $parameters);
+        $edit_complex->render();
     }
     
     
