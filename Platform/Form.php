@@ -19,7 +19,7 @@ class Form extends \Platform\UI\Component {
     
     private $event = 'submit';
     
-    private static $field_name_space = ['Platform\\Form'];
+    private static $field_name_space = [];
     
     public function __construct(string $form_id, string $filename = '') {
         Page::JSFile('/Platform/Form/js/form.js');
@@ -31,7 +31,7 @@ class Form extends \Platform\UI\Component {
         Page::CSSFile('/Platform/Form/css/form.css');
         Page::CSSFile('/Platform/Form/css/texteditor.css');
         Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
-        
+        $this->addFormFieldNameSpace('Platform\\Form');
         parent::__construct();
         $this->form_id = $form_id;
         if ($filename) $this->getFromFile ($filename);
