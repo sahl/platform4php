@@ -8,8 +8,18 @@ class Menu extends Component {
     protected $select_menuitem = null;
     
     public function __construct() {
-        self::CSSFile('/Platform/UI/css/menu.css');
         parent::__construct();
+    }
+
+    /**
+     * Add one or more menu items to this menu
+     * @param array $menuitems
+     */
+    public function addMenuItems(array $menuitems) {
+        foreach ($menuitems as $element) {
+            if (! $element instanceof \Platform\MenuItem) trigger_error('Invalid element passed to menu. Expected type MenuItem', E_USER_ERROR);
+            $this->elements[] = $element;
+        }
     }
     
     /**
@@ -70,21 +80,4 @@ class Menu extends Component {
         }
         return $result;
     }
-    
-    public function setClass(string $keyword, string $classes) {
-        if (isset($this->classes[$keyword])) $this->classes[$keyword] = $classes;
-    }
-    
-    public function setClasses(array $class_array) {
-        foreach ($class_array as $keyword => $classes) $this->setClass($keyword, $classes);
-    }
-    
-    public function setElements(array $elements) {
-        foreach ($elements as $element) {
-            if (! $element instanceof \Platform\MenuItem) trigger_error('Invalid element passed to menu. Expected type MenuItem', E_USER_ERROR);
-            $this->elements[] = $element;
-        }
-    }
-    
-    
 }

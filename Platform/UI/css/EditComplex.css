@@ -1,0 +1,13 @@
+.platform_component_editcomplex {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.platform_component_editcomplex .platform_button_menu_button {
+    margin: 10px 10px 10px 0px;
+}
+
+.platform_component_editcomplex .container {
+    max-width: 100%;
+}

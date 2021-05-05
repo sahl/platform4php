@@ -3,6 +3,11 @@ namespace Platform\UI;
 
 class TopMenu extends Menu {
     
+    public function __construct() {
+        parent::__construct();
+        self::CSSFile('/Platform/UI/css/TopMenu.css');
+    }
+    
     public function renderContent() {
         // Resolve location
         $this->calculateSelectedMenuItemByLocation();
@@ -16,7 +21,7 @@ class TopMenu extends Menu {
                 echo '</div>';
                 echo '<div class="platform_dropdown_menu_content">';
                 foreach ($menuitem->submenu_items as $sub_menuitem) {
-                    $classes = $this->checkIfSelected($sub_menuitem) ? ' platform_dropdown_menu_item_selected' : ' platform_dropdown_menu_item';
+                    $classes = $this->checkIfSelected($sub_menuitem) ? 'platform_dropdown_menu_item platform_dropdown_menu_item_selected' : ' platform_dropdown_menu_item';
                     $sub_menuitem->addClass($classes);
                     $sub_menuitem->render();
                 }

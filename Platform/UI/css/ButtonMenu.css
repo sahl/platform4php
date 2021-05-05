@@ -1,0 +1,35 @@
+.platform_button_menu {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.platform_button_menu_content {
+    display: none;
+    position: absolute;
+    border: 1px solid black;
+    z-index: 101;
+}
+
+.platform_button_menu:hover {
+    background: #DDDDDD;
+}
+
+.platform_button_menu:hover > .platform_button_menu_content {
+    display: inline-block;
+}
+
+.platform_button_menu_item {
+    padding: 6px 40px 6px 15px;
+    display: block;
+    text-decoration: none;
+    background-color: white;
+    color: black;
+}
+
+.platform_button_menu_item:hover {
+    background: #DDDDDD;
+}
+
+.platform_button_menu a {
+    text-decoration: none;
+}
