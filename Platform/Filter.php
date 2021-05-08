@@ -45,7 +45,7 @@ class Filter {
      */
     public function __construct(string $classname) {
         if (substr($classname,0,1) == '\\') $classname = substr($classname,1);
-        if (! class_exists($classname)) trigger_error('Invalid classname calling filter', E_USER_ERROR);
+        if (! class_exists($classname)) trigger_error('Invalid classname \''.$classname.'\' calling filter', E_USER_ERROR);
         $this->base_classname = $classname;
         $this->base_object = new $classname();
         if (! $this->base_object instanceof Datarecord) trigger_error('Must attach Datarecord to filter', E_USER_ERROR);
