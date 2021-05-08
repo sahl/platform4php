@@ -143,6 +143,17 @@ class Instance extends \Platform\Datarecord {
     }
     
     /**
+     * Get the file path to the storage of this instance
+     * @return string
+     */
+    public function getFilePath() {
+        $folder = Platform::getConfiguration('dir_store');
+        if (! substr($folder,-1) == '/') $folder .= '/';
+        $folder .= $this->instance_id.'/';
+        return $folder;
+    }
+    
+    /**
      * Get all instance ids on a specific server.
      * @param int $server_id Server ID
      * @return array Instance ids on that server
