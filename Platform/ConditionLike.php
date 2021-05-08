@@ -28,7 +28,7 @@ class ConditionLike extends Condition {
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_TEXT:
             case Datarecord::FIELDTYPE_BIGTEXT:
-                return $this->fieldname.' LIKE \'%'.substr($this->getSQLFieldValue($this->value),1,-2).'%\'';
+                return $this->fieldname.' LIKE \'%'.substr($this->getSQLFieldValue($this->value),1,-1).'%\'';
             default:
                 return 'FALSE';
         }
