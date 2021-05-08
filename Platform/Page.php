@@ -38,7 +38,19 @@ class Page {
         }
     }
     
-
+    /**
+     * Get URL to last page displayed
+     * @return string|bool URL or false if no last page
+     */
+    public static function getLastPage() {
+        $last_page = $_SESSION['platform']['page']['last'];
+        return $last_page ?: false;
+    }
+    
+    /**
+     * Indicate if page output is started
+     * @return bool
+     */
     public static function isPageStarted() : bool {
         return self::$page_started;
     }
@@ -98,6 +110,8 @@ class Page {
     public static function renderPagestart(string $title, array $js_files = [], array $css_files = []) {
         self::$page_started = true;
         
+        self::storeInHistory();
+        
         echo '<!DOCTYPE html><html><head>';
         echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
         echo '<title>'.$title.'</title>';
@@ -147,6 +161,16 @@ class Page {
     }
     
     /**
+     * Redirect to the last page visited
+     * @return boolean False if no last page
+     */
+    public static function redirectToLast() {
+        $url = self::getLastPage();
+        if ($url === false) return false;
+        self::redirect($url);
+    }
+    
+    /**
      * Reload this page, by redirecting to itself including GET parameters
      */
     public static function reload() {
@@ -161,6 +185,15 @@ class Page {
     public static function setPagestarted(bool $started = true) {
         self::$page_started = $started;
     }    
+    
+    /**
+     * Store the current page in history as the last page
+     */
+    public static function storeInHistory() {
+        if ($_SESSION['platform']['page']['current'] == $_SERVER['PHP_SELF']) return;
+        $_SESSION['platform']['page']['last'] = $_SESSION['platform']['page']['current'];
+        $_SESSION['platform']['page']['current'] = $_SERVER['PHP_SELF'];
+    }
     
 }
 
