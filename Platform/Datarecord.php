@@ -1566,10 +1566,11 @@ class Datarecord implements DatarecordReferable {
     /**
      * Load an object from the database for reading.
      * @param int $id Object ID
+     * @param bool $fail_on_not_found Indicate if the call should fail if the record isn't found.
      */
-    public function loadForRead(int $id) {
+    public function loadForRead(int $id, bool $fail_on_not_found = true) {
         // Switch to read mode if in write mode and something was loaded
-        if ($this->loadFromDatabase($id) && $this->access_mode == self::MODE_WRITE) {
+        if ($this->loadFromDatabase($id, $fail_on_not_found) && $this->access_mode == self::MODE_WRITE) {
             // Unlock
             $this->unlock();
         }
@@ -1578,13 +1579,14 @@ class Datarecord implements DatarecordReferable {
     /**
      * Load an object from the database for writing.
      * @param int $id Object ID
+     * @param bool $fail_on_not_found Indicate if the call should fail if the record isn't found.
      */
-    public function loadForWrite(int $id) {
+    public function loadForWrite(int $id, bool $fail_on_not_found = true) {
         // Spoof id field
         $this->values[static::getKeyField()] = $id;
         $this->lock();
         $this->access_mode = self::MODE_WRITE;
-        if (! $this->loadFromDatabase($id)) {
+        if (! $this->loadFromDatabase($id, $fail_on_not_found)) {
             // Unlock if we couldn't read
             $this->values[static::getKeyField()] = 0;
             $this->unlock();
@@ -1594,9 +1596,10 @@ class Datarecord implements DatarecordReferable {
     /**
      * Load an object from the database.
      * @param int $id Object ID
+     * @param bool $fail_on_not_found Indicate if the call should fail if the record isn't found.
      * @return bool True if an object was loaded
      */
-    private function loadFromDatabase(int $id) : bool {
+    private function loadFromDatabase(int $id, bool $fail_on_not_found = true) : bool {
         $result = self::query("SELECT * FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$id));
         $row = Database::getRow($result);
         if ($row) {
@@ -1605,6 +1608,7 @@ class Datarecord implements DatarecordReferable {
             $this->values_on_load = $this->values;
             return true;
         }
+        if ($fail_on_not_found) trigger_error('Record in table '.static::$database_table.' with id = '.$int.' not found!', E_USER_ERROR);
         return false;
     }
 
