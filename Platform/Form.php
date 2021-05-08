@@ -227,6 +227,14 @@ class Form extends \Platform\UI\Component {
     public function getFromFile(string $filename) {
         $text = file_get_contents($filename);
         if ($text === false) trigger_error('Error opening form '.$filename, E_USER_ERROR);
+        $this->getFromText($text);
+    }
+    
+    /**
+     * Get form fields from a text string
+     * @param string $text Text string
+     */
+    public function getFromText(string $text) {
         foreach (static::parseFieldsFromText($text) as $field) {
             $this->addField($field);
         }
