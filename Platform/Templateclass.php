@@ -42,7 +42,7 @@ class Templateclass extends Datarecord {
             ),
             'property5' => array(
                 'label' => 'Property in metadata',
-                'fieldtype' => self::FIELDTYPE_REFERENCE_DATE,
+                'fieldtype' => self::FIELDTYPE_DATE,
                 'store_in_metadata' => true
             )
         );
