@@ -9,4 +9,6 @@ $component->prepareData();
 
 if ($class::$is_secure && !\Platform\Security\Accesstoken::validateSession()) die('Must be logged in');
 
+\Platform\Page::setPagestarted();
+
 echo $component->renderContent();
