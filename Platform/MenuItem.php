@@ -92,7 +92,7 @@ class MenuItem {
         if (count($this->data))
             foreach ($this->data as $key => $value) $result .= ' data-'.$key.'="'.$value.'"';
         $result .= '>';
-        if ($this->icon) $result .= '<i class="fa '.$this->icon.'"></i> ';
+        if ($this->icon) $result .= '<i class="fa '.$this->icon.'" aria-hidden="true"></i>'.($this->text ? ' ' : '');
         if ($this->image) $result .= '<img src="'.$this->image.'" style="height: 1em; border: none;"> ';
         $result .= $this->text.'</a>';
         return $result;
