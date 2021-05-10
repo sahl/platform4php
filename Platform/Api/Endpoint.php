@@ -29,6 +29,12 @@ class Endpoint {
     private $preset_instanceid = false;
     
     /**
+     * Token code used for authentication
+     * @var string
+     */
+    protected $token_code = null;
+    
+    /**
      * Construct an API endpoint
      * @param array $classnames Classes to include in this endpoint
      */
@@ -37,6 +43,19 @@ class Endpoint {
             $shortname = $classname::getClassName();
             $this->classes[$shortname] = $classname;
         }
+    }
+    
+    /**
+     * Check if an valid accesstoken is provided either as a cookie or a GET parameter
+     * @return boolean True if a valid token was supplied, otherwise the function halts.
+     */
+    protected function checkSecurity() : bool {
+        $token_code = $_COOKIE['access_token'];
+        if (! $token_code) $token_code = $_GET['access_token'];
+        if (! $token_code) self::respondErrorAndDie (401, 'No access token provided');
+        if (!Accesstoken::validateTokenCode($token_code)) self::respondErrorAndDie (401, 'Invalid or expired access token');
+        $this->token_code = $token_code;
+        return true;
     }
 
     /**
@@ -47,7 +66,7 @@ class Endpoint {
      * @param string $get Get input for custom handler
      * @param string $body Body input for custom handler
      */
-    public function customHandlerAfterSecurity(string $object_name, int $object_id, string $method, string $get, string $body) {
+    public function customHandlerAfterSecurity(string $object_name, int $object_id, string $method, array $get, string $body) {
         
     }
     
@@ -59,7 +78,7 @@ class Endpoint {
      * @param string $get Get input for custom handler
      * @param string $body Body input for custom handler
      */
-    public function customHandlerBeforeSecurity(string $object_name, int $object_id, string $method, string $get, string $body) {
+    public function customHandlerBeforeSecurity(string $object_name, int $object_id, string $method, array $get, string $body) {
         
     }
 
@@ -133,12 +152,13 @@ class Endpoint {
             if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $this->preset_instanceid;
             $object_name = $m[1];
-            $object_id = $m[3];
+            $object_id = (int)$m[3];
         } else {
             if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $m[2];
+            if (! $instance_id) self::respondErrorAndDie (404, 'Invalid instance specified');
             $object_name = $m[3];
-            $object_id = $m[5];
+            $object_id = (int)$m[5];
         }
         
         // Check for valid instance and activate it
@@ -157,10 +177,7 @@ class Endpoint {
         
         // Check for valid access
         if ($this->is_protected) {
-            $token_code = $_COOKIE['access_token'];
-            if (! $token_code) $token_code = $_GET['access_token'];
-            if (! $token_code) self::respondErrorAndDie (401, 'No access token provided');
-            if (!Accesstoken::validateTokenCode($token_code)) self::respondErrorAndDie (401, 'Invalid or expired access token');
+            $this->checkSecurity();
         }
         
         $this->customHandlerAfterSecurity($object_name, $object_id, $method, $_GET, $input);
