@@ -220,17 +220,6 @@ class Accesstoken extends \Platform\Datarecord {
      * @return bool True if valid otherwise false 
      */
     public static function validateSession(string $redirect = '', bool $extend = false, int $seconds_to_live = -1) {
-        // Check for information in URL
-        if ($_GET['instance_id']) {
-            $instance = new Instance();
-            $instance->loadForRead($_GET['instance_id']);
-            $instance->activate();
-        }
-        if ($_GET['token_code']) {
-            $token = self::getByTokencode($_GET['token_code']);
-            $token->setSession();
-            Page::redirectToCurrent();
-        }
         $valid = true;
         // Check if we have a valid instance
         if (Instance::getActiveInstanceID() === false) $valid = false;
@@ -240,6 +229,17 @@ class Accesstoken extends \Platform\Datarecord {
             if ($valid && ! $token->isValid()) $valid = false;
         }
         if (! $valid) {
+            // Check for information in URL
+            if ($_GET['instance_id']) {
+                $instance = new Instance();
+                $instance->loadForRead($_GET['instance_id']);
+                $instance->activate();
+            }
+            if ($_GET['token_code']) {
+                $token = self::getByTokencode($_GET['token_code']);
+                $token->setSession();
+                Page::redirectToCurrent();
+            }
             self::saveLocation();
         }
         
