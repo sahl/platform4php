@@ -10,7 +10,7 @@ class DatetimeField extends Field {
         parent::__construct($label, $name, $options);
     }
     
-    public function setValue(Time $value) {
+    public function setValue(string $value) {
         $this->value = $value;
     }
     
@@ -21,7 +21,6 @@ class DatetimeField extends Field {
     }
 
     public function renderInput() {
-        $value = $this->value->getReadable();
         echo '<input class="'.$this->getClassString().'" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$value.'"'.$this->additional_attributes.'>';
     }
 }

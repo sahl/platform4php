@@ -12,7 +12,7 @@ class DateField extends Field {
         $this->value = new Time();
     }
     
-    public function setValue(Time $value) {
+    public function setValue(string $value) {
         $this->value = $value;
     }
     
@@ -23,7 +23,6 @@ class DateField extends Field {
     }
     
     public function renderInput() {
-        $value = $this->value->getReadable('Y-m-d');
         echo '<input class="'.$this->getClassString().'" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$value.'"'.$this->additional_attributes.'>';
     }
 }
