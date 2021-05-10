@@ -28,16 +28,19 @@ class Instance extends \Platform\Datarecord {
             ),
             'title' => array(
                 'label' => 'Instance title',
+                'required' => true,
                 'store_in_metadata' => false,
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
             'server_ref' => array(
                 'label' => 'Server',
+                'required' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
                 'foreign_class' => '\\Platform\\Server'
             ),
             'is_initiated' => array(
                 'label' => 'Is initiated',
+                'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_BOOLEAN
             )
         ));
