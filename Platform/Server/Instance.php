@@ -35,6 +35,7 @@ class Instance extends \Platform\Datarecord {
             'server_ref' => array(
                 'label' => 'Server',
                 'required' => true,
+                'readonly' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
                 'foreign_class' => '\\Platform\\Server'
             ),

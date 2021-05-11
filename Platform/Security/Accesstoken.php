@@ -141,7 +141,7 @@ class Accesstoken extends \Platform\Datarecord {
      * @return Accesstoken The Accesstoken or a new token if none was found
      */
     public static function getByTokencode(string $token_code) : Accesstoken {
-        $filter = new Filter('\\Platform\\Security\\Accesstoken');
+        $filter = new Filter(get_called_class());
         $filter->addCondition(new \Platform\ConditionMatch('token_code', $token_code));
         return $filter->executeAndGetFirst();
     }

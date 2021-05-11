@@ -1365,7 +1365,7 @@ class Datarecord implements DatarecordReferable {
         if (! isset(self::$foreign_reference_buffer[$class][$id])) {
             // Resolve (and add to buffer)
             $object = new $class();
-            $object->loadForRead($id);
+            $object->loadForRead($id, false);
             self::$foreign_reference_buffer[$class][$id] = $object->getTitle();
         }
         return self::$foreign_reference_buffer[$class][$id];        
@@ -1608,7 +1608,7 @@ class Datarecord implements DatarecordReferable {
             $this->values_on_load = $this->values;
             return true;
         }
-        if ($fail_on_not_found) trigger_error('Record in table '.static::$database_table.' with id = '.$int.' not found!', E_USER_ERROR);
+        if ($fail_on_not_found) trigger_error('Record in table '.static::$database_table.' with id = '.$id.' not found!', E_USER_ERROR);
         return false;
     }
 
