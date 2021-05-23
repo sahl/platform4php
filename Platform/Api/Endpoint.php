@@ -215,7 +215,7 @@ class Endpoint {
                 // Check if we are looking for something specific
                 if ($object_id) {
                     $object = new $class();
-                    $object->loadForRead($object_id);
+                    $object->loadForRead($object_id, false);
                     if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
                     if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                     $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
