@@ -378,6 +378,7 @@ class Form extends \Platform\UI\Component {
                         continue;
                     } elseif ($character == '>') {
                         if ($currentname) $properties[$currentname] = true;
+                        $currentname = '';
                         $mode = 'RUNOUT';
                         continue;
                     }
