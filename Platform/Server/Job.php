@@ -1,17 +1,19 @@
 <?php
 namespace Platform\Server;
 
-use Platform\Platform;
+use Platform\ConditionGreater;
+use Platform\ConditionLesserEqual;
+use Platform\ConditionMatch;
+use Platform\ConditionNOT;
 use Platform\ConditionOneOf;
 use Platform\ConditionOR;
-use Platform\ConditionMatch;
-use Platform\ConditionLesserEqual;
-use Platform\ConditionNOT;
+use Platform\Filter;
+use Platform\Platform;
 use Platform\Server;
 use Platform\Utilities\Database;
-use Platform\Utilities\Time;
-use Platform\Utilities\Semaphore;
 use Platform\Utilities\Log;
+use Platform\Utilities\Semaphore;
+use Platform\Utilities\Time;
 // TODO: Handle daemons
 
 class Job extends \Platform\Datarecord {
@@ -276,7 +278,7 @@ class Job extends \Platform\Datarecord {
      * @return array<Job>
      */
     public static function getPendingJobs() : array {
-        $filter = new Filter('Platform\\Job');
+        $filter = new Filter('Platform\\Server\\Job');
         $filter->addCondition(new ConditionMatch('process_id', 0));
         $filter->addCondition(new ConditionNOT(new ConditionMatch('frequency', 0)));
         $filter->addCondition(new ConditionLesserEqual('next_start', new Time('now')));

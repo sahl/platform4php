@@ -182,7 +182,7 @@ class Table extends Component {
                         $columns[$field] = '<!--'.$object->getTextValue($field).'-->'.$value;
                         break;
                     case Datarecord::FIELDTYPE_BIGTEXT:
-                        $text = substr($this->getTextValue($field),0,250);
+                        $text = substr($object->getTextValue($field),0,250);
                         $columns[$field] = $text;
                         break;
                     default:
