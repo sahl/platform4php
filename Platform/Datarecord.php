@@ -655,7 +655,7 @@ class Datarecord implements DatarecordReferable {
                 // Don't create fields for items we want to store in metadata or
                 // which shouldn't be stored in DB
                 if ($element['store_in_metadata'] || $element['store_in_database'] === false) continue;
-                $fielddefinition = $key.' '.self::getSQLFieldType($element['fieldtype']);
+                $fielddefinition = '`'.$key.'` '.self::getSQLFieldType($element['fieldtype']);
                 if ($element['fieldtype'] == self::FIELDTYPE_KEY) $fielddefinition .= ' PRIMARY KEY AUTO_INCREMENT';
                 $fielddefinitions[] = $fielddefinition;
             }
@@ -686,7 +686,7 @@ class Datarecord implements DatarecordReferable {
                     $definition = self::getSQLFieldType($element['fieldtype']);
                     if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
                     $default = isset($element['default_value']) ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
-                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$key.' '.$definition.$default);
+                    self::query('ALTER TABLE '.static::$database_table.' ADD `'.$key.'` '.$definition.$default);
                     $changed = true;
                     
                     // As this field could have been represented in the metadata
@@ -718,7 +718,7 @@ class Datarecord implements DatarecordReferable {
                         }
                     }
                     // Field was removed from structure.
-                    self::query('ALTER TABLE '.static::$database_table.' DROP '.$field_in_database['Field']);
+                    self::query('ALTER TABLE '.static::$database_table.' DROP `'.$field_in_database['Field'].'`');
                     $changed = true;
                     continue;
                 }
@@ -726,9 +726,9 @@ class Datarecord implements DatarecordReferable {
                 if ($field_in_database['Type'] != mb_substr(mb_strtolower(static::getSQLFieldType($element['fieldtype'])),0, mb_strlen($field_in_database['Type']))) {
                     //echo 'Type '.$fieldindatabase['Type'].' isnt '.mb_strtolower(self::getSQLFieldType($element['fieldtype']));
                     //self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN '.$field_in_database['Field'].' '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']));
-                    self::query('ALTER TABLE '.static::$database_table.' DROP '.$field_in_database['Field']);
+                    self::query('ALTER TABLE '.static::$database_table.' DROP `'.$field_in_database['Field'].'`');
                     $default = $element['default_value'] ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
-                    self::query('ALTER TABLE '.static::$database_table.' ADD '.$field_in_database['Field'].' '.static::getSQLFieldType($element['fieldtype']).$default);
+                    self::query('ALTER TABLE '.static::$database_table.' ADD `'.$field_in_database['Field'].'` '.static::getSQLFieldType($element['fieldtype']).$default);
                     $changed = true;
                 }
             }
@@ -1343,7 +1343,7 @@ class Datarecord implements DatarecordReferable {
      * @return string
      */
     public function getTitle() : string {
-        return static::$title_field ? $this->getFullValue(static::$title_field) : get_called_class().' (#'.$this->getValue(static::getKeyField(), self::RENDER_RAW).')';
+        return static::$title_field ? (string)$this->getFullValue(static::$title_field) : get_called_class().' (#'.$this->getValue(static::getKeyField(), self::RENDER_RAW).')';
     }
     
     /**
@@ -2117,7 +2117,7 @@ class Datarecord implements DatarecordReferable {
                 $this->values[$field] = is_numeric($value) ? (double)$value : null;
                 break;
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                if (is_object($value) && get_class($value) == static::$structure[$field]['foreign_class']) {
+                if (is_object($value) && is_a($value, static::$structure[$field]['foreign_class'])) {
                     // An object of the desired class was passed. Extract ID and set it.
                     $this->values[$field] = $value->getValue($value->getKeyField());
                 } else {
