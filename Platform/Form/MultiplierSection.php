@@ -108,7 +108,7 @@ class MultiplierSection extends Field {
             foreach ($this->contained_fields as $field) {
                 $adjustedname = $this->getName().'['.$i.']['.$field->getName().']';
                 // Bail in certain cases
-                if ($field instanceof FieldHTML || in_array($adjustedname, $hiddenfields) && ! $field instanceof FieldHidden) continue;
+                if ($field instanceof \Platform\Form\HTML || in_array($adjustedname, $hiddenfields) && ! $field instanceof FieldHidden) continue;
                 // Parse value for this field
                 $result = $field->parse($values[$i][$field->getName()]);
                 // Extract value to own cache
