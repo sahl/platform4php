@@ -265,6 +265,16 @@ class Time {
     }
     
     /**
+     * Check if this time is after or equal to another time
+     * @param \Platform\Utilities\Time $other_time
+     * @return bool
+     */
+    public function isAfterEqual(Time $other_time) {
+        if ($this->timestamp === null || $other_time->getTimestamp() === null) return false;
+        return $this->timestamp >= $other_time->getTimestamp();
+    }
+    
+    /**
      * Check if this time is before another time
      * @param \Platform\Utilities\Time $other_time
      * @return bool
@@ -272,6 +282,16 @@ class Time {
     public function isBefore(Time $other_time) {
         if ($this->timestamp === null || $other_time->getTimestamp() === null) return false;
         return $this->timestamp < $other_time->getTimestamp();
+    }
+    
+    /**
+     * Check if this time is before or equal to another time
+     * @param \Platform\Utilities\Time $other_time
+     * @return bool
+     */
+    public function isBeforeEqual(Time $other_time) {
+        if ($this->timestamp === null || $other_time->getTimestamp() === null) return false;
+        return $this->timestamp <= $other_time->getTimestamp();
     }
     
     /**
