@@ -177,18 +177,20 @@ class Errorhandler {
                 echo '<hr>';
                 echo '<h3>Error occured</h3>';
                 echo '<table><tr><th>Error:</th><td>' . $error_number . '</td></tr><tr><th>Error text:</th><td>' . $message . '</td></tr></table>';
-                echo '<b>Stack dump</b>';
-                echo '<table>';
-                foreach (debug_backtrace() as $backtrace) {
-                    if ($backtrace['file']) {
-                        $display_arguments = array();
-                        foreach ($backtrace['args'] as $argument) {
-                            $display_arguments[] = print_r($argument, true);
+                if (false) {
+                    echo '<b>Stack dump</b>';
+                    echo '<table>';
+                    foreach (debug_backtrace() as $backtrace) {
+                        if ($backtrace['file']) {
+                            $display_arguments = array();
+                            foreach ($backtrace['args'] as $argument) {
+                                $display_arguments[] = print_r($argument, true);
+                            }
+                            echo '<tr><td>' . $backtrace['file'] . ':' . $backtrace['line'] . '</td><td>' . $backtrace['function'] . ' (' . implode(',', $display_arguments) . ')</td></tr>';
                         }
-                        echo '<tr><td>' . $backtrace['file'] . ':' . $backtrace['line'] . '</td><td>' . $backtrace['function'] . ' (' . implode(',', $display_arguments) . ')</td></tr>';
                     }
+                    echo '</table>';
                 }
-                echo '</table>';
                 if ($error_number == E_WARNING)
                     return true;
                 die('Exit');
