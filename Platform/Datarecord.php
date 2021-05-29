@@ -17,10 +17,12 @@ class Datarecord implements DatarecordReferable {
     
     const DELETE_MODE_DELETE = 0;
     const DELETE_MODE_EMPTY = 1;
+    const DELETE_MODE_MARK = 2;
     
     // Delete strategies
-    const DELETE_STRATEGY_BLOCK = 0;
-    const DELETE_STRATEGY_PURGE_REFERERS = 1;
+    const DELETE_STRATEGY_DO_NOTHING = 0;
+    const DELETE_STRATEGY_BLOCK = 1;
+    const DELETE_STRATEGY_PURGE_REFERERS = 2;
     
     // Object locations
     const LOCATION_GLOBAL = 0;
@@ -242,7 +244,7 @@ class Datarecord implements DatarecordReferable {
      * @param Filter $filter
      */
     protected static function buildDefaultFilter(Filter $filter) {
-        if (static::$delete_mode == self::DELETE_MODE_EMPTY) {
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
             $filter->addCondition(new ConditionMatch('is_deleted', false));
         }
     }
@@ -270,7 +272,7 @@ class Datarecord implements DatarecordReferable {
             )
         ));
         
-        if (static::$delete_mode == self::DELETE_MODE_EMPTY) {
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
             static::addStructure(array(
                 'is_deleted' => array(
                     'invisible' => true,
@@ -424,6 +426,10 @@ class Datarecord implements DatarecordReferable {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
         
+        if (static::$delete_strategy == self::DELETE_STRATEGY_DO_NOTHING) {
+            if (! in_array(static::$delete_mode,[self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) trigger_error('You can only use DELETE_STRATEGY_DO_NOTHING along with DELETE_MODE_MARK or DELETE_MODE_EMPTY', E_USER_ERROR);
+        }
+        
         if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
         
         // Terminate all files
@@ -434,19 +440,22 @@ class Datarecord implements DatarecordReferable {
                 $file->delete();
             }
         }
+        $deleted_id = $this->values[static::getKeyField()];
         if (static::$delete_mode == self::DELETE_MODE_DELETE) {
             self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
-            $deleted_id = $this->values[static::getKeyField()];
             unset($this->values[static::getKeyField()]);
             $this->access_mode = self::MODE_READ;
             $this->unlock();
         } else {
-            $this->reset();
+            if (static::$delete_mode == self::DELETE_MODE_EMPTY) $this->reset();
             $this->is_deleted = 1;
             $this->save();
         }
         
         $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
+
+        // Stop here if we are configured to do nothing
+        if (static::$delete_strategy == self::DELETE_STRATEGY_DO_NOTHING) return $number_of_items_deleted > 0;
         
         // Find all objects referring this
         foreach (static::$referring_classes as $depending_class) {
@@ -1764,8 +1773,8 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
-     * Purge all objects from the database. Please note that this doesn't
-     * obtain locks for the objects
+     * Purge all objects from the database and resets IDs. Please note that this is a 
+     * hard delete that doesn't process referers
      */
     public static function purge() {
         self::query("DELETE FROM ".static::$database_table);
