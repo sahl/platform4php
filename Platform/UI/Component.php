@@ -267,9 +267,19 @@ class Component {
         if (! $this->is_ready) $this->prepareData();
         if (! $this->can_render) return;
         if ($this->attached_form_id) $this->addData('attached_form_id', $this->attached_form_id);
+        
         $classes = $this->classes;
         $classes[] = 'platform_component';
         $classes[] = 'platform_component_'.$this->getName();
+
+        // Add parent object names
+        foreach (class_parents($this) as $class_name) {
+            $name = strtolower($class_name);
+            if (strpos($name,'\\')) $name = substr($name,strrpos($name,'\\')+1);
+            if ($name == 'component') continue;
+            $classes[] = 'platform_component_'.$name;
+        }
+        
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
         
         if (static::$can_redraw) {
