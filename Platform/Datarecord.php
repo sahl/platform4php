@@ -1654,12 +1654,45 @@ class Datarecord implements DatarecordReferable {
      */
     public function onAfterSave(array $changed_fields) {
     }
+    
+    /**
+     * Called after an object is created.
+     */
+    public function onAfterCreate() {
+        
+    }
+    
+    /**
+     * Called after an object is deleted.
+     */
+    public function onAfterDelete() {
+        
+    }
+    
+    /**
+     * Called just before an object is created. If this function returns false
+     * object creation is hindered.
+     * @return bool Should we continue
+     */
+    public function onCreate() : bool {
+        return true;
+    }
+    
+    /**
+     * Called just before an object is deleted. If this function returns false
+     * object deletion is hindered.
+     * @return bool Should we continue
+     */
+    public function onDelete() : bool {
+        return true;
+    }
 
     /**
      * Called when object is saved.
      * @param array $changed_fields Array of fields which were changed
      */
-    public function onSave(array $changed_fields) {
+    public function onSave(array $changed_fields) : bool {
+        return true;
     }
     
     /**

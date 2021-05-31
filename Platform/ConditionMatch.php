@@ -6,8 +6,6 @@ use Platform\Utilities\Database;
 class ConditionMatch extends Condition {
     
     public function __construct(string $fieldname, $value) {
-        // Resolve datarecord to its ID
-        if ($value instanceof Datarecord) $value = $value->getRawValue($value->getKeyField ());
         $this->fieldname = $fieldname;
         $this->value = $value;
     }
@@ -29,13 +27,15 @@ class ConditionMatch extends Condition {
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_REFERENCE_SINGLE:
-                $result = $this->fieldname.' = '.$this->getSQLFieldValue($this->value);
-                if (! $this->value) $result = '('.$result.' OR '.$this->fieldname.' IS NULL)';
+                $value = $value instanceof Datarecord ? $value->getRawValue($value->getKeyField ()) : $value;
+                $result = $this->fieldname.' = '.$this->getSQLFieldValue($value);
+                if (! $value) $result = '('.$result.' OR '.$this->fieldname.' IS NULL)';
                 return $result;
             case Datarecord::FIELDTYPE_ARRAY:
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
             case Datarecord::FIELDTYPE_ENUMERATION_MULTI:
-                return $this->fieldname.' LIKE \'%"'.$this->value.'"%\'';
+                $value = $value instanceof Datarecord ? $value->getRawValue($value->getKeyField ()) : $value;
+                return $this->fieldname.' LIKE \'%"'.$value.'"%\'';
             case Datarecord::FIELDTYPE_REFERENCE_HYPER:
                 if (is_array($this->value)) {
                     return $this->fieldname.'_foreign_class = \''.Database::escape($this->value['foreign_class']).'\' AND '.$this->fieldname.'_reference = '.((int)$this->value['reference']);
