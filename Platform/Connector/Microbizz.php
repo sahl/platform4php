@@ -192,7 +192,7 @@ class Microbizz {
         curl_close($ch);
         
         $result = json_decode($output, true);
-        if ($result === null) return array('status' => false, 'error' => 'Unexpected answer from API');
+        if ($result === null) return array('status' => false, 'error' => 'Unexpected answer from API '.$output);
         
         if (! $result['status']) return array('status' => false, 'error' => $result['msg']);
         
