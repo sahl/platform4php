@@ -27,7 +27,7 @@ class ConditionMatch extends Condition {
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_REFERENCE_SINGLE:
-                $value = $value instanceof Datarecord ? $value->getRawValue($value->getKeyField ()) : $value;
+                $value = $this->value instanceof Datarecord ? $this->value->getRawValue($this->value->getKeyField()) : $this->value;
                 $result = $this->fieldname.' = '.$this->getSQLFieldValue($value);
                 if (! $value) $result = '('.$result.' OR '.$this->fieldname.' IS NULL)';
                 return $result;
