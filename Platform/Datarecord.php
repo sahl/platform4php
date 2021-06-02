@@ -432,27 +432,33 @@ class Datarecord implements DatarecordReferable {
         
         if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
         
+        if (! $this->onDelete()) return false;
+        
         // Terminate all files
-        foreach (static::getStructure() as $key => $definition) {
-            if (in_array($definition['fieldtype'], array(self::FIELDTYPE_FILE, self::FIELDTYPE_IMAGE)) && $this->getRawValue($key)) {
-                $file = new File();
-                $file->loadForWrite($this->getRawValue($key));
-                $file->delete();
+        if (static::$delete_strategy != self::DELETE_STRATEGY_DO_NOTHING) {
+            foreach (static::getStructure() as $key => $definition) {
+                if (in_array($definition['fieldtype'], array(self::FIELDTYPE_FILE, self::FIELDTYPE_IMAGE)) && $this->getRawValue($key)) {
+                    $file = new File();
+                    $file->loadForWrite($this->getRawValue($key));
+                    $file->delete();
+                }
             }
         }
         $deleted_id = $this->values[static::getKeyField()];
         if (static::$delete_mode == self::DELETE_MODE_DELETE) {
             self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
+            $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
             unset($this->values[static::getKeyField()]);
             $this->access_mode = self::MODE_READ;
             $this->unlock();
         } else {
             if (static::$delete_mode == self::DELETE_MODE_EMPTY) $this->reset();
+            if ($this->isInDatabase() && $this->is_deleted = 0) $number_of_items_deleted = 1;
             $this->is_deleted = 1;
             $this->save();
         }
         
-        $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
+        if ($number_of_items_deleted > 0) $this->onAfterDelete();
 
         // Stop here if we are configured to do nothing
         if (static::$delete_strategy == self::DELETE_STRATEGY_DO_NOTHING) return $number_of_items_deleted > 0;
@@ -509,7 +515,8 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
-     * Delete one or more objects by ID.
+     * Delete one or more objects by ID. This will do a hard delete and not check
+     * relations nor triggers
      * @param array|int $ids One or more IDs
      */
     public static function deleteByID($ids) {
@@ -2006,8 +2013,12 @@ class Datarecord implements DatarecordReferable {
     public function save(bool $force_save = false, bool $keep_open_for_write = false) : bool {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to save object '.static::$database_table.' in read mode', E_USER_ERROR);
         
+        $is_new_object = ! $this->isInDatabase();
+        
         $changed_fields = $this->getChangedFields();
         
+        // Event handlers
+        if ($is_new_object && ! $this->onCreate()) return false;
         $this->onSave($changed_fields);
         
         if (! $force_save && $this->isInDatabase()) {
@@ -2078,6 +2089,7 @@ class Datarecord implements DatarecordReferable {
         self::$foreign_reference_buffer[get_called_class()][$this->values[static::getKeyField()]] = $this->getTitle();
         
         $this->onAfterSave($changed_fields);
+        if ($is_new_object) $this->onAfterCreate();
         
         return true;
     }
