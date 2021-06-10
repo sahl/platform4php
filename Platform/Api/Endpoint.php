@@ -1,12 +1,13 @@
 <?php
 namespace Platform\Api;
 
-use Platform\Datarecord;
 use Platform\Condition;
-use Platform\Server\Instance;
-use Platform\Security\Accesstoken;
-use Platform\Utilities\Time;
+use Platform\Datarecord;
 use Platform\File;
+use Platform\Security\Accesstoken;
+use Platform\Server\Instance;
+use Platform\Utilities\Errorhandler;
+use Platform\Utilities\Time;
 
 class Endpoint {
     
@@ -236,6 +237,7 @@ class Endpoint {
                     $collection = $filter->execute();
                     $response = array();
                     foreach($collection->getAll() as $object) {
+                        self::memoryCheck('Gathering elements');
                         $response[] = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
                     }
                     self::respondAndDie(200, json_encode($response));
@@ -255,6 +257,16 @@ class Endpoint {
                 self::respondErrorAndDie(405, 'Cannot handle request method: '.$method);
         }
         self::respondErrorAndDie(500, 'Unspecified error - Ran through!');
+    }
+    
+    /**
+     * Send an API error if we doesn't have the specified amount of memory left.
+     * @param string $additional_info Additional text to error message
+     * @param int $stop_level Memory required in bytes
+     */
+    public static function memoryCheck($additional_info = '', $stop_level = 1024*1024*10) {
+        if ($additional_info) $additional_info = ' ('.$additional_info.')';
+        if (! Errorhandler::checkMemory($stop_level/(1024.0*1024.0), false)) self::respondErrorAndDie (500, 'Out of memory trying to execute your request'.$additional_info.' '.memory_get_usage().'/'.Errorhandler::getMemoryLimitInBytes());
     }
     
     /**
@@ -397,7 +409,7 @@ class Endpoint {
                             }
 
                             // Store binary content in temporary file
-                            $temp_file_name = \Platform\File::getTempFilename();
+                            $temp_file_name = File::getTempFilename();
                             $fh = fopen($temp_file_name, 'w');
                             if (! $fh) $this->respondErrorAndDie(500, 'Error writing temporary file handling field '.$key);
                             fwrite($fh, $binary_data);
