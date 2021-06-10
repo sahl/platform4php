@@ -69,20 +69,14 @@ function platform_handle_multiplier_change() {
 }
 
 function platform_multiplier_fixnames(element) {
-    // We need to determine what level we are operating on
-    var level = 0;
-    var parent_multiplier = element.parent();
-    while (parent_multiplier.closest('.platform_form_multiplier').length) {
-        parent_multiplier = parent_multiplier.closest('.platform_form_multiplier').parent();
-        level++;
-    }
+    // Determine number of array markers in base name
+    var base_name = new String(element.closest('.platform_form_multiplier').data('basename'));
+    
     // Catch all before relevant counter
-    var regexp_string = '/(.*?';
-    while (level-- > 0) regexp_string += '\\[\\d*\\]\\[.*?\\]';
-    regexp_string += ')';
+    var regexp_string = '/('+base_name.replace(/(\[|\])/gi, '\\$1')+')';
     // Skip counter and get all following
     regexp_string += '\\[\\d*\\](\\.*)/i';
-    
+    console.log(regexp_string);
     var regexp = eval(regexp_string);
     var i = 0;
     element.children('.platform_form_multiplier_element').each(function() {
@@ -93,6 +87,7 @@ function platform_multiplier_fixnames(element) {
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('name', new_name).prop('id', new_id);
             $(this).closest('.platform_form_field_container').find('label').prop('for', new_name);
+            $(this).closest('.platform_form_field_container').prop('id', new_id+'_container');
         })
         $(this).find('.platform_formfield_container').each(function() {
             var id = $(this).prop('id');
