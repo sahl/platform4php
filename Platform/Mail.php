@@ -2,6 +2,7 @@
 namespace Platform;
 
 use Platform\Utilities\Database;
+use Platform\Utilities\Semaphore;
 use Platform\Server\Job;
 use Platform\Utilities\Time;
 
@@ -110,9 +111,9 @@ class Mail extends \Platform\Datarecord {
      * Init the PHP mailer library
      */
     public static function initPhpmailer() {
-        require_once __DIR__.'Mail/src/Exception.php';
-        require_once __DIR__.'Mail/src/SMTP.php';
-        require_once __DIR__.'Mail/src/PHPMailer.php';
+        require_once __DIR__.'/Mail/src/Exception.php';
+        require_once __DIR__.'/Mail/src/SMTP.php';
+        require_once __DIR__.'/Mail/src/PHPMailer.php';
         
     }    
     
@@ -140,6 +141,9 @@ class Mail extends \Platform\Datarecord {
                             $mailer->Password = Platform::getConfiguration('smtp_password');
                         }
                     break;
+                    default:
+                        trigger_error('Unknown mailer', E_USER_ERROR);
+                        break;
                 }
                 
                 $mailer->CharSet = 'UTF-8';
@@ -151,9 +155,9 @@ class Mail extends \Platform\Datarecord {
                 $result = $mailer->send();
                 $mail->reloadForWrite();
                 if (! $result) {
-                    $mail->error_count = $this->error_count + 1;
+                    $mail->error_count = $mail->error_count + 1;
                     // Postpone for an hour
-                    $mail->scheduled_for = $this->scheduled_for->add(0,0,1);
+                    $mail->scheduled_for = $mail->scheduled_for->add(0,0,1);
                 } else {
                     $mail->is_sent = 1;
                     $mail->sent_date = Time::now();
@@ -190,13 +194,13 @@ class Mail extends \Platform\Datarecord {
             'scheduled_for' => new Time('now')
         ));
         $mail->save();
-        self::setupQueue();
+        static::setupQueue();
     }
     
     public static function setupQueue() {
         $job = Job::getJob('Platform\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
         // Check for next run time
-        $qr = Database::instanceFastQuery("SELECT MIN(scheduled_for) as next_start FROM ".self::$database_table." WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
+        $qr = Database::instanceFastQuery("SELECT MIN(scheduled_for) as next_start FROM ".static::$database_table." WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
         if ($qr) {
             $job->next_start = new Time($qr['next_start']);
             $job->frequency = Job::FREQUENCY_ONCE;

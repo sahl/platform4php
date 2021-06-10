@@ -21,10 +21,10 @@ class Errorhandler {
     private static $measures = [];
 
     /**
-     * Check if we have the desired amount of memory available.
+     * Check if we have the desired amount of memory available/free.
      * @param float $needed_in_mb Memory needed in MB
      * @param bool $die_if_not_available If set to true, the script will terminate with an error, if we don't have the memory
-     * @return bool
+     * @return bool True if the memory is available
      */
     public static function checkMemory(float $needed_in_mb = 1, bool $die_if_not_available = true) {
         $used_memory = memory_get_usage();

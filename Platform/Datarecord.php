@@ -1214,6 +1214,9 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:
                 return (int)$this->getRawValue($field);
+            case self::FIELDTYPE_ARRAY:
+            case self::FIELDTYPE_OBJECT:
+                return $this->getRawValue($field);
             default:
                 return $this->getTextValue($field);
         }
@@ -1803,7 +1806,7 @@ class Datarecord implements DatarecordReferable {
         }
         // Fill buffer with all missing instances
         if (count($missing)) {
-            $qh = $class::query("SELECT * FROM ".$class::$database_table." WHERE ".$class::getKeyField()." IN (".implode(',',$missing).")");
+            $qh = $class::query("SELECT * FROM ".$class::getDatabaseTable()." WHERE ".$class::getKeyField()." IN (".implode(',',$missing).")");
             while ($qr = Database::getRow($qh)) {
                 $foreign_datarecord = new $class();
                 $foreign_datarecord->loadFromDatabaseRow($qr);
