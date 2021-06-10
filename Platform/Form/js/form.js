@@ -37,6 +37,11 @@ addPlatformComponentHandlerFunction('form', function(item) {
 
         if (! allowsubmit) {
             e.stopImmediatePropagation();
+        } else {
+            // Check if we should save form values
+            if ($(this).data('save_on_submit')) {
+                $.post('/Platform/Form/php/save_form_values.php', {destination: $(this).data('save_on_submit'), formid: $(this).prop('id'), formdata: $(this).serialize()});
+            }
         }
 
          // Show multipliers again
@@ -49,14 +54,19 @@ addPlatformComponentHandlerFunction('form', function(item) {
          $(this).clearError();
      });
           
-     // Indicate on password-field when it is updated.
-     $('.platform-password',item).change(function() {
-         $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
-         return true;
-     });
-     
-     // Autosize required textareas
-     autosize($('textarea.autosize', item));
+    // Indicate on password-field when it is updated.
+    $('.platform-password',item).change(function() {
+        $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
+        return true;
+    });
+
+    // Autosize required textareas
+    autosize($('textarea.autosize', item));
+
+    // Autosubmit
+    $(item).on('component_ready', function() {
+        $(this).find('form.platform_form_auto_submit').submit();
+    });
 });
 
 

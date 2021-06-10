@@ -7,6 +7,12 @@ use Platform\Utilities\Errorhandler;
 
 class Form extends \Platform\UI\Component {
     
+    const SAVE_NO = 0;
+    const SAVE_SESSION = 1;
+    const SAVE_PROPERTY = 2;
+    
+    private $auto_submit = false;
+    
     private $form_id = array();
 
     private $fields = array();
@@ -14,6 +20,8 @@ class Form extends \Platform\UI\Component {
     private $validationfunctions = array();
     
     private $action = '';
+    
+    private $save_on_submit = self::SAVE_NO;
     
     private $script = null;
     
@@ -66,7 +74,7 @@ class Form extends \Platform\UI\Component {
             if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
-                    $newfields[] = $formfield;
+                    $newfields[] = $field;
                     $field->attachToForm($this);
                 }
                 $inserted = true;
@@ -256,12 +264,27 @@ class Form extends \Platform\UI\Component {
     }
     
     /**
+     * Get form values from serialized form output
+     * @param string $serialized_form
+     */
+    public function getValuesFromSerializedForm(string $serialized_form) {
+        $values = [];
+        foreach (explode ('&', $serialized_form) as $parts) {
+            $splitpos = strpos($parts,'=');
+            $name = urldecode(substr($parts,0,$splitpos));
+            $value = urldecode(substr($parts,$splitpos+1));
+            self::injectValue($name, $values, $value);
+        }
+        $this->setValues($values);
+    }
+    
+    /**
      * Inject a value into a complex field name
      * @param string $fieldname Complex field name
-     * @param array $target Value array
+     * @param mixed $target Value array
      * @param mixed $value Value to inject
      */
-    private static function injectValue(string $fieldname, array &$target, $value) {
+    private static function injectValue(string $fieldname, &$target, $value) {
         if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
             self::injectValue($matches[2].$matches[3], $target[$matches[1]], $value);
             return;
@@ -276,6 +299,22 @@ class Form extends \Platform\UI\Component {
      */
     public function isSubmitted() : bool {
         return ($_POST['form_name'] == $this->form_id);
+    }
+    
+    /**
+     * Load values previously stored by calling saveOnSubmit on the same form
+     * @param bool $auto_submit_if_values If true then autosubmit the form is values were found
+     */
+    public function loadValues(bool $auto_submit_if_values = false) {
+        // Try for a property
+        $values = Property::getForCurrentUser('platform_saved_forms', $this->form_id);
+        // Try for session
+        if (! $values) $values = $_SESSION['platform']['saved_forms'][$this->form_id];
+        // See if we got anything
+        if ($values) {
+            $this->getValuesFromSerializedForm($values);
+            if ($auto_submit_if_values) $this->setAutoSubmit(true);
+        }
     }
     
     /**
@@ -459,7 +498,16 @@ class Form extends \Platform\UI\Component {
      */
     public function renderContent() {
         if ($this->script) Page::JSFile ($this->script);
-        echo '<form id="'.$this->form_id.'" method="post" class="platform_form" action="'.$this->action.'">';
+        
+        $form_class_string = 'platform_form';
+        
+        if ($this->auto_submit) $form_class_string .= ' platform_form_auto_submit';
+        
+        $additional_data = '';
+        
+        if ($this->save_on_submit != self::SAVE_NO) $additional_data .= ' data-save_on_submit="'.$this->save_on_submit.'"';
+        
+        echo '<form id="'.$this->form_id.'" method="post" class="'.$form_class_string.'" action="'.$this->action.'"'.$additional_data.'>';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
         echo '<input type="hidden" name="form_event" value="'.$this->event.'">';
         echo '<input type="hidden" name="form_hiddenfields" value="">';
@@ -513,6 +561,14 @@ class Form extends \Platform\UI\Component {
     }
     
     /**
+     * Set if this form should autosubmit
+     * @param bool $auto_submit
+     */
+    public function setAutoSubmit(bool $auto_submit = true) {
+        $this->auto_submit = $auto_submit;
+    }
+    
+    /**
      * Set the event to transmit with the form
      * @param string $event
      */
@@ -534,6 +590,15 @@ class Form extends \Platform\UI\Component {
      */
     public function setLabelWidth(int $width) {
         foreach ($this->fields as $field) $field->setLabelWidth ($width);
+    }
+    
+    /**
+     * Set if this form should be saved on submit
+     * @param int $save_value SAVE_NO, SAVE_SESSION or SAVE_PROPERTY
+     */
+    public function setSaveOnSubmit(int $save_value = self::SAVE_SESSION) {
+        if (! in_array($save_value, [self::SAVE_NO, self::SAVE_SESSION, self::SAVE_PROPERTY])) trigger_error('Invalid save on submit value', E_USER_ERROR);
+        $this->save_on_submit = $save_value;
     }
     
     /**
