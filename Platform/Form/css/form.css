@@ -48,6 +48,15 @@
     justify-content: space-around;
 }
 
+.platform_form_line_spaced {
+    display: flex;
+}
+
+.platform_form_line_spaced > * {
+    margin-right: 30px;
+}
+
+
 .platform_form_line_condensed {
     display: flex;
 }

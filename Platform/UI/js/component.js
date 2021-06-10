@@ -83,6 +83,7 @@ $.fn.componentIOForm = function(form, func) {
             // Handle form error
             if (! data.status) {
                 if (data.script) eval(data.script);
+                if (data.redirect) window.location = data.redirect;
                 if (data.properties) component.data('componentproperties', data.properties);
                 if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
@@ -108,6 +109,7 @@ $.fn.componentIO = function(values, func) {
     // Post
     $.post(component.data('io_url'), values, function(data) {
         if (data.script) eval(data.script);
+        if (data.redirect) window.location = data.redirect;
         if (data.properties) component.data('componentproperties', data.properties);
         if (data.redraw) component.trigger('redraw');
         if (typeof func == 'function') func(data);
