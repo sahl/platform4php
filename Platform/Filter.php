@@ -28,6 +28,24 @@ class Filter {
     protected $errors = array();
     
     /**
+     * Indicate if we should limit the number of results returned?
+     * @var int
+     */
+    protected $limit_results = null;
+    
+    /**
+     * Which column to order after
+     * @var string
+     */
+    protected $order_column = null;
+    
+    /**
+     * Should we do an ascending order?
+     * @var boolean
+     */
+    protected $order_ascending = true;
+    
+    /**
      * Indicate if we should perform an access check
      * @var bool
      */
@@ -196,15 +214,23 @@ class Filter {
      * @return string
      */
     public function getSQL() : string {
-        $sql = 'SELECT * FROM '.$this->base_object->getDatabaseTable().$this->getSQLWhere();
+        $sql = 'SELECT * FROM '.$this->base_object->getDatabaseTable().$this->getSQLWhere().$this->getSQLOrder();
         return $sql;
+    }
+    
+    public function getSQLOrder() : string {
+        $result = '';
+        if ($this->order_column) $result .= ' ORDER BY '.$this->order_column;
+        if ($this->order_column && ! $this->order_ascending) $result .= ' DESC';
+        if ($this->limit_results) $result .= ' LIMIT 0,'.$this->limit_results;
+        return $result;
     }
     
     /**
      * Get a SQL Where string for this filter
      * @return string
      */
-    public function getSQLWhere() {
+    public function getSQLWhere() : string {
         return $this->base_condition instanceof Condition ? ' WHERE '.$this->base_condition->getSQLFragment() : '';
     }
     
@@ -223,11 +249,45 @@ class Filter {
     }
     
     /**
+     * Indicate which column we should sort after
+     * @param string $order_column Column name
+     * @param bool $ascending Should we sort ascending (with the opposite being descending)
+     */
+    public function setOrderColumn(string $order_column, bool $ascending = true) {
+        // Check if field exists
+        $field_definition = $this->getBaseObject()->getFieldDefinition($order_column);
+        if (! count($field_definition)) trigger_error('No field '.$order_column.' in object.', E_USER_ERROR);
+        $valid_sort_columns = [
+            Datarecord::FIELDTYPE_TEXT,
+            Datarecord::FIELDTYPE_INTEGER,
+            Datarecord::FIELDTYPE_FLOAT,
+            Datarecord::FIELDTYPE_BOOLEAN,
+            Datarecord::FIELDTYPE_BIGTEXT,
+            Datarecord::FIELDTYPE_HTMLTEXT,
+            Datarecord::FIELDTYPE_DATETIME,
+            Datarecord::FIELDTYPE_DATE,
+            Datarecord::FIELDTYPE_EMAIL,
+            Datarecord::FIELDTYPE_KEY
+        ];
+        if (! in_array($field_definition['fieldtype'], $valid_sort_columns)) trigger_error('You cannot sort by '.$order_column, E_USER_ERROR);
+        $this->order_column = $order_column;
+        $this->order_ascending = $ascending;
+    }
+    
+    /**
      * Set if this filter should perform an access check when running
      * @param bool $perform_access_check
      */
     public function setPerformAccessCheck(bool $perform_access_check) {
         $this->perform_access_check = $perform_access_check;
+    }
+    
+    /**
+     * Set the maximum number of results you want returned.
+     * @param int $result_limit
+     */
+    public function setResultLimit(int $result_limit) {
+        $this->limit_results = $result_limit;
     }
     
     /**
