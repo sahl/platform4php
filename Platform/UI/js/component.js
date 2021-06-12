@@ -34,8 +34,6 @@ addCustomPlatformFunction(function(item) {
             })
         }
         
-        // Check if a form is registered for IO
-        if (element.data('attached_form_id')) element.componentIOForm($('#'+element.data('attached_form_id'), element));
     });
     
     // Apply special functions in the same order they was included to ensure proper event stacking
@@ -52,6 +50,10 @@ addCustomPlatformFunction(function(item) {
     // Fire component ready on all
     elements.each(function() {
         var element = $(this);
+        
+        // Check if a form is registered for IO
+        if (element.data('attached_form_id')) element.componentIOForm($('#'+element.data('attached_form_id'), element));
+
         $(this).trigger('component_ready');
     });
 });
@@ -83,12 +85,12 @@ $.fn.componentIOForm = function(form, func) {
             // Handle form error
             if (! data.status) {
                 if (data.script) eval(data.script);
-                if (data.redirect) window.location = data.redirect;
                 if (data.properties) component.data('componentproperties', data.properties);
                 if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
             } else {
                 if (data.script) eval(data.script);
+                if (data.redirect) location.href = data.redirect;
                 if (data.properties) component.data('componentproperties', data.properties);
                 if (data.redraw) component.trigger('redraw');
                 if (typeof func == 'function') func(data);
@@ -109,7 +111,7 @@ $.fn.componentIO = function(values, func) {
     // Post
     $.post(component.data('io_url'), values, function(data) {
         if (data.script) eval(data.script);
-        if (data.redirect) window.location = data.redirect;
+        if (data.redirect) location.href = data.redirect;
         if (data.properties) component.data('componentproperties', data.properties);
         if (data.redraw) component.trigger('redraw');
         if (typeof func == 'function') func(data);

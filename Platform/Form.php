@@ -10,24 +10,26 @@ class Form extends \Platform\UI\Component {
     const SAVE_NO = 0;
     const SAVE_SESSION = 1;
     const SAVE_PROPERTY = 2;
-    
-    private $auto_submit = false;
-    
-    private $form_id = array();
 
-    private $fields = array();
-    
-    private $validationfunctions = array();
-    
     private $action = '';
     
-    private $save_on_submit = self::SAVE_NO;
-    
-    private $script = null;
+    private $auto_submit = false;
     
     private $event = 'submit';
     
     private static $field_name_space = [];
+    
+    private $fields = array();
+    
+    private $form_id = array();
+    
+    private $global_errors = array();
+
+    private $save_on_submit = self::SAVE_NO;
+    
+    private $script = null;
+    
+    private $validationfunctions = array();
     
     public function __construct(string $form_id, string $filename = '') {
         Page::JSFile('/Platform/Form/js/form.js');
@@ -165,6 +167,8 @@ class Form extends \Platform\UI\Component {
         foreach ($this->fields as $field) {
             if ($field->isError()) $field->addErrors($errors);
         }
+        // Gather global errors
+        $errors['__global'] = $this->global_errors;
         return $errors;
     }
     
@@ -511,6 +515,8 @@ class Form extends \Platform\UI\Component {
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
         echo '<input type="hidden" name="form_event" value="'.$this->event.'">';
         echo '<input type="hidden" name="form_hiddenfields" value="">';
+        
+        echo '<div class="platform_form_global_error_container"></div>';
            
         foreach ($this->fields as $field) {
             /* @var $field Field */
@@ -630,6 +636,14 @@ class Form extends \Platform\UI\Component {
                     $field->setValue($values[$field_name]);
             }
         }
+    }
+    
+    /**
+     * Trigger a global error on this form (a form error not related to a specific field)
+     * @param string $error_text The error text
+     */
+    public function triggerGlobalError(string $error_text) {
+        $this->global_errors[] = $error_text;
     }
 
     /**

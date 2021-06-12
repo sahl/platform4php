@@ -9,6 +9,9 @@ addPlatformComponentHandlerFunction('form', function(item) {
     $('form', item).submit(function(e) {
         var allowsubmit = true;
         
+        // Hide global error
+        $('.platform_form_global_error_container', $(this)).hide();
+        
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
         $('.platform_form_multiplier_element', $(this)).each(function() {
             if ($(this).is(':last-child')) $(this).hide();
@@ -34,7 +37,7 @@ addPlatformComponentHandlerFunction('form', function(item) {
             hiddenfields.push(name);
         });
         if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
-
+        
         if (! allowsubmit) {
             e.stopImmediatePropagation();
         } else {
@@ -98,8 +101,12 @@ $.fn.clearForm = function() {
 $.fn.attachErrors = function(errors) {
     var form = this;
     $.each(errors, function(form_id, error_message) {
-        form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
-        $('#'+form_id, form).setError(error_message);
+        if (form_id == '__global') {
+            $('.platform_form_global_error_container', form).html('<ul><li>'+error_message.join('<li>')+'</ul>').show();
+        } else {
+            form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
+            $('#'+form_id, form).setError(error_message);
+        }
     })
     
 }

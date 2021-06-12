@@ -2,6 +2,16 @@
     margin-bottom: 8px;
 }
 
+.platform_form_global_error_container {
+    font-size: 0.7em;
+    color: red;
+    background: #FFDDDD;
+    display: none;
+    padding: 5px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
 .platform_field_label_container {
     display: flex;
     align-items: baseline;
