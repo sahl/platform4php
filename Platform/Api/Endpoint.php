@@ -218,7 +218,7 @@ class Endpoint {
                 if ($object_id) {
                     $object = new $class();
                     $object->loadForRead($object_id, false);
-                    if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
+                    if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
                     if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                     $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
                     self::respondAndDie(200, json_encode($response));
@@ -246,13 +246,14 @@ class Endpoint {
             case 'DELETE':
                 if (! $object_id) self::respondErrorAndDie (404, 'No object id specified.');
                 $object = new $class();
-                $object->loadForWrite($object_id);
+                $object->loadForWrite($object_id, false);
+                if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
                 if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                 $result = $object->canDelete();
                 if ($result !== true) self::respondErrorAndDie(403, 'You cannot delete object with id: '.$object_id.'. Reason: '.$result);
                 $result = $object->delete();
                 if ($result) self::respondAndDie (200, json_encode(array('file_deleted' => true)));
-                else self::respondErrorAndDie (500, 'Could not delete file');
+                else self::respondErrorAndDie (500, 'Could not delete object');
             default:
                 self::respondErrorAndDie(405, 'Cannot handle request method: '.$method);
         }
