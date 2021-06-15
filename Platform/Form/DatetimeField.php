@@ -21,6 +21,6 @@ class DatetimeField extends Field {
     }
 
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$value.'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value.'"'.$this->additional_attributes.'>';
     }
 }
