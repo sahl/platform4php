@@ -30,7 +30,7 @@ addCustomPlatformFunction(function(item) {
         if (element.data('registered_events')) {
             $.each(element.data('registered_events').split(','), function(index, value) {
                 element.off(value);
-                element.on(value, function() {element.componentIO({event: value})});
+                element.on(value, function(event, parameter1, parameter2, parameter3) {element.componentIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); event.stopImmediatePropagation(); return false;});
             })
         }
         

@@ -86,7 +86,6 @@ addPlatformComponentHandlerFunction('table', function(item) {
             else table.clearFilter();
         })
     }
-
     $.each(action_buttons, function(key, element) {
         table.addColumn({
             formatter: function(cell, formatterParams) {
@@ -96,7 +95,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
             headerSort:false,
             align: 'center',
             cellClick: function(e, cell) {
-                eval(element)(cell.getRow().getIndex());
+                item.trigger(element, cell.getRow().getIndex());
             }
         }, true)
     });

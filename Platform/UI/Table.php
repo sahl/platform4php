@@ -39,7 +39,7 @@ class Table extends Component {
     
     public function addActionButton(string $icon, string $javascript_function_name) {
         $this->actionbuttons[$icon] = $javascript_function_name;
-        $this->setTabulatorOption('action_buttons', $this->actionbuttons);
+        $this->setTabulatorOption('action_buttons', array_reverse($this->actionbuttons, true));
     }
     
     /**
