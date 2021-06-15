@@ -318,6 +318,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function canDelete() : bool {
         if (! $this->isInDatabase()) return 'Not saved yet';
+        if (! $this->canAccess()) return 'Cannot access';
         if (static::$delete_strategy == self::DELETE_STRATEGY_BLOCK) {
             $referring_titles = $this->getReferringObjectTitles();
             if (count($referring_titles)) {
