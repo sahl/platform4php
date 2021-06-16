@@ -48,6 +48,14 @@ class Page {
     }
     
     /**
+     * Get the exact URL to this page including get parameters
+     * @return string
+     */
+    public static function getCurrentPage() : string {
+        return $_SERVER['PHP_SELF'].($_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : '');
+    }
+    
+    /**
      * Indicate if page output is started
      * @return bool
      */
@@ -174,7 +182,7 @@ class Page {
      * Reload this page, by redirecting to itself including GET parameters
      */
     public static function reload() {
-        header('location: '.$_SERVER['PHP_SELF'].($_SERVER['QUERY_STRING'] ? '?'.$_SERVER['QUERY_STRING'] : ''));
+        header('location: '.self::getCurrentPage());
         exit;
     }
 
