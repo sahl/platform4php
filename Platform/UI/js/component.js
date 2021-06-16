@@ -88,6 +88,7 @@ $.fn.componentIOForm = function(form, func) {
                 if (data.properties) component.data('componentproperties', data.properties);
                 if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
+                if (typeof func == 'function') func(data);
             } else {
                 if (data.script) eval(data.script);
                 if (data.redirect) location.href = data.redirect;
