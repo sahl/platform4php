@@ -359,6 +359,14 @@ class Form extends \Platform\UI\Component {
                     $name = (string)$tag['properties']['name'];
                     unset($tag['properties']['label']);
                     unset($tag['properties']['name']);
+                    // Handle value properties
+                    foreach ($tag['properties'] as $key => $value) {
+                        if (substr($key,0,6) == 'value-') {
+                            $tag['properties']['options'][substr($key,6)] = Utilities\Translation::translateForUser($value);
+                            unset($tag['properties'][$key]);
+                        }
+                    }
+                    
                     $fields[] = new $class($label, $name, $tag['properties']);
                     // If we encounter a multiplier, we want to direct the following fields into that
                     if (strtolower($tag['tag']) == 'multiplier') {

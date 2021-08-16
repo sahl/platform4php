@@ -276,6 +276,9 @@ class Translation {
             if (preg_match_all('/\{(.*?)\}/', $file_content, $matches)) {
                 foreach ($matches[1] as $m) $phrases[] = $m;
             }
+            if (preg_match_all('/value-[^=]+="(.*?)"/', $file_content, $matches)) {
+                foreach ($matches[1] as $m) $phrases[] = $m;
+            }
         } else {
             foreach ($function_names as $function_name) {
                 if (preg_match_all('/([^a-z]|^)l\("(.*?[^\\\\])"/i', $file_content, $matches)) {
@@ -531,6 +534,8 @@ class Translation {
         
         $phrase = array_shift($args);
         
+        if (! self::isEnabled()) return $phrase;
+        
         $translated_phrase = $platform_language[self::getUserLanguage()][$phrase] ?: $phrase;
         
         return self::replaceStringParameters($translated_phrase, $args);
@@ -548,6 +553,8 @@ class Translation {
         if (count($args) < 1) return '';
         
         $phrase = array_shift($args);
+
+        if (! self::isEnabled()) return $phrase;
         
         $translated_phrase = $platform_language[self::getInstanceLanguage()][$phrase] ?: $phrase;
         
