@@ -83,6 +83,11 @@ function platform_multiplier_fixnames(element) {
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
+            var realname = $(this).data('realname');
+            if (realname) {
+                var new_realname = realname.replace(regexp, '$1['+i+']$2');
+                if (realname) $(this).data('realname', new_realname);
+            }
             var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
             $(this).prop('name', new_name).prop('id', new_id);
