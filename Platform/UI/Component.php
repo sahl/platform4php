@@ -265,7 +265,7 @@ class Component {
      */
     public function render() {
         if (! $this->is_ready) $this->prepareData();
-        if (! $this->can_render) return;
+        if (! $this->canRender()) return;
         if ($this->attached_form_id) $this->addData('attached_form_id', $this->attached_form_id);
         
         $classes = $this->classes;
@@ -307,7 +307,6 @@ class Component {
      * Render the component content. Override in subclass.
      */
     public function renderContent() {
-        echo 'Override me';
     }
     
     /**
