@@ -45,6 +45,21 @@ class Collection implements \Iterator {
             $this->datarecords[] = $datarecord;
         }
     }
+
+    /**
+     * Add objects from another collection, that we doesn't already have
+     * @param Collection $other_collection
+     */
+    public function addCollection(Collection $other_collection) {
+        if (! $this->isCompatible($other_collection)) trigger_error('Tried to add collection of different type', E_USER_ERROR);
+        $my_ids = $this->getAllIDs();
+        foreach ($other_collection as $object) {
+            if (! in_array($object->getKeyValue(), $my_ids)) {
+                $this->add($object);
+                $my_ids[] = $object->getKeyValue();
+            }
+        }
+    }
     
     /**
      * Delete all contained records from the database. This overrides blocking.
@@ -82,10 +97,20 @@ class Collection implements \Iterator {
     public function getAllAsArray() : array {
         $result = array();
         if (! $this->getCount()) return array();
-        $class = new $this->collectiontype();
-        $keyfield = $class->getKeyField();
         foreach ($this->getAll() as $object) {
-            $result[$object->getRawValue($keyfield)] = $object->getTitle();
+            $result[$object->getKeyValue()] = $object->getTitle();
+        }
+        return $result;
+    }
+    
+    /**
+     * Return the IDs of all objects in this collection
+     * @return array
+     */
+    public function getAllIDs() : array {
+        $result = [];
+        foreach ($this->datarecords as $object) {
+            $result[] = $object->getKeyValue();
         }
         return $result;
     }
@@ -144,7 +169,7 @@ class Collection implements \Iterator {
      * Get all associated objects which are object pointed to, by a relation field
      * in this collection
      * @param string $field Field name to consider
-     * @return Datacollection All associated objects
+     * @return Collection All associated objects
      */
     public function getAssociatedObjects(string $field) : Collection {
         $foreign_ids = array();
@@ -166,9 +191,9 @@ class Collection implements \Iterator {
     
     /**
      * Get the type of objects in this collection
-     * @return string Class name
+     * @return string|bool Class name or false if no type
      */
-    public function getCollectionType() : string {
+    public function getCollectionType() {
         return $this->collectiontype;
     }
     
@@ -178,6 +203,31 @@ class Collection implements \Iterator {
      */
     public function getCount() : int {
         return count($this->datarecords);
+    }
+    
+    /**
+     * Check if this collection is compatible with another collection (ie. they
+     * both hold the same object types).
+     * @param Collection $other_collection
+     * @return bool
+     */
+    public function isCompatible(Collection $other_collection) : bool {
+        return ($this->getCollectionType() === false || $other_collection->getCollectionType() === false || $this->getCollectionType() == $other_collection->getCollectionType());
+        
+    }
+    
+    /**
+     * Remove all elements from another collection, from this collection.
+     * @param Collection $other_collection
+     */
+    public function removeCollection(Collection $other_collection) {
+        if (! $this->isCompatible($other_collection)) trigger_error('Tried to add collection of different type', E_USER_ERROR);
+        $other_ids = $other_collection->getAllIDs();
+        $new_datarecords = [];
+        foreach ($this->datarecords as $datarecord) {
+            if (! in_array($datarecord->getKeyValue(), $other_ids)) $new_datarecords[] = $datarecord;
+        }
+        $this->datarecords = $new_datarecords;
     }
 
     /**

@@ -72,7 +72,8 @@ class ConditionMatch extends Condition {
         // Validation
         $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
         if (! $definition) return array('Invalid field '.$this->fieldname.' for match condition');
-        if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for match condition');
+        if ($definition['store_in_database'] === false &&
+                ! in_array($definition['fieldtype'], [Datarecord::FIELDTYPE_REFERENCE_HYPER])) return array('Field '.$this->fieldname.' is not stored in database for match condition');
         if (in_array(
                 $definition['fieldtype'], 
                 array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT)
