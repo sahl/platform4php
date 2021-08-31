@@ -32,8 +32,8 @@ class Form extends \Platform\UI\Component {
     private $validationfunctions = array();
     
     public function __construct(string $form_id, string $filename = '') {
-        Page::JSFile('/Platform/Form/js/form.js');
         Page::JSFile('/Platform/Form/js/autosize.js');
+        Page::JSFile('/Platform/Form/js/form.js');
         Page::JSFile('/Platform/Form/js/multiplier.js');
         Page::JSFile('/Platform/Form/js/combobox.js');
         Page::JSFile('/Platform/Form/js/texteditor.js');
