@@ -5,6 +5,8 @@ class Dialog extends Component {
     
     public $form = null;
     
+    private $components = [];
+    
     protected $properties = [
         'title' => '',
         'text' => ''
@@ -28,9 +30,24 @@ class Dialog extends Component {
         $this->form = $form;
     }
     
+    public function addComponent(Component $component) {
+        $this->components[] = $component;
+    }
+    
     public function renderContent() {
         echo $this->text;
         if ($this->form instanceof \Platform\Form) $this->form->render();
+        foreach ($this->components as $component) $component->render();
+    }
+    
+    /**
+     * Render a form as invisible to be used later with the javascript formDialog
+     * @param \Platform\Form $form Form to render (invisible)
+     */
+    public static function prepareForm(\Platform\Form $form) {
+        echo '<div class="platform_invisible">';
+        $form->render();
+        echo '</div>';
     }
     
 }

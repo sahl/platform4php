@@ -1,5 +1,5 @@
 $(function() {
-    $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div></div>');
+    $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div><div id="platform_allpurpose_form"></div></div>');
     $('#platform_allpurpose_dialog').platformDialog([]);
 });
 
@@ -41,6 +41,7 @@ $.fn.platformDialog = function(buttons, opts) {
 
 function warningDialog(title, text, callback) {
     $('#platform_allpurpose_text').html(text);
+    $('#platform_allpurpose_form').children().hide();
     $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
         {
             text: 'OK',
@@ -54,6 +55,7 @@ function warningDialog(title, text, callback) {
 
 function confirmDialog(title, text, callback_ok, callback_cancel) {
     $('#platform_allpurpose_text').html(text);
+    $('#platform_allpurpose_form').children().hide();
     $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
         {
             text: 'OK',
@@ -70,6 +72,47 @@ function confirmDialog(title, text, callback_ok, callback_cancel) {
             }
         }        
     ]).dialog('open');
+}
+
+function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel) {
+    $('#platform_allpurpose_text').html(text);
+    $('#platform_allpurpose_form').children().hide();
+    
+    // Ensure that the form is moved into place and shown
+    $(form_id).appendTo('#platform_allpurpose_form').show();
+    
+    // (Re)bind submitter
+    $(form_id).off('submit.allpurpose_dialog');
+    $(form_id).on('submit.allpurpose_dialog', function(data) {
+        $('#platform_allpurpose_dialog').dialog('close');
+        if (typeof(callback_ok) == 'function') {
+            var return_values = {};
+            $.each($(form_id).serializeArray(), function(key, value) {
+                return_values[value.name] = value.value;
+            })
+            callback_ok(return_values);
+        }
+        return false;
+    })
+    
+    if (ok_text == null) ok_text = 'Save';
+    
+    $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
+        {
+            text: ok_text,
+            click: function() {
+                $(form_id).submit();
+            }
+        },
+        {
+            text: 'Cancel',
+            click:  function() {
+                $(this).dialog('close');
+                if (typeof(callback_cancel) == 'function') callback_cancel();
+            }
+        }        
+    ]).dialog('open');
+    
 }
 
 

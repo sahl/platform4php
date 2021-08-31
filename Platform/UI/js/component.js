@@ -12,6 +12,13 @@ addCustomPlatformFunction(function(item) {
         // Remove events if they exists
         $(this).off('redraw');
         
+        // Gather dialog ID's within this component
+        var dialogs = [];
+        $('.platform_component_dialog', this).each(function() {
+            dialogs.push($(this).prop('id'));
+            return true;
+        });
+        
         $(this).on('redraw', function(e) {
             var componentproperties = $(this).data('componentproperties');
             var redraw_url = $(this).data('redraw_url');
@@ -19,6 +26,12 @@ addCustomPlatformFunction(function(item) {
                 e.stopPropagation();
                 return;
             }
+            
+            // Destroy all dialogs within this component
+            $.each(dialogs, function(index, value) {
+                $('#'+value).dialog('destroy');
+            })
+            
             var element = $(this);
             $.post(redraw_url, {componentclass: $(this).data('componentclass'), componentproperties: componentproperties}, function(data) {
                 element.html(data).applyPlatformFunctions();
@@ -84,12 +97,14 @@ $.fn.componentIOForm = function(form, func) {
         $.post(component.data('io_url'), form.serialize(), function(data) {
             // Handle form error
             if (! data.status) {
+                if (data.destroy) component.remove();
                 if (data.script) eval(data.script);
                 if (data.properties) component.data('componentproperties', data.properties);
                 if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
                 if (typeof func == 'function') func(data);
             } else {
+                if (data.destroy) component.remove();
                 if (data.script) eval(data.script);
                 if (data.redirect) location.href = data.redirect;
                 if (data.properties) component.data('componentproperties', data.properties);
@@ -111,6 +126,7 @@ $.fn.componentIO = function(values, func) {
     values['componentproperties'] = component.data('componentproperties');
     // Post
     $.post(component.data('io_url'), values, function(data) {
+        if (data.destroy) component.remove();
         if (data.script) eval(data.script);
         if (data.redirect) location.href = data.redirect;
         if (data.properties) component.data('componentproperties', data.properties);
