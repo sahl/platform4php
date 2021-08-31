@@ -1269,6 +1269,38 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Return the object pointed to by the given hyperreference field.
+     * @param string $field Field name
+     * @return Object referenced
+     */
+    public function getForeignObject(string $field) {
+        $raw = $this->getRawValue($field);
+        switch (static::$structure[$field]['fieldtype']) {
+            case self::FIELDTYPE_REFERENCE_HYPER:
+                $class = $raw['foreign_class'];
+                $object = new $class();
+                $object->loadForRead($raw['reference']);
+                return $object;
+            case self::FIELDTYPE_REFERENCE_SINGLE:
+                $class = static::$structure[$field]['foreign_class'];
+                $object = new $class();
+                $object->loadForRead($raw);
+                return $object;
+            case self::FIELDTYPE_REFERENCE_SINGLE:
+                $result = [];
+                $class = static::$structure[$field]['foreign_class'];
+                foreach ($raw as $value) {
+                    $object = new $class();
+                    $object->loadForRead($value);
+                    $result[] = $object;
+                }
+                return $result;
+            default:
+                return null;
+        }
+    }
+    
+    /**
      * Get the key field of this datarecord.
      * @return bool|string Name of key field or false if no key field was
      * detected.
@@ -1285,6 +1317,14 @@ class Datarecord implements DatarecordReferable {
             }
         }
         return static::$key_field;
+    }
+    
+    /**
+     * Get the key value of this field
+     * @return int
+     */
+    public function getKeyValue() : int {
+        return (int)$this->getRawValue($this->getKeyField());
     }
     
     /**
@@ -1867,7 +1907,7 @@ class Datarecord implements DatarecordReferable {
      * Render an integrity check of this class.
      */
     public static function renderIntegrityCheck() {
-        echo '<h1>'.get_called_class().'</h1>';
+        echo '<h3 style="margin-bottom: 2px;">'.get_called_class().'</h3>';
         $errors = array();
         $warnings = array();
         // Ensure newest version and test that we don't upgrade the database in excess.
@@ -1940,7 +1980,8 @@ class Datarecord implements DatarecordReferable {
                 }
                 if (! $hit) $errors[] = 'Have <i>'.$foreign_class.'</i> as a depending class, but that class doesn\'t refer this class.';
             }
-        }        echo '<ul>';
+        }        
+        echo '<ul style="margin-top: 3px; margin-bottom: 5px; font-size: 0.8em;">';
         if (! count($errors) && ! count($warnings)) echo '<li><span style="color: green;">All OK</span>';
         foreach ($errors as $error) echo '<li><span style="color: red;">'.$error.'</span>';
         foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$error.'</span>';
