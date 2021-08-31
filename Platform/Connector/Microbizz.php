@@ -103,7 +103,7 @@ class Microbizz {
      */
     public static function getConnectForm(array $request, string $button_text = 'Link to Microbizz', bool $connect_testserver = false) : Form {
         $request_form = new Form('microbizz_connect_form');
-        $action = $connect_testserver ? 'https://dev2.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
+        $action = $connect_testserver ? 'https://rc1.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
         $request_form->addField(new HiddenField('', 'request', array('value' => json_encode($request))));
         if ($button_text) $request_form->addField(new SubmitButton($button_text, 'performlink'));
