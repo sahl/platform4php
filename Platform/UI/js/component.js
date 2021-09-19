@@ -67,7 +67,7 @@ addCustomPlatformFunction(function(item) {
         // Check if a form is registered for IO
         if (element.data('attached_form_id')) element.componentIOForm($('#'+element.data('attached_form_id'), element));
 
-        $(this).trigger('component_ready');
+        $(this).triggerHandler('component_ready');
     });
 });
 

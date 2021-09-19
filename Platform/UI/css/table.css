@@ -1,3 +1,18 @@
 .tabulator-col-title input {
     margin: 0px 0px 0px 1px;
 }
+
+.platform_component_table .multibuttons {
+    display: flex;
+    margin-bottom: 5px;
+} 
+
+.platform_component_table .multibuttons a {
+    display: block;
+    margin-right: 10px;
+}
+
+.platform_component_table .multibuttons a.unselectable {
+    color: #DDDDDD;
+    cursor: default;
+}

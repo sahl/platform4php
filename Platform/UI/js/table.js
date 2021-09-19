@@ -16,12 +16,17 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
             }
             initial_sort_completed = true;
+        },
+        rowSelectionChanged: function() {
+            updateMultiButtons();
         }
     }
 
     $.each(JSON.parse(item.find('.table_configuration').html()), function(key, element) {
         table_configuration[key] = element;
     })
+    
+    item.find('.table_configuration').html('').show();
 
     var action_buttons = [];
     if (table_configuration['action_buttons']) {
@@ -59,25 +64,10 @@ addPlatformComponentHandlerFunction('table', function(item) {
 
     table_configuration.data = [];
 
-    var table = new Tabulator('#'+item.attr('id'), table_configuration);
+    var table = new Tabulator('#'+item.attr('id')+'_table', table_configuration);
 
     // Buffer the table, so we can get the table object using the DOM node id
     tablebuffer['#'+item.attr('id')] = table;
-
-    if (control_form) {
-        function makeObject(array) {
-            var res = {};
-            array.forEach(function(val) {
-                res[val.name] = val.value;
-            })
-            return res;
-        }
-
-        control_form.submit(function() {
-            table.setData(data_url, makeObject(control_form.serializeArray()), "post");
-            return false;
-        })
-    }
 
     if (filter_field) {
         filter_field.keyup(function() {
@@ -117,11 +107,67 @@ addPlatformComponentHandlerFunction('table', function(item) {
            }
        })
        $.post('/Platform/UI/php/save_table_properties.php', {id: tableid, action: 'saveorderandwidth', properties: columns});
-   }
+    }
    
-   function saveTableSort(tableid, column, direction) {
+    function saveTableSort(tableid, column, direction) {
        $.post('/Platform/UI/php/save_table_properties.php', {id: tableid, action: 'savesort', column: column, direction: direction});
-   }
+    }
+    
+    function setMultiButton(element, number_of_selected_rows) {
+        var available = element.data('selectable') == 0 || element.data('selectable') == 2 && number_of_selected_rows >= 1 || number_of_selected_rows == 1;
+        if (available) element.removeClass('unselectable');
+        else element.addClass('unselectable');
+    }
+    
+    function updateMultiButtons() {
+        if (! table) return;
+        var ids = [];
+        $.each(table.getSelectedRows(), function(i, elements) {
+          ids.push(elements._row.data.id);
+        });        
+        
+        var number_of_selected_rows = ids.length;
+        
+        $('.multi_button', item).each(function() {
+            setMultiButton($(this), number_of_selected_rows);
+        })
+    }
+    
+    updateMultiButtons();
+    
+    if (control_form) {
+        function makeObject(array) {
+            var res = {};
+            array.forEach(function(val) {
+                res[val.name] = val.value;
+            })
+            return res;
+        }
+        item.hide();
+
+        control_form.submit(function() {
+            item.show();
+            initial_sort_completed = false;
+            table.setData(data_url, makeObject(control_form.serializeArray()), "post");
+            return false;
+        })
+    }
+    
+    item.on('reload_data', function() {
+        if (control_form) control_form.submit();
+        else table.setData(data_url);
+        return true;
+    })
+   
+   
+    item.on('multi_button', function(e) {
+        if ($(this).hasClass('unselectable')) return;
+        var ids = [];
+        $.each(table.getSelectedRows(), function(i, elements) {
+          ids.push(elements._row.data.id);
+        });
+        item.trigger($(e.target).data('secondary_event'), ids.join());
+    })
 
 })
 

@@ -9,6 +9,10 @@ use Platform\Datarecord;
 
 class Table extends Component {
     
+    const SELECTABLE_ALWAYS = 0;
+    const SELECTABLE_EXACT_ONE_SELECTED = 1;
+    const SELECTABLE_ONE_OR_MORE_SELECTED = 2;
+    
     /**
      * URL to the datarecord provider for table
      * @var string 
@@ -17,7 +21,9 @@ class Table extends Component {
     
     protected static $can_redraw = false;
     
-    private $actionbuttons = [];
+    private $multi_buttons = [];
+    
+    private $line_icons = [];
     
     private $tabulator_options = array();
 
@@ -37,9 +43,18 @@ class Table extends Component {
         $this->setTabulatorOption('placeholder', 'No data');
     }
     
-    public function addActionButton(string $icon, string $javascript_function_name) {
-        $this->actionbuttons[$icon] = $javascript_function_name;
-        $this->setTabulatorOption('action_buttons', array_reverse($this->actionbuttons, true));
+    public function addLineIcon(string $icon, string $event_to_fire) {
+        $this->line_icons[$icon] = $event_to_fire;
+        $this->setTabulatorOption('action_buttons', array_reverse($this->line_icons, true));
+    }
+    
+    public function addMultiButton(string $text, string $event_to_fire, int $selectable = self::SELECTABLE_ONE_OR_MORE_SELECTED) {
+        if (! in_array($selectable, [self::SELECTABLE_ALWAYS, self::SELECTABLE_EXACT_ONE_SELECTED, self::SELECTABLE_ONE_OR_MORE_SELECTED])) trigger_error('Invalid selectable constant', E_USER_ERROR);
+        $this->multi_buttons[] = [
+            'text' => $text,
+            'event_to_fire' => $event_to_fire,
+            'selectable' => $selectable
+        ];
     }
     
     /**
@@ -88,7 +103,7 @@ class Table extends Component {
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
-                'formatter' => $structure[$field]['fieldtype'] == Datarecord::FIELDTYPE_TEXT ? 'html' : 'plaintext',
+                'formatter' => 'html',
                 'width' => $structure[$field]['width'] ?: 200
             );
         }
@@ -177,6 +192,7 @@ class Table extends Component {
                 switch ($structure[$field]['fieldtype']) {
                     case Datarecord::FIELDTYPE_KEY:
                         $columns['id'] = $value;
+                        if (! $structure[$field]['invisible']) $columns[$field] = $value;
                         break;
                     case Datarecord::FIELDTYPE_TEXT:
                         $columns[$field] = '<!--'.$object->getTextValue($field).'-->'.$value;
@@ -339,9 +355,21 @@ class Table extends Component {
      */
     public function renderContent() {
         $this->prepareTableData();
-        echo '<div class="platform_invisible table_configuration">';
+        $this->renderMultiButtons();
+        echo '<div class="platform_invisible table_configuration" id="'.$this->getID().'_table">';
         echo json_encode($this->tabulator_options);
         echo '</div>';
+    }
+    
+    private function renderMultiButtons() {
+        if (count($this->multi_buttons)) {
+            echo '<div class="multibuttons">';
+            foreach ($this->multi_buttons as $multi_button) {
+                $menu_item = new \Platform\MenuItem($multi_button['text'], '#TRIGGER=multi_button', '', 'multi_button', '', ['secondary_event' => $multi_button['event_to_fire'], 'selectable' => $multi_button['selectable']]);
+                $menu_item->render();
+            }
+            echo '</div>';
+        }
     }
     
     /**
