@@ -29,6 +29,7 @@ class Instance extends \Platform\Datarecord {
             'title' => array(
                 'label' => 'Instance title',
                 'required' => true,
+                'is_title' => true,
                 'store_in_metadata' => false,
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
@@ -95,9 +96,11 @@ class Instance extends \Platform\Datarecord {
      */
     public function delete(bool $force_remove = false) : bool {
         $databasename = $this->getDatabaseName();
+        $filepath = $this->getFilePath();
         $result = parent::delete($force_remove);
         if ($result && $this->is_initiated) {
             Database::localQuery("DROP DATABASE ".$databasename, false);
+            if (strlen($filepath) > 10) exec('rm -R '.$filepath);
         }
         return $result;
     }
@@ -235,6 +238,7 @@ class Instance extends \Platform\Datarecord {
         
         $instance->activate();
         $instance->initializeDatabase();
+        $instance->ensureJobs();
         
         static::createInitialUser($username, $password);
         

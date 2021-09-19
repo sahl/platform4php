@@ -173,6 +173,15 @@ class File extends Datarecord {
     }
     
     /**
+     * Get file size in bytes
+     * @return int
+     */
+    public function getFileSize() : int {
+        if (!file_exists($this->getCompleteFilename())) return false;
+        return filesize($this->getCompleteFilename());
+    }
+    
+    /**
      * Get the current filename without extension
      * @return string
      */
