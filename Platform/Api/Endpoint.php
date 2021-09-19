@@ -54,8 +54,8 @@ class Endpoint {
     protected function checkSecurity() : bool {
         $token_code = $_COOKIE['access_token'];
         if (! $token_code) $token_code = $_GET['access_token'];
-        if (! $token_code) self::respondErrorAndDie (401, 'No access token provided');
-        if (!Accesstoken::validateTokenCode($token_code)) self::respondErrorAndDie (401, 'Invalid or expired access token');
+        if (! $token_code) static::respondErrorAndDie (401, 'No access token provided');
+        if (!Accesstoken::validateTokenCode($token_code)) static::respondErrorAndDie (401, 'Invalid or expired access token');
         $this->token_code = $token_code;
         return true;
     }
@@ -151,14 +151,14 @@ class Endpoint {
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
         if ($this->preset_instanceid) {
-            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondErrorAndDie (404, 'Invalid API path');
+            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $this->preset_instanceid;
             $object_name = $m[1];
             $object_id = (int)$m[3];
         } else {
-            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) self::respondErrorAndDie (404, 'Invalid API path');
+            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $m[2];
-            if (! $instance_id) self::respondErrorAndDie (404, 'Invalid instance specified');
+            if (! $instance_id) static::respondErrorAndDie (404, 'Invalid instance specified');
             $object_name = $m[3];
             $object_id = (int)$m[5];
         }
@@ -167,7 +167,7 @@ class Endpoint {
         if ($instance_id) {
             $instance = new Instance();
             $instance->loadForRead($instance_id);
-            if (! $instance->isInDatabase()) self::respondErrorAndDie (404, 'No such instance: '.$instance_id);
+            if (! $instance->isInDatabase()) static::respondErrorAndDie (404, 'No such instance: '.$instance_id);
             $instance->activate();
         }
 
@@ -185,32 +185,32 @@ class Endpoint {
         $this->customHandlerAfterSecurity($object_name, $object_id, $method, $_GET, $input);
         
         // Check for valid object
-        if (! isset($this->classes[$object_name])) self::respondErrorAndDie (404, 'No such object type: '.$object_name);
+        if (! isset($this->classes[$object_name])) static::respondErrorAndDie (404, 'No such object type: '.$object_name);
         $class = $this->classes[$object_name];
         
         switch ($method) {
             case 'POST':
-                if (! $input) self::respondErrorAndDie(400, 'No post data received');
+                if (! $input) static::respondErrorAndDie(400, 'No post data received');
                 $json = json_decode($input, true);
-                if ($json === null) self::respondErrorAndDie(400, 'Data was received, but wasn\'t valid json');
+                if ($json === null) static::respondErrorAndDie(400, 'Data was received, but wasn\'t valid json');
                 // Check if we are looking to update something specific
                 $updated_object = new $class();
                 if ($object_id) {
                     $updated_object->loadForWrite($object_id);
-                    if (! $updated_object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
-                    if (! $updated_object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
-                    if (! $updated_object->canEdit()) self::respondErrorAndDie(403, 'You don\'t have the permission to edit this object.');
+                    if (! $updated_object->isInDatabase()) static::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
+                    if (! $updated_object->canAccess()) static::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
+                    if (! $updated_object->canEdit()) static::respondErrorAndDie(403, 'You don\'t have the permission to edit this object.');
                 } else {
-                    if (! $class::canCreate()) self::respondErrorAndDie(403, 'You don\'t have the permission to create an object of this type.');
+                    if (! $class::canCreate()) static::respondErrorAndDie(403, 'You don\'t have the permission to create an object of this type.');
                 }
                 $is_new_object = ! $updated_object->isInDatabase();
                 $result = self::updateObject($class, $updated_object, $json, $is_new_object);
                 if ($result === true) {
                     $updated_object->save();
                     $response = self::getApiObject($class, $updated_object);
-                    self::respondAndDie($is_new_object ? 201 : 200, json_encode($response));
+                    static::respondAndDie($is_new_object ? 201 : 200, json_encode($response));
                 } else {
-                    self::respondErrorAndDie(400, 'Post data wasn\'t valid: '.implode(', ',$result));
+                    static::respondErrorAndDie(400, 'Post data wasn\'t valid: '.implode(', ',$result));
                 }
                 break;
             case 'GET':
@@ -218,20 +218,20 @@ class Endpoint {
                 if ($object_id) {
                     $object = new $class();
                     $object->loadForRead($object_id, false);
-                    if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
-                    if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
+                    if (! $object->isInDatabase()) static::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
+                    if (! $object->canAccess()) static::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                     $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
-                    self::respondAndDie(200, json_encode($response));
+                    static::respondAndDie(200, json_encode($response));
                 } else {
                     $filter = $class::getDefaultFilter();
                     $filter->setPerformAccessCheck(true);
                     if ($_GET['query']) {
                         $query = json_decode($_GET['query'], true);
-                        if ($query === null) self::respondAndDie (400, 'Invalid query JSON');
+                        if ($query === null) static::respondAndDie (400, 'Invalid query JSON');
                         $additional_conditions = Condition::getConditionFromArray($query);
                         $filter->addCondition($additional_conditions);
                         if (! $filter->isValid()) {
-                            self::respondAndDie(400, 'There was problems with your query: '.implode(', ', $filter->getErrors()));
+                            static::respondAndDie(400, 'There was problems with your query: '.implode(', ', $filter->getErrors()));
                         }
                     }
                     $collection = $filter->execute();
@@ -240,24 +240,24 @@ class Endpoint {
                         self::memoryCheck('Gathering elements');
                         $response[] = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
                     }
-                    self::respondAndDie(200, json_encode($response));
+                    static::respondAndDie(200, json_encode($response));
                 }
                 break;
             case 'DELETE':
-                if (! $object_id) self::respondErrorAndDie (404, 'No object id specified.');
+                if (! $object_id) static::respondErrorAndDie (404, 'No object id specified.');
                 $object = new $class();
                 $object->loadForWrite($object_id, false);
-                if (! $object->isInDatabase()) self::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
-                if (! $object->canAccess()) self::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
+                if (! $object->isInDatabase()) static::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
+                if (! $object->canAccess()) static::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                 $result = $object->canDelete();
-                if ($result !== true) self::respondErrorAndDie(403, 'You cannot delete object with id: '.$object_id.'. Reason: '.$result);
+                if ($result !== true) static::respondErrorAndDie(403, 'You cannot delete object with id: '.$object_id.'. Reason: '.$result);
                 $result = $object->delete();
-                if ($result) self::respondAndDie (200, json_encode(array('file_deleted' => true)));
-                else self::respondErrorAndDie (500, 'Could not delete object');
+                if ($result) static::respondAndDie (200, json_encode(array('file_deleted' => true)));
+                else static::respondErrorAndDie (500, 'Could not delete object');
             default:
-                self::respondErrorAndDie(405, 'Cannot handle request method: '.$method);
+                static::respondErrorAndDie(405, 'Cannot handle request method: '.$method);
         }
-        self::respondErrorAndDie(500, 'Unspecified error - Ran through!');
+        static::respondErrorAndDie(500, 'Unspecified error - Ran through!');
     }
     
     /**
@@ -267,7 +267,7 @@ class Endpoint {
      */
     public static function memoryCheck($additional_info = '', $stop_level = 1024*1024*10) {
         if ($additional_info) $additional_info = ' ('.$additional_info.')';
-        if (! Errorhandler::checkMemory($stop_level/(1024.0*1024.0), false)) self::respondErrorAndDie (500, 'Out of memory trying to execute your request'.$additional_info.' '.memory_get_usage().'/'.Errorhandler::getMemoryLimitInBytes());
+        if (! Errorhandler::checkMemory($stop_level/(1024.0*1024.0), false)) static::respondErrorAndDie (500, 'Out of memory trying to execute your request'.$additional_info.' '.memory_get_usage().'/'.Errorhandler::getMemoryLimitInBytes());
     }
     
     /**
@@ -437,7 +437,7 @@ class Endpoint {
                     if ($value > 0) {
                         $foreign_class = $structure[$key]['foreign_class'];
                         $foreign_object = new $foreign_class();
-                        $foreign_object->loadForRead($value);
+                        $foreign_object->loadForRead($value, false);
                         if (! $foreign_object->isInDatabase()) {
                             $errors[] = $value.' isn\'t a valid reference in field '.$key;
                             continue;
@@ -452,7 +452,7 @@ class Endpoint {
                     $values = array();
                     foreach ($value as $v) {
                         if ($v == 0) continue;
-                        $foreign_object->loadForRead($v);
+                        $foreign_object->loadForRead($v, false);
                         if (! $foreign_object->isInDatabase()) {
                             $errors[] = $v.' isn\'t a valid reference in field '.$key;
                             continue;
