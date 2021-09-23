@@ -168,7 +168,7 @@ class Form extends \Platform\UI\Component {
             if ($field->isError()) $field->addErrors($errors);
         }
         // Gather global errors
-        $errors['__global'] = $this->global_errors;
+        if (count($this->global_errors)) $errors['__global'] = $this->global_errors;
         return $errors;
     }
     

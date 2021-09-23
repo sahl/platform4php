@@ -9,8 +9,9 @@ addPlatformComponentHandlerFunction('form', function(item) {
     $('form', item).submit(function(e) {
         var allowsubmit = true;
         
-        // Hide global error
+        // Clear all previous errors
         $('.platform_form_global_error_container', $(this)).hide();
+        $('.platform_form_field', $(this)).clearError();
         
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
         $('.platform_form_multiplier_element', $(this)).each(function() {
