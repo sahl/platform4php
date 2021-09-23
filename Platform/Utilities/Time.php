@@ -17,13 +17,14 @@ class Time {
     
     /**
      * Construct a new Time object
-     * @param mixed $time Either another time object to copy, a time string, a time stamp, "now" for current time or "today" for today at midnight.
+     * @param mixed $time Either another time object to copy, a time string, a time stamp, "now" for current time "today" for today at midnight or "end_of_today" for today right before tomorrow.
      */
     public function __construct($time = null) {
         Errorhandler::checkParams($time, array('string', '\\Platform\\Utilities\\Time', 'integer'));
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
         elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
+        elseif ($time == 'end_of_today') $this->timestamp = strtotime(self::now()->get('Y-m-d 23:59:59'));
         elseif (is_numeric($time)) $this->timestamp = (int)$time;
         elseif ($time) $this->timestamp = strtotime($time);
     }
@@ -68,6 +69,15 @@ class Time {
     public static function daysInMonth(int $month, int $year) : int {
         $timestamp = mktime(0, 0, 0, $month, 1, $year);
         return date('t', $timestamp);
+    }
+    
+    /**
+     * Get the end of day of this time
+     * @return Time
+     */
+    public function endOfDay() : Time {
+        $this->timestamp = strtotime($this->get('Y-m-d 23:59:59'));
+        return $this;
     }
     
     /**
@@ -352,6 +362,14 @@ class Time {
     public static function today() : Time {
         return new Time('today');
     }
+    
+    /**
+     * Return a new time with the current time at midnight today
+     * @return \Platform\Utilities\Time
+     */
+    public static function endoftoday() : Time {
+        return new Time('end_of_today');
+    }    
     
     /**
      * Get the total number of weeks in the given year
