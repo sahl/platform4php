@@ -62,7 +62,8 @@ addPlatformComponentHandlerFunction('table', function(item) {
         delete table_configuration['callback_function'];
     }
 
-    table_configuration.data = [];
+    if (! table_configuration.data)
+        table_configuration.data = [];
 
     var table = new Tabulator('#'+item.attr('id')+'_table', table_configuration);
 

@@ -251,7 +251,7 @@ class Table extends Component {
      */
     public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
-        $table = new Table($id);
+        $table = new static($id);
         $table->setColumnsFromDatarecord($class);
         $table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$class);
         $table->setTabulatorOption('placeholder', 'No '.$class::getObjectName());
@@ -371,6 +371,24 @@ class Table extends Component {
             echo '</div>';
         }
     }
+
+    /**
+     * Set this array as column header data. It should be an array
+     * @param array $data Column header data
+     */
+    public function setColumns(array $data) {
+        $final_lines = [];
+        foreach ($data as $key => $title) {
+            if (is_array($title)) {
+                $final_line = $title;
+                $final_line['field'] = $key;
+                $final_lines[] = $final_line;
+            } else {
+                $final_lines[] = ['title' => $title, 'field' => $key];
+            }
+        };
+        $this->setTabulatorOption('columns', $final_lines);
+    }
     
     /**
      * Set the table definition from a given Datarecord and also consider saved
@@ -388,6 +406,21 @@ class Table extends Component {
         
         if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
+    
+    /**
+     * Set this array as table data. It should be an array of arrays
+     * @param array $data Table data
+     */
+    public function setData(array $data) {
+        $final_lines = [];
+        foreach ($data as $key => $lines) {
+            $line = $lines;
+            $line['id'] = $key;
+            $final_lines[] = $line;
+        }
+        $this->setTabulatorOption('data', $final_lines);
+    }
+    
 
     /**
      * Set the data URL for this table
@@ -396,6 +429,8 @@ class Table extends Component {
     public function setDataURL(string $data_url) {
         $this->setTabulatorOption('ajaxURL', $data_url);
     }
+    
+    
     
     public function setFilter(Filter $filter) {
         $this->setTabulatorOption('ajaxConfig', 'post');
