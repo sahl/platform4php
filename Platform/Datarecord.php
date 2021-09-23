@@ -245,7 +245,7 @@ class Datarecord implements DatarecordReferable {
      */
     protected static function buildDefaultFilter(Filter $filter) {
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
-            $filter->addCondition(new ConditionMatch('is_deleted', false));
+            $filter->addCondition(new ConditionMatch('is_deleted', 0));
         }
     }
     
@@ -316,7 +316,7 @@ class Datarecord implements DatarecordReferable {
      * deleting (except when overriding this behaviour)
      * @return bool|string True or an error message
      */
-    public function canDelete() : bool {
+    public function canDelete() {
         if (! $this->isInDatabase()) return 'Not saved yet';
         if (! $this->canAccess()) return 'Cannot access';
         if (static::$delete_strategy == self::DELETE_STRATEGY_BLOCK) {
@@ -324,7 +324,7 @@ class Datarecord implements DatarecordReferable {
             if (count($referring_titles)) {
                 $CUT = 5;
                 $total = count($referring_titles);
-                $display_titles = array_slice($referring_titles, 0, $cut);
+                $display_titles = array_slice($referring_titles, 0, $CUT);
                 $return = implode(', ',$display_titles);
                 if ($total > $CUT) $return .= ' and '.($total-$CUT).' more.';
                 return 'This is referred by: '.$return;
@@ -826,11 +826,13 @@ class Datarecord implements DatarecordReferable {
     public static function findByKeywords(string $keywords, string $output = 'DatarecordCollection') {
         if (! in_array($output, array('DatarecordCollection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
         $search_fields = array();
+        $numeric_fields = [];
         // Locate search fields
         foreach (static::getStructure() as $field => $definition) {
             if ($definition['searchable'] || $definition['is_title']) {
                 $search_fields[] = $field;
             }
+            if (in_array($definition['fieldtype'], [static::FIELDTYPE_KEY, static::FIELDTYPE_INTEGER, static::FIELDTYPE_FLOAT])) $numeric_fields[] = $field;
         }
         if (! count($search_fields)) {
             if ($output == 'DatarecordCollection') return new Collection();
@@ -841,7 +843,8 @@ class Datarecord implements DatarecordReferable {
         foreach ($parsed_keywords as $keyword) {
             $previouscondition = false;
             foreach ($search_fields as $fieldname) {
-                $condition = new ConditionLike($fieldname, $keyword);
+                if (in_array($fieldname, $numeric_fields)) $condition = new ConditionMatch($fieldname, $keyword);
+                else $condition = new ConditionLike($fieldname, $keyword);
                 if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
                 $previouscondition = $condition;
             }
@@ -1137,6 +1140,8 @@ class Datarecord implements DatarecordReferable {
             return new \Platform\Form\HiddenField('', $name);
         }
         switch ($definition['fieldtype']) {
+            case self::FIELDTYPE_KEY:
+                return new \Platform\Form\HiddenField('', $name);
             case self::FIELDTYPE_TEXT:
                 return new \Platform\Form\TextField($definition['label'], $name, $options);
             case self::FIELDTYPE_BIGTEXT:
