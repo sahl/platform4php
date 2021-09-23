@@ -7,7 +7,7 @@ class EditComplex extends Component {
     
     protected static $can_redraw = false;
     
-    private $class;
+    protected $class;
     
     public $column_selector;
     
@@ -58,7 +58,7 @@ class EditComplex extends Component {
         $this->addData('io_datarecord', static::$url_io_datarecord);
     }
     
-    private function constructEditDialog() {
+    protected function constructEditDialog() {
         $short_class = $this->class::getClassName();
         $buttons = array(
             'save' => 'Save',
@@ -69,12 +69,12 @@ class EditComplex extends Component {
         $this->edit_dialog = new Dialog($short_class.'_edit_dialog', 'Edit '.$this->class::getObjectName(), '', $buttons, $form);
     }
 
-    private function constructTable(array $table_parameters = []) {
+    protected function constructTable(array $table_parameters = []) {
         $this->table = Table::getTableFromClass($this->getID().'_table', $this->class, $table_parameters);
         $this->table->setDataURL(static::$url_table_datarecord.'?class='.$this->class);
     }
     
-    private function constructTableMenu() {
+    protected function constructTableMenu() {
         $menu = array();
         $name = $this->class::getObjectName();
         $short_class = $this->class::getClassName();
