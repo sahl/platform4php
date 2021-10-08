@@ -11,7 +11,7 @@ addPlatformComponentHandlerFunction('form', function(item) {
         
         // Clear all previous errors
         $('.platform_form_global_error_container', $(this)).hide();
-        $('.platform_form_field', $(this)).clearError();
+        $('.platform_form_field,.platform_component_fieldcomponent', $(this)).clearError();
         
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
         $('.platform_form_multiplier_element', $(this)).each(function() {
@@ -26,6 +26,12 @@ addPlatformComponentHandlerFunction('form', function(item) {
             }
             return true;
         });
+        
+        // Validate component fields
+        $('.platform_component_fieldcomponent').each(function() {
+            $(this).trigger('validate');
+            if ($(this).hasClass('platform_form_field_error')) allowsubmit = false;
+        })
 
         // Gather hidden fields
         var hiddenfields = [];
@@ -91,10 +97,11 @@ $.fn.clearForm = function() {
     this.find('.platform_form_multiplier').each(function() {
         $(this).find('.platform_form_multiplier_element:not(:first)').remove();
     });
-    this.find('.formfield_error').clearError();
+    this.find('.platform_form_field_error').clearError();
     this.find('iframe').each(function() {
         $(this).prop('src', $(this).prop('src'));
     })
+    this.find('.platform_component_fieldcomponent').trigger('reset');
     this.trigger('dataloaded');
     return this;
 }
@@ -115,50 +122,55 @@ $.fn.attachErrors = function(errors) {
 $.fn.attachValues = function(values) {
     var element = this;
     $.each(values, function(key, value) {
-        var el = element.find('[name="'+key+'"]');
-        if (el.length) {
-            if (el.is('input,textarea')) {
-                if (el.is('[type=checkbox]')) {
-                    el.prop('checked', value == 1);
-                } else {
-                    el.val(value);
-                    if (el.is('.texteditor')) {
-                        el.summernote('reset');
-                        el.summernote('code', value);
+        // Try for component
+        if (element.find('.platform_field_component_'+key).length) {
+            element.find('.platform_field_component_'+key).trigger('setvalue', value);
+        } else {
+            var el = element.find('[name="'+key+'"]');
+            if (el.length) {
+                if (el.is('input,textarea')) {
+                    if (el.is('[type=checkbox]')) {
+                        el.prop('checked', value == 1);
+                    } else {
+                        el.val(value);
+                        if (el.is('.texteditor')) {
+                            el.summernote('reset');
+                            el.summernote('code', value);
+                        }
                     }
                 }
-            }
-            else if (el.is('select')) {
-                if (value !== null) el.val(value);
-                else el.find('option:first-child').prop('selected', true);
-            }
-        } else {
-            // Try for combobox
-            var el = element.find('[name="'+key+'[visual]"]');
-            if (el.length) {
-                el.val(value.visual);
-                el.prev().val(value.id);
+                else if (el.is('select')) {
+                    if (value !== null) el.val(value);
+                    else el.find('option:first-child').prop('selected', true);
+                }
             } else {
-                // Try for multicheckbox
-                var el = element.find('#'+element.attr('id')+'_'+key+'.multi_checkbox_container');
+                // Try for combobox
+                var el = element.find('[name="'+key+'[visual]"]');
                 if (el.length) {
-                    $.each(value, function(key, val) {
-                        el.find('input[value="'+val+'"]').prop('checked', true);
-                    });
+                    el.val(value.visual);
+                    el.prev().val(value.id);
                 } else {
-                    // Try for multiplier
-                    var el = element.find('#'+element.attr('id')+'_'+key+'_container .platform_form_multiplier');
+                    // Try for multicheckbox
+                    var el = element.find('#'+element.attr('id')+'_'+key+'.multi_checkbox_container');
                     if (el.length) {
                         $.each(value, function(key, val) {
-                            el.find('input[type="hidden"]:last').val(val.id);
-                            el.find('input[type="text"]:last').val(val.visual).trigger('keyup');
+                            el.find('input[value="'+val+'"]').prop('checked', true);
                         });
                     } else {
-                        // Try for file field
-                        var el = element.find('#'+element.attr('id')+'_'+key+'.platform_file_input_frame');
+                        // Try for multiplier
+                        var el = element.find('#'+element.attr('id')+'_'+key+'_container .platform_form_multiplier');
                         if (el.length) {
-                            // Recode url
-                            el.prop('src', '/Platform/Form/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
+                            $.each(value, function(key, val) {
+                                el.find('input[type="hidden"]:last').val(val.id);
+                                el.find('input[type="text"]:last').val(val.visual).trigger('keyup');
+                            });
+                        } else {
+                            // Try for file field
+                            var el = element.find('#'+element.attr('id')+'_'+key+'.platform_file_input_frame');
+                            if (el.length) {
+                                // Recode url
+                                el.prop('src', '/Platform/Form/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
+                            }
                         }
                     }
                 }
