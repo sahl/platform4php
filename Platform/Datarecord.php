@@ -1104,19 +1104,15 @@ class Datarecord implements DatarecordReferable {
             // Check if we need to start a new row
             if ($percentleft == 100) {
                 $form->addHTML('<div class="platform_form_line_air">');
+            } else {
+                // Render a spacer
+                $form->addHTML('<div style="width: 10px; flex-shrink: 0; flex-grow: 0;"></div>');
             }
-            // Check if we need spacing
-            $spacing = $size < $percentleft && $size > 5;
-            if ($spacing) $size -= 5;
             
-            $field->addContainerStyle('width: '.$size.'%');
+            $field->addContainerStyle('flex-grow: '.$size);
 
             $form->addField($field);
             
-            if ($spacing) {
-                $form->addHTML('<div style="width: 5%;"></div>');
-                $size += 5;
-            }
             $percentleft -= $size;
             
         }

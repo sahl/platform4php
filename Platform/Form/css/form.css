@@ -17,8 +17,13 @@
     align-items: baseline;
 }
 
+.platform_field_label_container > label {
+    flex-shrink: 0;
+}
+
 .platform_field_label_container > .platform_field_input_container {
     flex-grow: 1;
+    flex-shrink: 1;
 }
 
 .platform_right_label {
