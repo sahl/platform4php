@@ -57,9 +57,9 @@ function platform_handle_multiplier_change() {
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {
             var container = $(this).closest('.platform_form_multiplier');
             if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
-                row.prev().find('input:first').focus();
+                row.prev().find('input[type!="hidden"]:first').focus();
             else
-                row.next().find('input:first').focus();
+                row.next().find('input[type!="hidden"]:first').focus();
             row.remove();
             platform_multiplier_fixnames(container);
             container.trigger('row_deleted');
@@ -86,7 +86,7 @@ function platform_multiplier_fixnames(element) {
             var realname = $(this).data('realname');
             if (realname) {
                 var new_realname = realname.replace(regexp, '$1['+i+']$2');
-                if (realname) $(this).data('realname', new_realname);
+                if (new_realname) $(this).data('realname', new_realname);
             }
             var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');
