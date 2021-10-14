@@ -11,7 +11,7 @@ class FieldComponent extends Component {
     
     public function __construct() {
         parent::__construct();
-        $this->addPropertyMap(['name' => null, 'value' => null]);
+        $this->addPropertyMap(['id' => null, 'name' => null, 'value' => null]);
     }
     
     /**
@@ -35,7 +35,8 @@ class FieldComponent extends Component {
     
     public function prepareData() {
         $this->addClass('platform_field_component_'.$this->name);
-        $this->setID($this->field->getFieldIdForHTML());
+        if ($this->id === null) $this->id = $this->field->getFieldIdForHTML();
+        $this->setID($this->id);
         parent::prepareData();
     }
     
