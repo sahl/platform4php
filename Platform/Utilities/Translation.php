@@ -281,10 +281,10 @@ class Translation {
             }
         } else {
             foreach ($function_names as $function_name) {
-                if (preg_match_all('/([^a-z]|^)l\("(.*?[^\\\\])"/i', $file_content, $matches)) {
+                if (preg_match_all('/([^a-z]|^)'.$function_name.'\("(.*?[^\\\\])"/i', $file_content, $matches)) {
                     foreach ($matches[2] as $m) $phrases[] = $m;
                 }
-                if (preg_match_all('/([^a-z]|^)l\(\'(.*?[^\\\\])\'/i', $file_content, $matches)) {
+                if (preg_match_all('/([^a-z]|^)'.$function_name.'\(\'(.*?[^\\\\])\'/i', $file_content, $matches)) {
                     foreach ($matches[2] as $m) $phrases[] = $m;
                 }
             }

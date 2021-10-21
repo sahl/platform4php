@@ -1,7 +1,3 @@
-.platform_form_field_container {
-    margin-bottom: 8px;
-}
-
 .platform_form_multiplier_element > .platform_form_field_container {
     margin-bottom: 1px !important;
 }
@@ -65,6 +61,7 @@
 .platform_form_line_air {
     display: flex;
     justify-content: space-around;
+    margin-bottom: 8px;
 }
 
 .platform_form_line_spaced {
