@@ -20,14 +20,25 @@ class ComponentField extends Field {
      * Attach a component to use for this field
      * @param \Platform\UI\FieldComponent $component
      */
-    public function attachComponent(\Platform\UI\FieldComponent $component) {
+    public function attachComponent(\Platform\UI\Component $component) {
         $this->component = $component;
-        $this->component->attachField($this);
-        $this->component->name = $this->getName();
+        if ($this->isFieldComponentAttached()) {
+            $this->component->attachField($this);
+            $this->component->name = $this->getName();
+        }
+    }
+    
+    /**
+     * Check if the attached component is a field component
+     * @return bool
+     */
+    public function isFieldComponentAttached() : bool {
+        return ($this->component instanceof \Platform\UI\FieldComponent);
     }
     
     public function parse($value) : bool {
         if ($this->component === null) trigger_error('You must attach a component before parse.', E_USER_ERROR);
+        if (! $this->isFieldComponentAttached()) return true;
         if (! parent::parse($value)) return false;
         if (! $this->component->parse($value)) return false;
         $this->value = (int)$this->value;
@@ -36,11 +47,13 @@ class ComponentField extends Field {
     
     public function setOptions(array $options) {
         if ($this->component === null) trigger_error('You must attach a component before setting options.', E_USER_ERROR);
+        if (! $this->isFieldComponentAttached()) return;
         $this->component->setOptions($options);
     }
     
     public function setValue($value) {
         if ($this->component === null) trigger_error('You must attach a component before setting a value.', E_USER_ERROR);
+        if (! $this->isFieldComponentAttached()) return;
         parent::setValue($value);
         $this->component->value = $value;
     }
