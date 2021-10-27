@@ -127,7 +127,7 @@ class Field {
             $this->is_required = true;
             unset($options['required']);
         }
-        if ($options['value']) {
+        if (isset($options['value'])) {
             $this->setValue($options['value']);
             unset($options['value']);
         }
