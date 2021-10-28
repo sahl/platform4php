@@ -102,7 +102,7 @@ class Database {
      * @return string
      */
     public static function escape(string $string) : string {
-        return mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x25\x27\x5C]', '\\\0', $string);
+        return mb_ereg_replace('[\x00\x0A\x0D\x1A\x22\x27\x5C]', '\\\0', $string);
     }
     
     /**
