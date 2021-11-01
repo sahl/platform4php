@@ -888,13 +888,15 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public static function getAllAsArray() : array {
-        $result = array();
+        $result = []; $sort_area = [];
         $filter = new Filter(get_called_class());
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());
             $result[$id] = $element;
+            $sort_area[] = $element->getTitle();
         }
+        array_multisort($sort_area, SORT_ASC, $result);
         return $result;
     }
         
@@ -2236,7 +2238,7 @@ class Datarecord implements DatarecordReferable {
                 $final = array();
                 foreach ($value as $v) {
                     if (is_numeric($v)) $final[] = (int)$v;
-                    elseif ($v !== null && get_class($v) == static::$structure[$field]['foreign_class']) $final[] = (int)$v->getValue($value->getKeyField());
+                    elseif (is_object($v) && $v !== null && get_class($v) == static::$structure[$field]['foreign_class']) $final[] = (int)$v->getKeyValue();
                     elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreign_class'].' but got '.get_class($v), E_USER_ERROR);
                 }
                 $this->values[$field] = $final;
