@@ -54,7 +54,7 @@ class Time {
             $newmonth = date('n', $this->timestamp)+$months;
             $currentday = date('j', $this->timestamp);
             if ($currentday > self::daysInMonth($newmonth, $newyear)) $currentday = self::daysInMonth ($newmonth, $newyear);
-            $this->timestamp = mktime(date('H', $this->timestamp), date('i', $this->timestamp), date('s', $this->timestamp), $newmonth, $currentday);
+            $this->timestamp = mktime(date('H', $this->timestamp), date('i', $this->timestamp), date('s', $this->timestamp), $newmonth, $currentday, $newyear);
         }
         $this->timestamp += 24*60*60*$days;
         return $this;
