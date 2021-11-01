@@ -58,6 +58,11 @@ addPlatformComponentHandlerFunction('form', function(item) {
         $('.platform_form_multiplier_element', $(this)).show();
         return allowsubmit;
      });
+     
+     // Submit on enter for some fields
+     $('.platform_form_field').keyup(function(e) {
+         if (e.keyCode == 13) $(this).closest('form').submit();
+     });
 
     // Clear errors when changing fields
      $('.platform_form_field',item).change(function() {
