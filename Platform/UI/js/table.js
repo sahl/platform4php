@@ -5,6 +5,8 @@ addPlatformComponentHandlerFunction('table', function(item) {
     var initial_sort_completed = false;
 
     var table_configuration = {
+        pagination: false,
+        paginationElement: $('.pagination')[0],
         columnResized: function() {
             saveTableLayout(element.attr('id'));
         },
@@ -162,7 +164,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
    
    
     item.on('multi_button', function(e) {
-        if ($(this).hasClass('unselectable')) return;
+        if ($(e.target).hasClass('unselectable')) return false;
         var ids = [];
         $.each(table.getSelectedRows(), function(i, elements) {
           ids.push(elements._row.data.id);

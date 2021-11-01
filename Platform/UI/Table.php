@@ -321,6 +321,11 @@ class Table extends Component {
     
     public function prepareTableData() {
         if (! $this->tabulator_options['initialSort']) $this->defaultSort ();
+        
+        if ($this->tabulator_options['filter']) {
+            $this->setFilter($this->tabulator_options['filter']);
+            unset($this->tabulator_options['filter']);
+        }
     }
     
     /**
@@ -359,6 +364,7 @@ class Table extends Component {
         echo '<div class="platform_invisible table_configuration" id="'.$this->getID().'_table">';
         echo json_encode($this->tabulator_options);
         echo '</div>';
+        echo '<div class="pagination"></div>';
     }
     
     private function renderMultiButtons() {

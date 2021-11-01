@@ -16,3 +16,7 @@
     color: #DDDDDD;
     cursor: default;
 }
+
+.tabulator-page.active {
+    color: red;
+}

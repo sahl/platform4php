@@ -5,6 +5,12 @@ use \Platform\MenuItem;
 
 class EditComplex extends Component {
     
+    // Action locations
+    const ACTION_LOCATION_INLINE = 1;
+    const ACTION_LOCATION_BUTTON_MENU = 2;
+    const ACTION_LOCATION_BUTTONS = 3;
+    
+    
     protected static $can_redraw = false;
     
     protected $class;
@@ -18,6 +24,13 @@ class EditComplex extends Component {
      * @var Table
      */
     public $table;
+    
+    /**
+     * The location where the actions of this 
+     * @var type
+     */
+    protected $action_locations = [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU];
+    
     
     /**
      * 
@@ -89,15 +102,36 @@ class EditComplex extends Component {
         $this->table_menu->addMenuItems($menu);
     }
     
+    protected function constructMultibuttons() {
+        if ($this->class::canCreate()) $this->table->addMultiButton('Create new', 'create_new', Table::SELECTABLE_ALWAYS);
+        if ($this->class::isCopyAllowed()) $this->table->addMultiButton('Copy', 'copy', Table::SELECTABLE_EXACT_ONE_SELECTED);
+        $this->table->addMultiButton('Edit', 'edit', Table::SELECTABLE_EXACT_ONE_SELECTED);
+        $this->table->addMultiButton('Delete', 'delete', Table::SELECTABLE_ONE_OR_MORE_SELECTED);
+        $this->table->addMultiButton('Columns', 'columns', Table::SELECTABLE_ALWAYS);
+    }
+    
     public function renderContent() {
         echo '<div class="container">';
-        $this->table_menu->render();
+        if (in_array(self::ACTION_LOCATION_BUTTON_MENU, $this->action_locations)) $this->table_menu->render();
+        if (in_array(self::ACTION_LOCATION_INLINE, $this->action_locations)) $this->table->addData('inline_icons', 1);
+        if (in_array(self::ACTION_LOCATION_BUTTONS, $this->action_locations)) $this->constructMultibuttons ();
         $this->table->render();
         echo '</div>';
 
         $this->edit_dialog->render();
         
         $this->column_selector->render();
+    }
+    
+    /**
+     * Set the action locations of this EditComplex
+     * @param array $action_locations
+     */
+    public function setActionLocations(array $action_locations) {
+        foreach ($action_locations as $action_location) {
+            if (! in_array($action_location, [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU, self::ACTION_LOCATION_BUTTONS])) trigger_error('Invalid action location', E_USER_ERROR);
+        }
+        $this->action_locations = $action_locations;
     }
     
     

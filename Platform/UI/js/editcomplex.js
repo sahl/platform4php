@@ -18,11 +18,36 @@ addPlatformComponentHandlerFunction('editcomplex', function(element) {
     
     table_div.on('component_ready', function() {
         table = getTableByID('#'+table_div.prop('id'));
-        prepareTable(table);
-
+        if (table_div.data('inline_icons') == 1) prepareTable(table);
         prepareMenu(menu_div);
         prepareForm();
         prepareDialog();
+        return false;
+    });
+    
+    element.on('create_new', function() {
+        launchEdit(0);
+        return false;
+    })
+    
+    element.on('copy', function(e, ids) {
+        launchCopy(ids.split(','));
+        return false;
+    });
+    
+    element.on('edit', function(e, ids) {
+        launchEdit(ids);
+        return false;
+    });
+
+    element.on('delete', function(e, ids) {
+        launchDelete(ids.split(','));
+        return false;
+    });
+    
+    element.on('columns', function(e, ids) {
+        column_select_dialog.dialog('open');
+        return false;
     });
     
     function launchCopy(ids) {
