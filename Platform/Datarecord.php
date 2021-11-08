@@ -888,15 +888,17 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public static function getAllAsArray() : array {
-        $result = []; $sort_area = [];
+        $result = []; $sort_area = []; $ids = [];
         $filter = new Filter(get_called_class());
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());
             $result[$id] = $element;
             $sort_area[] = $element->getTitle();
+            $ids[] = $id;
         }
-        array_multisort($sort_area, SORT_ASC, $result);
+        array_multisort($sort_area, SORT_ASC, $result, $ids);
+        $result = array_combine($ids, $result);
         return $result;
     }
         
@@ -1491,6 +1493,7 @@ class Datarecord implements DatarecordReferable {
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_ENUMERATION_MULTI:
+            case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 return is_array($this->values[$field]) ? $this->values[$field] : array();
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
