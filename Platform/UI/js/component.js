@@ -24,7 +24,7 @@ addCustomPlatformFunction(function(item) {
             var redraw_url = $(this).data('redraw_url');
             if (! redraw_url) {
                 e.stopPropagation();
-                return;
+                return false;
             }
             
             // Destroy all dialogs within this component
@@ -34,6 +34,8 @@ addCustomPlatformFunction(function(item) {
             
             var element = $(this);
             $.post(redraw_url, {componentclass: $(this).data('componentclass'), componentproperties: componentproperties}, function(data) {
+                // Destroy handlers
+                element.off();
                 element.html(data).applyPlatformFunctions();
             });
             e.stopPropagation();
@@ -65,8 +67,9 @@ addCustomPlatformFunction(function(item) {
         var element = $(this);
         
         // Check if a form is registered for IO
-        if (element.data('attached_form_id')) element.componentIOForm($('#'+element.data('attached_form_id'), element));
-
+        if (element.data('attached_form_id')) {
+            element.componentIOForm($('#'+element.data('attached_form_id'), element))
+        };
         $(this).triggerHandler('component_ready');
     });
 });
@@ -100,6 +103,12 @@ $.fn.componentIOForm = function(form, func) {
                 if (data.destroy) component.remove();
                 if (data.script) eval(data.script);
                 if (data.properties) component.data('componentproperties', data.properties);
+                if (data.data) {
+                    $.each(data.data, function(i, v) {
+                        component.data(i,v);
+                    });
+                }
+                if (data.trigger) component.trigger(data.trigger);
                 if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
                 if (typeof func == 'function') func(data);
@@ -108,6 +117,12 @@ $.fn.componentIOForm = function(form, func) {
                 if (data.script) eval(data.script);
                 if (data.redirect) location.href = data.redirect;
                 if (data.properties) component.data('componentproperties', data.properties);
+                if (data.data) {
+                    $.each(data.data, function(i, v) {
+                        component.data(i,v);
+                    });
+                }
+                if (data.trigger) component.trigger(data.trigger);
                 if (data.redraw) component.trigger('redraw');
                 if (typeof func == 'function') func(data);
             }
@@ -130,6 +145,12 @@ $.fn.componentIO = function(values, func) {
         if (data.script) eval(data.script);
         if (data.redirect) location.href = data.redirect;
         if (data.properties) component.data('componentproperties', data.properties);
+        if (data.data) {
+            $.each(data.data, function(i, v) {
+                component.data(i,v);
+            });
+        }
+        if (data.trigger) component.trigger(data.trigger);
         if (data.redraw) component.trigger('redraw');
         if (typeof func == 'function') func(data);
     }, 'json');
