@@ -37,12 +37,6 @@ class Component {
     private $classes = array();
     
     /**
-     * Internal counter used for assigning component IDs if not set
-     * @var int 
-     */
-    private static $component_counter = 1;
-
-    /**
      * Component ID for HTML
      * @var bool|string 
      */
@@ -193,7 +187,7 @@ class Component {
      */
     public function getID() : string {
         if ($this->component_id === false) {
-            $this->component_id = 'platform_component_'.(self::$component_counter++);
+            $this->component_id = 'platform_component_'.rand();
         }
         return $this->component_id;
     }
