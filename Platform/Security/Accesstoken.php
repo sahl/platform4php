@@ -56,7 +56,6 @@ class Accesstoken extends \Platform\Datarecord {
         $accesstoken = self::generateBaseToken($seconds_to_live);
         $accesstoken->user_ref = $user->user_id;
         $accesstoken->save();
-        $accesstoken->setSession();
         self::$current_user_id = $accesstoken->user_ref;
         return $accesstoken;
     }
