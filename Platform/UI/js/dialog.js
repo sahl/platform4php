@@ -7,10 +7,13 @@ $.fn.platformDialog = function(buttons, opts) {
     var dialog_buttons = [];
     for (var txt in buttons) {
         if (typeof buttons[txt] == 'function')
-            dialog_buttons.push({ text: txt,
-                           id: 'dialog_option'+dialog_buttons.length+'_button',
-                           click: buttons[txt]
-                          });
+            dialog_buttons.push(
+                { 
+                    text: txt,
+                    id: 'dialog_option'+dialog_buttons.length+'_button',
+                    click: buttons[txt]
+                }
+            );
         else
             dialog_buttons.push(buttons[txt]);
     }
@@ -27,6 +30,10 @@ $.fn.platformDialog = function(buttons, opts) {
                 $(this).dialog("moveToTop");
                 // Fix auto completers append
                 $(this).find('.platform_combobox').autocomplete('option', 'appendTo', '.ui-focused');
+                // If form elements are present in the form, then focus them
+                $('.platform_form input[type!="hidden"]', this).first().focus();
+                // Focus on auto-focus field
+                $('.platform_autofocus', this).first().focus();
             },
         };
         var opts2 = $.extend(standard_options, opts);
@@ -118,15 +125,21 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel)
 
 addCustomPlatformFunctionLast(function(item) {
      $('.platform_component_dialog',item).each(function(e) {
-         var buttons = [];
-         var dialog = $(this);
-         $.each($(this).data('buttons'), function(event, title) {
-             buttons.push({
-                 text: title,
-                 click: function() {dialog.trigger(event);}
-             });
-         });
-         $(this).platformDialog(buttons);
+        var buttons = [];
+        var dialog = $(this);
+        $.each($(this).data('buttons'), function(event, title) {
+            buttons.push({
+                text: title,
+                click: function() {dialog.trigger(event);}
+            });
+        });
+        var options = [];
+        if (item.find('.dialog_configuration').html()) {
+            $.each(JSON.parse(item.find('.dialog_configuration').html()), function(key, element) {
+                options[key] = element;
+            })
+        }
+         $(this).platformDialog(buttons, options);
      })
  });
 

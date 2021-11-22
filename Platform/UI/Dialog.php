@@ -12,6 +12,8 @@ class Dialog extends Component {
         'text' => ''
     ];
     
+    private $dialog_options = [];
+    
     /**
      * Create a standard dialog
      * @param string $id Id of dialog
@@ -22,7 +24,8 @@ class Dialog extends Component {
      */
     public function __construct(string $id, string $title, string $text, array $buttons = array(), $form = false) {
         parent::__construct();
-        $this->addClass('platform_invisible');
+        // This is commented out to accomodate tables in dialogs. We need to find solution
+        //$this->addClass('platform_invisible');
         $this->setID($id);
         $this->title = $title;
         $this->text = $text;
@@ -35,6 +38,9 @@ class Dialog extends Component {
     }
     
     public function renderContent() {
+        echo '<div class="platform_invisible dialog_configuration">';
+        echo json_encode($this->dialog_options);
+        echo '</div>';
         echo $this->text;
         if ($this->form instanceof \Platform\Form) $this->form->render();
         foreach ($this->components as $component) $component->render();
@@ -50,4 +56,12 @@ class Dialog extends Component {
         echo '</div>';
     }
     
+    /**
+     * Set an option for the Jquery dialog
+     * @param string $option Option to set
+     * @param type $value Value to use
+     */
+    public function setDialogOption(string $option, $value) {
+        $this->dialog_options[$option] = $value;
+    }
 }
