@@ -74,15 +74,17 @@ addPlatformComponentHandlerFunction('editcomplex', function(element) {
     
     function launchEdit(id) {
         form.clearForm();
-        if (id) {
-            // Load values
-            form.loadValues(script, {event: 'datarecord_load', id: id, __class: classname}, function() {
+        // Load values
+        form.loadValues(script, {event: 'datarecord_load', id: id, __class: classname}, function() {
+            if (id) {
                 $(dialog).dialog('option', 'title', 'Edit '+name).dialog('open');
-            });                  
-        } else {
-            $(dialog).dialog('option', 'title', 'New '+name).dialog('open');
-        }
-        dialog.dialog('open');
+            } else {
+                $(dialog).dialog('option', 'title', 'New '+name).dialog('open');
+                // Find default values (if any)
+                form.attachValues(JSON.parse(element.find('.default_values').html()));
+            }
+            dialog.dialog('open');
+        });                  
     }
     
     function prepareDialog() {

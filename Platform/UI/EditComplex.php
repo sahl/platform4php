@@ -19,6 +19,8 @@ class EditComplex extends Component {
     
     public $edit_dialog;
     
+    public $default_values = [];
+    
     /**
      *
      * @var Table
@@ -111,6 +113,10 @@ class EditComplex extends Component {
     }
     
     public function renderContent() {
+        echo '<div class="platform_invisible default_values">';
+        echo json_encode($this->default_values);
+        echo '</div>';
+        
         echo '<div class="container">';
         if (in_array(self::ACTION_LOCATION_BUTTON_MENU, $this->action_locations)) $this->table_menu->render();
         if (in_array(self::ACTION_LOCATION_INLINE, $this->action_locations)) $this->table->addData('inline_icons', 1);
@@ -132,6 +138,10 @@ class EditComplex extends Component {
             if (! in_array($action_location, [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU, self::ACTION_LOCATION_BUTTONS])) trigger_error('Invalid action location', E_USER_ERROR);
         }
         $this->action_locations = $action_locations;
+    }
+ 
+    public function setDefaultValues(array $default_values) {
+        $this->default_values = $default_values;
     }
     
     
