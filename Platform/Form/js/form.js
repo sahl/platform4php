@@ -2,7 +2,7 @@ $(function() {
     // Focus first form field on page load
     $('.platform_form input[type!="hidden"]').first().focus();
     // Focus on auto-focus field
-    $('.platform_autofocus:first').focus();
+    $('.platform_autofocus').first().focus();
 });
 
 addPlatformComponentHandlerFunction('form', function(item) {
@@ -60,8 +60,12 @@ addPlatformComponentHandlerFunction('form', function(item) {
      });
      
      // Submit on enter for some fields
-     $('.platform_form_field').keyup(function(e) {
-         if (e.keyCode == 13) $(this).closest('form').submit();
+     $('.platform_form_field', item).not('textarea').keypress(function(e) {
+         if (e.keyCode == 13) {
+             e.stopImmediatePropagation();
+             $(this).closest('form').submit();
+             return false;
+         }
      });
 
     // Clear errors when changing fields
@@ -137,6 +141,8 @@ $.fn.attachValues = function(values) {
                     if (el.is('[type=checkbox]')) {
                         el.prop('checked', value == 1);
                     } else {
+                        // Extract IDs from complex fields
+                        if (typeof value === 'object' && value.id) value = value.id;
                         el.val(value);
                         if (el.is('.texteditor')) {
                             el.summernote('reset');

@@ -44,6 +44,7 @@ class Form extends \Platform\UI\Component {
         $this->addFormFieldNameSpace('Platform\\Form');
         parent::__construct();
         $this->form_id = $form_id;
+        $this->setID($form_id.'_component');
         if ($filename) $this->getFromFile ($filename);
     }
     
@@ -154,6 +155,7 @@ class Form extends \Platform\UI\Component {
      */
     private static function extractValue(string $fieldname, array &$fragment) {
         if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
+            if ($fragment[$matches[1]] === null) return null;
             return self::extractValue($matches[2].$matches[3], $fragment[$matches[1]]);
         }
         return $fragment[$fieldname];
@@ -594,7 +596,7 @@ class Form extends \Platform\UI\Component {
      * Set the HTML ID of this form
      * @param string $id
      */
-    public function setID(string $id) {
+    public function setFormID(string $id) {
         $this->form_id = $id;
     }
     

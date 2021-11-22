@@ -4,7 +4,7 @@ include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 use Platform\Page;
 use Platform\File;
 
-Page::renderPagestart('File upload', ['/Platform/Form/js/file.js']);
+Page::renderPagestart('File upload', ['/Platform/Form/js/file.js'], [], ['no_history' => true]);
 
 $current_file_name = '';
 
@@ -29,7 +29,7 @@ if ($_POST['action'] == 'send_file') {
     if ($_POST['temp_file_name'] && file_exists($_POST['temp_file_name'])) {
         unlink($_POST['temp_file_name']);
     }
-    $_POST['temp_file_name'] == '';
+    $_POST['temp_file_name'] = '';
     // Copy vital information back to form
     echo '<script language="javascript" type="text/javascript">';
     echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[status]"]\', window.parent.document).val(\'removed\');';

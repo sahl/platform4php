@@ -522,6 +522,14 @@ class Field {
     }
     
     /**
+     * Set the label of this field
+     * @param string $label
+     */
+    public function setLabel(string $label) {
+        $this->label = $label;
+    }
+    
+    /**
      * Set the label width of this field
      * @param int $label_width Label width in px
      */
