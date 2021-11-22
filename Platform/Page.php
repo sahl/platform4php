@@ -115,10 +115,10 @@ class Page {
      * @param array $js_files Javascript files to include
      * @param array $css_files CSS files to include
      */
-    public static function renderPagestart(string $title, array $js_files = [], array $css_files = []) {
+    public static function renderPagestart(string $title, array $js_files = [], array $css_files = [], array $options = []) {
         self::$page_started = true;
         
-        self::storeInHistory();
+        if (! $options['no_history']) self::storeInHistory();
         
         echo '<!DOCTYPE html><html><head>';
         echo '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">';
