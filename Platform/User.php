@@ -17,7 +17,7 @@ class User extends \Platform\DatarecordExtensible {
     
     protected static $depending_classes = array(
         'Platform\\Security\\Accesstoken',
-        'Platform\\Security\\Property',
+        'Platform\\Property'
     );
     
     public function canDelete() : bool {
