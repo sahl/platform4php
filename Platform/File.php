@@ -205,7 +205,7 @@ class File extends Datarecord {
      */
     public static function getFiletypeURLByExtension(string $extension) : string {
         $extension = strtolower($extension);
-        if (! file_exists(__DIR__.'/gfx/'.$extension.'.png')) $extension = 'other'; 
+        if (! file_exists(__DIR__.'/File/gfx/'.$extension.'.png')) $extension = 'other'; 
         return '/Platform/File/gfx/'.$extension.'.png';
     }
     
