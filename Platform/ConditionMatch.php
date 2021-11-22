@@ -15,10 +15,11 @@ class ConditionMatch extends Condition {
      * @return array
      */
     public function getAsArray() : array {
+        $value = $this->value instanceof Datarecord ? $this->value->getKeyValue() : $this->value;
         return array(
             'type' => 'Match',
             'fieldname' => $this->fieldname,
-            'value' => $this->value
+            'value' => $value
         );
     }
     
