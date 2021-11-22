@@ -890,11 +890,12 @@ class Datarecord implements DatarecordReferable {
     public static function getAllAsArray() : array {
         $result = []; $sort_area = []; $ids = [];
         $filter = new Filter(get_called_class());
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->addCondition(new ConditionMatch('is_deleted', 0));
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());
             $result[$id] = $element;
-            $sort_area[] = $element->getTitle();
+            $sort_area[] = strip_tags($element->getTitle());
             $ids[] = $id;
         }
         array_multisort($sort_area, SORT_ASC, $result, $ids);
@@ -909,6 +910,7 @@ class Datarecord implements DatarecordReferable {
     public static function getTitleAsArray() : array {
         $result = array();
         $filter = new Filter(get_called_class());
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->addCondition(new ConditionMatch('is_deleted', 0));
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());
@@ -1065,7 +1067,7 @@ class Datarecord implements DatarecordReferable {
                     $finalvalue = array();
                     foreach ($value as $k => $v) $finalvalue[$k] = (string)$v;
                 } else {
-                    $finalvalue = $value;
+                    $finalvalue = [];
                 }
                 return '\''.Database::escape(json_encode($finalvalue)).'\'';
             case self::FIELDTYPE_OBJECT:
@@ -1274,7 +1276,7 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
-     * Return the object pointed to by the given hyperreference field.
+     * Return the object pointed to by this field
      * @param string $field Field name
      * @return Object referenced
      */
@@ -1425,6 +1427,40 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get the title of several objects of this type by ID.
+     * @param array $ids Object ids
+     * @return array Titles hashed by ID's
+     */
+    public static function getTitlesByIds(array $ids) : array {
+        $class = get_called_class();
+        $result = [];
+        $missing_ids = [];
+        // Try the buffer
+        foreach ($ids as $id) {
+            if (isset(self::$foreign_reference_buffer[$class][$id])) $result[$id] = self::$foreign_reference_buffer[$class][$id];
+            else $missing_ids[] = $id;
+        }
+        // Populate missing items
+        if (count($missing_ids)) {
+            $filter = new Filter($class);
+            $filter->addCondition(new ConditionOneOf($class::getKeyField(), $missing_ids));
+            foreach ($filter->execute() as $object) {
+                self::$foreign_reference_buffer[$class][$object->getKeyValue()] = $object->getTitle();
+                $result[$object->getKeyValue()] = self::$foreign_reference_buffer[$class][$object->getKeyValue()];
+            }
+        }
+        // Sort
+        $sort_array = []; $ids = [];
+        foreach ($result as $key => $value) {
+            $ids[] = $key;
+            $sort_array[] = strip_tags($value);
+        }
+        array_multisort($sort_array, SORT_ASC, $result, $ids);
+        $result = array_combine($ids, $result);
+        return $result;
+    }
+    
+    /**
      * Get the title of an object of this type by ID.
      * @param int $id Object id
      * @return string Title
@@ -1440,6 +1476,7 @@ class Datarecord implements DatarecordReferable {
         }
         return self::$foreign_reference_buffer[$class][$id];        
     }
+    
     
     /**
      * Convert an internal field type to a MySQL field type
@@ -1624,6 +1661,15 @@ class Datarecord implements DatarecordReferable {
      */
     public static function isCopyAllowed() : bool {
         return static::$allow_copy;
+    }
+    
+    /**
+     * Indicate if this object is deleted (which is only possible with certain
+     * delete strategies).
+     * @return bool
+     */
+    public function isDeleted() : bool {
+        return $this->values['is_deleted'] ? true : false;
     }
     
     /**
