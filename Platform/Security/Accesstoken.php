@@ -207,7 +207,7 @@ class Accesstoken extends \Platform\Datarecord {
     /**
      * Store the token code in session for later retrieval
      */
-    private function setSession() {
+    public function setSession() {
         $_SESSION['token_code'] = $this->token_code;
     }
     
