@@ -33,7 +33,7 @@ addCustomPlatformFunction(function(item) {
             })
             
             var element = $(this);
-            $.post(redraw_url, {componentclass: $(this).data('componentclass'), componentproperties: componentproperties}, function(data) {
+            $.post(redraw_url, {componentclass: $(this).data('componentclass'), componentproperties: componentproperties, componentid: $(this).prop('id')}, function(data) {
                 // Destroy handlers
                 element.off();
                 element.html(data).applyPlatformFunctions();
@@ -93,9 +93,14 @@ $.fn.componentIOForm = function(form, func) {
     // Add custom submit function
     form.submit(function() {
         // Inject class field if not present
-        if (! form.find('input[name="componentclass"]').length) form.append('<input type="hidden" name="componentclass" value="'+component.data('componentclass')+'">');
+        if (! form.find('input[name="componentclass"]').length) form.append('<input type="hidden" name="componentclass">');
+        form.find('input[name="componentclass"]').val(component.data('componentclass'));
         // Inject properties field if not present
-        if (! form.find('input[name="componentproperties"]').length) form.append('<input type="hidden" name="componentproperties" value="'+component.data('componentproperties')+'">');
+        if (! form.find('input[name="componentproperties"]').length) form.append('<input type="hidden" name="componentproperties">');
+        form.find('input[name="componentproperties"]').val(component.data('componentproperties'));
+        // Inject id field if not present
+        if (! form.find('input[name="componentid"]').length) form.append('<input type="hidden" name="componentid">');
+        form.find('input[name="componentid"]').val(component.prop('id'));
         // Post
         $.post(component.data('io_url'), form.serialize(), function(data) {
             // Handle form error
@@ -139,6 +144,8 @@ $.fn.componentIO = function(values, func) {
     values['componentclass'] = component.data('componentclass');
     // Inject properties
     values['componentproperties'] = component.data('componentproperties');
+    // Inject ID
+    values['componentid'] = component.prop('id');
     // Post
     $.post(component.data('io_url'), values, function(data) {
         if (data.destroy) component.remove();
