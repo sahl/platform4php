@@ -35,7 +35,7 @@ class ConditionMatch extends Condition {
             case Datarecord::FIELDTYPE_ARRAY:
             case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
             case Datarecord::FIELDTYPE_ENUMERATION_MULTI:
-                $value = $value instanceof Datarecord ? $value->getRawValue($value->getKeyField ()) : $value;
+                $value = $this->value instanceof Datarecord ? $this->value->getRawValue($this->value->getKeyField ()) : $this->value;
                 return $this->fieldname.' LIKE \'%"'.$value.'"%\'';
             case Datarecord::FIELDTYPE_REFERENCE_HYPER:
                 if (is_array($this->value)) {

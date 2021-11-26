@@ -1298,7 +1298,7 @@ class Datarecord implements DatarecordReferable {
                 $object = new File();
                 $object->loadForRead($raw);
                 return $object;
-            case self::FIELDTYPE_REFERENCE_SINGLE:
+            case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 $result = [];
                 $class = static::$structure[$field]['foreign_class'];
                 foreach ($raw as $value) {
