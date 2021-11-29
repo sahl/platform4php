@@ -139,7 +139,7 @@ addCustomPlatformFunctionLast(function(item) {
                 options[key] = element;
             })
         }
-         $(this).platformDialog(buttons, options);
+        $(this).platformDialog(buttons, options);
      })
  });
 

@@ -319,6 +319,12 @@ class Table extends Component {
         $this->tabulator_options['columns'] = $new_columns;
     }
     
+    public function prepareData() {
+        parent::prepareData();
+        $this->prepareTableData();
+        $this->addData('tabulator_options', $this->tabulator_options);
+    }
+    
     public function prepareTableData() {
         if (! $this->tabulator_options['initialSort']) $this->defaultSort ();
         
@@ -359,10 +365,8 @@ class Table extends Component {
      * Render the table.
      */
     public function renderContent() {
-        $this->prepareTableData();
         $this->renderMultiButtons();
         echo '<div class="platform_invisible table_configuration" id="'.$this->getID().'_table">';
-        echo json_encode($this->tabulator_options);
         echo '</div>';
         echo '<div class="pagination"></div>';
     }

@@ -23,10 +23,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
             updateMultiButtons();
         }
     }
-
-    $.each(JSON.parse(item.find('.table_configuration').html()), function(key, element) {
-        table_configuration[key] = element;
-    })
+    table_configuration = item.data('tabulator_options');
     
     item.find('.table_configuration').html('').show();
 
