@@ -506,6 +506,7 @@ class Translation {
         // Check if this language is something which isn't loaded yet
         $new_language = ! in_array($language_key, self::getLanguagesToLoad());
         \Platform\Property::setForUser(0, 'instance_language', '', $language_key);
+        unset($_SESSION['platform']['instance_language']);
         if ($new_language) self::reloadAllTranslations();
     }
     
