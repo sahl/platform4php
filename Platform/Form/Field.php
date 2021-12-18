@@ -487,6 +487,13 @@ class Field {
         if (! self::isValidLabelPlacement($label_alignment)) trigger_error('Invalid label placement: '.$label_alignment, E_USER_ERROR);
         self::$default_label_alignment = $label_alignment;
     }
+    
+    /**
+     * Set the form to focus this field
+     */
+    public function setFocus() {
+        $this->addClass('platform_autofocus');
+    }
 
     /**
      * Set the heading of the field

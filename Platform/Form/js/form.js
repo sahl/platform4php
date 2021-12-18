@@ -102,6 +102,7 @@ $.fn.clearError = function() {
 $.fn.clearForm = function() {
     this.find('input[type!="hidden"][type!="checkbox"],input[type="hidden"][name!="form_event"][name!="form_name"]').not('.platform_dont_clear').val('');
     this.find('textarea').not('.platform_dont_clear').val('');
+    this.find('textarea.texteditor').summernote('reset');
     this.find('[type="checkbox"]').not('.platform_dont_clear').prop('checked', false);
     this.find('select').not('.platform_dont_clear').find('option:first-child').prop('selected', true);
     this.find('.platform_form_multiplier').each(function() {
