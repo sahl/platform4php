@@ -150,6 +150,10 @@ class Time {
         return $this->addDays(-($this->getWeekday()-1));
     }
     
+    public function getHour() : int {
+        return (int)date('G', $this->timestamp);
+    }
+    
     /**
      * Get the last day in this month
      * @return \Platform\Utilities\Time
@@ -166,6 +170,10 @@ class Time {
     public function getLatest(Time $other_time) {
         if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
         return $this->isAfter($other_time) ? $this : $other_time;
+    }
+    
+    public function getMinute() : int {
+        return (int)date('i', $this->timestamp);
     }
     
     /**
@@ -214,6 +222,10 @@ class Time {
         return '';
     }
     
+    public function getSecond() : int {
+        return (int)date('s', $this->timestamp);
+    }
+
     /**
      * Get time on form HH:MM:SS
      * @return string
@@ -353,6 +365,18 @@ class Time {
      */
     public static function setDisplayTimeZone(string $display_time_zone) {
         self::$time_zone_object = new \DateTimeZone($display_time_zone);
+    }
+    
+    public function setDay(int $day) {
+        return new Time(strtotime($this->get('Y-m-'.str_pad($day,2,'0', STR_PAD_LEFT).' H:i:s')));
+    }
+
+    public function setMonth(int $month) {
+        return new Time(strtotime($this->get('Y-'.str_pad($month,2,'0', STR_PAD_LEFT).'-d H:i:s')));
+    }
+    
+    public function setYear(int $year) {
+        return new Time(strtotime($this->get($year.'-m-d H:i:s')));
     }
     
     /**
