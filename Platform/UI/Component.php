@@ -113,6 +113,7 @@ class Component {
     public function __set(string $property, $value) {
         if (! array_key_exists($property, $this->properties)) trigger_error('Tried to set invalid property: '.$property, E_USER_ERROR);
         $this->properties[$property] = $value;
+        if ($this->is_ready) $this->is_ready = false;
     }
 
     /**
