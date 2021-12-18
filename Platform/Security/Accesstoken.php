@@ -1,15 +1,18 @@
 <?php
 namespace Platform\Security;
 
+use Platform\ConditionLesser;
+use Platform\ConditionMatch;
+use Platform\Datarecord;
 use Platform\Filter;
 use Platform\Page;
-use Platform\User;
 use Platform\Server\Instance;
+use Platform\User;
 use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
 
-class Accesstoken extends \Platform\Datarecord {
+class Accesstoken extends Datarecord {
     
     protected static $database_table = 'platform_accesstokens';
     protected static $structure = false;
@@ -47,9 +50,9 @@ class Accesstoken extends \Platform\Datarecord {
 
     /**
      * Acquire a token which grants the given user access to the system.
-     * @param \Platform\User $user User to grant access
+     * @param User $user User to grant access
      * @param int $seconds_to_live Seconds for the token to live.
-     * @return \Platform\Security\Accesstoken The token
+     * @return Accesstoken The token
      */
     public static function acquire(User $user, int $seconds_to_live = 3600) : Accesstoken {
         if (! $user->isInDatabase()) trigger_error('Tried to acquire token for unsaved user!', E_USER_ERROR);
@@ -84,7 +87,7 @@ class Accesstoken extends \Platform\Datarecord {
      * Delete expired access tokens from the database.
      */
     public static function deleteExpiredTokens() {
-        $filter = new Filter('\\Platform\\Security\\Accesstoken');
+        $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionLesser('expire_date', Time::now()));
         $datacollection = $filter->execute();
         $datacollection->deleteAll();
@@ -129,7 +132,7 @@ class Accesstoken extends \Platform\Datarecord {
         do {
             $token_code = sha1(rand());
             $filter = new Filter('\\Platform\\Security\\Accesstoken');
-            $filter->addCondition(new \Platform\ConditionMatch('token_code', $token_code));
+            $filter->addCondition(new ConditionMatch('token_code', $token_code));
         } while ($filter->execute()->getCount());
         $this->token_code = $token_code;
     }
@@ -141,7 +144,7 @@ class Accesstoken extends \Platform\Datarecord {
      */
     public static function getByTokencode(string $token_code) : Accesstoken {
         $filter = new Filter(get_called_class());
-        $filter->addCondition(new \Platform\ConditionMatch('token_code', $token_code));
+        $filter->addCondition(new ConditionMatch('token_code', $token_code));
         return $filter->executeAndGetFirst();
     }
     
