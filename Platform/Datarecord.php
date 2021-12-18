@@ -418,6 +418,15 @@ class Datarecord implements DatarecordReferable {
         return $copy;
     }
     
+    public function copyFrom(Datarecord $otherobject) {
+        if (! is_a($this, get_class($otherobject))) trigger_error('Incompatible objects', E_USER_ERROR);
+        $values = $otherobject->getAsArray();
+        $this->setFromArray($values);
+        // Handle keys
+        $this->values[$this->getKeyField()] = $otherobject->getKeyValue();
+        $this->values_on_load = $values;
+    }
+    
     /**
      * Delete this record from the database.
      * @param bool $force_purge Force a purge of references even if object is configured for blocking only.
@@ -1282,6 +1291,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function getForeignObject(string $field) {
         $raw = $this->getRawValue($field);
+        if (! $raw) return null;
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_REFERENCE_HYPER:
                 $class = $raw['foreign_class'];
@@ -2287,7 +2297,7 @@ class Datarecord implements DatarecordReferable {
                 $final = array();
                 foreach ($value as $v) {
                     if (is_numeric($v)) $final[] = (int)$v;
-                    elseif (is_object($v) && $v !== null && get_class($v) == static::$structure[$field]['foreign_class']) $final[] = (int)$v->getKeyValue();
+                    elseif (is_object($v) && $v !== null && is_a($v, static::$structure[$field]['foreign_class'])) $final[] = (int)$v->getKeyValue();
                     elseif ($v instanceof Datarecord) trigger_error('Expected value of type '.static::$structure[$field]['foreign_class'].' but got '.get_class($v), E_USER_ERROR);
                 }
                 $this->values[$field] = $final;
