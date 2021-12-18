@@ -73,6 +73,8 @@ class Condition {
                 return new ConditionGreater($array['fieldname'], $array['value']);
             case 'GreaterEqual':
                 return new ConditionGreaterEqual($array['fieldname'], $array['value']);
+            case 'IsSet':
+                return new ConditionIsSet($array['fieldname']);
             case 'Lesser':
                 return new ConditionLesser($array['fieldname'], $array['value']);
             case 'LesserEqual':
