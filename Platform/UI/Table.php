@@ -366,7 +366,7 @@ class Table extends Component {
      */
     public function renderContent() {
         $this->renderMultiButtons();
-        echo '<div class="platform_invisible table_configuration" id="'.$this->getID().'_table">';
+        echo '<div class="table_configuration" id="'.$this->getID().'_table">';
         echo '</div>';
         echo '<div class="pagination"></div>';
     }

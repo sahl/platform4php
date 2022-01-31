@@ -19,6 +19,7 @@ class MultiplierSection extends Field {
         }
         // No label for this field?
         parent::__construct($label, $name, $options);
+        $this->addClass('platform_form_multiplier');
     }
     
     /**
@@ -136,7 +137,7 @@ class MultiplierSection extends Field {
     }
     
     public function renderInput() {
-        echo '<div class="platform_form_multiplier" class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" data-basename="'.$this->getName().'" '.$this->additional_attributes.'>';
+        echo '<div class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" data-basename="'.$this->getName().'" '.$this->additional_attributes.'>';
         for ($i = 0; $i < count($this->value)+1; $i++) {
             echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {

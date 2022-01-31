@@ -185,9 +185,10 @@ class Job extends \Platform\Datarecord {
         $this->last_run_time = $this->last_start->getMinutesUntil(Time::now());
         $this->average_run_time = (($this->run_count-1)*$this->average_run_time + $this->last_run_time)/$this->run_count;
         if ($this->frequency_offset_from_end && $this->frequency > 0) {
+            $this->next_start = Time::now()->add(0, $this->frequency);
         }
         if ($this->frequency == self::FREQUENCY_SETTIME && ! $this->next_start->isNull()) {
-            while ($this->next_start->before(Time::now())) {
+            while ($this->next_start->isBefore(Time::now())) {
                 $this->next_start = $this->next_start->addDays(1);
             }
         }

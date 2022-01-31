@@ -218,7 +218,7 @@ class Translation {
         $lines = file($translation_file);
         foreach ($lines as $line) {
             if (preg_match('/\\$platform_language\\[\'[a-z]*\'\\]\\[\'(.*[^\\\\])?\'\\] = \'(.*[^\\\\])?\'/', $line, $match)) {
-                $result[$match[1]] = $match[2];
+                $result[stripslashes($match[1])] = $match[2];
             }
         }
         return $result;
@@ -385,7 +385,7 @@ class Translation {
         if ($fh === false) trigger_error('Couldn\'t open translation file '.$csv_file, E_USER_ERROR);
         while ($csv_fields = fgetcsv($fh, 0)) {
             if (count($csv_fields) < 2) continue;
-            $translation_map[$csv_fields[0]] = $csv_fields[1];
+            $translation_map[stripslashes($csv_fields[0])] = $csv_fields[1];
         }
         fclose($fh);
         return $translation_map;
