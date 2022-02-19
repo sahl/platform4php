@@ -1,4 +1,4 @@
-.platform_form_multiplier_element > .platform_form_field_container {
+.platform_form_field_container {
     margin-bottom: 1px !important;
 }
 
@@ -41,11 +41,12 @@
 
 .platform_form_field:not([type="checkbox"]) {
     width: 100%;
+    box-sizing: border-box;
 }
 
 .platform_form_field[type="checkbox"] {
     margin: 0px;
-    vertical-align: baseline;
+    vertical-align: -2px;
 }
 
 .platform_form_field_error {

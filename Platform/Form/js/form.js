@@ -1,6 +1,6 @@
 $(function() {
     // Focus first form field on page load
-    $('.platform_form input[type!="hidden"]').first().focus();
+    $('.platform_form input[type!="hidden"][type!="checkbox"]').first().focus();
     // Focus on auto-focus field
     $('.platform_autofocus').first().focus();
 });
