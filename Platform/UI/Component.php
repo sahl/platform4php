@@ -279,10 +279,10 @@ class Component {
         
         if (static::$can_redraw) {
             $this->addData('redraw_url', static::$redraw_url);
-            $this->addData('io_url', static::$io_url);
-            $this->addData('componentclass', get_called_class());
-            $this->addData('componentproperties', $this->getEncodedProperties());
         }
+        $this->addData('io_url', static::$io_url);
+        $this->addData('componentclass', get_called_class());
+        $this->addData('componentproperties', $this->getEncodedProperties());
         
         if (count($this->registered_events)) $this->addData('registered_events', implode(',',$this->registered_events));
         
