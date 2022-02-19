@@ -30,6 +30,7 @@ class Dialog extends Component {
         $this->title = $title;
         $this->text = $text;
         $this->addData('buttons', $buttons);
+        $this->addClass('platform_invisible'); // This breaks tables in dialogs
         $this->form = $form;
     }
     

@@ -26,6 +26,10 @@ class Table extends Component {
     private $line_icons = [];
     
     private $tabulator_options = array();
+    
+    private $data_request_event = null;
+    
+    private $include_column_selector = false;
 
     /**
      * Construct a new table
@@ -41,6 +45,12 @@ class Table extends Component {
         $this->setID($id);
         $this->setTabulatorOption('layout', 'fitColumns');
         $this->setTabulatorOption('placeholder', 'No data');
+        $this->setTabulatorOption('movableColumns', true);
+    }
+    
+    public function addColumnSelector() {
+        $this->setTabulatorOption('column_selector', true);
+        $this->include_column_selector = true;
     }
     
     public function addLineIcon(string $icon, string $event_to_fire) {
@@ -160,7 +170,7 @@ class Table extends Component {
         asort($options);
         
         $form->addField(new \Platform\Form\HiddenField('', 'table_id'));
-        $form->addField(new \Platform\Form\MulticheckboxField('Visible fields', 'fields', array('options' => $options, 'value' => $selected)));
+        $form->addField(new \Platform\Form\MulticheckboxField('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
         return $form;
     }
     
@@ -322,6 +332,7 @@ class Table extends Component {
     public function prepareData() {
         parent::prepareData();
         $this->prepareTableData();
+        if ($this->data_request_event) $this->setTabulatorOption('data_request_event', $this->data_request_event);
         $this->addData('tabulator_options', $this->tabulator_options);
     }
     
@@ -369,6 +380,10 @@ class Table extends Component {
         echo '<div class="table_configuration" id="'.$this->getID().'_table">';
         echo '</div>';
         echo '<div class="pagination"></div>';
+        if ($this->include_column_selector) {
+            $column_selector = $this->getColumnSelectComponent();
+            $column_selector->render();
+        }
     }
     
     private function renderMultiButtons() {
@@ -429,6 +444,14 @@ class Table extends Component {
             $final_lines[] = $line;
         }
         $this->setTabulatorOption('data', $final_lines);
+    }
+    
+    /**
+     * Set an event for requesting data instead of using an URL
+     * @param string $event_name Event to trigger
+     */
+    public function setDataRequestEvent(string $event_name) {
+        $this->data_request_event = $event_name;
     }
     
 

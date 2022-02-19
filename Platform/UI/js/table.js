@@ -17,13 +17,12 @@ addPlatformComponentHandlerFunction('table', function(item) {
             if (sorters.length && initial_sort_completed) {
                 saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
             }
-            initial_sort_completed = true;
         },
         rowSelectionChanged: function() {
             updateMultiButtons();
         }
     }
-    table_configuration = item.data('tabulator_options');
+    $.extend(table_configuration,item.data('tabulator_options'));
     
     item.find('.table_configuration').html('').show();
 
@@ -38,6 +37,11 @@ addPlatformComponentHandlerFunction('table', function(item) {
         show_selector = true;
         delete table_configuration['show_selector'];
     }
+    var column_selector = false;
+    if (table_configuration['column_selector']) {
+        column_selector = true;
+        delete table_configuration['column_selector'];
+    }
 
     var control_form = false;
     var data_url = false;
@@ -47,6 +51,15 @@ addPlatformComponentHandlerFunction('table', function(item) {
         data_url = table_configuration['ajaxURL'];
         delete table_configuration['ajaxURL'];
         delete table_configuration['control_form'];
+    }
+    
+    var data_request_event = null;
+    // Check if we want to get data to the table through an event
+    if (table_configuration['data_request_event']) {
+        data_request_event = table_configuration['data_request_event'];
+        delete table_configuration['data_request_event'];
+        // Destroy data URL to ensure data is fetched through event
+        delete table_configuration['ajaxURL'];
     }
 
     var filter_field = false;
@@ -89,6 +102,15 @@ addPlatformComponentHandlerFunction('table', function(item) {
             }
         }, true)
     });
+    
+    if (column_selector)
+        table.addColumn({
+            title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
+                $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
+            }
+        }, false);
+    
+    
     if (show_selector)
         table.addColumn({
             formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerHozAlign: 'center', headerSort:false, width: 15
@@ -148,17 +170,35 @@ addPlatformComponentHandlerFunction('table', function(item) {
         control_form.submit(function() {
             item.show();
             initial_sort_completed = false;
-            table.setData(data_url, makeObject(control_form.serializeArray()), "post");
+            if (data_request_event) {
+                item.trigger(data_request_event, ['__data_request_event', makeObject(control_form.serializeArray()), function(table_data) {
+                    table.setData(table_data);
+                    initial_sort_completed = true;
+                }])
+            } else {
+                table.setData(data_url, makeObject(control_form.serializeArray()), "post");
+            }
             return false;
         })
+    } else {
+        if (data_request_event) {
+            item.trigger(data_request_event, ['__data_request_event', {}, function(table_data) {
+                table.setData(table_data);
+                initial_sort_completed = true;
+            }])
+        }
     }
     
     item.on('reload_data', function() {
         if (control_form) control_form.submit();
-        else table.setData(data_url);
+        else {
+            initial_sort_completed = false;
+            table.setData(data_url);
+            initial_sort_completed = true;
+        }
         return true;
     })
-   
+    
    
     item.on('multi_button', function(e) {
         if ($(e.target).hasClass('unselectable')) return false;
@@ -168,7 +208,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
         });
         item.trigger($(e.target).data('secondary_event'), ids.join());
     })
-
+    
 })
 
 function filterTable(table, string) {

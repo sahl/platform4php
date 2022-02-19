@@ -45,10 +45,21 @@ addCustomPlatformFunction(function(item) {
         if (element.data('registered_events')) {
             $.each(element.data('registered_events').split(','), function(index, value) {
                 element.off(value);
-                element.on(value, function(event, parameter1, parameter2, parameter3) {element.componentIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); event.stopImmediatePropagation(); return false;});
+                element.on(value, function(event, parameter1, parameter2, parameter3) {
+                    if (parameter1 == '__data_request_event') {
+                        // This is a datatable event, which needs to be handled another way
+                        parameter2['event'] = value;
+                        element.componentIO(parameter2, function(data) {
+                            parameter3(data);
+                        }); 
+                    } else {
+                        element.componentIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); 
+                        event.stopImmediatePropagation(); 
+                    }
+                    return false;
+                });
             })
         }
-        
     });
     
     // Apply special functions in the same order they was included to ensure proper event stacking
