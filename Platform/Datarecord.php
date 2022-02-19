@@ -457,7 +457,7 @@ class Datarecord implements DatarecordReferable {
         $deleted_id = $this->values[static::getKeyField()];
         if (static::$delete_mode == self::DELETE_MODE_DELETE) {
             self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
-            $number_of_items_deleted = static::$location == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
+            $number_of_items_deleted = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
             unset($this->values[static::getKeyField()]);
             $this->access_mode = self::MODE_READ;
             $this->unlock();
@@ -685,7 +685,7 @@ class Datarecord implements DatarecordReferable {
                 if ($element['fieldtype'] == self::FIELDTYPE_KEY) $fielddefinition .= ' PRIMARY KEY AUTO_INCREMENT';
                 $fielddefinitions[] = $fielddefinition;
             }
-            self::query("CREATE TABLE ".static::$database_table." (".implode(',',$fielddefinitions).")");
+            self::query("CREATE TABLE ".static::$database_table." (".implode(',',$fielddefinitions).") COLLATE='utf8mb4_unicode_ci'");
             $changed = true;
         } else {
             $fields_in_database = array();
@@ -1939,7 +1939,7 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public static function query(string $query, bool $failonerror = true) {
-        if (static::$location == self::LOCATION_GLOBAL) return Database::globalQuery ($query, $failonerror);
+        if (static::getLocation() == self::LOCATION_GLOBAL) return Database::globalQuery ($query, $failonerror);
         else return Database::instanceQuery ($query,$failonerror);
     }
     
@@ -2190,7 +2190,7 @@ class Datarecord implements DatarecordReferable {
             self::query($sql);
             $this->values_on_load = $this->values;
             $this->unlock();
-            $this->values[static::getKeyField()] = static::$location == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
+            $this->values[static::getKeyField()] = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
             if ($keep_open_for_write) {
                 // Lock the new object
                 $this->lock();
