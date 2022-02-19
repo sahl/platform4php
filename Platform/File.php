@@ -74,7 +74,7 @@ class File extends Datarecord {
      */
     public static function deleteTempFiles() {
         // Delete files older than a day
-        $cutdate = Time::now()->addDays(-1);
+        $cutdate = \Platform\Utilities\Time::now()->addDays(-1);
         $path = self::getFullFolderPath('temp');
         self::ensureFolderInStore($path);
         $dh = opendir($path);
