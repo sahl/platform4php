@@ -252,6 +252,7 @@ class Instance extends \Platform\Datarecord {
     public function initializeDatabase() {
         \Platform\Security\Accesstoken::ensureInDatabase();
         \Platform\File::ensureInDatabase();
+        \Platform\Utilities\Mail::ensureInDatabase();
         \Platform\ExtensibleField::ensureInDatabase();
         \Platform\User::ensureInDatabase();
         \Platform\Property::ensureInDatabase();

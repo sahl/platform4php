@@ -1,12 +1,18 @@
 <?php
-namespace Platform;
+namespace Platform\Utilities;
 
+use PHPMailer\PHPMailer\PHPMailer;
+use Platform\ConditionLesserEqual;
+use Platform\ConditionMatch;
+use Platform\Datarecord;
+use Platform\Filter;
+use Platform\Platform;
+use Platform\Server\Job;
 use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
-use Platform\Server\Job;
 use Platform\Utilities\Time;
 
-class Mail extends \Platform\Datarecord {
+class Mail extends Datarecord {
     
     const FORMAT_TEXT = 0;
     const FORMAT_HTML = 1;
@@ -111,9 +117,9 @@ class Mail extends \Platform\Datarecord {
      * Init the PHP mailer library
      */
     public static function initPhpmailer() {
-        require_once __DIR__.'/Mail/src/Exception.php';
-        require_once __DIR__.'/Mail/src/SMTP.php';
-        require_once __DIR__.'/Mail/src/PHPMailer.php';
+        require_once __DIR__.'/src/Exception.php';
+        require_once __DIR__.'/src/SMTP.php';
+        require_once __DIR__.'/src/PHPMailer.php';
         
     }    
     
@@ -121,7 +127,7 @@ class Mail extends \Platform\Datarecord {
      * Process the outgoing mail queue
      */
     public static function processQueue() {
-        $filter = new Filter('\Platform\Mail');
+        $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('is_sent', 0));
         $filter->addCondition(new ConditionLesserEqual('scheduled_for', new Time('now')));
         $mails = $filter->execute();
@@ -129,21 +135,14 @@ class Mail extends \Platform\Datarecord {
             self::initPhpmailer();
             if (!Semaphore::wait('mailqueue_process')) return;
             foreach ($mails->getAll() as $mail) {
-                $mailer = new \PHPMailer\PHPMailer\PHPMailer();
-                switch (Platform::getConfiguration('mail_type')) {
-                    case 'smtp':
-                        $mailer->isSMTP();
-                        $mailer->Host = Platform::getConfiguration('smtp_server');
-                        $mailer->Port = 587;
-                        if (Platform::getConfiguration('smtp_user')) {
-                            $mailer->SMTPAuth = true;
-                            $mailer->Username = Platform::getConfiguration('smtp_user');
-                            $mailer->Password = Platform::getConfiguration('smtp_password');
-                        }
-                    break;
-                    default:
-                        trigger_error('Unknown mailer', E_USER_ERROR);
-                        break;
+                $mailer = new PHPMailer();
+                $mailer->isSMTP();
+                $mailer->Host = Platform::getConfiguration('smtp_server');
+                $mailer->Port = Platform::getConfiguration('smtp_port');
+                if (Platform::getConfiguration('smtp_username')) {
+                    $mailer->SMTPAuth = true;
+                    $mailer->Username = Platform::getConfiguration('smtp_username');
+                    $mailer->Password = Platform::getConfiguration('smtp_password');
                 }
                 
                 $mailer->CharSet = 'UTF-8';
@@ -198,10 +197,10 @@ class Mail extends \Platform\Datarecord {
     }
     
     public static function setupQueue() {
-        $job = Job::getJob('Platform\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
+        $job = Job::getJob('Platform\\Utilities\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
         // Check for next run time
-        $qr = Database::instanceFastQuery("SELECT MIN(scheduled_for) as next_start FROM ".static::$database_table." WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)");
-        if ($qr) {
+        $qr = Database::getRow(static::query("SELECT MIN(scheduled_for) as next_start FROM ".static::$database_table." WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)"));
+        if ($qr['next_start']) {
             $job->next_start = new Time($qr['next_start']);
             $job->frequency = Job::FREQUENCY_ONCE;
         }
