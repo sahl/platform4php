@@ -219,7 +219,8 @@ class Errorhandler {
             echo '<tr><td>'.number_format($measure['timestamp']-$starttime, 5,'.','').'</td>';
             echo '<td>+'.number_format($measure['timestamp']-$lasttime, 5,'.','').'</td>';
             echo '<td>'.$measure['text'];
-            if ($measure['operation_count']) echo ' (average '.number_format(($measure['timestamp']-$lasttime)/$measure['operation_count'],5).') (ops pr. sec '.number_format(1/(($measure['timestamp']-$lasttime)/$measure['operation_count']),2,'.','').')';
+            if ($measure['operation_count']) echo ' (average '.number_format(($measure['timestamp']-$lasttime)/$measure['operation_count'],5).')';
+            if ($measure['operation_count'] && $measure['timestamp']-$lasttime) echo ' (ops pr. sec '.number_format(1/(($measure['timestamp']-$lasttime)/$measure['operation_count']),2,'.','').')';
             echo '</td></tr>';
             $lasttime = $measure['timestamp'];
         }

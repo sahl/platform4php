@@ -199,21 +199,25 @@ class Datarecord implements DatarecordReferable {
                     static::addStructure(array(
                         $field.'_localvalue' => array(
                             'invisible' => true,
+                            'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_FLOAT,
                             'store_in_metadata' => $data['store_in_metadata']
                         ),
                         $field.'_currency' => array(
                             'invisible' => true,
+                            'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_TEXT,
                             'store_in_metadata' => $data['store_in_metadata']
                         ),
                         $field.'_exchange_rate' => array(
                             'invisible' => true,
+                            'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_FLOAT,
                             'store_in_metadata' => $data['store_in_metadata']
                         ),
                         $field.'_globalvalue' => array(
                             'invisible' => true,
+                            'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_FLOAT,
                             'store_in_metadata' => $data['store_in_metadata']
                         )
@@ -224,11 +228,13 @@ class Datarecord implements DatarecordReferable {
                     static::addStructure(array(
                         $field.'_foreign_class' => array(
                             'invisible' => true,
+                            'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_TEXT,
                             'store_in_metadata' => $data['store_in_metadata']
                         ),
                         $field.'_reference' => array(
                             'invisible' => true,
+                            'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_INTEGER,
                             'store_in_metadata' => $data['store_in_metadata']
                         )
@@ -1264,7 +1270,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 $result = array();
                 foreach ($this->getRawValue($field) as $item) {
-                    $result[] = static::$structure[$field]['enumeration'][$this->getRawValue($field)];
+                    $result[] = static::$structure[$field]['enumeration'][$item];
                 }
                 sort($result);
                 return $result;
@@ -1984,7 +1990,7 @@ class Datarecord implements DatarecordReferable {
         
         // Check definitions
         $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'form_size', 'calculations', 'default_value', 'invisible',
-            'fieldtype', 'label', 'columnvisibility', 'default',
+            'fieldtype', 'label', 'columnvisibility', 'default', 'subfield',
             'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup');
         
         foreach (static::getStructure() as $field => $definition) {
@@ -2099,11 +2105,13 @@ class Datarecord implements DatarecordReferable {
             break;
             case self::FIELDTYPE_REFERENCE_HYPER:
                 $class = $this->getRawValue($field.'_foreign_class');
+                if (! $class) return [];
                 $ids = array($this->getRawValue($field.'_reference'));
             break;
         }
         $missing = array();
         foreach ($ids as $id) {
+            if (! $id) continue;
             if (! isset(self::$foreign_reference_buffer[$class][$id])) $missing[] = $id;
         }
         // Fill buffer with all missing instances

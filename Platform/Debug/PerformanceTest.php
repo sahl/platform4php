@@ -1,58 +1,70 @@
 <?php
 namespace Platform\Debug;
 
+use Platform\ConditionGreaterEqual;
+use Platform\Datarecord;
+use Platform\Filter;
+use Platform\Utilities\Errorhandler;
+use Platform\Utilities\Time;
 
 class PerformanceTest {
     
-    private $class = null;
+    private static $reference_map = [];
     
-    public function __construct(string $classname) {
+    public function __construct(string $classname, $number_of_objects) {
         
-        for ($i = 0; $i < $this->number_of_objects; $i++) {
-            $object = new $class();
-            $this->autoFill($object);
+        $class_structure = $classname::getStructure();
+        
+        $maxid = 0;
+        
+        Errorhandler::measure('Start Generate '.$number_of_objects);
+        
+        for ($i = 0; $i < $number_of_objects; $i++) {
+            $object = new $classname();
+            self::autoFill($object);
             $object->save();
+            if (! $maxid) $maxid = $object->getKeyValue();
         }
         
-        \Platform\Utilities\Errorhandler::measure('Finished: Generate '.$this->number_of_objects.' objects.', $this->number_of_objects);
+        Errorhandler::measure('Finished: Generate '.$number_of_objects.' objects.', $number_of_objects);
         
-        \Platform\Utilities\Errorhandler::measure('Start: Read objects by filter.');
-        $filter = new \Platform\Filter($class);
-        $filter->addCondition(new \Platform\ConditionGreaterEqual($class::getKeyField(), $maxid));
+        Errorhandler::measure('Start: Read objects by filter.');
+        $filter = new Filter($classname);
+        $filter->addCondition(new ConditionGreaterEqual($classname::getKeyField(), $maxid));
         $collection = $filter->execute();
-        \Platform\Utilities\Errorhandler::measure('Finished: Read objects by filter.', $this->number_of_objects);
+        Errorhandler::measure('Finished: Read objects by filter.', $number_of_objects);
         
-        \Platform\Utilities\Errorhandler::measure('Start: Get all fields in visual mode.');
-        foreach ($collection as $object) {
-            foreach ($this->class_structure as $fieldname => $data) {
+        foreach ($class_structure as $fieldname => $data) {
+            Errorhandler::measure('Start: Get field '.$fieldname.' in in visual mode.');
+            foreach ($collection as $object) {
                 $dummy = $object->getFullValue($fieldname);
             }
+            Errorhandler::measure('Finished: Get field '.$fieldname.' in in visual mode.', $number_of_objects);
         }
-        \Platform\Utilities\Errorhandler::measure('Finished: Get all fields in visual mode.', $this->number_of_objects);
         
         $collection = null;
         
-        \Platform\Utilities\Errorhandler::measure('Start: Read objects by id one by one.');
-        for ($i = $maxid; $i < $maxid + $this->number_of_objects; $i++) {
-            $object = new $class();
+        Errorhandler::measure('Start: Read objects by id one by one.');
+        for ($i = $maxid; $i < $maxid + $number_of_objects; $i++) {
+            $object = new $classname();
             $object->loadForRead($i, false);
             $dummy = $object;
         }
-        \Platform\Utilities\Errorhandler::measure('Finished: Read objects by id one by one.', $this->number_of_objects);
-        
-        $filter = new \Platform\Filter($class);
-        $filter->addCondition(new \Platform\ConditionGreaterEqual($class::getKeyField(), $maxid));
+        Errorhandler::measure('Finished: Read objects by id one by one.', $number_of_objects);
+
+        $filter = new Filter($classname);
+        $filter->addCondition(new ConditionGreaterEqual($classname::getKeyField(), $maxid));
         $collection = $filter->execute();
-        \Platform\Utilities\Errorhandler::measure('Start: Delete objects by collection.');
+        Errorhandler::measure('Start: Delete objects by collection.');
         $collection->deleteAll();
-        \Platform\Utilities\Errorhandler::measure('End: Delete objects by collection.', $this->number_of_objects);
-        
-        \Platform\Utilities\Errorhandler::measure('Test complete.');
+        Errorhandler::measure('End: Delete objects by collection.', $number_of_objects);
+
+        Errorhandler::measure('Test complete.');
         
         // Restore auto increment
-        $class::query("ALTER TABLE ".$class::getDatabaseTable()." AUTO_INCREMENT = ".$maxid);
+        $classname::query("ALTER TABLE ".$classname::getDatabaseTable()." AUTO_INCREMENT = ".$maxid);
         
-        \Platform\Utilities\Errorhandler::renderMeasures();
+        Errorhandler::renderMeasures();
     }
     
     const string_content = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789                             ';
@@ -66,10 +78,99 @@ class PerformanceTest {
         return $str;
     }
     
-    private function getRandomReference(string $foreign_class) {
-        if ($this->reference_map[$foreign_class]) {
-            return $this->reference_map[$foreign_class][rand(0, count($this->reference_map[$foreign_class])-1)];
+    private static function getRandomReference(string $foreign_class) {
+        if (! self::$reference_map[$foreign_class]) {
+            $filter = new Filter($foreign_class);
+            $collection = $filter->execute();
+            self::$reference_map[$foreign_class] = $collection->getAllRawValues($foreign_class::getKeyField());
         }
-        return 0;
+        return self::$reference_map[$foreign_class][rand(0, count(self::$reference_map[$foreign_class])-1)];
+    }
+    
+    public static function autoFill($object) {
+        foreach ($object->getStructure() as $key => $definition) {
+            if ($definition['subfield']) continue;
+            switch ($definition['fieldtype']) {
+                case Datarecord::FIELDTYPE_TEXT:
+                    $object->setValue($key, self::generateString(5, 125));
+                    break;
+                case Datarecord::FIELDTYPE_INTEGER:
+                    $object->setValue($key, rand());
+                    break;
+                case Datarecord::FIELDTYPE_FLOAT:
+                    $object->setValue($key, rand()/rand(1,1000));
+                    break;
+                case Datarecord::FIELDTYPE_BOOLEAN:
+                    $object->setValue($key, rand(0,1));
+                    break;
+                case Datarecord::FIELDTYPE_BIGTEXT:
+                    $object->setValue($key, self::generateString(1024, 4096));
+                    break;
+                case Datarecord::FIELDTYPE_HTMLTEXT:
+                    $object->setValue($key, self::generateString(1024, 4096));
+                    break;
+                case Datarecord::FIELDTYPE_DATETIME:
+                    $time = new Time('now');
+                    $time->addDays(-rand(0,10*365));
+                    $time->add(-rand(0,60*60*24));
+                    $object->setValue($key, $time);
+                    break;
+                case Datarecord::FIELDTYPE_DATE:
+                    $time = new Time('now');
+                    $time->addDays(-rand(0,10*365));
+                    $object->setValue($key, $time);
+                    break;
+                case Datarecord::FIELDTYPE_CURRENCY:
+                    break;
+                case Datarecord::FIELDTYPE_EMAIL:
+                    $object->setValue($key, self::generateString(2, 15).'@'.self::generateString(5, 20).'.'.self::generateString(2, 3));
+                    break;
+                case Datarecord::FIELDTYPE_ARRAY:
+                    $j = rand(10,50);
+                    $result = [];
+                    for ($i = 0; $i < $j; $i++) {
+                        $result[] = rand(1,10000);
+                    }
+                    $object->setValue($key, $result);
+                    break;
+                case Datarecord::FIELDTYPE_OBJECT:
+                    $j = rand(10,50);
+                    $result = [];
+                    for ($i = 0; $i < $j; $i++) {
+                        $result[] = self::generateString(10, 40);
+                    }
+                    $object->setValue($key, $result);
+                    break;
+                case Datarecord::FIELDTYPE_ENUMERATION:
+                    $enums = array_keys($definition['enumeration']);
+                    shuffle($enums);
+                    $object->setValue($key, current($enums));
+                    break;
+                case Datarecord::FIELDTYPE_ENUMERATION_MULTI:
+                    $enums = array_keys($definition['enumeration']);
+                    shuffle($enums);
+                    $object->setValue($key, array_slice($enums,0, min(rand(2,10), count($enums))));
+                    break;
+                case Datarecord::FIELDTYPE_PASSWORD:
+                    $object->setValue($key, self::generateString(8, 25));
+                    break;
+                case Datarecord::FIELDTYPE_FILE:
+                case Datarecord::FIELDTYPE_IMAGE:
+                    break;
+                case Datarecord::FIELDTYPE_REFERENCE_SINGLE:
+                    $object->setValue($key, self::getRandomReference($definition['foreign_class']));
+                    break;
+                case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
+                    $j = rand(2,20);
+                    $result = [];
+                    for ($i = 0; $i < $j; $i++) {
+                        $result[] = self::getRandomReference($definition['foreign_class']);
+                    }
+                    $object->setValue($key, $result);
+                    break;
+                case Datarecord::FIELDTYPE_REFERENCE_HYPER:
+                    break;
+            }
+        }
     }
 }
