@@ -1153,6 +1153,9 @@ class Datarecord implements DatarecordReferable {
     public static function getFormFieldFromDefinition(string $name, array $definition) {
         $options = array();
         if ($definition['required']) $options['required'] = true;
+        // Some fields never yield a form field
+        if (in_array($definition['fieldtype'], [self::FIELDTYPE_ARRAY, self::FIELDTYPE_OBJECT])) return null;
+        
         if ($definition['invisible']) {
             return new \Platform\Form\HiddenField('', $name);
         }
