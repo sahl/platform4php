@@ -24,6 +24,8 @@ class Form extends \Platform\UI\Component {
     private $form_id = array();
     
     private $global_errors = array();
+    
+    public static $is_secure = false;
 
     private $save_on_submit = self::SAVE_NO;
     
@@ -31,7 +33,7 @@ class Form extends \Platform\UI\Component {
     
     private $validationfunctions = array();
     
-    public function __construct(string $form_id, string $filename = '') {
+    public function __construct(string $form_id = '', string $filename = '') {
         Page::JSFile('/Platform/Form/js/autosize.js');
         Page::JSFile('/Platform/Form/js/form.js');
         Page::JSFile('/Platform/Form/js/multiplier.js');
@@ -282,6 +284,16 @@ class Form extends \Platform\UI\Component {
             self::injectValue($name, $values, $value);
         }
         $this->setValues($values);
+    }
+    
+    public function handleIO(): array {
+        switch($_POST['event']) {
+            case 'currency_lookup':
+                if (!is_numeric($_POST['foreignvalue']) || !Currency\Currency::isValidCurrency($_POST['currency'])) return ['status' => 0];
+                $rate = Currency\Rate::getRate($_POST['currency'], Utilities\Time::today());
+                return ['status' => 1, 'localvalue' => $_POST['foreignvalue']/$rate];
+        }
+        return parent::handleIO();
     }
     
     /**
