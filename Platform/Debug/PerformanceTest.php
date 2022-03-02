@@ -68,12 +68,14 @@ class PerformanceTest {
     }
     
     const string_content = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789                             ';
+    const string_content_nospaces = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     
-    private static function generateString($minlength, $maxlength) {
+    private static function generateString($minlength, $maxlength, $nospaces = false) {
         $length = rand(0,$maxlength-$minlength)+$minlength;
         $str = '';
+        $const = $nospaces ? self::string_content_nospaces : self::string_content;
         for ($i = 0; $i < $length; $i++) {
-            $str .= substr(self::string_content, rand(0,strlen(self::string_content)-1),1);
+            $str .= substr($const, rand(0,strlen($const)-1),1);
         }
         return $str;
     }
@@ -123,7 +125,7 @@ class PerformanceTest {
                 case Datarecord::FIELDTYPE_CURRENCY:
                     break;
                 case Datarecord::FIELDTYPE_EMAIL:
-                    $object->setValue($key, self::generateString(2, 15).'@'.self::generateString(5, 20).'.'.self::generateString(2, 3));
+                    $object->setValue($key, self::generateString(2, 15, true).'@'.self::generateString(5, 20, true).'.'.self::generateString(2, 3, true));
                     break;
                 case Datarecord::FIELDTYPE_ARRAY:
                     $j = rand(10,50);
