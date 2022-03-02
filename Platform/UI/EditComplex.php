@@ -13,8 +13,6 @@ class EditComplex extends Component {
     
     protected static $can_redraw = false;
     
-    protected $class;
-    
     public $column_selector;
     
     public $edit_dialog;
@@ -33,7 +31,6 @@ class EditComplex extends Component {
      */
     protected $action_locations = [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU];
     
-    
     /**
      * 
      * @var ButtonMenu
@@ -41,36 +38,19 @@ class EditComplex extends Component {
     public $table_menu;
     
     
-    /**
-     * URL to the datarecord provider for table
-     * @var string 
-     */
-    protected static $url_table_datarecord = '/Platform/UI/php/table_datarecord.php';
-    
-    /**
-     * URL to the datarecord io handler
-     * @var string 
-     */
-    protected static $url_io_datarecord = '/Platform/UI/php/io_datarecord.php';
-    
-    
-    public function __construct(string $class, array $table_parameters = array()) {
+    public function __construct() {
         self::JSFile('/Platform/UI/js/editcomplex.js');
         self::CSSFile('/Platform/UI/css/EditComplex.css');
         parent::__construct();
-        $this->class = $class;
-        if (! class_exists($this->class)) trigger_error('Invalid class passed to EditComplex.', E_USER_ERROR);
-        $this->setID($class::getClassName().'_editcomplex');
-        $this->constructTable($table_parameters);
-        $this->constructTableMenu();
-        $this->constructEditDialog();
         
-        $this->column_selector = $this->table->getColumnSelectComponent();
-        
-        $this->addData('name', $this->class::getObjectName());
-        $this->addData('shortclass', $class::getClassName());
-        $this->addData('class', $class);
-        $this->addData('io_datarecord', static::$url_io_datarecord);
+        $this->addPropertyMap(['class' => null, 'table_parameters' => []]);
+    }
+    
+    public static function construct(string $class, array $table_parameters = []) : EditComplex {
+        $editcomplex = new EditComplex();
+        $editcomplex->class = $class;
+        $editcomplex->table_parameters = $table_parameters;
+        return $editcomplex;
     }
     
     protected function constructEditDialog() {
@@ -86,7 +66,9 @@ class EditComplex extends Component {
 
     protected function constructTable(array $table_parameters = []) {
         $this->table = Table::getTableFromClass($this->getID().'_table', $this->class, $table_parameters);
-        $this->table->setDataURL(static::$url_table_datarecord.'?class='.$this->class);
+        $this->table->setDataRequestEvent('get_data');
+        $this->registerEvent('get_data');
+        $this->table->setStyle('max-height: 500px');
     }
     
     protected function constructTableMenu() {
@@ -110,6 +92,100 @@ class EditComplex extends Component {
         $this->table->addMultiButton('Edit', 'edit', Table::SELECTABLE_EXACT_ONE_SELECTED);
         $this->table->addMultiButton('Delete', 'delete', Table::SELECTABLE_ONE_OR_MORE_SELECTED);
         $this->table->addMultiButton('Columns', 'columns', Table::SELECTABLE_ALWAYS);
+    }
+    
+    public function handleIO(): array {
+        switch ($_POST['event']) {
+            case 'get_data':
+                if ($_POST['filter']) $filter = \Platform\Filter::getFilterFromJSON ($_POST['filter']);
+                else $filter = new \Platform\Filter($this->class);
+                $filter->setPerformAccessCheck(true);
+                $datacollection = $filter->execute();
+
+                $result = Table::getDataFromCollection($datacollection);
+                return $result;
+            case 'datarecord_load':
+                $datarecord = new $this->class();
+                if ($_POST['id']) $datarecord->loadForRead($_POST['id']);
+                if ($datarecord->isInDatabase() || ! $_POST['id']) {
+                    if ($datarecord->canEdit()) {
+                        $result = array(
+                            'status' => 1,
+                            'data' => $datarecord->getAsArrayForForm()
+                        );
+                    } else {
+                        $result = array(
+                            'status' => 0,
+                            'errormessage' => 'You don\'t have permissions to edit this '.$datarecord->getObjectName()
+                        );
+                    }
+                } else {
+                    $result = array(
+                        'status' => 0,
+                        'errormessage' => 'Requested data not available'
+                    );
+                }
+                return $result;
+            case 'datarecord_delete':
+                $result = array('status' => 1);
+                foreach (json_decode($_POST['ids']) as $id) {
+                    $datarecord = new $this->class();
+                    $datarecord->loadForWrite($id);
+                    $deleteresult = $datarecord->canDelete();
+                    if ($deleteresult !== true) {
+                        $result = array(
+                            'status' => 0,
+                            'errormessage' => $datarecord->getTitle().': '.$deleteresult
+                        );
+                        break;
+                    }
+                    $datarecord->delete();
+                }
+                return $result;
+            case 'datarecord_copy':
+                $result = array('status' => 1);
+                foreach (json_decode($_POST['ids']) as $id) {
+                    $datarecord = new $this->class();
+                    $datarecord->loadForRead($id);
+                    $datarecord->copy();
+                }
+                return $result;
+        }
+        $form = $this->class::getForm();
+        if ($form->isSubmitted()) {
+            $form->addValidationFunction($this->class.'::validateForm');
+            if ($form->validate ()) {
+                $values = $form->getValues();
+                $datarecord = new $this->class();
+                if ($values[$datarecord->getKeyField()]) $datarecord->loadForWrite($values[$datarecord->getKeyField()]);
+                if (! $datarecord->canEdit() || ! $this->class::canCreate() && ! $datarecord->isInDatabase()) $result = array('status' => 0, 'message' => 'You don\'t have permissions to edit this '.$datarecord->getObjectName());
+                else {
+                    $datarecord->setFromArray($values);
+                    $datarecord->save();
+                    $result = array('status' => 1);
+                }
+            } else {
+                $result = array('status' => 0, 'errors' => $form->getAllErrors());
+            }
+            return $result;
+        }
+        
+        return parent::handleIO();
+    }
+    
+    public function prepareData() {
+        parent::prepareData();
+        if (! class_exists($this->class)) trigger_error('Invalid class passed to EditComplex.', E_USER_ERROR);
+        $this->setID($this->class::getClassName().'_editcomplex');
+        $this->constructTable($this->table_parameters);
+        $this->constructTableMenu();
+        $this->constructEditDialog();
+
+        $this->addData('name', $this->class::getObjectName());
+        $this->addData('shortclass', $this->class::getClassName());
+        $this->addData('class', $this->class);
+        
+        $this->column_selector = $this->table->getColumnSelectComponent();
     }
     
     public function renderContent() {

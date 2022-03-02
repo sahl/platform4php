@@ -128,11 +128,11 @@ addPlatformComponentHandlerFunction('table', function(item) {
                columns.push({field: element._column.definition.field, width: element._column.width});
            }
        })
-       $.post('/Platform/UI/php/save_table_properties.php', {id: tableid, action: 'saveorderandwidth', properties: columns});
+       item.componentIO({event: 'saveorderandwidth', properties: columns});
     }
    
     function saveTableSort(tableid, column, direction) {
-       $.post('/Platform/UI/php/save_table_properties.php', {id: tableid, action: 'savesort', column: column, direction: direction});
+        item.componentIO({event: 'savesort', column:column, direction: direction});
     }
     
     function setMultiButton(element, number_of_selected_rows) {
@@ -193,8 +193,15 @@ addPlatformComponentHandlerFunction('table', function(item) {
         if (control_form) control_form.submit();
         else {
             initial_sort_completed = false;
-            table.setData(data_url);
-            initial_sort_completed = true;
+            if (data_request_event) {
+                item.trigger(data_request_event, ['__data_request_event', {}, function(table_data) {
+                    table.setData(table_data);
+                    initial_sort_completed = true;
+                }])
+            } else {
+                table.setData(data_url);
+                initial_sort_completed = true;
+            }
         }
         return true;
     })

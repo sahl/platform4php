@@ -52,21 +52,21 @@ addPlatformComponentHandlerFunction('editcomplex', function(element) {
     
     function launchCopy(ids) {
         confirmDialog('Copy', 'Are you sure you want to copy this '+name, function() {
-            $.post(script, {event: 'datarecord_copy', ids: JSON.stringify(ids), __class: classname}, function(data) {
+            element.componentIO({event: 'datarecord_copy', ids: JSON.stringify(ids)}, function(data) {
                 // Reload tabulator
-                table.replaceData();
+                table_div.trigger('reload_data');
             })
         })
     }
     
     function launchDelete(ids) {
         confirmDialog('Delete '+name, 'You are about to delete the selected '+name+'(s)', function() {
-            $.post(script, {event: 'datarecord_delete', ids: JSON.stringify(ids), __class: classname}, function(data) {
+            element.componentIO({event: 'datarecord_delete', ids: JSON.stringify(ids)}, function(data) {
                 if (data.status == 0) {
                     warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
                 }
                 if (table) {
-                    table.replaceData();
+                    table_div.trigger('reload_data');
                 } 
             }, 'json');
         })        
@@ -75,16 +75,20 @@ addPlatformComponentHandlerFunction('editcomplex', function(element) {
     function launchEdit(id) {
         form.clearForm();
         // Load values
-        form.loadValues(script, {event: 'datarecord_load', id: id, __class: classname}, function() {
-            if (id) {
-                $(dialog).dialog('option', 'title', 'Edit '+name).dialog('open');
-            } else {
-                $(dialog).dialog('option', 'title', 'New '+name).dialog('open');
-                // Find default values (if any)
-                form.attachValues(JSON.parse(element.find('.default_values').html()));
+        element.componentIO({event: 'datarecord_load', id: id}, function(data) {
+            if (data.status == 1) {
+                form.attachValues(data.data);
+                form.trigger('dataloaded');
+                if (id) {
+                    $(dialog).dialog('option', 'title', 'Edit '+name).dialog('open');
+                } else {
+                    $(dialog).dialog('option', 'title', 'New '+name).dialog('open');
+                    // Find default values (if any)
+                    form.attachValues(JSON.parse(element.find('.default_values').html()));
+                }
+                dialog.dialog('open');
             }
-            dialog.dialog('open');
-        });                  
+        })
     }
     
     function prepareDialog() {
@@ -95,21 +99,16 @@ addPlatformComponentHandlerFunction('editcomplex', function(element) {
     
     function prepareForm() {
         form.find('input[name="form_event"]').val('datarecord_save');
-        form.prepend('<input type="hidden" name="__class" value="'+short_classname+'">');
-        form.submit(function() {
-            $(form).find('[name="__class"]').val(classname);
-            $.post(script, form.serialize(), function(data) {
-                if (data.status) {
-                    if (table) {
-                        table.replaceData();
-                    } 
-                    $(dialog).dialog('close');
-                } else {
-                    add_errors_to_form(form, data.errors);
-                }
-            }, 'json');
-            return false;
-        })
+        element.componentIOForm(form, function(data) {
+            if (data.status) {
+                if (table) {
+                    table_div.trigger('reload_data');
+                } 
+                $(dialog).dialog('close');
+            } else {
+                add_errors_to_form(form, data.errors);
+            }
+        });
     }
 
     function prepareMenu(menu) {

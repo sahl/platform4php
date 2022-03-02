@@ -30,22 +30,31 @@ class Table extends Component {
     private $data_request_event = null;
     
     private $include_column_selector = false;
+    
+    private $table_style = [];
 
     /**
      * Construct a new table
      * @param string $id Table ID
      */
-    public function __construct(string $id) {
+    public function __construct() {
         self::JSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js');
         self::JSFile('/Platform/UI/js/table.js');
         self::CSSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css');
         self::CSSFile('/Platform/UI/css/table.css');
         self::JSFile('https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js');
         parent::__construct();
-        $this->setID($id);
         $this->setTabulatorOption('layout', 'fitColumns');
         $this->setTabulatorOption('placeholder', 'No data');
         $this->setTabulatorOption('movableColumns', true);
+        
+        $this->addPropertyMap(['id' => null]);
+    }
+    
+    public static function construct(string $id) : Table {
+        $table = new Table();
+        $table->id = $id;
+        return $table;
     }
     
     public function addColumnSelector() {
@@ -244,12 +253,13 @@ class Table extends Component {
             }
         }
         // Sort by first named column
-        foreach ($this->tabulator_options['columns'] as $column) {
-            if ($column['title']) {
-                $this->setSort($column['field']);
-                return;
+        if ($this->tabulator_options['columns'])
+            foreach ($this->tabulator_options['columns'] as $column) {
+                if ($column['title']) {
+                    $this->setSort($column['field']);
+                    return;
+                }
             }
-        }
     }
     
     /**
@@ -302,6 +312,38 @@ class Table extends Component {
         }
     }
     
+    public function handleIO(): array {
+        switch ($_POST['event']) {
+            case 'saveorderandwidth':
+                if (!\Platform\Security\Accesstoken::getCurrentUserID()) return [];
+                $existingproperties = \Platform\Property::getForCurrentUser('tableconfiguration', $this->id);
+                if (! is_array($existingproperties)) $existingproperties = array();
+                $newproperties = array();
+                foreach ($_POST['properties'] as $element) {
+                    $properties = array(
+                        'width' => $element['width']
+                    );
+                    if (isset($existingproperties[$element['field']]['visible'])) $properties['visible'] = $existingproperties[$element['field']]['visible'];
+                    $newproperties[$element['field']] = $properties;
+                }
+                \Platform\Property::setForCurrentUser('tableconfiguration', $this->id, $newproperties);
+                return [];
+            case 'savesort':
+                if (!\Platform\Security\Accesstoken::getCurrentUserID()) return [];
+                $existingproperties = \Platform\Property::getForCurrentUser('tableconfiguration', $this->id);
+                if (! is_array($existingproperties)) $existingproperties = array();
+                $existingproperties['sort_column'] = $_POST['column'];
+                $existingproperties['sort_direction'] = $_POST['direction'];
+                \Platform\Property::setForCurrentUser('tableconfiguration', $this->id, $existingproperties);
+            break;
+                
+                
+                
+                
+        }
+        return parent::handleIO();
+    }
+    
     /**
      * Check if this table have a column with the given field name
      * @param Column field name $column_name
@@ -330,6 +372,9 @@ class Table extends Component {
     }
     
     public function prepareData() {
+        if ($this->id) $this->setID($this->id);
+        $this->table_style = implode(';', $this->styles);
+        $this->styles = [];
         parent::prepareData();
         $this->prepareTableData();
         if ($this->data_request_event) $this->setTabulatorOption('data_request_event', $this->data_request_event);
@@ -377,7 +422,7 @@ class Table extends Component {
      */
     public function renderContent() {
         $this->renderMultiButtons();
-        echo '<div class="table_configuration" id="'.$this->getID().'_table">';
+        echo '<div class="table_configuration" id="'.$this->getID().'_table" style="'.$this->table_style.'">';
         echo '</div>';
         echo '<div class="pagination"></div>';
         if ($this->include_column_selector) {
