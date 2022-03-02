@@ -326,7 +326,7 @@ class Table extends Component {
                     if (isset($existingproperties[$element['field']]['visible'])) $properties['visible'] = $existingproperties[$element['field']]['visible'];
                     $newproperties[$element['field']] = $properties;
                 }
-                \Platform\Property::setForCurrentUser('tableconfiguration', $this->id, $newproperties);
+                \Platform\Property::setForCurrentUser('platform', 'table_configuration_'.$this->id, $newproperties);
                 return [];
             case 'savesort':
                 if (!\Platform\Security\Accesstoken::getCurrentUserID()) return [];
@@ -334,7 +334,7 @@ class Table extends Component {
                 if (! is_array($existingproperties)) $existingproperties = array();
                 $existingproperties['sort_column'] = $_POST['column'];
                 $existingproperties['sort_direction'] = $_POST['direction'];
-                \Platform\Property::setForCurrentUser('tableconfiguration', $this->id, $existingproperties);
+                \Platform\Property::setForCurrentUser('platform', 'table_configuration_'.$this->id, $existingproperties);
             break;
                 
                 

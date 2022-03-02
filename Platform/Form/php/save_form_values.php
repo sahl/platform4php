@@ -9,6 +9,6 @@ switch ($_POST['destination']) {
         break;
     case Platform\Form::SAVE_PROPERTY:
         if (! Accesstoken::validateSession()) die();
-        \Platform\Property::setForCurrentUser('platform_saved_forms', $_POST['formid'], $_POST['formdata']);
+        \Platform\Property::setForCurrentUser('platform', 'saved_form_'.$_POST['formid'], $_POST['formdata']);
         break;
 }
