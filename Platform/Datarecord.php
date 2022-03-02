@@ -955,6 +955,7 @@ class Datarecord implements DatarecordReferable {
     public function getAsArrayForForm() : array {
         $result = array();
         foreach (static::$structure as $fieldname => $data) {
+            if ($data['subfield']) continue;
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
             $result[$fieldname] = $this->getValue($fieldname, self::RENDER_FORM);
         }
@@ -1182,6 +1183,8 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_IMAGE:
                 $options['images_only'] = true;
                 return new \Platform\Form\FileField($definition['label'], $name, $options);
+            case self::FIELDTYPE_CURRENCY:
+                return new \Platform\Form\CurrencyField($definition['label'], $name);
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 $options['class'] = $definition['foreign_class'];
                 return new \Platform\Form\DatarecordcomboboxField($definition['label'], $name, $options);
@@ -1230,6 +1233,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_HTMLTEXT:
+            case self::FIELDTYPE_CURRENCY:
                 return $this->getRawValue($field);
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:
@@ -1264,6 +1268,8 @@ class Datarecord implements DatarecordReferable {
                 return $this->getRawValue($field) ? '<a href="mailto:'.$this->getRawValue($field).'">'.$this->getRawValue($field).'</a>' : '';
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
+            case self::FIELDTYPE_CURRENCY:
+                return $this->getRawValue($field.'_foreigncurrency').' '.$this->getRawValue($field.'_currency');
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 $result = array();
                 foreach ($this->getRawValue($field) as $item) {
@@ -1554,6 +1560,12 @@ class Datarecord implements DatarecordReferable {
                 return array('foreign_class' => $this->values[$field.'_foreign_class'], 'reference' => $this->values[$field.'_reference']);
             case self::FIELDTYPE_ENUMERATION:
                 return $this->values[$field] ?: null;
+            case self::FIELDTYPE_CURRENCY:
+                return [
+                    'localvalue' => $this->values[$field.'_localvalue'],
+                    'currency' => $this->values[$field.'_currency'],
+                    'foreignvalue' => $this->values[$field.'_foreignvalue'],
+                ];
             default:
                 return $this->values[$field];
         }
@@ -2317,6 +2329,20 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
                 $this->values[$field] = new Time($value);
+                break;
+            case self::FIELDTYPE_CURRENCY:
+                if (is_array($value)) {
+                    if (! array_key_exists('localvalue', $value)) trigger_error('Invalid value passed to currency field. Missing localvalue from array.', E_USER_ERROR);
+                    if (! array_key_exists('currency', $value)) trigger_error('Invalid value passed to currency field. Missing currency from array.', E_USER_ERROR);
+                    if (! array_key_exists('foreignvalue', $value)) trigger_error('Invalid value passed to currency field. Missing foreignvalue from array.', E_USER_ERROR);
+                    $this->values[$field.'_localvalue'] = $value['localvalue'];
+                    $this->values[$field.'_currency'] = $value['currency'];
+                    $this->values[$field.'_foreignvalue'] = $value['foreignvalue'];
+                } else {
+                    $this->values[$field.'_localvalue'] = $value;
+                    if (! $this->values[$field.'_currency']) $this->values[$field.'_currency'] = Currency\Currency::getBaseCurrency();
+                    if (! $this->values[$field.'_foreignvalue']) $this->values[$field.'_foreignvalue'] = $value;
+                }
                 break;
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:

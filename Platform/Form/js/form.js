@@ -67,6 +67,18 @@ addPlatformComponentHandlerFunction('form', function(item) {
              return false;
          }
      });
+     
+    // Add currency handler
+    $('.currency_currency,.currency_foreignvalue', item).change(function() {
+        var component = $(this);
+        item.componentIO({
+            event: 'currency_lookup',
+            foreignvalue: $(this).parent().find('.currency_foreignvalue').val(),
+            currency: $(this).parent().find('.currency_currency').val()
+        }, function(data) {
+            if (data.status == 1) component.parent().find('.currency_localvalue').val(data.localvalue);
+        })
+    })
 
     // Clear errors when changing fields
      $('.platform_form_field',item).change(function() {
@@ -157,6 +169,14 @@ $.fn.attachValues = function(values) {
                     else el.find('option:first-child').prop('selected', true);
                 }
             } else {
+                // Try for currency
+                if (value.localvalue) {
+                    console.log('Local '+value.localvalue+' for '+key);
+                    element.find('[name="'+key+'[localvalue]"]').val(value.localvalue);
+                    element.find('[name="'+key+'[currency]"]').val(value.currency);
+                    element.find('[name="'+key+'[foreignvalue]"]').val(value.foreignvalue);
+                    return true; // Continue
+                }
                 // Try for combobox
                 var el = element.find('[name="'+key+'[visual]"]');
                 if (el.length) {
