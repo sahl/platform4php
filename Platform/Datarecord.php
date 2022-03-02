@@ -1276,7 +1276,7 @@ class Datarecord implements DatarecordReferable {
                     $result[] = static::$structure[$field]['enumeration'][$item];
                 }
                 sort($result);
-                return $result;
+                return implode(', ',$result);
             case self::FIELDTYPE_DATETIME:
                 return $this->getRawValue($field)->getReadable();
             case self::FIELDTYPE_DATE:
@@ -1288,6 +1288,8 @@ class Datarecord implements DatarecordReferable {
                 return str_replace("\n", '<br>', $this->getRawValue($field));
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 'Yes' : 'No';
+            case self::FIELDTYPE_OBJECT:
+                return '';
             default:
                 return $this->getRawValue($field);
         }
@@ -1556,6 +1558,8 @@ class Datarecord implements DatarecordReferable {
                 return $this->values[$field] instanceof Time ? $this->values[$field] : new Time();
             case self::FIELDTYPE_REFERENCE_HYPER:
                 return array('foreign_class' => $this->values[$field.'_foreign_class'], 'reference' => $this->values[$field.'_reference']);
+            case self::FIELDTYPE_ENUMERATION:
+                return $this->values[$field] ?: null;
             default:
                 return $this->values[$field];
         }
@@ -1586,7 +1590,7 @@ class Datarecord implements DatarecordReferable {
      * @return \Platform\UI\EditComplex
      */
     public static function getEditComplex(array $parameters = array()) : UI\EditComplex {
-        return new UI\EditComplex(get_called_class(), $parameters);        
+        return UI\EditComplex::construct(get_called_class(), $parameters);        
     }
     
     /**
@@ -2274,7 +2278,7 @@ class Datarecord implements DatarecordReferable {
                 break;
             case self::FIELDTYPE_ENUMERATION:
                 // Fail if trying to set invalid value.
-                if ($value !== null && ! isset(static::$structure[$field]['enumeration'][$value])) trigger_error('Tried to set invalid ENUMERATION value '.$value.' in field: '.$field, E_USER_ERROR);
+                if ($value && ! isset(static::$structure[$field]['enumeration'][$value])) trigger_error('Tried to set invalid ENUMERATION value '.$value.' in field: '.$field, E_USER_ERROR);
                 $this->values[$field] = (int)$value;
                 break;
             case self::FIELDTYPE_ENUMERATION_MULTI:

@@ -8,9 +8,10 @@ class DatetimeField extends Field {
     
     public function __construct(string $label, string $name, array $options = array()) {
         parent::__construct($label, $name, $options);
+        $this->value = new Time();
     }
     
-    public function setValue(string $value) {
+    public function setValue($value) {
         $this->value = $value;
     }
     

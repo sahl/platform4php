@@ -143,6 +143,7 @@ class Accesstoken extends Datarecord {
      * @return Accesstoken The Accesstoken or a new token if none was found
      */
     public static function getByTokencode(string $token_code) : Accesstoken {
+        if (! $token_code) return new Accesstoken ();
         $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('token_code', $token_code));
         return $filter->executeAndGetFirst();

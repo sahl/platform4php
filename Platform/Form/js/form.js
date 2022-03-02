@@ -144,7 +144,7 @@ $.fn.attachValues = function(values) {
                         el.prop('checked', value == 1);
                     } else {
                         // Extract IDs from complex fields
-                        if (typeof value === 'object' && value.id) value = value.id;
+                        if (typeof value === 'object' && value !== null && value.id) value = value.id;
                         el.val(value);
                         if (el.is('.texteditor')) {
                             el.summernote('reset');
