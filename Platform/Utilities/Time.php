@@ -380,6 +380,15 @@ class Time {
     }
     
     /**
+     * Get the start of day of this time
+     * @return Time
+     */
+    public function startOfDay() : Time {
+        $this->timestamp = strtotime($this->get('Y-m-d 00:00:00'));
+        return $this;
+    }    
+    
+    /**
      * Return a new time with the current time at midnight today
      * @return \Platform\Utilities\Time
      */

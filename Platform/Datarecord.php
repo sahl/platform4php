@@ -209,13 +209,7 @@ class Datarecord implements DatarecordReferable {
                             'fieldtype' => self::FIELDTYPE_TEXT,
                             'store_in_metadata' => $data['store_in_metadata']
                         ),
-                        $field.'_exchange_rate' => array(
-                            'invisible' => true,
-                            'subfield' => true,
-                            'fieldtype' => self::FIELDTYPE_FLOAT,
-                            'store_in_metadata' => $data['store_in_metadata']
-                        ),
-                        $field.'_globalvalue' => array(
+                        $field.'_foreignvalue' => array(
                             'invisible' => true,
                             'subfield' => true,
                             'fieldtype' => self::FIELDTYPE_FLOAT,

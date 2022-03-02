@@ -256,6 +256,7 @@ class Instance extends \Platform\Datarecord {
         \Platform\ExtensibleField::ensureInDatabase();
         \Platform\User::ensureInDatabase();
         \Platform\Property::ensureInDatabase();
+        \Platform\Currency\Rate::ensureInDatabase();
     }
     
     /**
