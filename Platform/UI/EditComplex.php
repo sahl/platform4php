@@ -46,7 +46,7 @@ class EditComplex extends Component {
         $this->addPropertyMap(['class' => null, 'table_parameters' => []]);
     }
     
-    public static function construct(string $class, array $table_parameters = []) : EditComplex {
+    public static function EditComplex(string $class, array $table_parameters = []) : EditComplex {
         $editcomplex = new EditComplex();
         $editcomplex->class = $class;
         $editcomplex->table_parameters = $table_parameters;
@@ -61,7 +61,7 @@ class EditComplex extends Component {
         );
         $form = $this->class::getForm();
         
-        $this->edit_dialog = new Dialog($short_class.'_edit_dialog', 'Edit '.$this->class::getObjectName(), '', $buttons, $form);
+        $this->edit_dialog = Dialog::Dialog($short_class.'_edit_dialog', 'Edit '.$this->class::getObjectName(), '', $buttons, $form);
     }
 
     protected function constructTable(array $table_parameters = []) {
@@ -175,7 +175,7 @@ class EditComplex extends Component {
     
     public function prepareData() {
         parent::prepareData();
-        if (! class_exists($this->class)) trigger_error('Invalid class passed to EditComplex.', E_USER_ERROR);
+        if (! class_exists($this->class)) trigger_error('Invalid class "'.$this->class.'" passed to EditComplex.', E_USER_ERROR);
         $this->setID($this->class::getClassName().'_editcomplex');
         $this->constructTable($this->table_parameters);
         $this->constructTableMenu();

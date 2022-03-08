@@ -8,13 +8,18 @@ class TableColumnSelector extends Component {
     
     protected static $can_redraw = false;
 
-    public function __construct(Table $table) {
-        self::JSFile('/Platform/UI/js/columnselector.js');
+    public function __construct() {
         parent::__construct();
-        $this->table = $table;
-        $this->setID($table->getID().'_component_select');
-        $this->addData('table_id', $table->getID());
-        $this->buildDialog();
+        self::JSFile('/Platform/UI/js/columnselector.js');
+        $this->addPropertyMap(
+                ['table_class' => null]
+        );
+    }
+    
+    public static function TableColumnSelector(Table $table) : TableColumnSelector {
+        $table_column_selector = new TableColumnSelector();
+        $table_column_selector->table_class = get_class($table);
+        return $table_column_selector;
     }
 
     /**
@@ -22,7 +27,14 @@ class TableColumnSelector extends Component {
      * @return \Platform\UI\Dialog
      */
     public function buildDialog() {
-        $this->dialog = new Dialog($this->getID().'_dialog', 'Select columns', '', array('save_columns' => 'Select columns', 'close' => 'Cancel'), $this->table->getColumnSelectForm());
+        $this->dialog = Dialog::Dialog($this->getID().'_dialog', 'Select columns', '', array('save_columns' => 'Select columns', 'close' => 'Cancel'), $this->table->getColumnSelectForm());
+    }
+    
+    public function prepareData() {
+        $this->table = new $this->table_class();
+        $this->buildDialog();
+        $this->setID($this->table->getID().'_component_select');
+        $this->addData('table_id', $this->table->getID());
     }
     
     public function renderContent() {

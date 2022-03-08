@@ -3,7 +3,7 @@ include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
 \Platform\Page::renderPagestart('Log into instance');
 
-$loginform = new \Platform\Form('loginform', 'login.frm');
+$loginform = \Platform\Form::Form('loginform', 'login.frm');
 
 $loginform->addValidationFunction(function($form) {
     // First check if instance exists

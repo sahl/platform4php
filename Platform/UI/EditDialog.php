@@ -6,28 +6,25 @@ use Platform\Utilities\Translation;
 
 class EditDialog extends Dialog {
     
-    /**
-     * URL to the datarecord io handler
-     * @var string 
-     */
-    protected static $url_io_datarecord = '/Platform/UI/php/io_datarecord.php';
+    public function __construct() {
+        parent::__construct();
+        $this->addPropertyMap(
+            ['class' => null]
+        );
+        self::JSFile(\Platform\Utilities::directoryToURL(__DIR__.'/js/EditDialog.js'));
+    }
     
-    protected $class = null;
-    
-    
-    public function __construct(string $class) {
-        if (!class_exists($class)) trigger_error('Invalid class passed to EditDialog', E_USER_ERROR);
-        $this->class = $class;
+    public static function EditDialog(string $class) : EditDialog {
+        $edit_dialog = new EditDialog();
+        $edit_dialog->setID($class::getClassName().'_edit_dialog');
+        $edit_dialog->title = Translation::translateForUser('Edit %1', $class::getObjectName());
+        $edit_dialog->addData('buttons', ['save' => Translation::translateForUser('Save'), 'close' => Translation::translateForUser('Cancel')]);
+        $edit_dialog->class = $class;
+        $edit_dialog->form = $class::getForm();
         
-        parent::__construct($class::getClassName().'_edit_dialog', Translation::translateForUser('Edit %1', $class::getObjectName()), '', ['save' => Translation::translateForUser('Save'), 'close' => Translation::translateForUser('Cancel')]);
-        
-        $this->form = $class::getForm();
-        
-        self::JSFile('/Platform/UI/js/EditDialog.js');
-        
-        $this->addData('io_datarecord', self::$url_io_datarecord);
-        $this->addData('classname', $class);
-        $this->addData('element_name', $class::getObjectName());
+        $edit_dialog->addData('classname', $class);
+        $edit_dialog->addData('element_name', $class::getObjectName());
+        return $edit_dialog;
     }
     
     public function prepareData() {

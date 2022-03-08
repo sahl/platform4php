@@ -51,7 +51,7 @@ class Table extends Component {
         $this->addPropertyMap(['id' => null]);
     }
     
-    public static function construct(string $id) : Table {
+    public static function Table(string $id) : Table {
         $table = new Table();
         $table->id = $id;
         return $table;
@@ -159,7 +159,7 @@ class Table extends Component {
      * @return \Platform\UI\TableColumnSelector
      */
     public function getColumnSelectComponent() {
-        return new TableColumnSelector($this);
+        return TableColumnSelector::TableColumnSelector($this);
     }
 
     /**
@@ -167,7 +167,7 @@ class Table extends Component {
      * @return \Platform\Form
      */
     public function getColumnSelectForm() {
-        $form = new Form($this->getID().'_select_column_form');
+        $form = Form::Form($this->getID().'_select_column_form');
         
         // Extract column names
         $options = array(); $selected = array();
@@ -271,7 +271,7 @@ class Table extends Component {
      */
     public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
-        $table = new static($id);
+        $table = Table::Table($id);
         $table->setColumnsFromDatarecord($class);
         $table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$class);
         $table->setTabulatorOption('placeholder', 'No '.$class::getObjectName());
@@ -511,8 +511,7 @@ class Table extends Component {
     
     
     public function setFilter(Filter $filter) {
-        $this->setTabulatorOption('ajaxConfig', 'post');
-        $this->setTabulatorOption('ajaxParams', array('filter' => $filter->getAsJSON()));
+        $this->setTabulatorOption('jsonfilter', $filter->getAsJSON());
     }
 
     /**

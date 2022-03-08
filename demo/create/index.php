@@ -3,7 +3,7 @@ include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
 \Platform\Page::renderPagestart('Create new instance');
 
-$new_instance_form = new \Platform\Form('new_instance_form', 'new_instance.frm');
+$new_instance_form = \Platform\Form::Form('new_instance_form', 'new_instance.frm');
 
 $new_instance_form->addValidationFunction(function($new_instance_form) {
     // Check if instance if taken

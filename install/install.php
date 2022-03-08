@@ -35,7 +35,7 @@ use Platform\Page;
 if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
 
 // Get install configuration form
-$install_form = new Form('install_form', 'install.frm');
+$install_form = Form::Form('install_form', 'install.frm');
 
 // Add default values to form
 $install_form->setValues(array(

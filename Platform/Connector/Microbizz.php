@@ -102,7 +102,7 @@ class Microbizz {
      * @param bool $connect_testserver Indicate if the Microbizz test environment should be used
      */
     public static function getConnectForm(array $request, string $button_text = 'Link to Microbizz', bool $connect_testserver = false) : Form {
-        $request_form = new Form('microbizz_connect_form');
+        $request_form = Form::Form('microbizz_connect_form');
         $action = $connect_testserver ? 'https://rc1.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
         $request_form->addField(new HiddenField('', 'request', array('value' => json_encode($request))));

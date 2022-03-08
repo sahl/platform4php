@@ -21,8 +21,6 @@ class Form extends \Platform\UI\Component {
     
     private $fields = array();
     
-    private $form_id = array();
-    
     private $global_errors = array();
     
     public static $is_secure = false;
@@ -33,7 +31,7 @@ class Form extends \Platform\UI\Component {
     
     private $validationfunctions = array();
     
-    public function __construct(string $form_id = '', string $filename = '') {
+    public function __construct() {
         Page::JSFile('/Platform/Form/js/autosize.js');
         Page::JSFile('/Platform/Form/js/form.js');
         Page::JSFile('/Platform/Form/js/multiplier.js');
@@ -44,10 +42,18 @@ class Form extends \Platform\UI\Component {
         Page::CSSFile('/Platform/Form/css/texteditor.css');
         Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
         $this->addFormFieldNameSpace('Platform\\Form');
+        
+        $this->addPropertyMap(['form_id' => '']);
+        
         parent::__construct();
-        $this->form_id = $form_id;
-        $this->setID($form_id.'_component');
-        if ($filename) $this->getFromFile ($filename);
+    }
+    
+    public static function Form(string $form_id, string $filename = '') : Form {
+        $form = new Form();
+        $form->setFormID($form_id);
+        $form->setID($form_id.'_component');
+        if ($filename) $form->getFromFile ($filename);
+        return $form;
     }
     
     /**

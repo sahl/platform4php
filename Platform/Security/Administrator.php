@@ -20,7 +20,7 @@ class Administrator {
     public static function checkLogin() {
         if (! Platform::getConfiguration('administrator_password')) trigger_error('Please set the <i>administrator_password</i> configuration variable.', E_USER_ERROR);
         if (! self::isLoggedIn()) {
-            $form = new Form('administrator_login_form');
+            $form = Form::Form('administrator_login_form');
             $form->addField(new PasswordField('Password', 'administrator_password', array('required' => true)));
             $form->addField(new SubmitButton('Continue', 'save'));
             

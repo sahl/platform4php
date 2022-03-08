@@ -1099,7 +1099,7 @@ class Datarecord implements DatarecordReferable {
         static::ensureStructure();
         $baseclass = strtolower(strpos(get_called_class(), '\\') !== false ? substr(get_called_class(), strrpos(get_called_class(), '\\')+1) : get_called_class());
         // Build form
-        $form = new Form($baseclass.'_form');
+        $form = Form::Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
         $script = self::getEditScript();
         if ($script) $form->setScript($script);
@@ -1596,7 +1596,7 @@ class Datarecord implements DatarecordReferable {
      * @return \Platform\UI\EditComplex
      */
     public static function getEditComplex(array $parameters = array()) : UI\EditComplex {
-        return UI\EditComplex::construct(get_called_class(), $parameters);        
+        return UI\EditComplex::EditComplex(get_called_class(), $parameters);        
     }
     
     /**

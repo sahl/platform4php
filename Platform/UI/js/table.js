@@ -60,6 +60,12 @@ addPlatformComponentHandlerFunction('table', function(item) {
         delete table_configuration['data_request_event'];
         // Destroy data URL to ensure data is fetched through event
         delete table_configuration['ajaxURL'];
+    } else {
+        if (table_configuration['jsonfilter']) {
+            table_configuration['ajaxConfig'] = 'post';
+            table_configuration['ajaxParam'] = {filter: table_configuration['jsonfilter']};
+            delete table_configuration['jsonfilter'];
+        }
     }
 
     var filter_field = false;
@@ -171,18 +177,24 @@ addPlatformComponentHandlerFunction('table', function(item) {
             item.show();
             initial_sort_completed = false;
             if (data_request_event) {
-                item.trigger(data_request_event, ['__data_request_event', makeObject(control_form.serializeArray()), function(table_data) {
+                var request = makeObject(control_form.serializeArray());
+                if (table_configuration['jsonfilter']) request.filter = table_configuration['jsonfilter'];
+                item.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
                     table.setData(table_data);
                     initial_sort_completed = true;
                 }])
             } else {
-                table.setData(data_url, makeObject(control_form.serializeArray()), "post");
+                var request = makeObject(control_form.serializeArray());
+                if (table_configuration['jsonfilter']) request.filter = table_configuration['jsonfilter'];
+                table.setData(data_url, request, "post");
             }
             return false;
         })
     } else {
         if (data_request_event) {
-            item.trigger(data_request_event, ['__data_request_event', {}, function(table_data) {
+            var request = {};
+            if (table_configuration['jsonfilter']) request.filter = table_configuration['jsonfilter'];
+            item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
                 table.setData(table_data);
                 initial_sort_completed = true;
             }])
