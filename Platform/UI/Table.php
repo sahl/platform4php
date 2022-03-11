@@ -38,11 +38,11 @@ class Table extends Component {
      * @param string $id Table ID
      */
     public function __construct() {
-        self::JSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js');
+        self::JSFile('https://unpkg.com/tabulator-tables@5.0.10/dist/js/tabulator.min.js');
         self::JSFile('/Platform/UI/js/table.js');
-        self::CSSFile('https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css');
+        self::CSSFile('https://unpkg.com/tabulator-tables@5.0.10/dist/css/tabulator.min.css');
         self::CSSFile('/Platform/UI/css/table.css');
-        self::JSFile('https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js');
+        self::JSFile('https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.1/luxon.min.js');
         parent::__construct();
         $this->setTabulatorOption('layout', 'fitColumns');
         $this->setTabulatorOption('placeholder', 'No data');

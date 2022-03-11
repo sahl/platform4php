@@ -7,20 +7,6 @@ addPlatformComponentHandlerFunction('table', function(item) {
     var table_configuration = {
         pagination: false,
         paginationElement: $('.pagination')[0],
-        columnResized: function() {
-            saveTableLayout(element.attr('id'));
-        },
-        columnMoved: function() {
-            saveTableLayout(element.attr('id'));
-        },
-        dataSorted: function(sorters) {
-            if (sorters.length && initial_sort_completed) {
-                saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
-            }
-        },
-        rowSelectionChanged: function() {
-            updateMultiButtons();
-        }
     }
     $.extend(table_configuration,item.data('tabulator_options'));
     
@@ -54,16 +40,21 @@ addPlatformComponentHandlerFunction('table', function(item) {
     }
     
     var data_request_event = null;
+    var jsonfilter = null;
     // Check if we want to get data to the table through an event
     if (table_configuration['data_request_event']) {
         data_request_event = table_configuration['data_request_event'];
         delete table_configuration['data_request_event'];
         // Destroy data URL to ensure data is fetched through event
         delete table_configuration['ajaxURL'];
+        if (table_configuration['jsonfilter']) {
+            jsonfilter = table_configuration['jsonfilter'];
+            delete table_configuration['jsonfilter'];
+        }
     } else {
         if (table_configuration['jsonfilter']) {
             table_configuration['ajaxConfig'] = 'post';
-            table_configuration['ajaxParam'] = {filter: table_configuration['jsonfilter']};
+            table_configuration['ajaxParams'] = {filter: table_configuration['jsonfilter']};
             delete table_configuration['jsonfilter'];
         }
     }
@@ -84,47 +75,111 @@ addPlatformComponentHandlerFunction('table', function(item) {
         table_configuration.data = [];
 
     var table = new Tabulator('#'+item.attr('id')+'_table', table_configuration);
+    
+    table.on('columnResized', function() {
+        saveTableLayout(element.attr('id'));
+    });
+    
+    table.on('columnMoved', function() {
+        saveTableLayout(element.attr('id'));
+    });
+    
+    table.on('dataSorted', function(sorters) {
+        if (sorters.length && initial_sort_completed) {
+            saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
+        }
+    });
+        
+    table.on('rowSelectionChanged', function() {
+        updateMultiButtons();
+    });
+    
 
     // Buffer the table, so we can get the table object using the DOM node id
     tablebuffer['#'+item.attr('id')] = table;
 
-    if (filter_field) {
-        filter_field.keyup(function() {
-            var val = $(this).val();
-            if (val) filterTable(table, val);
-            else table.clearFilter();
-        })
-    }
-    $.each(action_buttons, function(key, element) {
-        table.addColumn({
-            formatter: function(cell, formatterParams) {
-                return '<i class="fa '+key+'"></i>';
-            },
-            width: 40,
-            headerSort:false,
-            align: 'center',
-            cellClick: function(e, cell) {
-                item.trigger(element, cell.getRow().getIndex());
-            }
-        }, true)
-    });
-    
-    if (column_selector)
-        table.addColumn({
-            title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
-                $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
-            }
-        }, false);
-    
-    
-    if (show_selector)
-        table.addColumn({
-            formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', align: 'center', headerHozAlign: 'center', headerSort:false, width: 15
-        }, true);
+    table.on('tableBuilt', function() {
+        if (filter_field) {
+            filter_field.keyup(function() {
+                var val = $(this).val();
+                if (val) filterTable(table, val);
+                else table.clearFilter();
+            })
+        }
+        
+        $.each(action_buttons, function(key, element) {
+            table.addColumn({
+                formatter: function(cell, formatterParams) {
+                    return '<i class="fa '+key+'"></i>';
+                },
+                width: 40,
+                headerSort:false,
+                hozAlign: 'center',
+                cellClick: function(e, cell) {
+                    item.trigger(element, cell.getRow().getIndex());
+                }
+            }, true)
+        });
 
-    if (typeof callback == 'function') {
-        callback(table);
-    }
+        if (column_selector)
+            table.addColumn({
+                title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
+                    $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
+                }
+            }, false);
+
+
+        if (show_selector)
+            table.addColumn({
+                formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', hozAlign: 'center', headerHozAlign: 'center', headerSort:false, width: 15
+            }, true);
+        
+        updateMultiButtons();
+
+        if (control_form) {
+            function makeObject(array) {
+                var res = {};
+                array.forEach(function(val) {
+                    res[val.name] = val.value;
+                })
+                return res;
+            }
+            item.hide();
+
+            control_form.submit(function() {
+                item.show();
+                initial_sort_completed = false;
+                if (data_request_event) {
+                    var request = makeObject(control_form.serializeArray());
+                    if (jsonfilter) request.filter = jsonfilter;
+                    item.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
+                        table.setData(table_data);
+                        initial_sort_completed = true;
+                    }])
+                } else {
+                    var request = makeObject(control_form.serializeArray());
+                    if (jsonfilter) request.filter = jsonfilter;
+                    table.setData(data_url, request, "post");
+                }
+                return false;
+            })
+        } else {
+            if (data_request_event) {
+                var request = {};
+                if (jsonfilter) request.filter = jsonfilter;
+                item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
+                    table.setData(table_data);
+                    initial_sort_completed = true;
+                }])
+            }
+        }
+        
+
+        if (typeof callback == 'function') {
+            callback(table);
+        }
+        
+    })
 
     function saveTableLayout(tableid) {
        var table = getTableByID('#'+tableid);
@@ -161,52 +216,15 @@ addPlatformComponentHandlerFunction('table', function(item) {
         })
     }
     
-    updateMultiButtons();
-    
-    if (control_form) {
-        function makeObject(array) {
-            var res = {};
-            array.forEach(function(val) {
-                res[val.name] = val.value;
-            })
-            return res;
-        }
-        item.hide();
-
-        control_form.submit(function() {
-            item.show();
-            initial_sort_completed = false;
-            if (data_request_event) {
-                var request = makeObject(control_form.serializeArray());
-                if (table_configuration['jsonfilter']) request.filter = table_configuration['jsonfilter'];
-                item.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
-                    table.setData(table_data);
-                    initial_sort_completed = true;
-                }])
-            } else {
-                var request = makeObject(control_form.serializeArray());
-                if (table_configuration['jsonfilter']) request.filter = table_configuration['jsonfilter'];
-                table.setData(data_url, request, "post");
-            }
-            return false;
-        })
-    } else {
-        if (data_request_event) {
-            var request = {};
-            if (table_configuration['jsonfilter']) request.filter = table_configuration['jsonfilter'];
-            item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
-                table.setData(table_data);
-                initial_sort_completed = true;
-            }])
-        }
-    }
     
     item.on('reload_data', function() {
         if (control_form) control_form.submit();
         else {
             initial_sort_completed = false;
             if (data_request_event) {
-                item.trigger(data_request_event, ['__data_request_event', {}, function(table_data) {
+                var request = {};
+                if (jsonfilter) request.filter = jsonfilter;
+                item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
                     table.setData(table_data);
                     initial_sort_completed = true;
                 }])

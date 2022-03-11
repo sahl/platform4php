@@ -155,57 +155,60 @@ addPlatformComponentHandlerFunction('editcomplex', function(element) {
     }
     
     function prepareTable(table) {
-        // Additional data rows
-        table.addColumn({
-            formatter: function(cell, formatterParams) {
-                if (cell.getValue() == 1)
-                    return '<i class="fa fa-trash"></i>';
-                else
-                    return '';
-            },
-            field: 'platform_can_delete',
-            width: 40,
-            headerSort:false,
-            align: 'center',
-            cellClick: function(e, cell) {
-                if (cell.getValue() != 1) return;
-                launchDelete([cell.getRow().getIndex()]);
-            }
-        }, false, 'checkboxcolumn');
-        if ($('#'+short_classname+'_copy_button').length) {
+        table.on('tableBuilt', function() {
+            // Additional data rows
             table.addColumn({
                 formatter: function(cell, formatterParams) {
                     if (cell.getValue() == 1)
-                        return '<i class="fa fa-plus"></i>';
+                        return '<i class="fa fa-trash"></i>';
                     else
                         return '';
                 },
-                field: 'platform_can_copy',
+                field: 'platform_can_delete',
                 width: 40,
                 headerSort:false,
-                align: 'center',
+                hozAlign: 'center',
                 cellClick: function(e, cell) {
                     if (cell.getValue() != 1) return;
-                    launchCopy([cell.getRow().getIndex()]);
+                    launchDelete([cell.getRow().getIndex()]);
                 }
             }, false, 'checkboxcolumn');
+            if ($('#'+short_classname+'_copy_button').length) {
+                table.addColumn({
+                    formatter: function(cell, formatterParams) {
+                        if (cell.getValue() == 1)
+                            return '<i class="fa fa-plus"></i>';
+                        else
+                            return '';
+                    },
+                    field: 'platform_can_copy',
+                    width: 40,
+                    headerSort:false,
+                    hozAlign: 'center',
+                    cellClick: function(e, cell) {
+                        if (cell.getValue() != 1) return;
+                        launchCopy([cell.getRow().getIndex()]);
+                    }
+                }, false, 'checkboxcolumn');
 
-        }
-        table.addColumn({
-            formatter: function(cell, formatterParams) {
-                if (cell.getValue() == 1)
-                    return '<i class="fa fa-pencil"></i>';
-                else
-                    return '';
-            },
-            field: 'platform_can_edit',
-            width: 40,
-            headerSort:false,
-            align: 'center',
-            cellClick: function(e, cell) {
-                if (cell.getValue() != 1) return;
-                launchEdit(cell.getRow().getIndex());
             }
-        }, false, 'checkboxcolumn');
+            table.addColumn({
+                formatter: function(cell, formatterParams) {
+                    if (cell.getValue() == 1)
+                        return '<i class="fa fa-pencil"></i>';
+                    else
+                        return '';
+                },
+                field: 'platform_can_edit',
+                width: 40,
+                headerSort:false,
+                hozAlign: 'center',
+                cellClick: function(e, cell) {
+                    if (cell.getValue() != 1) return;
+                    launchEdit(cell.getRow().getIndex());
+                }
+            }, false, 'checkboxcolumn');
+            
+        })
     };
 });

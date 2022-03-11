@@ -50,6 +50,7 @@ class EditComplex extends Component {
         $editcomplex = new EditComplex();
         $editcomplex->class = $class;
         $editcomplex->table_parameters = $table_parameters;
+        $editcomplex->prepareData();
         return $editcomplex;
     }
     
