@@ -9,9 +9,10 @@ class EditDialog extends Dialog {
     public function __construct() {
         parent::__construct();
         $this->addPropertyMap(
-            ['class' => null]
+            ['class' => null,
+             'object_id' => 0]
         );
-        self::JSFile(\Platform\Utilities::directoryToURL(__DIR__.'/js/EditDialog.js'));
+        self::JSFile(\Platform\Utilities::directoryToURL(__DIR__).'/js/EditDialog.js');
     }
     
     public static function EditDialog(string $class) : EditDialog {
@@ -24,7 +25,35 @@ class EditDialog extends Dialog {
         
         $edit_dialog->addData('classname', $class);
         $edit_dialog->addData('element_name', $class::getObjectName());
+        
         return $edit_dialog;
+    }
+    
+    public function handleIO(): array {
+        $class = $this->class;
+        $form = $class::getForm();
+        if ($form->isSubmitted()) {
+            if (! $form->validate()) return ['status' => false, 'errors' => $form->getAllErrors()];
+            $datarecord = new $class();
+            $datarecord->loadForWrite($this->object_id);
+            if ($datarecord->canEdit()) {
+                $values = $form->getValues();
+                $datarecord->setFromArray($values);
+                $datarecord->save();
+                return ['status' => true];
+            }
+            return ['status' => false, 'message' => Translation::translateForUser('You are not allowed to edit this data')];
+        }
+        switch ($_POST['event']) {
+            case 'datarecord_load':
+                $datarecord = new $class();
+                $datarecord->loadForRead($_POST['id']);
+                if ($datarecord->canAccess()) {
+                    $this->object_id = $_POST['id'];
+                    return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm()];
+                }
+                return ['status' => false];
+        }
     }
     
     public function prepareData() {
