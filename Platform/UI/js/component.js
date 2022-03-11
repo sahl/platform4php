@@ -147,6 +147,100 @@ $.fn.componentIOForm = function(form, func) {
     })
 }
 
+var communication_stack = [];
+var communication_timer = null;
+
+$.fn.componentTimedIO = function(values, callback, polltime, precision) {
+    var component = this;
+    var object = {};
+    // Prepare communication object
+    object.values = values;
+    object.callback = callback;
+    object.polltime = polltime;
+    object.precision = precision;
+    object.component = component;
+    object.componentclass = component.data('componentclass');
+    object.componentproperties = component.data('componentproperties');
+    object.componentid = component.prop('id');
+    object.timeleft = polltime;
+    
+
+    // Add or replace to queue
+    var inserted = false;
+    $.each(communication_stack, function(id, element) {
+        if (element.component == component) {
+            communication_stack[id] = object;
+            inserted = true;
+            return false;
+        }
+        return true;
+    });
+    if (! inserted) communication_stack.push(object);
+    
+    if (! communication_timer) communication_timer = setTimeout(platformTimedIO, 1000);
+}
+
+$.fn.componentRemoveTimedIO = function() {
+    var component = this;
+    $.each(communication_stack, function(id, element) {
+        if (element.component == component) {
+            communication_stack.splice(id,1);
+            return false;
+        }
+        return true;
+    });
+    if (! communication_stack.length) {
+        clearTimeout(communication_timer);
+        comminication_timer = null;
+    }
+}
+
+function platformTimedIO() {
+    console.log('Timed function running');
+    // Decrease everything and find if something needs to run now
+    var run_now = false;
+    $.each(communication_stack, function(id, element) {
+        element.timeleft -= 1;
+        if (element.timeleft < 1) {
+            run_now = true;
+        }
+        return true;
+    });
+    if (run_now) {
+        // We need to run now
+        var run_payload = [];
+        var callbacks = [];
+        var url = null;
+        $.each(communication_stack, function(id, element) {
+            if (element.timeleft - element.precision <= 0) {
+                var payload = {};
+                if (! url) url = element.component.data('io_url')
+                payload.componentclass = element.componentclass;
+                payload.componentproperties = element.componentproperties;
+                payload.componentid = element.componentid;
+                payload.values = element.values;
+                run_payload.push(payload);
+                callbacks.push(element.callback);
+                // Reset element
+                element.timeleft += element.polltime;
+            }
+        });
+        // Call it
+        var final_payload = {event: '__timedio', payloads: run_payload};
+        $.post(url, final_payload, function(data) {
+            console.log('Timed function calling in');
+            $.each(data, function(id, return_value) {
+                if (callbacks[id]) callbacks[id](return_value);
+            })
+            communication_timer = setTimeout(platformTimedIO, 1000);
+        }, 'json');
+        // Rearm
+    } else {
+        if (communication_stack.length) communication_timer = setTimeout(platformTimedIO, 1000);
+        
+    }
+}
+
 $.fn.componentIO = function(values, func) {
     var component = this;
     // This only works on components.
