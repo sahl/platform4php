@@ -52,7 +52,7 @@ class Table extends Component {
     }
     
     public static function Table(string $id) : Table {
-        $table = new Table();
+        $table = new static();
         $table->id = $id;
         return $table;
     }
@@ -151,6 +151,7 @@ class Table extends Component {
      * @param Form $form
      */
     public function attachForm(Form $form) {
+        $form->addClass('platform_table_control_form');
         $this->setTabulatorOption('control_form', $form->getFormId());
     }
     

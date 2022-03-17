@@ -96,7 +96,8 @@ addPlatformComponentHandlerFunction('form', function(item) {
 
     // Autosubmit
     $(item).on('component_ready', function() {
-        $(this).find('form.platform_form_auto_submit').submit();
+        // We cannot submit table control forms before the table is ready, so those submit is handled by the table
+        if (! $(this).is('.platform_table_control_form')) $(this).find('form.platform_form_auto_submit').submit();
     });
 });
 

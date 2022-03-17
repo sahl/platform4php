@@ -163,6 +163,9 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 }
                 return false;
             })
+            
+            // Do a delayed auto submit if configured
+            if (control_form.is('.platform_form_auto_submit')) control_form.submit();
         } else {
             if (data_request_event) {
                 var request = {};
