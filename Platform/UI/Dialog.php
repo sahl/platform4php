@@ -9,7 +9,8 @@ class Dialog extends Component {
     
     protected $properties = [
         'title' => '',
-        'text' => ''
+        'text' => '',
+        'buttons' => []
     ];
     
     private $dialog_options = [];
@@ -32,22 +33,24 @@ class Dialog extends Component {
         $dialog->setID($id);
         $dialog->title = $title;
         $dialog->text = $text;
-        $dialog->addData('buttons', $buttons);
+        $dialog->addButtons($buttons);
         $dialog->form = $form;
         return $dialog;
     }
     
-    public function addComponent(Component $component) {
-        $this->components[] = $component;
+    public function addButton(string $event, string $text) {
+        $buttons = $this->buttons;
+        $buttons[$event] = $text;
+        $this->buttons = $buttons;
     }
     
-    public function renderContent() {
-        echo '<div class="platform_invisible dialog_configuration">';
-        echo json_encode($this->dialog_options);
-        echo '</div>';
-        echo $this->text;
-        if ($this->form instanceof \Platform\Form) $this->form->render();
-        foreach ($this->components as $component) $component->render();
+    public function addButtons(array $buttons) {
+        foreach ($buttons as $event => $text)
+            $this->addButton($event, $text);
+    }
+    
+    public function addComponent(Component $component) {
+        $this->components[] = $component;
     }
     
     /**
@@ -58,6 +61,20 @@ class Dialog extends Component {
         echo '<div class="platform_invisible">';
         $form->render();
         echo '</div>';
+    }
+    
+    public function prepareData() {
+        parent::prepareData();
+        if (count($this->buttons)) $this->addData('buttons', $this->buttons);
+    }
+    
+    public function renderContent() {
+        echo '<div class="platform_invisible dialog_configuration">';
+        echo json_encode($this->dialog_options);
+        echo '</div>';
+        echo $this->text;
+        if ($this->form instanceof \Platform\Form) $this->form->render();
+        foreach ($this->components as $component) $component->render();
     }
     
     /**
