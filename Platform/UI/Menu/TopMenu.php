@@ -1,11 +1,11 @@
 <?php
-namespace Platform\UI;
+namespace Platform\UI\Menu;
 
 class TopMenu extends Menu {
     
     public function __construct() {
         parent::__construct();
-        self::CSSFile('/Platform/UI/css/TopMenu.css');
+        self::CSSFile('/Platform/UI/Menu/css/TopMenu.css');
     }
     
     public function renderContent() {

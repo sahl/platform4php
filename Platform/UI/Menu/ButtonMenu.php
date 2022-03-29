@@ -1,11 +1,11 @@
 <?php
-namespace Platform\UI;
+namespace Platform\UI\Menu;
 
 class ButtonMenu extends Menu {
     
     public function __construct() {
         parent::__construct();
-        self::CSSFile('/Platform/UI/css/ButtonMenu.css');
+        self::CSSFile('/Platform/UI/Menu/css/ButtonMenu.css');
     }
     
     public function renderContent() {

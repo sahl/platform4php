@@ -1,5 +1,8 @@
 <?php
-namespace Platform\UI;
+namespace Platform\UI\Menu;
+
+use Platform\MenuItem;
+use Platform\UI\Component;
 
 class Menu extends Component {
     
@@ -10,15 +13,22 @@ class Menu extends Component {
     public function __construct() {
         parent::__construct();
     }
+    
+    /**
+     * Add a single menu item to this menu
+     * @param MenuItem $menuitem
+     */
+    public function addMenuItem(MenuItem $menuitem) {
+        $this->elements[] = $menuitem;
+    }
 
     /**
-     * Add one or more menu items to this menu
+     * Add several menu items to this menu
      * @param array $menuitems
      */
     public function addMenuItems(array $menuitems) {
         foreach ($menuitems as $element) {
-            if (! $element instanceof \Platform\MenuItem) trigger_error('Invalid element passed to menu. Expected type MenuItem', E_USER_ERROR);
-            $this->elements[] = $element;
+            $this->addMenuItem($element);
         }
     }
     
@@ -62,7 +72,7 @@ class Menu extends Component {
      * @param MenuItem $menuitem
      * @return bool
      */
-    public function checkIfSelected(\Platform\MenuItem $menuitem) {
+    public function checkIfSelected(MenuItem $menuitem) {
         return $this->select_menuitem === $menuitem;
     }
     
