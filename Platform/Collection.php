@@ -25,7 +25,7 @@ class Collection implements \Iterator {
      * Construct a DatarecordCollection
      * @param Datarecord $datarecord Object to add to this record.
      */
-    public function __construct(Datarecord $datarecord = null) {
+    public function __construct(DatarecordReferable $datarecord = null) {
         if ($datarecord !== null) $this->add($datarecord);
     }
     
@@ -37,7 +37,7 @@ class Collection implements \Iterator {
         if (! is_array($datarecords)) $datarecords = array($datarecords);
         foreach ($datarecords as $datarecord) {
             // Check if datarecord
-            if (! $datarecord instanceof Datarecord) trigger_error('Passed non-Datarecord object into collection.', E_USER_ERROR);
+            if (! $datarecord instanceof DatarecordReferable) trigger_error('Passed incompatible object into collection.', E_USER_ERROR);
             // Check if same type of other Datarecords in this collection
             if ($this->collectiontype !== false && $this->collectiontype != get_class($datarecord)) trigger_error('Passed '.get_class($datarecord).' into a collection of '.$this->collectiontype);
             $this->collectiontype = get_class($datarecord);
@@ -226,6 +226,7 @@ class Collection implements \Iterator {
         $new_datarecords = [];
         foreach ($this->datarecords as $datarecord) {
             if (! in_array($datarecord->getKeyValue(), $other_ids)) $new_datarecords[] = $datarecord;
+            else $datarecord->collection = null;
         }
         $this->datarecords = $new_datarecords;
     }
