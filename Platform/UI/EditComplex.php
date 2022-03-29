@@ -47,7 +47,7 @@ class EditComplex extends Component {
     }
     
     public static function EditComplex(string $class, array $table_parameters = []) : EditComplex {
-        $editcomplex = new EditComplex();
+        $editcomplex = new static();
         $editcomplex->class = $class;
         $editcomplex->table_parameters = $table_parameters;
         $editcomplex->prepareData();
