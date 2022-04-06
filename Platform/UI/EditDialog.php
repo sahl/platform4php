@@ -35,7 +35,7 @@ class EditDialog extends Dialog {
         if ($form->isSubmitted()) {
             if (! $form->validate()) return ['status' => false, 'errors' => $form->getAllErrors()];
             $datarecord = new $class();
-            $datarecord->loadForWrite($this->object_id);
+            if ($this->object_id) $datarecord->loadForWrite($this->object_id);
             if ($datarecord->canEdit()) {
                 $values = $form->getValues();
                 $datarecord->setFromArray($values);
@@ -47,7 +47,7 @@ class EditDialog extends Dialog {
         switch ($_POST['event']) {
             case 'datarecord_load':
                 $datarecord = new $class();
-                $datarecord->loadForRead($_POST['id']);
+                if ($_POST['id']) $datarecord->loadForRead($_POST['id']);
                 if ($datarecord->canAccess()) {
                     $this->object_id = $_POST['id'];
                     return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm()];

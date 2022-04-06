@@ -1,7 +1,9 @@
 <?php
 namespace Platform\UI;
 
-use \Platform\MenuItem;
+use Platform\Filter;
+use Platform\MenuItem;
+use Platform\UI\Menu\ButtonMenu;
 
 class EditComplex extends Component {
     
@@ -10,26 +12,40 @@ class EditComplex extends Component {
     const ACTION_LOCATION_BUTTON_MENU = 2;
     const ACTION_LOCATION_BUTTONS = 3;
     
-    
     protected static $can_redraw = false;
-    
+
+    /**
+     * Column selector
+     * @var TableColumnSelector
+     */
     public $column_selector;
     
+    /**
+     * Edit dialog
+     * @var EditDialog
+     */
     public $edit_dialog;
     
-    public $default_values = [];
-    
     /**
-     *
+     * Data table
      * @var Table
      */
     public $table;
+    
+    
+    public $multi_popup_menu;
+    
+    public $item_popup_menu;
+    
+    
+    public $table_parameters = [];
+    
     
     /**
      * The location where the actions of this 
      * @var type
      */
-    protected $action_locations = [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU];
+    protected $action_locations = [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU, self::ACTION_LOCATION_BUTTONS];
     
     /**
      * 
@@ -39,97 +55,92 @@ class EditComplex extends Component {
     
     
     public function __construct() {
+        $this->addPropertyMap(['class' => '']);
+
         self::JSFile('/Platform/UI/js/editcomplex.js');
         self::CSSFile('/Platform/UI/css/EditComplex.css');
+
         parent::__construct();
-        
-        $this->addPropertyMap(['class' => null, 'table_parameters' => []]);
     }
     
     public static function EditComplex(string $class, array $table_parameters = []) : EditComplex {
+        if (! class_exists($class)) trigger_error('Invalid class "'.$class.'" passed to EditComplex.', E_USER_ERROR);
+        
         $editcomplex = new static();
         $editcomplex->class = $class;
         $editcomplex->table_parameters = $table_parameters;
-        $editcomplex->prepareData();
+        
+        $editcomplex->setID($class::getClassName().'_editcomplex');
+        
+        $editcomplex->constructEditDialog();
+        $editcomplex->constructTable();
+        $editcomplex->constructColumnSelector();
+        $editcomplex->constructItempopupMenu();
+        $editcomplex->constructMultipopupMenu();
+        
         return $editcomplex;
     }
     
     protected function constructEditDialog() {
-        $short_class = $this->class::getClassName();
-        $buttons = array(
-            'save' => 'Save',
-            'close' => 'Cancel'
-        );
-        $form = $this->class::getForm();
-        
-        $this->edit_dialog = Dialog::Dialog($short_class.'_edit_dialog', 'Edit '.$this->class::getObjectName(), '', $buttons, $form);
+        $this->edit_dialog = EditDialog::EditDialog($this->class);
     }
 
-    protected function constructTable(array $table_parameters = []) {
-        $this->table = Table::getTableFromClass($this->getID().'_table', $this->class, $table_parameters);
+    protected function constructTable() {
+        $this->table = Table::getTableFromClass($this->getID().'_table', $this->class, $this->table_parameters);
         $this->table->setDataRequestEvent('get_data');
         $this->registerEvent('get_data');
         $this->table->setStyle('max-height: 500px');
     }
     
-    protected function constructTableMenu() {
+    protected function constructColumnSelector() {
+        $this->column_selector = $this->table->getColumnSelectComponent();
+    }
+
+    protected function constructItempopupMenu() {
         $menu = array();
         $name = $this->class::getObjectName();
         $short_class = $this->class::getClassName();
-        if ($this->class::canCreate()) $menu[] = MenuItem::constructByID ('Create new '.$name, $short_class.'_new_button');
-        if ($this->class::isCopyAllowed()) $menu[] = MenuItem::constructByID ('Copy selected '.$name, $short_class.'_copy_button');
-        $menu[] = MenuItem::constructByID ('Edit selected '.$name, $short_class.'_edit_button');
-        $menu[] = MenuItem::constructByID ('Delete selected '.$name, $short_class.'_delete_button');
-        $menu[] = MenuItem::constructByID ('Select columns', $short_class.'_column_select_button');
+        if ($this->class::isCopyAllowed()) $menu[] = new MenuItem('Copy '.$name, '#TRIGGER=copy_object');
+        $menu[] = new MenuItem('Edit '.$name, '#TRIGGER=edit_object');
+        $menu[] = new MenuItem('Delete '.$name, '#TRIGGER=delete_object');
 
-        $this->table_menu = new ButtonMenu();
-        $this->table_menu->setID($short_class.'_table_menu');
-        $this->table_menu->addMenuItems($menu);
+        $this->item_popup_menu = new Menu\PopupMenu();
+        $this->item_popup_menu->setID($short_class.'_table_item_menu');
+        $this->item_popup_menu->addMenuItems($menu);
+        
+        $this->table->attachItemPopupMenu($this->item_popup_menu);
     }
     
-    protected function constructMultibuttons() {
-        if ($this->class::canCreate()) $this->table->addMultiButton('Create new', 'create_new', Table::SELECTABLE_ALWAYS);
-        if ($this->class::isCopyAllowed()) $this->table->addMultiButton('Copy', 'copy', Table::SELECTABLE_EXACT_ONE_SELECTED);
-        $this->table->addMultiButton('Edit', 'edit', Table::SELECTABLE_EXACT_ONE_SELECTED);
-        $this->table->addMultiButton('Delete', 'delete', Table::SELECTABLE_ONE_OR_MORE_SELECTED);
-        $this->table->addMultiButton('Columns', 'columns', Table::SELECTABLE_ALWAYS);
+    protected function constructMultipopupMenu() {
+        $menu = array();
+        $name = $this->class::getObjectName();
+        $short_class = $this->class::getClassName();
+        if ($this->class::canCreate()) $menu[] = new MenuItem('Create new '.$name, '#TRIGGER=create_object', '', '');
+        if ($this->class::isCopyAllowed()) $menu[] = new MenuItem('Copy selected '.$name, '#TRIGGER=copy_objects', '', 'one_or_more');
+        $menu[] = new MenuItem('Edit selected '.$name, '#TRIGGER=edit_objects', '', 'exactly_one');
+        $menu[] = new MenuItem('Delete selected '.$name, '#TRIGGER=delete_objects', '', 'one_or_more');
+        $menu[] = new MenuItem('Select columns', '#TRIGGER=select_columns', '', '');
+
+        $this->multi_popup_menu = new Menu\PopupMenu();
+        $this->multi_popup_menu->setID($short_class.'_table_multi_menu');
+        $this->multi_popup_menu->addMenuItems($menu);
+        
+        $this->table->attachMultiPopupMenu($this->multi_popup_menu);
     }
     
     public function handleIO(): array {
         switch ($_POST['event']) {
             case 'get_data':
-                if ($_POST['filter']) $filter = \Platform\Filter::getFilterFromJSON ($_POST['filter']);
-                else $filter = new \Platform\Filter($this->class);
+                if ($_POST['filter']) $filter = Filter::getFilterFromJSON ($_POST['filter']);
+                else $filter = new Filter($this->class);
                 $filter->setPerformAccessCheck(true);
                 $datacollection = $filter->execute();
 
                 $result = Table::getDataFromCollection($datacollection);
                 return $result;
-            case 'datarecord_load':
-                $datarecord = new $this->class();
-                if ($_POST['id']) $datarecord->loadForRead($_POST['id']);
-                if ($datarecord->isInDatabase() || ! $_POST['id']) {
-                    if ($datarecord->canEdit()) {
-                        $result = array(
-                            'status' => 1,
-                            'data' => $datarecord->getAsArrayForForm()
-                        );
-                    } else {
-                        $result = array(
-                            'status' => 0,
-                            'errormessage' => 'You don\'t have permissions to edit this '.$datarecord->getObjectName()
-                        );
-                    }
-                } else {
-                    $result = array(
-                        'status' => 0,
-                        'errormessage' => 'Requested data not available'
-                    );
-                }
-                return $result;
             case 'datarecord_delete':
                 $result = array('status' => 1);
-                foreach (json_decode($_POST['ids']) as $id) {
+                foreach ($_POST['ids'] as $id) {
                     $datarecord = new $this->class();
                     $datarecord->loadForWrite($id);
                     $deleteresult = $datarecord->canDelete();
@@ -145,7 +156,7 @@ class EditComplex extends Component {
                 return $result;
             case 'datarecord_copy':
                 $result = array('status' => 1);
-                foreach (json_decode($_POST['ids']) as $id) {
+                foreach ($_POST['ids'] as $id) {
                     $datarecord = new $this->class();
                     $datarecord->loadForRead($id);
                     $datarecord->copy();
@@ -176,34 +187,26 @@ class EditComplex extends Component {
     
     public function prepareData() {
         parent::prepareData();
-        if (! class_exists($this->class)) trigger_error('Invalid class "'.$this->class.'" passed to EditComplex.', E_USER_ERROR);
-        $this->setID($this->class::getClassName().'_editcomplex');
-        $this->constructTable($this->table_parameters);
-        $this->constructTableMenu();
-        $this->constructEditDialog();
 
         $this->addData('name', $this->class::getObjectName());
         $this->addData('shortclass', $this->class::getClassName());
         $this->addData('class', $this->class);
         
-        $this->column_selector = $this->table->getColumnSelectComponent();
     }
     
     public function renderContent() {
-        echo '<div class="platform_invisible default_values">';
-        echo json_encode($this->default_values);
-        echo '</div>';
         
         echo '<div class="container">';
-        if (in_array(self::ACTION_LOCATION_BUTTON_MENU, $this->action_locations)) $this->table_menu->render();
-        if (in_array(self::ACTION_LOCATION_INLINE, $this->action_locations)) $this->table->addData('inline_icons', 1);
-        if (in_array(self::ACTION_LOCATION_BUTTONS, $this->action_locations)) $this->constructMultibuttons ();
         $this->table->render();
         echo '</div>';
 
         $this->edit_dialog->render();
         
         $this->column_selector->render();
+        
+        $this->multi_popup_menu->render();
+        
+        $this->item_popup_menu->render();
     }
     
     /**

@@ -1,5 +1,8 @@
 addPlatformComponentHandlerFunction('popupmenu', function(item) {
-    item.on('appear', function(event, element, clickevent) {
+    item.on('appear', function(event, clickevent, parameters) {
+        if (parameters == null) parameters = {};
+        var element = parameters.appear_on ? parameters.appear_on : clickevent.target;
+        if (parameters.info) item.data('platform_info', parameters.info);
         switch (item.data('location')) {
             case 10:
                 item.css('left', $(element).offset().left);

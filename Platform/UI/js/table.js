@@ -28,6 +28,20 @@ addPlatformComponentHandlerFunction('table', function(item) {
         column_selector = true;
         delete table_configuration['column_selector'];
     }
+    
+    var itempopup_id = false;
+    var multipopup_id = false;
+    
+    if (table_configuration['platform_multipopup_id']) {
+        multipopup_id = table_configuration['platform_multipopup_id'];
+        delete table_configuration['platform_multipopup_id'];
+    }
+    
+    if (table_configuration['platform_itempopup_id']) {
+        itempopup_id = table_configuration['platform_itempopup_id'];
+        delete table_configuration['platform_itempopup_id'];
+    }
+    
 
     var control_form = false;
     var data_url = false;
@@ -93,10 +107,16 @@ addPlatformComponentHandlerFunction('table', function(item) {
     table.on('rowSelectionChanged', function() {
         updateMultiButtons();
     });
-    
 
-    // Buffer the table, so we can get the table object using the DOM node id
-    tablebuffer['#'+item.attr('id')] = table;
+    function getSelectedTableRows() {
+        //var table = Tabulator.findTable('#'+id+'_table_table')[0];
+        var ids = [];
+        $.each(table.getSelectedRows(), function(i, elements) {
+          ids.push(elements._row.data.id);
+        });
+        return ids;
+    }
+    
 
     table.on('tableBuilt', function() {
         if (filter_field) {
@@ -105,6 +125,25 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 if (val) filterTable(table, val);
                 else table.clearFilter();
             })
+        }
+        
+        if (multipopup_id || itempopup_id) {
+            var columndefinition = {width: 20, headerSort: false, hozAlign: 'center', headerHozAlign: 'center'};
+            if (multipopup_id) {
+                columndefinition.title = '<i class="fa fa-pencil"></i>';
+                columndefinition.headerClick = function(event) {
+                    $('#'+multipopup_id).trigger('appear', [event, {info: getSelectedTableRows()}]);
+                }
+            }
+            if (itempopup_id) {
+                columndefinition.formatter = function(cell, formatterParams) {
+                    return '<i class="fa fa-pencil"></i>';
+                }
+                columndefinition.cellClick = function(event, cell) {
+                    $('#'+itempopup_id).trigger('appear', [event, {info: [cell.getRow().getIndex()]}]);
+                }
+            }
+            table.addColumn(columndefinition, true);
         }
         
         $.each(action_buttons, function(key, element) {

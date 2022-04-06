@@ -1,23 +1,24 @@
 <?php
 namespace Platform\UI;
 
-use Platform\Form;
-use Platform\Filter;
-use Platform\Server\Instance;
-use Platform\Property;
+use Platform\Collection;
+use Platform\ConditionOneOf;
 use Platform\Datarecord;
+use Platform\Filter;
+use Platform\Form;
+use Platform\Form\HiddenField;
+use Platform\Form\MulticheckboxField;
+use Platform\MenuItem;
+use Platform\Property;
+use Platform\Security\Accesstoken;
+use Platform\Server\Instance;
+use Platform\UI\Menu\PopupMenu;
 
 class Table extends Component {
     
     const SELECTABLE_ALWAYS = 0;
     const SELECTABLE_EXACT_ONE_SELECTED = 1;
     const SELECTABLE_ONE_OR_MORE_SELECTED = 2;
-    
-    /**
-     * URL to the datarecord provider for table
-     * @var string 
-     */
-    protected static $url_table_datarecord = '/Platform/UI/php/table_datarecord.php';
     
     protected static $can_redraw = false;
     
@@ -54,7 +55,16 @@ class Table extends Component {
     public static function Table(string $id) : Table {
         $table = new static();
         $table->id = $id;
+        $table->setID($id);
         return $table;
+    }
+    
+    public function attachItemPopupMenu(PopupMenu $popupmenu) {
+        $this->setTabulatorOption('platform_itempopup_id', $popupmenu->getID());
+    }
+    
+    public function attachMultiPopupMenu(PopupMenu $popupmenu) {
+        $this->setTabulatorOption('platform_multipopup_id', $popupmenu->getID());
     }
     
     public function addColumnSelector() {
@@ -157,7 +167,7 @@ class Table extends Component {
     
     /**
      * Get a column selector component based on this table
-     * @return \Platform\UI\TableColumnSelector
+     * @return TableColumnSelector
      */
     public function getColumnSelectComponent() {
         return TableColumnSelector::TableColumnSelector($this);
@@ -165,7 +175,7 @@ class Table extends Component {
 
     /**
      * Get a form for selecting columns in the table
-     * @return \Platform\Form
+     * @return Form
      */
     public function getColumnSelectForm() {
         $form = Form::Form($this->getID().'_select_column_form');
@@ -179,8 +189,8 @@ class Table extends Component {
         }
         asort($options);
         
-        $form->addField(new \Platform\Form\HiddenField('', 'table_id'));
-        $form->addField(new \Platform\Form\MulticheckboxField('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
+        $form->addField(new HiddenField('', 'table_id'));
+        $form->addField(new MulticheckboxField('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
         return $form;
     }
     
@@ -191,7 +201,7 @@ class Table extends Component {
      * relation of this field is resolved and the resulting data is also added.
      * @return array Array ready to use for table
      */
-    public static function getDataFromCollection(\Platform\Collection $collection, string $resolve_relation_field = '') {
+    public static function getDataFromCollection(Collection $collection, string $resolve_relation_field = '') {
         $result = array(); $supplemental_data = array();
         $classname = $collection->getCollectionType();
         if (! $classname) return array();
@@ -201,7 +211,7 @@ class Table extends Component {
             $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreign_class'];
             $simple_foreign_class = $foreign_class::getClassName();
             $filter = new Filter($foreign_class);
-            $filter->addCondition(new \Platform\ConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
+            $filter->addCondition(new ConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
             $supplemental_datarecord = $filter->execute();
             $supplemental_data = $supplemental_datarecord->getAllWithKeys();
         }
@@ -245,7 +255,7 @@ class Table extends Component {
      */
     private function defaultSort() {
         // Try to load from session
-        if (\Platform\Server\Instance::getActiveInstanceID()) {
+        if (Instance::getActiveInstanceID()) {
             $table_configuration = Property::getForCurrentUser('tableconfiguration', $this->getID());
             $column = $table_configuration['sort_column'];
             if ($column && $this->hasColumn($column)) {
@@ -268,13 +278,12 @@ class Table extends Component {
      * @param string $id Id of table
      * @param string $class Class name to configure off
      * @param array $table_parameters Additional parameters to table
-     * @return \Platform\UI\Table
+     * @return Table
      */
     public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
         $table = Table::Table($id);
         $table->setColumnsFromDatarecord($class);
-        $table->setTabulatorOption('ajaxURL', static::$url_table_datarecord.'?class='.$class);
         $table->setTabulatorOption('placeholder', 'No '.$class::getObjectName());
         $table->setTabulatorOption('show_selector', true);
         $table->setTabulatorOption('movableColumns', true);
@@ -316,8 +325,8 @@ class Table extends Component {
     public function handleIO(): array {
         switch ($_POST['event']) {
             case 'saveorderandwidth':
-                if (!\Platform\Security\Accesstoken::getCurrentUserID()) return [];
-                $existingproperties = \Platform\Property::getForCurrentUser('tableconfiguration', $this->id);
+                if (!Accesstoken::getCurrentUserID()) return [];
+                $existingproperties = Property::getForCurrentUser('tableconfiguration', $this->id);
                 if (! is_array($existingproperties)) $existingproperties = array();
                 $newproperties = array();
                 foreach ($_POST['properties'] as $element) {
@@ -327,20 +336,16 @@ class Table extends Component {
                     if (isset($existingproperties[$element['field']]['visible'])) $properties['visible'] = $existingproperties[$element['field']]['visible'];
                     $newproperties[$element['field']] = $properties;
                 }
-                \Platform\Property::setForCurrentUser('platform', 'table_configuration_'.$this->id, $newproperties);
+                Property::setForCurrentUser('platform', 'table_configuration_'.$this->id, $newproperties);
                 return [];
             case 'savesort':
-                if (!\Platform\Security\Accesstoken::getCurrentUserID()) return [];
-                $existingproperties = \Platform\Property::getForCurrentUser('tableconfiguration', $this->id);
+                if (!Accesstoken::getCurrentUserID()) return [];
+                $existingproperties = Property::getForCurrentUser('tableconfiguration', $this->id);
                 if (! is_array($existingproperties)) $existingproperties = array();
                 $existingproperties['sort_column'] = $_POST['column'];
                 $existingproperties['sort_direction'] = $_POST['direction'];
-                \Platform\Property::setForCurrentUser('platform', 'table_configuration_'.$this->id, $existingproperties);
+                Property::setForCurrentUser('platform', 'table_configuration_'.$this->id, $existingproperties);
             break;
-                
-                
-                
-                
         }
         return parent::handleIO();
     }
@@ -436,7 +441,7 @@ class Table extends Component {
         if (count($this->multi_buttons)) {
             echo '<div class="multibuttons">';
             foreach ($this->multi_buttons as $multi_button) {
-                $menu_item = new \Platform\MenuItem($multi_button['text'], '#TRIGGER=multi_button', '', 'multi_button', '', ['secondary_event' => $multi_button['event_to_fire'], 'selectable' => $multi_button['selectable']]);
+                $menu_item = new MenuItem($multi_button['text'], '#TRIGGER=multi_button', '', 'multi_button', '', ['secondary_event' => $multi_button['event_to_fire'], 'selectable' => $multi_button['selectable']]);
                 $menu_item->render();
             }
             echo '</div>';

@@ -1,5 +1,6 @@
 addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
-    var attached_table = getTableByID('#'+item.data('table_id'));
+    var attached_table = Tabulator.findTable('#'+item.data('table_id'))[0];
+    
     var dialog = $('#'+item.prop('id')+'_dialog');
     var form = dialog.find('form');
     
@@ -13,9 +14,13 @@ addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
             visible[$(this).val()] = $(this).is(':checked') ? 1 : 0;
         });
         // Save it
-        $.post('/Platform/UI/php/save_table_properties.php', {action: 'savevisibility', id: item.data('table_id'), visible: visible});
+        item.componentIO({action: 'savevisibility', id: item.data('table_id'), visible: visible});
         return false;
     });
+    
+    item.on('open', function() {
+        dialog.dialog('open');
+    })
     
     dialog.on('save_columns', function() {
         form.submit();
