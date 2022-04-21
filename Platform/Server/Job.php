@@ -201,7 +201,7 @@ class Job extends \Platform\Datarecord {
      */
     public function delete(bool $force_remove = false) : bool {
         $this->kill();
-        parent::delete($force_remove);
+        return parent::delete($force_remove);
     }
     
     /**

@@ -297,7 +297,7 @@ class Form extends \Platform\UI\Component {
             case 'currency_lookup':
                 if (!is_numeric($_POST['foreignvalue']) || !Currency\Currency::isValidCurrency($_POST['currency'])) return ['status' => 0];
                 $rate = Currency\Rate::getRate($_POST['currency'], Utilities\Time::today());
-                return ['status' => 1, 'localvalue' => $_POST['foreignvalue']/$rate];
+                return ['status' => 1, 'localvalue' => $_POST['foreignvalue']/($rate/100)];
         }
         return parent::handleIO();
     }
