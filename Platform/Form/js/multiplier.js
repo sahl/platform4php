@@ -57,9 +57,9 @@ function platform_handle_multiplier_change() {
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {
             var container = $(this).closest('.platform_form_multiplier');
             if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
-                row.prev().find('input[type!="hidden"]:first').focus();
+                row.prev().find('input[type!="hidden"],textarea').first().focus();
             else
-                row.next().find('input[type!="hidden"]:first').focus();
+                row.next().find('input[type!="hidden"],textarea').first().focus();
             row.remove();
             platform_multiplier_fixnames(container);
             container.trigger('row_deleted');
