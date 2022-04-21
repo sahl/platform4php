@@ -455,7 +455,7 @@ class Field {
             case self::LABEL_ALIGN_LEFT:
                 echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
-                echo ':</label>';
+                echo '</label>';
             break;
             case self::LABEL_ALIGN_RIGHT:
                 echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_right_label"> - '.$this->label;
