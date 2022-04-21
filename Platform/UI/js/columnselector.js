@@ -1,5 +1,5 @@
 addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
-    var attached_table = Tabulator.findTable('#'+item.data('table_id'))[0];
+    var attached_table = Tabulator.findTable('#'+item.data('table_id')+'_table')[0];
     
     var dialog = $('#'+item.prop('id')+'_dialog');
     var form = dialog.find('form');
@@ -14,7 +14,7 @@ addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
             visible[$(this).val()] = $(this).is(':checked') ? 1 : 0;
         });
         // Save it
-        item.componentIO({action: 'savevisibility', id: item.data('table_id'), visible: visible});
+        item.componentIO({event: 'savevisibility', id: item.data('table_id'), visible: visible});
         return false;
     });
     

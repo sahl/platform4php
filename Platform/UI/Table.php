@@ -93,7 +93,7 @@ class Table extends Component {
         // Try to get configuration
         $columns = $this->tabulator_options['columns'];
         if (! is_array($columns)) return;
-        $table_configuration = Property::getForCurrentUser('tableconfiguration', $this->getID());
+        $table_configuration = Property::getForCurrentUser('platform', 'table_configuration_'.$this->id);
         // Bail if no saved configuration
         if (! is_array($table_configuration)) return;
         $sortcolumns = array();
@@ -256,7 +256,7 @@ class Table extends Component {
     private function defaultSort() {
         // Try to load from session
         if (Instance::getActiveInstanceID()) {
-            $table_configuration = Property::getForCurrentUser('tableconfiguration', $this->getID());
+            $table_configuration = Property::getForCurrentUser('platform', 'table_configuration_'.$this->id);
             $column = $table_configuration['sort_column'];
             if ($column && $this->hasColumn($column)) {
                 $this->setSort($column, $table_configuration['sort_direction']);
@@ -326,7 +326,7 @@ class Table extends Component {
         switch ($_POST['event']) {
             case 'saveorderandwidth':
                 if (!Accesstoken::getCurrentUserID()) return [];
-                $existingproperties = Property::getForCurrentUser('tableconfiguration', $this->id);
+                $existingproperties = Property::getForCurrentUser('platform', 'table_configuration_'.$this->id);
                 if (! is_array($existingproperties)) $existingproperties = array();
                 $newproperties = array();
                 foreach ($_POST['properties'] as $element) {
@@ -340,7 +340,7 @@ class Table extends Component {
                 return [];
             case 'savesort':
                 if (!Accesstoken::getCurrentUserID()) return [];
-                $existingproperties = Property::getForCurrentUser('tableconfiguration', $this->id);
+                $existingproperties = Property::getForCurrentUser('platform', 'table_configuration_'.$this->id);
                 if (! is_array($existingproperties)) $existingproperties = array();
                 $existingproperties['sort_column'] = $_POST['column'];
                 $existingproperties['sort_direction'] = $_POST['direction'];

@@ -224,7 +224,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
     })
 
     function saveTableLayout(tableid) {
-       var table = getTableByID('#'+tableid);
+       var table = Tabulator.findTable('#'+tableid+'_table')[0];
        var columns = [];
        $.each(table.getColumns(), function(key, element) {
            if (element._column.definition && element._column.definition.field) {
