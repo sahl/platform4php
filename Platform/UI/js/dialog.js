@@ -83,7 +83,7 @@ function confirmDialog(title, text, callback_ok, callback_cancel) {
 
 function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel) {
     $('#platform_allpurpose_text').html(text);
-    $('#platform_allpurpose_form').children().hide();
+    $('#platform_allpurpose_form').children().remove();
     
     // Ensure that the form is moved into place and shown
     $(form_id).appendTo('#platform_allpurpose_form').show();
