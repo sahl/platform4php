@@ -1,7 +1,7 @@
 var platform_component_handler_functions = [];
 var platform_component_handler_class_names = [];
 
-addCustomPlatformFunction(function(item) {
+addCustomPlatformFunctionLast(function(item) {
     var elements = item.find('.platform_component');
     if (item.hasClass('platform_component')) if (elements.length) elements = elements.add(item); else elements = item;
     

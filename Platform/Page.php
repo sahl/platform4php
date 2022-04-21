@@ -141,6 +141,7 @@ class Page {
         foreach ($js_files as $js_file) {
             echo '<script src="'.$js_file.'" type="text/javascript"></script>';
         }
+        if ($options['custom_head_html']) echo $options['custom_head_html'];
         echo '</head><body>';
     }
     
