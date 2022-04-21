@@ -8,8 +8,8 @@ use Platform\Utilities\Time;
 class DateField extends Field {
     
     public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
         $this->value = new Time();
+        parent::__construct($label, $name, $options);
     }
     
     public function setValue($value) {
@@ -23,6 +23,6 @@ class DateField extends Field {
     }
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get().'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get('Y-m-d').'"'.$this->additional_attributes.'>';
     }
 }
