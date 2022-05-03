@@ -71,9 +71,9 @@ class Rate extends \Platform\Datarecord {
      * same date will be overwritten
      * @param string $currency
      * @param \Platform\Utilities\Time $date
-     * @param float $rate
+     * @param float $rate_value
      */
-    public static function setRate(string $currency, \Platform\Utilities\Time $date, float $rate) {
+    public static function setRate(string $currency, \Platform\Utilities\Time $date, float $rate_value) {
         if (!Currency::isValidCurrency($currency)) trigger_error('Invalid currency '.$currency, E_USER_ERROR);
         $filter = new \Platform\Filter(get_called_class());
         $filter->addCondition(new \Platform\ConditionMatch('currency', $currency));
@@ -84,7 +84,7 @@ class Rate extends \Platform\Datarecord {
         $rate->reloadForWrite();
         $rate->currency = $currency;
         $rate->date = $date->startOfDay();
-        $rate->rate = $rate;
+        $rate->rate = $rate_value;
         $rate->save();
     }
     
