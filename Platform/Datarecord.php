@@ -1873,7 +1873,8 @@ class Datarecord implements DatarecordReferable {
                     $this->setValue($key, json_decode($value, true));
                     break;
                 case self::FIELDTYPE_OBJECT:
-                    $this->setValue($key, unserialize($value));
+                    if ($value === null) $this->setValue($key, null);
+                    else $this->setValue($key, unserialize($value));
                     break;
                 default:
                     $this->setValue($key, $value);
