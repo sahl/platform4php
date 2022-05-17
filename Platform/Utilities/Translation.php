@@ -271,21 +271,21 @@ class Translation {
         $phrases = array();
         if ($ext == 'frm' || $ext == 'form') {
             if (preg_match_all('/(label|head)="(.*?)"/', $file_content, $matches)) {
-                foreach ($matches[2] as $m) $phrases[] = $m;
+                foreach ($matches[2] as $m) $phrases[] = stripslashes($m);
             }
             if (preg_match_all('/\{(.*?)\}/', $file_content, $matches)) {
-                foreach ($matches[1] as $m) $phrases[] = $m;
+                foreach ($matches[1] as $m) $phrases[] = stripslashes($m);
             }
             if (preg_match_all('/value-[^=]+="(.*?)"/', $file_content, $matches)) {
-                foreach ($matches[1] as $m) $phrases[] = $m;
+                foreach ($matches[1] as $m) $phrases[] = stripslashes($m);
             }
         } else {
             foreach ($function_names as $function_name) {
                 if (preg_match_all('/([^a-z]|^)'.$function_name.'\("(.*?[^\\\\])"/i', $file_content, $matches)) {
-                    foreach ($matches[2] as $m) $phrases[] = $m;
+                    foreach ($matches[2] as $m) $phrases[] = stripslashes($m);
                 }
                 if (preg_match_all('/([^a-z]|^)'.$function_name.'\(\'(.*?[^\\\\])\'/i', $file_content, $matches)) {
-                    foreach ($matches[2] as $m) $phrases[] = $m;
+                    foreach ($matches[2] as $m) $phrases[] = stripslashes($m);
                 }
             }
         }

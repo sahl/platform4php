@@ -235,16 +235,35 @@ class Job extends \Platform\Datarecord {
      * @param int $max_runtime Max allowed run time in realtime minutes.
      * @return \Platform\Server\Job The job
      */
-    public static function getServerJob(string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) {
+    public static function getServerJob(string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) : Job {
+        $server_id = Server::getThisServerID();
+        $server = new Server();
+        $server->loadForRead($server_id);
+        return self::getServerJobForServer($server, $class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
+    }
+
+    /**
+     * Get a new or existing job matching class and function for the given server
+     * @param Server $server The server to get the job for
+     * @param string $class Class to call
+     * @param string $function Function to call in the class.
+     * @param int $frequency Job frequency
+     * @param bool $frequency_offset_from_end Is offset calculated from when the job ends (in opposition to starts)
+     * @param int $slot_size Slot size of the job
+     * @param int $max_runtime Max allowed run time in realtime minutes.
+     * @return \Platform\Server\Job The job
+     */
+    public static function getServerJobForServer(Server $server, string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) : Job {
+        if (! $server->isInDatabase()) trigger_error('Cannot get a job for an unsaved Server', E_USER_ERROR);
         // Create basic job
         $job = new Job();
-        $server_id = Server::getThisServerID();
+        $server_id = $server->server_id;
         $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE server_ref = ".((int)$server_id)." AND class = '".Database::escape($class)."' AND `function` = '".Database::escape($function)."'");
         if ($qr) $job->loadForWrite($qr['job_id']);
         $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
         $job->server_ref = $server_id;
         return $job;
-    }    
+    }
     
     /**
      * Get the name for the output file for this job
