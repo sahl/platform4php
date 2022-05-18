@@ -98,51 +98,14 @@ function addPlatformComponentHandlerFunction(class_name, func) {
 }
 
 $.fn.componentIOForm = function(form, func) {
-    var component = this;
-    // This only works on components.
-    if (! component.hasClass('platform_component')) return;
-    // Add custom submit function
+    var item = this;
     form.submit(function() {
-        // Inject class field if not present
-        if (! form.find('input[name="componentclass"]').length) form.append('<input type="hidden" name="componentclass">');
-        form.find('input[name="componentclass"]').val(component.data('componentclass'));
-        // Inject properties field if not present
-        if (! form.find('input[name="componentproperties"]').length) form.append('<input type="hidden" name="componentproperties">');
-        form.find('input[name="componentproperties"]').val(component.data('componentproperties'));
-        // Inject id field if not present
-        if (! form.find('input[name="componentid"]').length) form.append('<input type="hidden" name="componentid">');
-        form.find('input[name="componentid"]').val(component.prop('id'));
-        // Post
-        $.post(component.data('io_url'), form.serialize(), function(data) {
-            // Handle form error
+        item.componentIO(form.serialize(), function(data) {
             if (! data.status) {
-                if (data.destroy) component.remove();
-                if (data.script) eval(data.script);
-                if (data.properties) component.data('componentproperties', data.properties);
-                if (data.data) {
-                    $.each(data.data, function(i, v) {
-                        component.data(i,v);
-                    });
-                }
-                if (data.trigger) component.trigger(data.trigger);
-                if (data.redraw) component.trigger('redraw');
                 form.attachErrors(data.form_errors);
-                if (typeof func == 'function') func(data);
-            } else {
-                if (data.destroy) component.remove();
-                if (data.script) eval(data.script);
-                if (data.redirect) location.href = data.redirect;
-                if (data.properties) component.data('componentproperties', data.properties);
-                if (data.data) {
-                    $.each(data.data, function(i, v) {
-                        component.data(i,v);
-                    });
-                }
-                if (data.trigger) component.trigger(data.trigger);
-                if (data.redraw) component.trigger('redraw');
-                if (typeof func == 'function') func(data);
             }
-        }, 'json')
+            if (typeof func == 'function') func(data);
+        })
         return false;
     })
 }
@@ -245,12 +208,28 @@ $.fn.componentIO = function(values, func) {
     var component = this;
     // This only works on components.
     if (! component.hasClass('platform_component')) return;
-    // Inject class field
-    values['componentclass'] = component.data('componentclass');
-    // Inject properties
-    values['componentproperties'] = component.data('componentproperties');
-    // Inject ID
-    values['componentid'] = component.prop('id');
+    
+    // Values can be an object or a serialized string
+    if (typeof values == 'string') {
+        // It is a serialized string
+
+        // Inject class field
+        values += '&componentclass='+encodeURIComponent(component.data('componentclass'));
+        // Inject properties    
+        values += '&componentproperties='+encodeURIComponent(component.data('componentproperties'));
+        // Inject ID
+        values += '&componentid='+encodeURIComponent(component.prop('id'));
+    } else {
+        // It is an array/object
+
+        // Inject class field
+        values['componentclass'] = component.data('componentclass');
+        // Inject properties
+        values['componentproperties'] = component.data('componentproperties');
+        // Inject ID
+        values['componentid'] = component.prop('id');
+    }
+    
     // Post
     $.post(component.data('io_url'), values, function(data) {
         if (data.destroy) component.remove();
