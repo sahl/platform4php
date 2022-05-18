@@ -177,6 +177,8 @@ class Job extends \Platform\Datarecord {
                 $this->log('error', $content, $this);
                 $this->error_count = $this->error_count + 1;
                 $this->last_error_message = $content;
+            } else {
+                $this->last_error_message = '';
             }
             unlink($file);
         }
