@@ -29,7 +29,7 @@ class Dialog extends Component {
      * @param \Platform\Form $form Form to display
      */
     public static function Dialog(string $id, string $title, string $text, array $buttons = array(), $form = false) : Dialog {
-        $dialog = new Dialog();
+        $dialog = new static();
         $dialog->setID($id);
         $dialog->title = $title;
         $dialog->text = $text;
