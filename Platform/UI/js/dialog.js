@@ -83,15 +83,18 @@ function confirmDialog(title, text, callback_ok, callback_cancel) {
 
 function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel) {
     $('#platform_allpurpose_text').html(text);
-    $('#platform_allpurpose_form').children().remove();
+    
+    // Move any existing content back in place
+    // $('#platform_allpurpose_form').children().hide().appendTo(platform_form_dialog_prior_location);
     
     // Ensure that the form is moved into place and shown
-    $(form_id).appendTo('#platform_allpurpose_form').show();
+    var form_original_parent = $(form_id).parent();
+    
+    $(form_id).appendTo('#platform_allpurpose_form').show().clearForm();
     
     // (Re)bind submitter
     $(form_id).off('submit.allpurpose_dialog');
     $(form_id).on('submit.allpurpose_dialog', function(data) {
-        $('#platform_allpurpose_dialog').dialog('close');
         if (typeof(callback_ok) == 'function') {
             var return_values = {};
             $.each($(form_id).serializeArray(), function(key, value) {
@@ -99,6 +102,9 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel)
             })
             callback_ok(return_values);
         }
+        $('#platform_allpurpose_dialog').dialog('close');
+        // Move form back in place
+        $(form_id).appendTo(form_original_parent);
         return false;
     })
     
@@ -116,6 +122,8 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel)
             click:  function() {
                 $(this).dialog('close');
                 if (typeof(callback_cancel) == 'function') callback_cancel();
+                // Move form back in place
+                $(form_id).appendTo(form_original_parent);
             }
         }        
     ]).dialog('open');
