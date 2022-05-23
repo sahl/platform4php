@@ -14,6 +14,8 @@ class Field {
     const LABEL_ALIGN_NONE = 5;
     const LABEL_ALIGN_AUTO = 10;
     
+    const DEFAULT_HEIGHT = 30;
+    
     const FIELD_SIZE_NORMAL = 280;
     const FIELD_SIZE_SMALL = 120;
     const FIELD_SIZE_TINY = 50;
@@ -94,7 +96,13 @@ class Field {
      * Width of input field
      * @var int
      */
-    protected $field_width = self::FIELD_SIZE_NORMAL;
+    public $field_width = self::FIELD_SIZE_NORMAL;
+    
+    /**
+     * Height of the entire input construction
+     * @var int
+     */
+    public $row_height = self::DEFAULT_HEIGHT;
 
     /**
      * Field name (in HTML)
@@ -391,7 +399,7 @@ class Field {
      * Render the field
      */
     public function render() {
-        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
+        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="min-height: '.$this->row_height.'px;'.$this->getStyleString().'">';
 
         // Handle alignment
         if (! $this->getLabel()) $this->setLabelAlignment (self::LABEL_ALIGN_NONE);

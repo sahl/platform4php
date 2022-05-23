@@ -1,9 +1,5 @@
 .platform_form_field_container {
     margin-bottom: 1px;
-    display: flex;
-    min-height: 30px;
-    justify-content: center;
-    flex-flow: column;
 }
 
 .platform_form_global_error_container {
@@ -32,6 +28,7 @@
 
 .platform_left_label {
     padding-right: 5px;
+    padding-left: 5px;
     overflow-wrap: break-word;
 }
 
@@ -70,23 +67,4 @@
 
 .platform_form_line_air {
     display: flex;
-    justify-content: space-around;
-    margin-bottom: 8px;
-}
-
-.platform_form_line_spaced {
-    display: flex;
-}
-
-.platform_form_line_spaced > * {
-    margin-right: 30px;
-}
-
-
-.platform_form_line_condensed {
-    display: flex;
-}
-
-.platform_form_line_condensed > * {
-    flex-grow: 1;
 }
