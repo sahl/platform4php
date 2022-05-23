@@ -5,7 +5,7 @@ class MultidatarecordcomboboxField extends MultiplierSection {
     
     public function __construct(string $label, string $name, array $options = array()) {
         $datarecordcombobox = new DatarecordcomboboxField('', 'innercombobox', array('class' => $options['class']));
-        $datarecordcombobox->row_height = 10;
+        $datarecordcombobox->addContainerStyle('margin-top: 0px');
         unset($options['class']);
         parent::__construct($label, $name, $options);
         $this->addFields($datarecordcombobox);

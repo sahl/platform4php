@@ -1,7 +1,6 @@
 <?php
 namespace Platform\Form;
 
-use Platform\Utilities\Errorhandler;
 use Platform\Form;
 
 class MultiplierSection extends Field {
