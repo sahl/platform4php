@@ -13,7 +13,7 @@ class TextareaField extends TextField {
     }
     
     public function renderInput() {
-        echo '<textarea class="'.$this->getClassString().'" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
+        echo '<textarea class="'.$this->getClassString().'" style="max-width: '.$this->field_width.'px;" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
         echo $this->value;
         echo '</textarea>';
     }

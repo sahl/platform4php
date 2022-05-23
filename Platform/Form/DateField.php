@@ -7,6 +7,8 @@ use Platform\Utilities\Time;
 
 class DateField extends Field {
     
+    public $field_width = self::FIELD_SIZE_SMALL;
+    
     public function __construct(string $label, string $name, array $options = array()) {
         $this->value = new Time();
         parent::__construct($label, $name, $options);
@@ -23,6 +25,6 @@ class DateField extends Field {
     }
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get('Y-m-d').'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.'px;" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get('Y-m-d').'"'.$this->additional_attributes.'>';
     }
 }

@@ -1,5 +1,9 @@
 .platform_form_field_container {
-    margin-bottom: 1px !important;
+    margin-bottom: 1px;
+    display: flex;
+    min-height: 30px;
+    justify-content: center;
+    flex-flow: column;
 }
 
 .platform_form_global_error_container {
@@ -24,6 +28,11 @@
 .platform_field_label_container > .platform_field_input_container {
     flex-grow: 1;
     flex-shrink: 1;
+}
+
+.platform_left_label {
+    padding-right: 5px;
+    overflow-wrap: break-word;
 }
 
 .platform_right_label {

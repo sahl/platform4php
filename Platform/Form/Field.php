@@ -14,6 +14,10 @@ class Field {
     const LABEL_ALIGN_NONE = 5;
     const LABEL_ALIGN_AUTO = 10;
     
+    const FIELD_SIZE_NORMAL = 280;
+    const FIELD_SIZE_SMALL = 120;
+    const FIELD_SIZE_TINY = 50;
+    
     /**
      * Classes to add to form field
      * @var array 
@@ -85,6 +89,12 @@ class Field {
      * @var int
      */
     protected $label_width = 130;
+    
+    /**
+     * Width of input field
+     * @var int
+     */
+    protected $field_width = self::FIELD_SIZE_NORMAL;
 
     /**
      * Field name (in HTML)
@@ -452,8 +462,11 @@ class Field {
         if (! $this->label) return;
         switch ($this->getFinalLabelAlignment()) {
             case self::LABEL_ALIGN_TOP:
+                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_top_label">'.$this->label;
+                if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
+                echo '</label>';
             case self::LABEL_ALIGN_LEFT:
-                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'">'.$this->label;
+                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_left_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;

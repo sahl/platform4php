@@ -21,6 +21,6 @@ class NumberField extends Field {
     }    
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="number" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.'px;" type="number" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
 }
