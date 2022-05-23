@@ -219,10 +219,5 @@ class EditComplex extends Component {
         }
         $this->action_locations = $action_locations;
     }
- 
-    public function setDefaultValues(array $default_values) {
-        $this->default_values = $default_values;
-    }
-    
     
 }
