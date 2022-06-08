@@ -37,8 +37,8 @@ class ConditionInCollection extends Condition {
     
     private $collection_content = false;
     
-    public function match(Datarecord $object) : bool {
-        if (! $this->manual_match) return true;
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
+        if (! $force_manual && ! $this->manual_match) return true;
         if ($this->collection->getCount() == 0) return false;
         if (! $this->collection_content) {
             $this->collection_content = $this->collection->getAllRawValues($this->fieldname);

@@ -44,8 +44,8 @@ class ConditionInFilter extends Condition {
     
     private $filter_result = false;
     
-    public function match(Datarecord $object) : bool {
-        if (! $this->manual_match) return true;
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
+        if (! $force_manual && ! $this->manual_match) return true;
         // Manual match
         if (! $this->filter_result) {
             $this->filter_result = $this->other_filter->execute()->getAllRawValues($this->fieldname);

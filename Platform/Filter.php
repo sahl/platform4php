@@ -125,6 +125,16 @@ class Filter {
     }
     
     /**
+     * Check if a given object matches this filter
+     * @param Datarecord $object
+     * @return bool
+     */
+    public function match(Datarecord $object) : bool {
+        if (! $this->base_condition) return true;
+        return $this->base_condition->match($object, true);
+    }
+    
+    /**
      * Execute this filter and get first result
      * @return Datarecord First result or empty object of same type.
      */

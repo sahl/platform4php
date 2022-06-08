@@ -124,9 +124,10 @@ class Condition {
     /**
      * Check if this filter matches the given object
      * @param Datarecord $object
+     * @param bool $force_manual Set to true to force a manual check
      * @return bool True if match
      */
-    public function match(Datarecord $object) : bool {
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
         return true;
     }
     

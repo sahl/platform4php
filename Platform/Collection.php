@@ -60,6 +60,23 @@ class Collection implements \Iterator {
             }
         }
     }
+
+    /**
+     * Filter this collection with the given filter and returns the result
+     * @param Filter $filter
+     * @return Collection
+     */
+    public function filter(Filter $filter) : Collection {
+        if ($this->getCount() == 0) return new Collection();
+        if ($filter->getBaseClassName() != $this->getCollectionType()) trigger_error('Filter type doesn\'t match collection type', E_USER_ERROR);
+        $new_collection = new Collection();
+        foreach ($this->datarecords as $datarecord) {
+            if ($filter->match($datarecord)) {
+                $new_collection->add($datarecord);
+            }
+        }
+        return $new_collection;
+    }
     
     /**
      * Delete all contained records from the database. This overrides blocking.
@@ -245,7 +262,7 @@ class Collection implements \Iterator {
             }
             $sort_array[] = $finalvalue;
         }
-        array_multisort($sort_array, SORT_ASC, $this->datarecords);
+        array_multisort($sort_array, SORT_ASC, SORT_NATURAL|SORT_FLAG_CASE, $this->datarecords);
         return $this;
     }
     

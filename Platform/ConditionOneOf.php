@@ -46,9 +46,16 @@ class ConditionOneOf extends Condition {
         return '('.implode(' OR ', $sql).')';
     }
     
-    public function match(Datarecord $object) : bool {
-        if (! $this->manual_match) return true;
-        return in_array($object->getRawValue($this->fieldname), $this->value);
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
+        if (! $force_manual && ! $this->manual_match) return true;
+        $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
+        switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_ARRAY:
+            case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
+                return count(array_intersect($this->value, $object->getRawValue($this->fieldname))) > 0; 
+            default:
+                return in_array($object->getRawValue($this->fieldname), $this->value);
+        }
     }
     
     public function validate() {

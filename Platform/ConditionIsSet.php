@@ -40,8 +40,8 @@ class ConditionIsSet extends Condition {
         }
     }
     
-    public function match(Datarecord $object) : bool {
-        if (! $this->manual_match) return true;
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
+        if (! $force_manual && ! $this->manual_match) return true;
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_ARRAY:

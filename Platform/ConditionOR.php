@@ -36,9 +36,9 @@ class ConditionOR extends Condition {
         return '('.$this->condition1->getSQLFragment().' OR '.$this->condition2->getSQLFragment().')';
     }
 
-    public function match(Datarecord $object) : bool {
-        if (! $this->manual_match) return true;
-        return $this->condition1->match($object) || $this->condition2->match($object);
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
+        if (! $force_manual && ! $this->manual_match) return true;
+        return $this->condition1->match($object, $force_manual) || $this->condition2->match($object, $force_manual);
     }
     
     /**

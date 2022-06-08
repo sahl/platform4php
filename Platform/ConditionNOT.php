@@ -33,9 +33,9 @@ class ConditionNOT extends Condition {
         return 'NOT ('.$this->condition->getSQLFragment().')';
     }
     
-    public function match(Datarecord $object) : bool {
-        if (! $this->manual_match) return true;
-        return ! $this->condition->match($object);
+    public function match(Datarecord $object, bool $force_manual = false) : bool {
+        if (! $force_manual && ! $this->manual_match) return true;
+        return ! $this->condition->match($object, $force_manual);
     }
     
     public function validate() {
