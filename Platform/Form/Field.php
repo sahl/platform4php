@@ -165,6 +165,10 @@ class Field {
             $this->container_styles[] = $options['container-style'];
             unset($options['container-style']);
         }        
+        if ($options['style']) {
+            $this->container_styles[] = $options['style'];
+            unset($options['style']);
+        }        
         if ($options['label-alignment']) {
             switch (strtolower($options['label-alignment'])) {
                 case 'auto': 
@@ -465,6 +469,7 @@ class Field {
                 echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_top_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
+            break;
             case self::LABEL_ALIGN_LEFT:
                 echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_left_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
