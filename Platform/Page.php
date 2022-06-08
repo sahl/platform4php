@@ -112,11 +112,14 @@ class Page {
     /**
      * Render the page start including html, head and body tag
      * @param string $title Page title
-     * @param array $js_files Javascript files to include
-     * @param array $css_files CSS files to include
+     * @param mixed $js_files Javascript files to include. Either string with one file name or array with one or more file names.
+     * @param mixed $css_files CSS files to include. Either string with one file name or array with one or more file names.
      */
-    public static function renderPagestart(string $title, array $js_files = [], array $css_files = [], array $options = []) {
+    public static function renderPagestart(string $title, $js_files = [], $css_files = [], array $options = []) {
         self::$page_started = true;
+        
+        if (! is_array($js_files)) $js_files = $js_files ? [$js_files] : [];
+        if (! is_array($css_files)) $css_files = $css_files ? [$css_files] : [];
         
         if (! $options['no_history']) self::storeInHistory();
         

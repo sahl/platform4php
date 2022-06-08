@@ -14,9 +14,11 @@ class Field {
     const LABEL_ALIGN_NONE = 5;
     const LABEL_ALIGN_AUTO = 10;
     
-    const FIELD_SIZE_NORMAL = 280;
-    const FIELD_SIZE_SMALL = 120;
-    const FIELD_SIZE_TINY = 50;
+    const DEFAULT_HEIGHT = 0;
+    
+    const FIELD_SIZE_NORMAL = '280px';
+    const FIELD_SIZE_SMALL = '120px';
+    const FIELD_SIZE_TINY = '50px';
     
     /**
      * Classes to add to form field
@@ -53,6 +55,12 @@ class Field {
      * @var Form 
      */
     protected $form = null;
+    
+    /**
+     * Used for layout. Adds this field to the given group.
+     * @var type
+     */
+    protected $group = 0;
     
     /**
      * Heading for fields including a heading
@@ -96,6 +104,12 @@ class Field {
      */
     public $field_width = self::FIELD_SIZE_NORMAL;
     
+    /**
+     * Height of the entire input construction
+     * @var int
+     */
+    public $row_height = self::DEFAULT_HEIGHT;
+
     /**
      * Field name (in HTML)
      * @var string 
@@ -165,10 +179,10 @@ class Field {
             $this->container_styles[] = $options['container-style'];
             unset($options['container-style']);
         }        
-        if ($options['style']) {
-            $this->container_styles[] = $options['style'];
-            unset($options['style']);
-        }        
+        if ($options['field-width']) {
+            $this->setFieldWidth($options['field-width']);
+            unset($options['field-width']);
+        }
         if ($options['label-alignment']) {
             switch (strtolower($options['label-alignment'])) {
                 case 'auto': 
@@ -203,6 +217,11 @@ class Field {
         if ($options['autofocus']) {
             $this->addClass('platform_autofocus');
             unset($options['platform_autofocus']);
+        }
+        
+        if ($options['group']) {
+            $this->setGroup($options['group']);
+            unset($options['group']);
         }
         
         if ($this->is_required) $this->classes[] = 'form_required_field';
@@ -342,6 +361,14 @@ class Field {
     }
     
     /**
+     * Get assigned group of this field. Used for layout
+     * @return int
+     */
+    public function getGroup() : int {
+        return $this->group;
+    }
+    
+    /**
      * Get the field label
      * @return string
      */
@@ -395,7 +422,7 @@ class Field {
      * Render the field
      */
     public function render() {
-        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="'.$this->getStyleString().'">';
+        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="min-height: '.$this->row_height.'px;'.$this->getStyleString().'">';
 
         // Handle alignment
         if (! $this->getLabel()) $this->setLabelAlignment (self::LABEL_ALIGN_NONE);
@@ -507,10 +534,26 @@ class Field {
     }
     
     /**
+     * Set the width of the field itself
+     * @param type $width
+     */
+    public function setFieldWidth($width) {
+        $this->field_width = $width;
+    }
+    
+    /**
      * Set the form to focus this field
      */
     public function setFocus() {
         $this->addClass('platform_autofocus');
+    }
+    
+    /**
+     * Set the group for which to add this field. Used for layout.
+     * @param int $group
+     */
+    public function setGroup(int $group) {
+        $this->group = $group;
     }
 
     /**

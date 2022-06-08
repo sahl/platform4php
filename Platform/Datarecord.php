@@ -107,6 +107,13 @@ class Datarecord implements DatarecordReferable {
      * @var bool|string 
      */
     protected static $title_field = false;
+    
+    
+    /**
+     * Shorthand for form layout
+     * @var array
+     */
+    protected static $layout = [];
 
     /**
      * Indicate the location of this record
@@ -891,6 +898,16 @@ class Datarecord implements DatarecordReferable {
         if (! $no_lock) $this->lock();
         $this->access_mode = self::MODE_WRITE;
     }
+    
+    /**
+     * Get all objects of this type as a Collection
+     * @return Collection
+     */
+    public static function getAll() : Collection {
+        $filter = new Filter(get_called_class());
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->addCondition(new ConditionMatch('is_deleted', 0));
+        return $filter->execute();
+    }
 
     /**
      * Get all objects of this type as an array hashed by key
@@ -1103,35 +1120,19 @@ class Datarecord implements DatarecordReferable {
         $form->setEvent('save_'.$baseclass);
         $script = self::getEditScript();
         if ($script) $form->setScript($script);
-        $percentleft = 100;
         foreach (static::$structure as $key => $definition) {
             if ($definition['readonly'] || $key == 'metadata') continue;
             $field = static::getFormFieldFromDefinition($key, $definition);
             if ($field === null) continue;
-            // Check for additional rendering
-            if ($definition['form_size']) $size = (int)$definition['form_size'];
-            else $size = 100;
-            if ($size < 1 || $size > 100) $size = 100;
-            // Check if we need to end a row in progress
-            if ($percentleft < $size) {
-                $form->addHTML('</div>');
-                $percentleft = 100;
-            }
-            // Check if we need to start a new row
-            if ($percentleft == 100) {
-                $form->addHTML('<div class="platform_form_line_air">');
-            }
-            $field->addContainerStyle('width: '.$size.'%');
 
             $form->addField($field);
-            
-            $percentleft -= $size;
-            
         }
         // End row in progress
-        $form->addHTML('</div>');
         // Add custom form validator
         $form->addValidationFunction(get_called_class().'::validateForm');
+        
+        // Add layout if present
+        if (count(static::$layout)) $form->setLayout(Form\Layout::getLayoutFromArray (static::$layout));
         return $form;
     }
     
@@ -1150,6 +1151,11 @@ class Datarecord implements DatarecordReferable {
         if ($definition['invisible']) {
             return new \Platform\Form\HiddenField('', $name);
         }
+        
+        if ($definition['form_group']) {
+            $options['group'] = $definition['form_group'];
+        }
+        
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_KEY:
                 return new \Platform\Form\HiddenField('', $name);
@@ -1180,7 +1186,7 @@ class Datarecord implements DatarecordReferable {
                 $options['images_only'] = true;
                 return new \Platform\Form\FileField($definition['label'], $name, $options);
             case self::FIELDTYPE_CURRENCY:
-                return new \Platform\Form\CurrencyField($definition['label'], $name);
+                return new \Platform\Form\CurrencyField($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 $options['class'] = $definition['foreign_class'];
                 return new \Platform\Form\DatarecordcomboboxField($definition['label'], $name, $options);
@@ -1191,7 +1197,8 @@ class Datarecord implements DatarecordReferable {
                 $options['options'] = $definition['enumeration'];
                 return new \Platform\Form\MulticheckboxField($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                return new \Platform\Form\MultidatarecordcomboboxField($definition['label'], $name, array('class' => $definition['foreign_class']));
+                $options['class'] = $definition['foreign_class'];
+                return new \Platform\Form\MultidatarecordcomboboxField($definition['label'], $name, $options);
         }
         return null;
     }
@@ -1999,7 +2006,7 @@ class Datarecord implements DatarecordReferable {
         if ($changed) $errors[] = 'Database was changed even though there should be no changes. This is probably a problem with Platform.';
         
         // Check definitions
-        $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'form_size', 'calculations', 'default_value', 'invisible',
+        $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'form_group', 'calculations', 'default_value', 'invisible',
             'fieldtype', 'label', 'columnvisibility', 'default', 'subfield',
             'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup');
         

@@ -67,6 +67,10 @@ Page::queueJSFile('https://www.gstatic.com/charts/loader.js');
 // Font awesome
 Page::queueCSSFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
 
+// Include custom file if present
+$custom_include = __DIR__.'/../include.php';
+if (file_exists($custom_include)) include_once $custom_include;
+
 function PlatformAutoLoad($class) {
     // Delve root from current location
     $root = substr(__DIR__,0,strrpos(__DIR__, '/'));

@@ -22,6 +22,6 @@ class DatetimeField extends Field {
     }
 
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.'px;" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get().'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';" type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get().'"'.$this->additional_attributes.'>';
     }
 }

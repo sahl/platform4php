@@ -23,6 +23,10 @@ class Form extends \Platform\UI\Component {
     
     private $global_errors = array();
     
+    protected $layout = null;
+    
+    private $layout_applied = false;
+    
     public static $is_secure = false;
 
     private $save_on_submit = self::SAVE_NO;
@@ -39,6 +43,7 @@ class Form extends \Platform\UI\Component {
         Page::JSFile('/Platform/Form/js/texteditor.js');
         Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
         Page::CSSFile('/Platform/Form/css/form.css');
+        Page::CSSFile('/Platform/Form/css/layout.css');
         Page::CSSFile('/Platform/Form/css/texteditor.css');
         Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
         $this->addFormFieldNameSpace('Platform\\Form');
@@ -500,6 +505,13 @@ class Form extends \Platform\UI\Component {
     }
     
     /**
+     * Remove all fields from this form.
+     */
+    public function removeAllFields() {
+        $this->fields = [];
+    }
+    
+    /**
      * Removes a field from the form by name. If a multiplier is present in the form
      * a field from that can be found by using a name on the following form:
      * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER
@@ -530,6 +542,14 @@ class Form extends \Platform\UI\Component {
      */
     public function renderContent() {
         if ($this->script) Page::JSFile ($this->script);
+        
+        /**
+         * Apply layout if not yet applied
+         */
+        if (! $this->layout_applied && $this->layout) {
+            $this->layout->apply($this);
+            $this->layout_applied = true;
+        }
         
         $form_class_string = 'platform_form';
         
@@ -624,6 +644,14 @@ class Form extends \Platform\UI\Component {
      */
     public function setLabelWidth(int $width) {
         foreach ($this->fields as $field) $field->setLabelWidth ($width);
+    }
+    
+    /**
+     * Set the layout of this form
+     * @param Form\Layout $layout
+     */
+    public function setLayout(Form\Layout $layout) {
+        $this->layout = $layout;
     }
     
     /**

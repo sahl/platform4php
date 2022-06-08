@@ -8,7 +8,7 @@ class SelectField extends Field {
     }
     
     public function renderInput() {
-        echo '<select class="'.$this->getClassString().'" style="max-width: '.$this->field_width.'px;" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
+        echo '<select class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
         echo '<option value="">'.$this->heading;
         foreach ($this->options as $key => $option) {
             $selected = $key == $this->value ? ' selected' : '';

@@ -25,6 +25,6 @@ class DateField extends Field {
     }
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.'px;" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get('Y-m-d').'"'.$this->additional_attributes.'>';
+        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';" type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get('Y-m-d').'"'.$this->additional_attributes.'>';
     }
 }

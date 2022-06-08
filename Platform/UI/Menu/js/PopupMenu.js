@@ -5,37 +5,42 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
         if (parameters.info) item.data('platform_info', parameters.info);
         switch (item.data('location')) {
             case 10:
-                item.css('left', $(element).offset().left);
-                item.css('top', $(element).offset().top-item.height());
+                left = $(element).offset().left;
+                top = $(element).offset().top-item.height();
             break;
             case 20:
-                item.css('left', $(element).offset().left);
-                item.css('top', $(element).offset().top+$(element).height());
+                left = $(element).offset().left;
+                top = $(element).offset().top+$(element).height();
             break;
             case 30:
-                item.css('left', $(element).offset().left-item.width());
-                item.css('top', $(element).offset().top);
+                left = $(element).offset().left-item.width();
+                top = $(element).offset().top;
             break;
             case 40:
-                item.css('left', $(element).offset().left+$(element).width());
-                item.css('top', $(element).offset().top);
-            break;
+                left = $(element).offset().left+$(element).width();
+                top = $(element).offset().top;
             break;
             default:
-                var left = $(element).offset().left+$(element).width()/2;
-                var top = $(element).offset().top+$(element).height()/2;
+                var left = $(element).position().left+$(element).width()/2;
+                var top = $(element).position().top+$(element).height()/2;
                 if (clickevent) {
                     left = clickevent.pageX+5;
                     top = clickevent.pageY+5;
                 }
-                item.css('left', left);
-                item.css('top', top);
             break;
         }
+        // Adjust for any parent absolute container
+        item.css('left', 0);
+        item.css('top', 0);
+        item.show();
+        left -= item.offset().left;
+        top -= item.offset().top;
+        
+        item.css('left', left);
+        item.css('top', top);
         $(window).on('click', function() {
             hidePopupMenu();
         });
-        item.show();
         clickevent.stopPropagation();
     });
     

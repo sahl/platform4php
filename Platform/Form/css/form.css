@@ -51,6 +51,7 @@
 .platform_form_field:not([type="checkbox"]) {
     width: 100%;
     box-sizing: border-box;
+    min-width: 30px;
 }
 
 .platform_form_field[type="checkbox"] {
