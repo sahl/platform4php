@@ -156,7 +156,7 @@ class Mail extends Datarecord {
                 if (! $result) {
                     $mail->error_count = $mail->error_count + 1;
                     // Postpone for an hour
-                    $mail->scheduled_for = $mail->scheduled_for->add(0,0,1);
+                    $mail->scheduled_for = Time::now()->add(0,0,1);
                 } else {
                     $mail->is_sent = 1;
                     $mail->sent_date = Time::now();

@@ -56,7 +56,7 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
     
     if (item.data('attach_to')) {
         $(item.data('attach_to')).click(function(event) {
-            item.trigger('appear', [$(this), event]);
+            item.trigger('appear', [event]);
         })
     }
 })
