@@ -194,10 +194,6 @@ function install_test_all(array &$errors) {
     }
     
     if (! count($errors)) {
-        // We can do the last stuff
-        Database::useGlobal();
-        Server::ensureInDatabase();
-        Instance::ensureInDatabase();
-        Job::ensureInDatabase();
+        Server::ensureGlobalObjects();
     }
 }

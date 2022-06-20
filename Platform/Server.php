@@ -11,13 +11,13 @@ class Server extends Datarecord {
     protected static $location = self::LOCATION_GLOBAL;
     protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
 
+    protected static $obsolete_global_tables = [];
     
     protected static $referring_classes = array(
         'Platform\\Server\\Instance',
         'Platform\\Server\\Job'
     );
     
-
     protected static function buildStructure() {
         static::addStructure(array(
             'server_id' => array(
@@ -35,6 +35,17 @@ class Server extends Datarecord {
             )
         ));
         parent::buildStructure();
+    }
+
+    /**
+     * Ensure that all global objects are built and obsolete objects are removed
+     */
+    public static function ensureGlobalObjects() {
+        static::purgeUnsusedTables();
+        Database::useGlobal();
+        Server::ensureInDatabase();
+        Instance::ensureInDatabase();
+        Job::ensureInDatabase();
     }
  
     /**
@@ -78,6 +89,19 @@ class Server extends Datarecord {
     public function isThisServer() : bool {
         return self::getThisServerID() == \Platform\Platform::getConfiguration('server_id');
     }
+    
+    /**
+     * Purge all unused tables from the global database
+     */
+    public static function purgeUnsusedTables() {
+        if (! count(static::$obsolete_global_tables)) return;
+        $result = Database::globalQuery("SHOW TABLES");
+        while ($row = Database::getRow($result)) {
+            $table = current($row);
+            if (in_array($table, static::$obsolete_global_tables)) Database::globalQuery("DROP TABLE ".$table);
+        }
+    }
+    
     /**
      * Send a message to this servers talk URL
      * @param array $message Key/value pair to send as message.

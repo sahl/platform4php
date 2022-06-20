@@ -16,6 +16,8 @@ class Instance extends \Platform\Datarecord {
     protected static $title_field = false;
     protected static $location = self::LOCATION_GLOBAL;
     
+    protected static $obsolete_instance_tables = [];
+    
     protected static $depending_classes = array(
         'Platform\\Server\\Job'
     );
@@ -247,9 +249,10 @@ class Instance extends \Platform\Datarecord {
     }    
     
     /**
-     * Initialize the instance database. Override to initialize own objects
+     * Initialize the instance database and ensure obsolete objects are purged. Extend to initialize own objects
      */
     public function initializeDatabase() {
+        static::purgeUnsusedTables();
         \Platform\Security\Accesstoken::ensureInDatabase();
         \Platform\File::ensureInDatabase();
         \Platform\Utilities\Mail::ensureInDatabase();
@@ -324,6 +327,18 @@ class Instance extends \Platform\Datarecord {
         if (! $instance->isInDatabase()) return false;
         $instance->activate();
         return $instance->loginAndContinue($username, $password, $continue_url);
+    }
+    
+    /**
+     * Purge all unused tables from the instance
+     */
+    public static function purgeUnsusedTables() {
+        if (! count(static::$obsolete_instance_tables)) return;
+        $result = Database::instanceQuery("SHOW TABLES");
+        while ($row = Database::getRow($result)) {
+            $table = current($row);
+            if (in_array($table, static::$obsolete_instance_tables)) Database::instanceQuery("DROP TABLE ".$table);
+        }
     }
     
     /**
