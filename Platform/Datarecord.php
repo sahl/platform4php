@@ -95,19 +95,18 @@ class Datarecord implements DatarecordReferable {
      * @var string 
      */
     protected static $edit_script = false;
+    
+    /**
+     * Used to indicate if this object is in the database.
+     * @var type
+     */
+    protected $is_in_database = false;
 
     /**
      * Convenience to store keyfield
      * @var bool|string 
      */
     protected static $key_field = false;
-    
-    /**
-     * Point to which field contains the title for this field
-     * @var bool|string 
-     */
-    protected static $title_field = false;
-    
     
     /**
      * Shorthand for form layout
@@ -126,7 +125,13 @@ class Datarecord implements DatarecordReferable {
      * @var bool|string
      */
     protected $lockname = false;
-
+    
+    /**
+     * Set to true to manually handle the primary key
+     * @var bool
+     */
+    protected static $manual_key = false;
+    
     /**
      * Name of this object type
      * @var string 
@@ -138,7 +143,11 @@ class Datarecord implements DatarecordReferable {
      * @var array 
      */
     protected static $referring_classes = array();
-    
+
+    /**
+     * Buffer to store all requested calculations
+     * @var array
+     */
     protected static $requested_calculation_buffer = array();
 
     /**
@@ -146,6 +155,13 @@ class Datarecord implements DatarecordReferable {
      * @var array|bool Array of structure or false if isn't loaded.
      */
     protected static $structure = false;
+    
+    /**
+     * Point to which field contains the title for this field
+     * @var bool|string 
+     */
+    protected static $title_field = false;
+    
     
     /**
      * All values of the object
@@ -475,6 +491,9 @@ class Datarecord implements DatarecordReferable {
             $this->save();
         }
         
+        // This is no longer in the database
+        $this->is_in_database = false;
+        
         if ($number_of_items_deleted > 0) $this->onAfterDelete();
 
         // Stop here if we are configured to do nothing
@@ -689,7 +708,10 @@ class Datarecord implements DatarecordReferable {
                 // which shouldn't be stored in DB
                 if ($element['store_in_metadata'] || $element['store_in_database'] === false) continue;
                 $fielddefinition = '`'.$key.'` '.self::getSQLFieldType($element['fieldtype']);
-                if ($element['fieldtype'] == self::FIELDTYPE_KEY) $fielddefinition .= ' PRIMARY KEY AUTO_INCREMENT';
+                if ($element['fieldtype'] == self::FIELDTYPE_KEY) {
+                    $fielddefinition .= ' PRIMARY KEY';
+                    if (! static::$manual_key) $fielddefinition .= ' AUTO_INCREMENT';
+                }
                 $fielddefinitions[] = $fielddefinition;
             }
             self::query("CREATE TABLE ".static::$database_table." (".implode(',',$fielddefinitions).") COLLATE='utf8mb4_unicode_ci'");
@@ -701,15 +723,19 @@ class Datarecord implements DatarecordReferable {
             }
             
             // Check for primary key change
-            $keyindatabase = false;
+            $keyindatabase = false; $database_got_auto_increment = false;
             foreach ($fields_in_database as $field_in_database) {
-                if ($field_in_database['Key'] == 'PRI') $keyindatabase = $field_in_database['Field'];
+                if ($field_in_database['Key'] == 'PRI') {
+                    $keyindatabase = $field_in_database['Field'];
+                    // Check for auto_increment
+                    $database_got_auto_increment = strpos($field_in_database['Extra'], 'auto_increment') !== false;
+                }
             }
-            if ($keyindatabase && $keyindatabase <> static::getKeyField()) {
+            if ($keyindatabase && $keyindatabase <> static::getKeyField() || $database_got_auto_increment == static::$manual_key) {
                 //echo 'Primary key change from '.$keyindatabase.' to '.static::getKeyField().' in '. get_called_class();
                 // When the primary key changes, we need to rebuild the table.
                 self::query('DROP TABLE '.static::$database_table);
-                return static::ensureInDatabase($type);
+                return static::ensureInDatabase();
             }
 
             // Check for new fields
@@ -717,7 +743,10 @@ class Datarecord implements DatarecordReferable {
                 if (! isset($fields_in_database[$key]) && ! $element['store_in_metadata'] && $element['store_in_database'] !== false) {
                     // Create it
                     $definition = self::getSQLFieldType($element['fieldtype']);
-                    if ($element['fieldtype'] == self::FIELDTYPE_KEY) $definition .= ' PRIMARY KEY AUTO_INCREMENT';
+                    if ($element['fieldtype'] == self::FIELDTYPE_KEY) {
+                        $fielddefinition .= ' PRIMARY KEY';
+                        if (! static::$manual_key) $fielddefinition .= ' AUTO_INCREMENT';
+                    }
                     $default = isset($element['default_value']) ? ' DEFAULT '.self::getFieldForDatabase($key, $element['default_value']) : '';
                     self::query('ALTER TABLE '.static::$database_table.' ADD `'.$key.'` '.$definition.$default);
                     $changed = true;
@@ -1709,7 +1738,7 @@ class Datarecord implements DatarecordReferable {
      * @return bool True if stored in database
      */
     public function isInDatabase() : bool {
-        return $this->values[static::getKeyField()] > 0;
+        return $this->is_in_database;
     }
     
     /**
@@ -1718,6 +1747,8 @@ class Datarecord implements DatarecordReferable {
      * @param bool $fail_on_not_found Indicate if the call should fail if the record isn't found.
      */
     public function loadForRead(int $id, bool $fail_on_not_found = true) {
+        // Spoof id field
+        $this->values[static::getKeyField()] = $id;
         // Switch to read mode if in write mode and something was loaded
         if ($this->loadFromDatabase($id, $fail_on_not_found) && $this->access_mode == self::MODE_WRITE) {
             // Unlock
@@ -1737,7 +1768,6 @@ class Datarecord implements DatarecordReferable {
         $this->access_mode = self::MODE_WRITE;
         if (! $this->loadFromDatabase($id, $fail_on_not_found)) {
             // Unlock if we couldn't read
-            $this->values[static::getKeyField()] = 0;
             $this->unlock();
         }
     }
@@ -1755,9 +1785,11 @@ class Datarecord implements DatarecordReferable {
             $this->parseFromDatabaseRow($row);
             $this->unpackMetadata();
             $this->values_on_load = $this->values;
+            $this->is_in_database = true;
             return true;
         }
         if ($fail_on_not_found) trigger_error('Record in table '.static::$database_table.' with id = '.$id.' not found!', E_USER_ERROR);
+        // When using manual keys we populate the object with the key even though the record wasn't found
         return false;
     }
 
@@ -1777,6 +1809,7 @@ class Datarecord implements DatarecordReferable {
         $this->parseFromDatabaseRow($databaserow);
         $this->unpackMetadata();
         $this->values_on_load = $this->values;
+        $this->is_in_database = true;
     }    
     
     /**
@@ -1828,8 +1861,10 @@ class Datarecord implements DatarecordReferable {
     }
 
     /**
-     * Called when object is saved.
+     * Called when object is saved. If this function returns false, the object
+     * isn't saved.
      * @param array $changed_fields Array of fields which were changed
+     * @return bool Should we continue.
      */
     public function onSave(array $changed_fields) : bool {
         return true;
@@ -2156,7 +2191,24 @@ class Datarecord implements DatarecordReferable {
         
         // Event handlers
         if ($is_new_object && ! $this->onCreate()) return false;
-        $this->onSave($changed_fields);
+        if (!$this->onSave($changed_fields)) return false;
+        
+        $manual_key_semaphore = 'platform_manual_key_'.static::$database_table;
+
+        // Handle manual keys if setup
+        if (static::$manual_key) {
+            // We need to lock this entire object when handling manual keys to prevent race conditions
+            if (! Semaphore::wait($manual_key_semaphore, 5, 10)) trigger_error('Couldn\'t lock manual key semaphore within reasonable time.', E_USER_ERROR);
+            if (! $this->getKeyValue() || ! is_int($this->getKeyValue())) trigger_error('Invalid key value when saving '.static::$database_table, E_USER_ERROR );
+            if (! $is_new_object && $this->getKeyValue() != $this->values_on_load[$this->getKeyField()]) trigger_error('You aren\'t allowed to modify the primary key.', E_USER_ERROR);
+            // If we are saving a new object or have changed the key value...
+            if ($is_new_object) {
+                // Check that key isn't already in use.
+                $result = static::query("SELECT * FROM ".static::$database_table." WHERE ".$this->getKeyField()." = ".$this->getKeyValue());
+                $row = Database::getRow($result);
+                if ($row !== null) trigger_error('Key '.$this->getKeyValue().' is already in use, when saving '.static::$database_table, E_USER_ERROR);
+            }
+        }
         
         if (! $force_save && $this->isInDatabase()) {
             // We don't save if nothing is changed?
@@ -2208,7 +2260,7 @@ class Datarecord implements DatarecordReferable {
             foreach (static::$structure as $key => $definition) {
                 if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
                     $fieldlist[] = "`$key`"; 
-                    $fieldvalues[] = ($definition['fieldtype'] == self::FIELDTYPE_KEY) ? 'NULL' : self::getFieldForDatabase($key, $this->values[$key]);
+                    $fieldvalues[] = ($definition['fieldtype'] == self::FIELDTYPE_KEY && ! static::$manual_key) ? 'NULL' : self::getFieldForDatabase($key, $this->values[$key]);
                 }
             }
             $sql = 'INSERT INTO '.static::$database_table.' ('.implode(',',$fieldlist).') VALUES ('.implode(',',$fieldvalues).')';
@@ -2222,8 +2274,14 @@ class Datarecord implements DatarecordReferable {
                 $this->forceWritemode();
             }
         }
+        // This is now in the database
+        $this->is_in_database = true;
+        
         // Update reference buffer
         self::$foreign_reference_buffer[get_called_class()][$this->values[static::getKeyField()]] = $this->getTitle();
+        
+        // Unlock a manual key semaphore (if any)
+        Semaphore::release($manual_key_semaphore);
         
         $this->onAfterSave($changed_fields);
         if ($is_new_object) $this->onAfterCreate();
@@ -2279,6 +2337,9 @@ class Datarecord implements DatarecordReferable {
                 if ($value === null) break;
                 $this->values[$field] = $value ? md5($value.Platform::getConfiguration('password_salt')) : '';
                 break;
+            case self::FIELDTYPE_KEY:
+                if (! static::$manual_key) return;
+                // Runthrough intended.
             case self::FIELDTYPE_TEXT:
             case self::FIELDTYPE_EMAIL:
             case self::FIELDTYPE_OBJECT:
