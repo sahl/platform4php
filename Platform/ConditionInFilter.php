@@ -23,10 +23,14 @@ class ConditionInFilter extends Condition {
     
     public function getSQLFragment() : string {
         if ($this->manual_match) return 'TRUE';
-        $class_of_field = $this->other_filter->getBaseObject()->getFieldDefinition($this->fieldname)['foreign_class'];
+        $foreign_field_definition = $this->other_filter->getBaseObject()->getFieldDefinition($this->fieldname);
+        if (! count($foreign_field_definition)) trigger_error('No field '.$this->fieldname.' in foreign object.', E_USER_ERROR);
+        $class_of_field = $foreign_field_definition['foreign_class'];
         $class_of_filter = $this->filter->getBaseClassName();
         
         if ($class_of_field != $class_of_filter) trigger_error('Class '.$class_of_field.' is not compatible with '.$class_of_filter.' in InFilter condition!', E_USER_ERROR);
+        
+        if ($this->other_filter->getBaseObject()->getLocation() != $this->filter->getBaseObject()->getLocation()) trigger_error('Both fields must refer to objects at same location (GLOBAL/INSTANCE)', E_USER_ERROR);
         
         // Check if we can do this in SQL or we need to manually run the other filter
         if ($this->other_filter->willSearchMetadata()) {
