@@ -87,7 +87,7 @@ class Server extends Datarecord {
     }
     
     public function isThisServer() : bool {
-        return self::getThisServerID() == \Platform\Platform::getConfiguration('server_id');
+        return self::getThisServerID() == $this->server_id;
     }
     
     /**
@@ -111,7 +111,10 @@ class Server extends Datarecord {
         $string = json_encode($message);
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "https://".$this->hostname.Platform::getConfiguration('url_server_talk'));
+        
+        $url_servertalk = Platform::getConfiguration('url_server_talk') ?: '/Platform/Server/php/server_talk.php';
+        
+        curl_setopt($ch, CURLOPT_URL, "https://".$this->hostname.$url_servertalk);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json', 'Content-length: '.mb_strlen($string)));

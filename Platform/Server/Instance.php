@@ -97,6 +97,21 @@ class Instance extends \Platform\Datarecord {
      * @return bool
      */
     public function delete(bool $force_remove = false) : bool {
+        $server = new Server();
+        $server->loadForRead($this->server_ref);
+        
+        if (! $server->isThisServer()) {
+            // Request deletion on remote server
+            $request = array(
+                'event' => 'delete_instance',
+                'instance_id' => $this->instance_id,
+                'class' => get_called_class(),
+            );
+            $result = $server->talk($request);
+            if ($result === false || ! $result['status']) return false;
+            return true;
+        }
+        
         $databasename = $this->getDatabaseName();
         $filepath = $this->getFilePath();
         $result = parent::delete($force_remove);

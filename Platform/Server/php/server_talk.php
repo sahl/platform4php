@@ -14,7 +14,8 @@ $result = array(
 
 switch ($json['event']) {
     case 'create_instance':
-        $server = Server::getThisServerID();
+        $server = new Server();
+        $server->loadForRead(Server::getThisServerID(), false);
         if (! $server->isInDatabase()) {
             $result['error'] = 'Couldn\'t identify server.';
         } else {
@@ -27,6 +28,22 @@ switch ($json['event']) {
             );
         }
         break;
+    case 'delete_instance':
+        $server = new Server();
+        $server->loadForRead(Server::getThisServerID(), false);
+        if (! $server->isInDatabase()) {
+            $result['error'] = 'Couldn\'t identify server.';
+        } else {
+            $class = $json['class'];
+            $instance = new $class();
+            $instance->loadForWrite($json['instance_id']);
+            $result = $instance->delete();
+            if (! $result) $result['error'] = 'Could not delete instance on remote server.';
+            else $result = array(
+                'status' => true
+            );
+        }
+        break;        
     case 'login':
         $class = $json['class'];
         $instance = new $class();
