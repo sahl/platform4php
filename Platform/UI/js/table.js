@@ -109,7 +109,6 @@ addPlatformComponentHandlerFunction('table', function(item) {
     });
 
     function getSelectedTableRows() {
-        //var table = Tabulator.findTable('#'+id+'_table_table')[0];
         var ids = [];
         $.each(table.getSelectedRows(), function(i, elements) {
           ids.push(elements._row.data.id);
@@ -224,7 +223,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
     })
 
     function saveTableLayout(tableid) {
-       var table = Tabulator.findTable('#'+tableid+'_table')[0];
+       var table = getTableByID(tableid);
        var columns = [];
        $.each(table.getColumns(), function(key, element) {
            if (element._column.definition && element._column.definition.field) {
@@ -312,5 +311,7 @@ function getSelectedTableIds(tableid) {
 }
 
 function getTableByID(id) {
-    return tablebuffer[id];
+    if (id.charAt(0) != '#') id = '#'+id;
+    var table = Tabulator.findTable(id+'_table')[0];
+    return table;
 }
