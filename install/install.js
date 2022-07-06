@@ -1,7 +1,9 @@
-/* 
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-
+$(function() {
+    $('#install_form_mail_type').change(function() {
+        if ($(this).val() == 'smtp') {
+            $('#smtp_section').show();
+        } else {
+            $('#smtp_section').hide();
+        }
+    }).trigger('change');
+})

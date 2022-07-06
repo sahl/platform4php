@@ -20,3 +20,12 @@ body {
     border: 1px solid #FFFFDD;
     box-shadow: 3px 3px 5px;
 }
+
+input[type=submit] {
+    background: #DDDDDD;
+    cursor: pointer;
+}
+
+input[type=submit]:hover {
+    background: white;
+}

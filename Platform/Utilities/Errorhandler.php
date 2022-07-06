@@ -177,7 +177,7 @@ class Errorhandler {
                 echo '<hr>';
                 echo '<h3>Error occured</h3>';
                 echo '<table><tr><th>Error:</th><td>' . $error_number . '</td></tr><tr><th>Error text:</th><td>' . $message . '</td></tr></table>';
-                if (false) {
+                if (\Platform\Platform::getConfiguration('debug_mode')) {
                     echo '<b>Stack dump</b>';
                     echo '<table>';
                     foreach (debug_backtrace() as $backtrace) {

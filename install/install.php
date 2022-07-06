@@ -1,4 +1,11 @@
 <?php
+use Platform\Platform;
+use Platform\Server;
+use Platform\Security\Administrator;
+use Platform\Utilities\Database;
+use Platform\Form;
+use Platform\Page;
+
 // Check if we can decide a root
 if (! $_SERVER['DOCUMENT_ROOT']) die('Couldn\'t read $_SERVER[\'DOCUMENT_ROOT\']');
 
@@ -21,16 +28,6 @@ if (! file_exists($configuration_file)) {
 }
 include $include_file;
 
-use Platform\Platform;
-use Platform\Server;
-use Platform\Server\Instance;
-use Platform\Server\Job;
-use Platform\Security\Administrator;
-use Platform\Utilities\Database;
-use Platform\Utilities\Errorhandler;
-use Platform\Form;
-use Platform\Page;
-
 // Check administrator login if configured.
 if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
 
@@ -47,6 +44,8 @@ $install_form->setValues(array(
     'dir_log' => '/var/log/platform/',
     'password_salt' => md5(rand())
 ));
+
+$install_form->setLabelWidth(275);
 
 // Add configuration values to form
 $install_form->setValues($platform_configuration);

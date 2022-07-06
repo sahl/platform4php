@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+use Platform\Server\Instance;
+use Platform\Server\Job;
 use Platform\Utilities\Database;
 
 class Server extends Datarecord {
@@ -68,7 +70,7 @@ class Server extends Datarecord {
     
     /**
      * Get the server with fewest instances.
-     * @return \Platform\Server
+     * @return Server
      */
     public static function getLeastLoaded() : Server {
         $qr = Database::globalFastQuery("SELECT server_id, COUNT(*) AS antal FROM platform_servers LEFT JOIN platform_instances ON server_ref = server_id GROUP BY server_id ORDER BY antal");
