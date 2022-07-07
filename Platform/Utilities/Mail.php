@@ -59,7 +59,7 @@ class Mail extends Datarecord {
             ),
             'from_email' => array(
                 'label' => 'From (email)',
-                'fieldtype' => self::FIELDTYPE_TEXT
+                'fieldtype' => self::FIELDTYPE_EMAIL
             ),
             'to_name' => array(
                 'label' => 'To (name)',
@@ -67,7 +67,15 @@ class Mail extends Datarecord {
             ),
             'to_email' => array(
                 'label' => 'To (email)',
+                'fieldtype' => self::FIELDTYPE_EMAIL
+            ),
+            'reply_to_name' => array(
+                'label' => 'To (name)',
                 'fieldtype' => self::FIELDTYPE_TEXT
+            ),
+            'reply_to_email' => array(
+                'label' => 'To (email)',
+                'fieldtype' => self::FIELDTYPE_EMAIL
             ),
             'subject' => array(
                 'label' => 'Subject',
@@ -79,8 +87,7 @@ class Mail extends Datarecord {
                 'columnvisibility' => self::COLUMN_INVISIBLE,
                 'fieldtype' => self::FIELDTYPE_BIGTEXT
             ),
-            'file_ref' => array(
-                'label' => 'Attachments',
+            'attachment_data' => array(
                 'invisible' => true,
                 'fieldtype' => self::FIELDTYPE_OBJECT,
             ),
@@ -139,6 +146,7 @@ class Mail extends Datarecord {
             self::initPhpmailer();
             if (!Semaphore::wait('mailqueue_process')) return;
             foreach ($mails->getAll() as $mail) {
+                $mail->reloadForWrite();
                 $mailer = new PHPMailer(true);
                 try {
                     if (Platform::getConfiguration('mail_type') == 'smtp') {
@@ -159,6 +167,29 @@ class Mail extends Datarecord {
                     $mailer->addAddress($mail->to_email, $mail->to_name);
                     $mailer->Subject = $mail->subject;
                     $mailer->Body = $mail->body;
+                    
+                    // Handle reply to
+                    if ($mail->reply_to_email) {
+                        $mailer->addReplyTo($mail->reply_to_email, $mail->reply_to_name);
+                    }
+                    
+                    // Handle attachments
+                    $attachment_data = $mail->attachment_data;
+                    if ($attachment_data['attachments']) {
+                        foreach ($attachment_data['attachments'] as $file_id) {
+                            $file = new \Platform\File();
+                            $file->loadForRead($file_id);
+                            $res = $mailer->addAttachment($file->getCompleteFilename(), $file->filename);
+                        }
+                    }
+                    if ($attachment_data['inline_attachments']) {
+                        foreach ($attachment_data['inline_attachments'] as $identifier => $file_id) {
+                            $file = new \Platform\File();
+                            $file->loadForRead($file_id);
+                            $res = $mailer->addEmbeddedImage($file->getCompleteFilename(), $identifier);
+                        }
+                    }
+                    
                     $result = $mailer->send();
                     $mail->reloadForWrite();
                     if (! $result) {
@@ -186,15 +217,16 @@ class Mail extends Datarecord {
 
     /**
      * Queue a mail
-     * @param string $from_name
-     * @param string $from_email
-     * @param string $to_name
-     * @param string $to_email
-     * @param string $subject
-     * @param string $body
-     * @param array $attachments Pretty file names hashed by file names on disk
+     * @param string $from_name From name
+     * @param string $from_email From email
+     * @param string $to_name To name
+     * @param string $to_email To email
+     * @param string $subject Subject
+     * @param string $body Email body
+     * @param array $attachments Array of filenames to attach
+     * @param array $inlines Array of filenames to add as inline images hashed by inline ID
      */
-    public static function queueMail(string $from_name, string $from_email, string $to_name, string $to_email, string $subject, string $body, array $attachments = array()) {
+    public static function queueMail(string $from_name, string $from_email, string $to_name, string $to_email, string $subject, string $body, array $attachments = [], array $inlines = []) : Mail {
         $mail = new Mail(array(
             'from_name' => $from_name,
             'from_email' => $from_email,
@@ -208,8 +240,90 @@ class Mail extends Datarecord {
             'format' => self::FORMAT_HTML,
             'scheduled_for' => new Time('now')
         ));
+        foreach ($attachments as $filename) {
+            $mail->addAttachment($filename);
+        }
+        foreach ($inlines as $identifier => $filename) {
+            $mail->addInlineAttachment($identifier, $filename);
+        }
         $mail->save();
         static::setupQueue();
+        return $mail;
+    }
+    
+    /**
+     * Add an attachment to this mail. The attachment is saved as a separate file
+     * @param string $filename
+     */
+    public function addAttachment(string $filename) {
+        $attachment = new \Platform\File();
+        $attachment->attachFile($filename);
+        $attachment->folder = $this->getAttachmentFolder();
+        $attachment->save();
+        $attachment_data = $this->attachment_data;
+        if (! $attachment_data['attachments']) $attachment_data['attachments'] = [];
+        $attachment_data['attachments'][] = $attachment->file_id;
+        $this->attachment_data = $attachment_data;
+    }
+    
+    /**
+     * Add an inline image to this mail. The image is saved as a separate file
+     * @param string $filename
+     */
+    public function addInlineAttachment(string $identifier, string $filename) {
+        $attachment = new \Platform\File();
+        $attachment->attachFile($filename);
+        $attachment->folder = $this->getAttachmentFolder();
+        $attachment->save();
+        $attachment_data = $this->attachment_data;
+        if (! $attachment_data['inline_attachments']) $attachment_data['inline_attachments'] = [];
+        $attachment_data['inline_attachments'][$identifier] = $attachment->file_id;
+        $this->attachment_data = $attachment_data;
+    }
+    
+    public function delete(bool $force_purge = false): bool {
+        $attachment_data = $this->attachment_data;
+        $result = parent::delete($force_purge);
+        if ($result) {
+            // Delete attachments
+            if ($attachment_data['attachments']) {
+                foreach ($attachment_data['attachments'] as $file_id) {
+                    $file = new \Platform\File();
+                    $file->loadForWrite($file_id);
+                    $file->delete();
+                }
+            }
+            if ($attachment_data['inline_attachments']) {
+                foreach ($attachment_data['inline_attachments'] as $file_id) {
+                    $file = new \Platform\File();
+                    $file->loadForWrite($file_id);
+                    $file->delete();
+                }
+            }
+        }
+        return $result;
+    }
+    
+    /**
+     * Get the attachment folder for this mail
+     * @return string
+     */
+    public function getAttachmentFolder() : string {
+        $attachment_data = $this->attachment_data;
+        if ($attachment_data['folder']) return $attachment_data['folder'];
+        // Lock to make sure there isn't race conditions
+        $semaphore = 'platform_mail_folderdetect';
+        if (! Semaphore::wait($semaphore, 5, 10)) trigger_error('Couldn\'t grab attachment folder semaphore within reasonable time.', E_USER_ERROR);
+        while (true) {
+            $sub_folder = sha1(rand());
+            $folder = 'attachments/'.$sub_folder;
+            if (!file_exists(\Platform\File::getFullFolderPath($folder))) break;
+        }
+        \Platform\File::ensureFolderInStore($folder);
+        $attachment_data['folder'] = $folder;
+        $this->attachment_data = $attachment_data;
+        Semaphore::release($semaphore);
+        return $attachment_data['folder'];
     }
     
     public static function setupQueue() {

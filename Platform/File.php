@@ -65,7 +65,12 @@ class File extends Datarecord {
         // Remove file
         $file = $this->getCompleteFilename();
         $result = parent::delete($force_remove);
-        if ($result) unlink($file);
+        if ($result) {
+            $folder = $this->getCompleteFolderPath();
+            unlink($file);
+            // Check if we can remove the folder
+            self::removeEmptyFolders($folder);
+        }
         return $result;
     }
     
@@ -87,14 +92,11 @@ class File extends Datarecord {
     
     /**
      * Ensure that the given folder exist within the instance store.
-     * @param string $folder (A single) folder name
+     * @param string $local_folder (A single) folder name
      * @return bool
      */
-    public static function ensureFolderInStore(string $folder) : bool {
-        if (file_exists($folder)) return true;
-        $result = mkdir($folder, 0774, true);
-        if (! $result) trigger_error('Could not create directory: '.$folder, E_USER_ERROR);
-        return true;
+    public static function ensureFolderInStore(string $local_folder) : bool {
+        return self::ensureFullPath(self::getFullFolderPath($local_folder));
     }
     
     /**
@@ -103,13 +105,13 @@ class File extends Datarecord {
      * @param bool $includes_file_name If true then the path includes a file name (which isn't ensured to exist)
      * @return bool
      */
-    public static function ensureFullPath(string $path, bool $includes_file_name = false) {
+    public static function ensureFullPath(string $path, bool $includes_file_name = false) : bool {
         if (file_exists($path)) return true;
         if ($includes_file_name) {
             $slash_position = strrpos($path,'/');
             if ($slash_position !== false) $path = substr($path,0,$slash_position);
         }
-        mkdir($path,0774,true);
+        return mkdir($path,0774,true);
     }
     
     /**
@@ -125,12 +127,12 @@ class File extends Datarecord {
     
     /**
      * Extract the filename from a complete path
-     * @param string $pathname Full path name
+     * @param string $path Full path name
      * @return string File name in path
      */
-    public static function extractFilename(string $pathname) : string {
-        $pos = mb_strrpos($pathname, '/');
-        return $pos === false ? $pathname : mb_substr($pathname,$pos+1);
+    public static function extractFilename(string $path) : string {
+        $pos = mb_strrpos($path, '/');
+        return $pos === false ? $path : mb_substr($path,$pos+1);
     }
     
     /**
@@ -161,6 +163,12 @@ class File extends Datarecord {
             if ($this->values_on_load['folder']) $folder .= $this->values_on_load['folder'].'/';
         }
         return $folder;
+    }
+    
+    public function getCopy(bool $name_as_copy = false): Datarecord {
+        $file = parent::getCopy($name_as_copy);
+        $file->attachFile($this->getCompleteFilename());
+        return $file;
     }
     
     /**
@@ -211,17 +219,26 @@ class File extends Datarecord {
     
     /**
      * Get the full folder path for an specific folder in the current instance.
-     * @param string $folder Folder name
+     * @param string $local_folder Folder name
      * @return string
      */
-    public static function getFullFolderPath(string $folder) : string {
-        $instance = Instance::getActiveInstanceID();
-        if (! $instance) trigger_error('Couldn\'t detect an instance!', E_USER_ERROR);
-        $finalfolder = Platform::getConfiguration('dir_store');
-        if (! substr($finalfolder,-1) == '/') $finalfolder .= '/';
-        $finalfolder .= $instance.'/';
-        if ($folder) $finalfolder .= $folder.'/';
+    public static function getFullFolderPath(string $local_folder) : string {
+        $finalfolder = self::getInstancePath();
+        if ($local_folder) $finalfolder .= $local_folder.'/';
         return $finalfolder;
+    }
+    
+    /**
+     * Get the path to the file store of the active instance
+     * @return string
+     */
+    public static function getInstancePath() : string {
+        $instance_id = Instance::getActiveInstanceID();
+        if (! $instance_id) trigger_error('Couldn\'t detect an instance!', E_USER_ERROR);
+        $final_folder = Platform::getConfiguration('dir_store');
+        if (! substr($final_folder,-1) == '/') $final_folder .= '/';
+        $final_folder .= $instance_id.'/';
+        return $final_folder;
     }
     
     public function getTitle() : string {
@@ -266,11 +283,50 @@ class File extends Datarecord {
     }
     
     /**
+     * Check if a given folder is empty or not
+     * @param string $path Full path to folder
+     * @return bool
+     */
+    public static function isFolderEmpty(string $path) : bool {
+        // If the folder doesn't exists it is considered empty
+        if (!file_exists($path)) return true;
+        $dh = opendir($path);
+        while ($filename = readdir($dh)) {
+            if (in_array($filename, ['.','..'])) continue;
+            // If we find at least one file, the folder isn't empty
+            closedir($dh);
+            return false;
+        }
+        return true;
+    }
+    
+    /**
      * Return if this is an image based on a simple analysis of the stored mimetype
      * @return bool
      */
     public function isImage() : bool {
         return substr($this->mimetype,0,5) == 'image';
+    }
+    
+    /**
+     * Remove all empty folders in the given path, but only if it is part of the
+     * active instances path and no longer that the base folder for that instance
+     * @param string $full_path Path to remove
+     */
+    public static function removeEmptyFolders(string $full_path) {
+        $instance_path = self::getInstancePath();
+        // Bail if path not part of instance path
+        if (strpos($full_path, $instance_path) !== 0) return;
+        // Remove trailing slash if any
+        if (substr($full_path,-1) == '/') $full_path = substr($full_path, 0, strlen($full_path)-1);
+        if (self::isFolderEmpty($full_path)) {
+            // Remove it
+            if (! rmdir($full_path)) return;
+            // Take a bite
+            $full_path = substr($full_path, 0, strrpos($full_path,'/'));
+            // Recursive
+            self::removeEmptyFolders($full_path);
+        }
     }
     
      /**
@@ -285,7 +341,7 @@ class File extends Datarecord {
             $old_filename = $this->getCompleteFilename(false);
             if (file_exists($old_filename)) {
                 // We need to move it into place
-                $this->ensureFolderInStore($this->getCompleteFolderPath());
+                $this->ensureFolderInStore($this->folder);
                 $result = rename($old_filename, $this->getCompleteFilename());
                 if (! $result) trigger_error('Couldn\'t move file content from folder '.$this->values_on_load['folder'].' to '.$this->folder, E_USER_ERROR);
             }
@@ -297,13 +353,13 @@ class File extends Datarecord {
         switch ($this->content_source) {
             case 'file':
                 if (file_exists($this->content)) {
-                    $this->ensureFolderInStore($this->getCompleteFolderPath());
+                    $this->ensureFolderInStore($this->folder);
                     $result = copy($this->content, $this->getCompleteFilename());
                     if (! $result) trigger_error('Couldn\'t copy '.$this->content.' to '.$this->getCompleteFilename(), E_USER_ERROR);
                 }
                 break;
             case 'binary_data':
-                $this->ensureFolderInStore($this->getCompleteFolderPath());
+                $this->ensureFolderInStore($this->folder);
                 $fh = fopen($this->getCompleteFilename(), 'w');
                 if (! $fh) trigger_error('Couldn\'t write binary data to '.$this->getCompleteFilename (), E_USER_ERROR);
                 fwrite($fh, $this->content);
