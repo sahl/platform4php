@@ -1,10 +1,13 @@
 <?php
-use Platform\Platform;
-use Platform\Server;
-use Platform\Security\Administrator;
-use Platform\Utilities\Database;
+
+use PHPMailer\PHPMailer\PHPMailer;
 use Platform\Form;
 use Platform\Page;
+use Platform\Platform;
+use Platform\Security\Administrator;
+use Platform\Server;
+use Platform\Utilities\Database;
+use Platform\Utilities\Mail;
 
 // Check if we can decide a root
 if (! $_SERVER['DOCUMENT_ROOT']) die('Couldn\'t read $_SERVER[\'DOCUMENT_ROOT\']');
@@ -189,6 +192,38 @@ function install_test_all(array &$errors) {
             } else {
                 $errors[] = 'Could not write a file in directory '.$directory.'. Please check permissions.';
             }
+        }
+    }
+    
+    // Check mail (if setup)
+    if (Platform::getConfiguration('mail_type') && Platform::getConfiguration('mail_to')) {
+        Mail::initPhpmailer();
+        // Prepare mail
+        $mailer = new PHPMailer(true);
+        try {
+            if (Platform::getConfiguration('mail_type') == 'smtp') {
+                $mailer->isSMTP();
+                $mailer->Host = Platform::getConfiguration('smtp_server');
+                $mailer->Port = Platform::getConfiguration('smtp_port') ?: 587;
+                if (Platform::getConfiguration('smtp_username')) {
+                    $mailer->SMTPAuth = true;
+                    $mailer->Username = Platform::getConfiguration('smtp_username');
+                    $mailer->Password = Platform::getConfiguration('smtp_password');
+                }
+            } else {
+                $mailer->isMail();
+            }
+            $mailer->CharSet = 'UTF-8';
+            $mailer->isHTML(true);
+            $mailer->setFrom(Platform::getConfiguration('mail_from'), 'Platform install script');
+            $mailer->addAddress(Platform::getConfiguration('mail_to'), 'Platform test email receiver');
+            $mailer->Subject = 'Platform SMTP mail is working';
+            $mailer->Body = "<b>Platform SMTP mail is working</b><p>This mail was send from the install script for Platform. If you have received this mail, the mailer is working.";
+            $result = $mailer->send();
+            if (! $result)
+                $errors[] = 'Could not send SMTP test mail to '.Platform::getConfiguration('smtp_to').'.';
+        } catch (\PHPMailer\PHPMailer\Exception $e) {
+            $errors[] = 'Could not send SMTP test mail to '.Platform::getConfiguration('smtp_to').'. Error: '.$e->errorMessage();
         }
     }
     

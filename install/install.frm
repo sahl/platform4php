@@ -17,12 +17,17 @@
 <text name="dir_log" label="Global log files directory" required>
 
 <h2>Mail send</h2>
-<select name="mail_type" label="Mail server" heading="(None)" value-smtp="SMTP">
-<div id="smtp_section">
-    <text name="smtp_server" label="Mail server host name">
-    <text name="smtp_user" label="Mail server user name">
-    <password name="smtp_password" label="Mail server password">
-    <text name="smtp_port" label="Mail server port">
+<select name="mail_type" label="Mail server" heading="(None)" value-smtp="SMTP" value-sendmail="Sendmail">
+<div id="mail_section">
+    <p>The installer will send you a test mail to verify it is working.
+    <div id="smtp_section">
+        <text name="smtp_server" label="Mail server host name">
+        <text name="smtp_username" label="Mail server user name">
+        <password name="smtp_password" label="Mail server password">
+        <text name="smtp_port" label="Mail server port">
+    </div>
+    <text name="mail_from" label="Mail from address (for test)">
+    <text name="mail_to" label="Mail to address (for test)">
 </div>
 
 <h2>URLs</h2>

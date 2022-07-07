@@ -82,8 +82,7 @@ class Mail extends Datarecord {
             'file_ref' => array(
                 'label' => 'Attachments',
                 'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_REFERENCE_MULTIPLE,
-                'foreign_class' => 'Platform\\File'
+                'fieldtype' => self::FIELDTYPE_OBJECT,
             ),
             'format' => array(
                 'label' => 'Mail format',
@@ -94,6 +93,10 @@ class Mail extends Datarecord {
             'is_sent' => array(
                 'label' => 'Is sent?',
                 'fieldtype' => self::FIELDTYPE_BOOLEAN
+            ),
+            'last_error' => array(
+                'label' => 'Last error',
+                'fieldtype' => self::FIELDTYPE_TEXT
             ),
             'error_count' => array(
                 'label' => 'Error count',
@@ -130,37 +133,50 @@ class Mail extends Datarecord {
         $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('is_sent', 0));
         $filter->addCondition(new ConditionLesserEqual('scheduled_for', new Time('now')));
+        $filter->addCondition(new ConditionLesserEqual('error_count', 5));
         $mails = $filter->execute();
         if ($mails->getCount()) {
             self::initPhpmailer();
             if (!Semaphore::wait('mailqueue_process')) return;
             foreach ($mails->getAll() as $mail) {
-                $mailer = new PHPMailer();
-                $mailer->isSMTP();
-                $mailer->Host = Platform::getConfiguration('smtp_server');
-                $mailer->Port = Platform::getConfiguration('smtp_port');
-                if (Platform::getConfiguration('smtp_username')) {
-                    $mailer->SMTPAuth = true;
-                    $mailer->Username = Platform::getConfiguration('smtp_username');
-                    $mailer->Password = Platform::getConfiguration('smtp_password');
-                }
-                
-                $mailer->CharSet = 'UTF-8';
-                $mailer->isHTML($mail->format == self::FORMAT_HTML);
-                $mailer->setFrom($mail->from_email, $mail->from_name);
-                $mailer->addAddress($mail->to_email, $mail->to_name);
-                $mailer->Subject = $mail->subject;
-                $mailer->Body = $mail->body;
-                $result = $mailer->send();
-                $mail->reloadForWrite();
-                if (! $result) {
+                $mailer = new PHPMailer(true);
+                try {
+                    if (Platform::getConfiguration('mail_type') == 'smtp') {
+                        $mailer->isSMTP();
+                        $mailer->Host = Platform::getConfiguration('smtp_server');
+                        $mailer->Port = Platform::getConfiguration('smtp_port') ?: 587;
+                        if (Platform::getConfiguration('smtp_username')) {
+                            $mailer->SMTPAuth = true;
+                            $mailer->Username = Platform::getConfiguration('smtp_username');
+                            $mailer->Password = Platform::getConfiguration('smtp_password');
+                        }
+                    } else {
+                        $mailer->isMail();
+                    }
+                    $mailer->CharSet = 'UTF-8';
+                    $mailer->isHTML($mail->format == self::FORMAT_HTML);
+                    $mailer->setFrom($mail->from_email, $mail->from_name);
+                    $mailer->addAddress($mail->to_email, $mail->to_name);
+                    $mailer->Subject = $mail->subject;
+                    $mailer->Body = $mail->body;
+                    $result = $mailer->send();
+                    $mail->reloadForWrite();
+                    if (! $result) {
+                        $mail->last_error = Translation::translateForInstance('Could not send mail');
+                        $mail->error_count = $mail->error_count + 1;
+                        // Postpone for an hour
+                        $mail->scheduled_for = Time::now()->add(0,0,1);
+                    } else {
+                        $mail->is_sent = 1;
+                        $mail->sent_date = Time::now();
+                    }
+                } catch (\PHPMailer\PHPMailer\Exception $e) {
+                    $mail->last_error = $e->errorMessage();
                     $mail->error_count = $mail->error_count + 1;
                     // Postpone for an hour
                     $mail->scheduled_for = Time::now()->add(0,0,1);
-                } else {
-                    $mail->is_sent = 1;
-                    $mail->sent_date = Time::now();
                 }
+
                 $mail->save();
             }
             Semaphore::release('mailqueue_process');
