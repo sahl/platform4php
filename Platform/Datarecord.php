@@ -1459,6 +1459,8 @@ class Datarecord implements DatarecordReferable {
         if ($use_value_on_load) {
             $this->values = $stored_values;
         }
+        if (strlen($result) > 200) $result = substr($result,0, 200).'...(+'.(strlen($result)-200).' bytes)';
+        $result = '"'.str_replace('"', '\\"', $result).'"';
         return $result;
     }
 
@@ -1859,12 +1861,16 @@ class Datarecord implements DatarecordReferable {
         $text = '';
         if ($this->isInDatabase()) $text = 'Update '.$this->getClassName ().'('.$this->getKeyValue().') - ';
         else $text = 'Create new '.$this->getClassName().'('.$this->getKeyValue().') - ';
+        $first = true;
         foreach ($this->getChangedFields() as $fieldname) {
-            $text .= $fieldname.': ';
+            // Skip metadata
+            if ($fieldname == 'metadata') continue;
+            if ($first) $first = false;
+            else $text .= ',';
+            $text .= $fieldname.':';
             $text .= static::getLogValue($fieldname, true);
-            $text .= ' => ';
+            $text .= '=>';
             $text .= static::getLogValue($fieldname);
-            $text .= '   ';
         }
         $log->log(Security\Accesstoken::getCurrentUserID(), $text);
     }
