@@ -81,7 +81,7 @@ class File extends Datarecord {
         // Delete files older than a day
         $cutdate = \Platform\Utilities\Time::now()->addDays(-1);
         $path = self::getFullFolderPath('temp');
-        self::ensureFolderInStore($path);
+        if (! is_dir($path)) return;
         $dh = opendir($path);
         while (($file = readdir($dh)) !== false) {
             $completefile = $path.$file;
@@ -251,7 +251,7 @@ class File extends Datarecord {
      */
     public static function getTempFilename() : string {
         $path = self::getFullFolderPath('temp');
-        self::ensureFolderInStore($path);
+        self::ensureFullPath($path);
         if (!Semaphore::wait('tempfilename')) trigger_error('Couldn\'t grab tempfile semaphore!', E_USER_ERROR);
         do {
             $file_id = rand(1,999999999);

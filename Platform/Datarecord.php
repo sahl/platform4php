@@ -127,6 +127,12 @@ class Datarecord implements DatarecordReferable {
     protected $lockname = false;
     
     /**
+     * Indicate if we should log all changes to this object
+     * @var bool
+     */
+    protected static $log_me = false;
+    
+    /**
      * Set to true to manually handle the primary key
      * @var bool
      */
@@ -1428,6 +1434,33 @@ class Datarecord implements DatarecordReferable {
         if (strpos($class, '\\')) $class = substr($class,strrpos($class,'\\')+1);
         return $class;
     }
+    
+    /**
+     * Get the value of a field to be used as a log field
+     * @param string $field Field name
+     * @param bool $use_value_on_load If true then use the values as they were when loaded
+     * @return type
+     */
+    public function getLogValue(string $field, bool $use_value_on_load = false) {
+        if (! isset(static::$structure[$field])) return null;
+
+        // Check if we should switch the value on load in place
+        if ($use_value_on_load) {
+            $stored_values = $this->values;
+            $this->values = $this->values_on_load;
+        }
+        switch (static::$structure[$field]['fieldtype']) {
+            default:
+                $result = $this->getTextValue($field);
+                break;
+        }
+        
+        // Check if we should switch back
+        if ($use_value_on_load) {
+            $this->values = $stored_values;
+        }
+        return $result;
+    }
 
     /**
      * Get the readable name of this object type. Defaults to class name if
@@ -1819,7 +1852,22 @@ class Datarecord implements DatarecordReferable {
         if (!Semaphore::wait($this->getLockFileName())) {
             trigger_error('Failed to lock '.get_called_class().' ('.$this->getValue($this->getKeyField()).') within reasonable time / '.$this->getLockFileName(), E_USER_ERROR);
         }
-    }    
+    }
+    
+    public function logChange() {
+        $log = new Utilities\Log($this->getClassName(), ['6r']);
+        $text = '';
+        if ($this->isInDatabase()) $text = 'Update '.$this->getClassName ().'('.$this->getKeyValue().') - ';
+        else $text = 'Create new '.$this->getClassName().'('.$this->getKeyValue().') - ';
+        foreach ($this->getChangedFields() as $fieldname) {
+            $text .= $fieldname.': ';
+            $text .= static::getLogValue($fieldname, true);
+            $text .= ' => ';
+            $text .= static::getLogValue($fieldname);
+            $text .= '   ';
+        }
+        $log->log(Security\Accesstoken::getCurrentUserID(), $text);
+    }
     
     /**
      * Called after object is saved.
@@ -2242,6 +2290,7 @@ class Datarecord implements DatarecordReferable {
         
         $this->packMetadata();
         $this->setValue('change_date', new Time('now'));
+        
         if ($this->isInDatabase()) {
             // Prepare update.
             $fielddefinitions = array();
@@ -2252,7 +2301,6 @@ class Datarecord implements DatarecordReferable {
             }
             $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
             self::query($sql);
-            $this->values_on_load = $this->values;
             if (! $keep_open_for_write) $this->unlock();
         } else {
             $this->setValue('create_date', new Time('now'));
@@ -2265,7 +2313,6 @@ class Datarecord implements DatarecordReferable {
             }
             $sql = 'INSERT INTO '.static::$database_table.' ('.implode(',',$fieldlist).') VALUES ('.implode(',',$fieldvalues).')';
             self::query($sql);
-            $this->values_on_load = $this->values;
             $this->unlock();
             $this->values[static::getKeyField()] = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
             if ($keep_open_for_write) {
@@ -2274,6 +2321,9 @@ class Datarecord implements DatarecordReferable {
                 $this->forceWritemode();
             }
         }
+        if (static::$log_me) $this->logChange();
+        $this->values_on_load = $this->values;
+        
         // This is now in the database
         $this->is_in_database = true;
         

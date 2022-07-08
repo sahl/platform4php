@@ -212,6 +212,8 @@ addPlatformComponentHandlerFunction('table', function(item) {
                     table.setData(table_data);
                     initial_sort_completed = true;
                 }])
+            } else {
+                if (table_configuration['ajaxURL']) table.setData();
             }
         }
         

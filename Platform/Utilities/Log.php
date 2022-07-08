@@ -35,8 +35,11 @@ class Log {
         // Ensure we have a proper directory
         if ($this->in_instance) {
             $this->logdir = File::getFullFolderPath('logs');
+            $time = Time::now();
+            $this->logdir .= $time->getYear().'-'.str_pad($time->getMonth(), 2, '0', STR_PAD_LEFT);
+            var_dump($this->logdir);
             if (! file_exists($this->logdir)) 
-                if (! mkdir($this->logdir)) trigger_error('Could not create log folder', E_USER_ERROR);
+                if (! mkdir($this->logdir, 0774, true)) trigger_error('Could not create log folder', E_USER_ERROR);
         } else {
             $this->logdir = Platform::getConfiguration('dir_log');
         }
