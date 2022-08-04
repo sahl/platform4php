@@ -11,6 +11,11 @@ if (! file_exists($include_file)) die('Couldn\'t locate Platform4PHP in '.$_SERV
 
 include $include_file;
 
+// Destroy any present instance
+if (Server\Instance::getActiveInstanceID()) {
+    \Platform\Security\Accesstoken::destroySession();
+}
+
 // Check administrator login if configured.
 Administrator::checkLogin ();
 

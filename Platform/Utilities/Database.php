@@ -54,11 +54,9 @@ class Database {
 
     /**
      * Connect to the global database
-     * @global array $platform_configuration Global configuration
      * @return bool True if connected
      */
     public static function connectGlobal() {
-        global $platform_configuration;
         if (self::$global_connection === false) {
             self::$global_connection = @mysqli_connect(Platform::getConfiguration('global_database_server'), Platform::getConfiguration('global_database_username'), Platform::getConfiguration('global_database_password'));
             if (! self::$global_connection) return false;
@@ -69,10 +67,8 @@ class Database {
     
     /**
      * Connect to the global database
-     * @global array $platform_configuration Global configuration
      */
     public static function connectLocal() {
-        global $platform_configuration;
         if (self::$local_connection === false) {
             self::$local_connection = @mysqli_connect(Platform::getConfiguration('local_database_server'), Platform::getConfiguration('local_database_username'), Platform::getConfiguration('local_database_password'));
             if (! self::$local_connection) return false;
@@ -216,9 +212,9 @@ class Database {
     public static function instanceQuery(string $query, bool $fail_on_error = true) {
         if (self::$local_connection === false) {
             $result = self::connectLocal();
-            if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$global_connection), E_USER_ERROR);
-            self::useInstance();
+            if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$local_connection), E_USER_ERROR);
         }
+        if (! self::$connected_instance) self::useInstance();
         $result_set = mysqli_query(self::$local_connection, $query);
         if (self::$query_cache_enabled) self::cacheQuery($query);
         if ($result_set === false && $fail_on_error) trigger_error('Database error: '.mysqli_error(self::$local_connection).' when executing '.$query, E_USER_ERROR);

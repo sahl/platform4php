@@ -368,7 +368,10 @@ class Job extends \Platform\Datarecord {
      * Process the job queue
      */
     public static function process() {
-        if (!Semaphore::grab('process_jobs',2)) return;
+        if (!Semaphore::grab('process_jobs',2)) {
+            self::log('', 'Could not grab semaphore. Exiting.');
+            return;
+        };
         
         $start_timestamp = time();
         // Loop for 50 seconds as we expect to run every minute

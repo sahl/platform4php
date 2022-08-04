@@ -154,6 +154,8 @@ class Accesstoken extends Datarecord {
      * @return int User ID
      */
     public static function getCurrentUserID() {
+        // Return zero if no active instance ID
+        if (! Instance::getActiveInstanceID()) return 0;
         if (! self::$current_user_id) {
             // Try to acquire from current accesstoken
             $token = self::getByTokencode((string)self::getSavedTokenCode());            

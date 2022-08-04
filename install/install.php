@@ -34,6 +34,11 @@ include $include_file;
 // Check administrator login if configured.
 if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
 
+// Destroy any present instance
+if (Server\Instance::getActiveInstanceID()) {
+    \Platform\Security\Accesstoken::destroySession();
+}
+
 // Get install configuration form
 $install_form = Form::Form('install_form', 'install.frm');
 
@@ -122,24 +127,24 @@ function install_test_all(array &$errors) {
         if ($result) {
             // Now see if we can create a local database
             $temp_database_name = Platform::getConfiguration('instance_database_name').'_tempdatabase';
-            $result = Database::instanceQuery("CREATE DATABASE ".$temp_database_name, false);
+            $result = Database::localQuery("CREATE DATABASE ".$temp_database_name, false);
             if ($result) {
-                $result = Database::instanceQuery("USE ".$temp_database_name, false);
+                $result = Database::localQuery("USE ".$temp_database_name, false);
                 if ($result) {
-                    $result = Database::instanceQuery("CREATE TABLE temp_table (id INT NOT NULL)", false);
+                    $result = Database::localQuery("CREATE TABLE temp_table (id INT NOT NULL)", false);
                     if (! $result) $errors[] = 'Could not create table in newly created database. Error: '.Database::getLastLocalError();
                     else {
-                        $result = Database::instanceQuery("INSERT INTO temp_table VALUES (24)", false);
+                        $result = Database::localQuery("INSERT INTO temp_table VALUES (24)", false);
                         if (! $result) $errors[] = 'Could not insert into newly created database. Error: '.Database::getLastLocalError();
                         else {
-                            $result = Database::instanceQuery("SELECT id FROM temp_table", false);
+                            $result = Database::localQuery("SELECT id FROM temp_table", false);
                             if (! $result) $errors[] = 'Could not select from newly created database. Error: '.Database::getLastLocalError();
                         }
                     }
                 } else {
                     $errors[] = 'Could not use newly created database. Error: '.Database::getLastLocalError();
                 }
-                $result = Database::instanceQuery("DROP DATABASE ".$temp_database_name, false);
+                $result = Database::localQuery("DROP DATABASE ".$temp_database_name, false);
                 if (! $result) $errors[] = 'Could not drop newly created database. Please remove database '.$temp_database_name.' manually. Error: '.Database::getLastLocalError();
             } else {
                 $errors[] = 'Could not create a new database on the local connection. Does it have the correct permissions? Error: '.Database::getLastLocalError();
@@ -148,7 +153,7 @@ function install_test_all(array &$errors) {
             $errors[] = 'Could not connect local database '.Platform::getConfiguration('local_database_server').' ('.Platform::getConfiguration('local_database_username').'/XXXXXXX)';
         } 
     } else {
-        $errors[] = 'Could not connect global database '.$platform_configuration['global_database_server'].' ('.Platform::getConfiguration('global_database_username').'/XXXXXXX)';
+        $errors[] = 'Could not connect global database '.Platform::getConfiguration('global_database_server').' ('.Platform::getConfiguration('global_database_username').'/XXXXXXX)';
     }
     
     // Check directories
