@@ -37,8 +37,8 @@ class Time {
      * @return $this
      */
     public function add(int $seconds, int $minutes = 0, int $hours = 0) : Time {
-        $this->timestamp += $seconds + $minutes*60 + $hours*3600;
-        return $this;
+        $result = new Time($this->getTimestamp()+ $seconds + $minutes*60 + $hours*3600);
+        return $result;
     }
     
     /**
@@ -48,16 +48,17 @@ class Time {
      * @param int $years Years to add
      */
     public function addDays(int $days, int $months = 0, int $years = 0) : Time {
+        $new_timestamp = $this->getTimestamp();
         if ($months || $years) {
             // We handle this a little special
-            $newyear = date('Y', $this->timestamp)+$years;
-            $newmonth = date('n', $this->timestamp)+$months;
-            $currentday = date('j', $this->timestamp);
+            $newyear = date('Y', $new_timestamp)+$years;
+            $newmonth = date('n', $new_timestamp)+$months;
+            $currentday = date('j', $new_timestamp);
             if ($currentday > self::daysInMonth($newmonth, $newyear)) $currentday = self::daysInMonth ($newmonth, $newyear);
-            $this->timestamp = mktime(date('H', $this->timestamp), date('i', $this->timestamp), date('s', $this->timestamp), $newmonth, $currentday, $newyear);
+            $new_timestamp = mktime(date('H', $new_timestamp), date('i', $new_timestamp), date('s', $new_timestamp), $newmonth, $currentday, $newyear);
         }
-        $this->timestamp += 24*60*60*$days;
-        return $this;
+        $new_timestamp += 24*60*60*$days;
+        return new Time($new_timestamp);
     }
     
     /**
@@ -76,8 +77,8 @@ class Time {
      * @return Time
      */
     public function endOfDay() : Time {
-        $this->timestamp = strtotime($this->get('Y-m-d 23:59:59'));
-        return $this;
+        $newtimestamp = strtotime($this->get('Y-m-d 23:59:59'));
+        return new Time($newtimestamp);
     }
     
     /**
@@ -123,7 +124,7 @@ class Time {
      */
     public function getEarliest(Time $other_time) {
         if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
-        return $this->isBefore($other_time) ? $this : $other_time;
+        return new Time($this->isBefore($other_time) ? $this : $other_time);
     }
 
     /**
