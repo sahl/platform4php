@@ -220,7 +220,8 @@ class Job extends \Platform\Datarecord {
         // Create basic job
         $job = new Job();
         $instance_id = Instance::getActiveInstanceID();
-        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE instance_ref = ".((int)$instance_id)." AND class = '".Database::escape($class)."' AND `function` = '".Database::escape($function)."'");
+        // The OR sentence is included for backward compatibility
+        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE instance_ref = ".((int)$instance_id)." AND (class = '".Database::escape($class)."' OR class = '".Database::escape('\\'.$class)."') AND `function` = '".Database::escape($function)."'");
         if ($qr) $job->loadForWrite($qr['job_id']);
         $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
         $job->instance_ref = $instance_id;
@@ -260,7 +261,8 @@ class Job extends \Platform\Datarecord {
         // Create basic job
         $job = new Job();
         $server_id = $server->server_id;
-        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE server_ref = ".((int)$server_id)." AND class = '".Database::escape($class)."' AND `function` = '".Database::escape($function)."'");
+        // The OR sentence is included for backward compatibility
+        $qr = Database::globalFastQuery("SELECT job_id FROM ".static::$database_table." WHERE server_ref = ".((int)$server_id)." AND (class = '".Database::escape($class)."' OR class = '".Database::escape('\\'.$class)."') AND `function` = '".Database::escape($function)."'");
         if ($qr) $job->loadForWrite($qr['job_id']);
         $job->adjustData($class, $function, $frequency, $frequency_offset_from_end, $slot_size, $max_runtime);
         $job->server_ref = $server_id;
@@ -432,6 +434,12 @@ class Job extends \Platform\Datarecord {
     public static function setRunScript(string $script) {
         if (!file_exists($script)) trigger_error('Script '.$script.' does not exists', E_USER_ERROR);
         static::$custom_script = $script;
+    }
+    
+    public function setValue(string $field, $value) {
+        // Strip leading slash from class names
+        if ($field == 'class' && substr($value,0,1) == '\\') $value = substr($value,1);
+        parent::setValue($field, $value);
     }
     
     /**
