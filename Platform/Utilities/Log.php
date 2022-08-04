@@ -37,7 +37,6 @@ class Log {
             $this->logdir = File::getFullFolderPath('logs');
             $time = Time::now();
             $this->logdir .= $time->getYear().'-'.str_pad($time->getMonth(), 2, '0', STR_PAD_LEFT);
-            var_dump($this->logdir);
             if (! file_exists($this->logdir)) 
                 if (! mkdir($this->logdir, 0774, true)) trigger_error('Could not create log folder', E_USER_ERROR);
         } else {
@@ -99,27 +98,17 @@ class Log {
             } else {
                 // See if we can recognize the file
                 if (preg_match('/^(\\d{4}-\\d{2}-\\d{2})-([^.]+)\\.log(\\.gz)?$/', $file, $matches)) {
-                    echo '<p>Found file '.$full_path;
                     $date = new Time($matches[1]);
                     $basename = $matches[2];
                     $is_archive = $matches[3] == '.gz';
-                    echo '<br>Date: '.$date->getDate();
-                    echo '<br>Basename: '.$basename;
-                    echo '<br>Is archive: '.($is_archive?'Yes':'No');
                     // Check if relevant
                     if (! count($logs) || in_array($basename, $logs)) {
                         // Check for delete
                         if ($date->addDays($delete_after_days)->isBeforeEqual(Time::today())) {
-                            echo '<br><b>I want to delete this because it is older than '.$delete_after_days.' days!</b>';
                             unlink($full_path);
                         } elseif (! $is_archive && $date->addDays($compress_after_days)->isBeforeEqual(Time::today())) {
-                            echo '<br><b>I want to compress this because it is older than '.$compress_after_days.' days!</b>';
                             exec('gzip '.$full_path);
-                        } else {
-                            echo '<br><b>This is fine :)</b>';
                         }
-                    } else {
-                        echo '<br><b>I don\'t care about this base name.</b>';
                     }
                 }
             }
