@@ -70,11 +70,11 @@ class Mail extends Datarecord {
                 'fieldtype' => self::FIELDTYPE_EMAIL
             ),
             'reply_to_name' => array(
-                'label' => 'To (name)',
+                'label' => 'Reply-to (name)',
                 'fieldtype' => self::FIELDTYPE_TEXT
             ),
             'reply_to_email' => array(
-                'label' => 'To (email)',
+                'label' => 'Reply-to (email)',
                 'fieldtype' => self::FIELDTYPE_EMAIL
             ),
             'subject' => array(
