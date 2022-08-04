@@ -217,6 +217,8 @@ class Job extends \Platform\Datarecord {
      * @return \Platform\Server\Job The job
      */
     public static function getJob(string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) {
+        // Strip leading slash from class name
+        if (substr($class,0,1) == '\\') $class = substr($class,1);
         // Create basic job
         $job = new Job();
         $instance_id = Instance::getActiveInstanceID();
@@ -258,6 +260,8 @@ class Job extends \Platform\Datarecord {
      */
     public static function getServerJobForServer(Server $server, string $class, string $function, int $frequency = self::FREQUENCY_NOCHANGE, $frequency_offset_from_end = -1, int $slot_size = -1, int $max_runtime = -1) : Job {
         if (! $server->isInDatabase()) trigger_error('Cannot get a job for an unsaved Server', E_USER_ERROR);
+        // Strip leading slash from class name
+        if (substr($class,0,1) == '\\') $class = substr($class,1);
         // Create basic job
         $job = new Job();
         $server_id = $server->server_id;
