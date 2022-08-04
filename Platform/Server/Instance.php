@@ -129,6 +129,12 @@ class Instance extends \Platform\Datarecord {
         // Delete temp files every 6th hour
         $job = Job::getJob('\\Platform\\File', 'deleteTempFiles', 6*60);
         $job->save();
+        // Clean log files every day
+        $job = Job::getJob('\\Platform\\Utilities\\Log', 'jobCleanPlatformLogFilesFromInstance', Job::FREQUENCY_SETTIME);
+        if (! $job->isInDatabase()) {
+            $job->next_start = \Platform\Utilities\Time::today()->add(0,30);
+            $job->save();
+        }
     }
     
     /**

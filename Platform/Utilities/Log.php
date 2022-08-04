@@ -73,4 +73,65 @@ class Log {
         }
         fclose($fh);
     }
+    
+    public static function clean(array $logs = [], int $compress_after_days = 1, int $delete_after_days = 30, $in_instance = 'autodetect') {
+        if ($in_instance == 'autodetect') $in_instance = Instance::getActiveInstanceID() > 0;
+        if ($in_instance) {
+            $basedir = File::getFullFolderPath('logs');
+        } else {
+            $basedir = Platform::getConfiguration('dir_log');
+        }
+        if (! $basedir) trigger_error('Couldn\'t deduct base dir');
+        static::cleanFolder($basedir, $logs, $compress_after_days, $delete_after_days);
+    }
+    
+    private static function cleanFolder(string $folder, array $logs, int $compress_after_days, int $delete_after_days) {
+        if (substr($folder,-1) != '/') $folder .= '/';
+        // Open folder
+        $dh = opendir($folder);
+        if ($dh === false) return;
+        while ($file = readdir($dh)) {
+            if (in_array($file, ['.','..'])) continue;
+            $full_path = $folder.$file;
+            if (is_dir($full_path)) {
+                static::cleanFolder($full_path, $logs, $compress_after_days, $delete_after_days);
+                if (File::isFolderEmpty($full_path)) rmdir($full_path);
+            } else {
+                // See if we can recognize the file
+                if (preg_match('/^(\\d{4}-\\d{2}-\\d{2})-([^.]+)\\.log(\\.gz)?$/', $file, $matches)) {
+                    echo '<p>Found file '.$full_path;
+                    $date = new Time($matches[1]);
+                    $basename = $matches[2];
+                    $is_archive = $matches[3] == '.gz';
+                    echo '<br>Date: '.$date->getDate();
+                    echo '<br>Basename: '.$basename;
+                    echo '<br>Is archive: '.($is_archive?'Yes':'No');
+                    // Check if relevant
+                    if (! count($logs) || in_array($basename, $logs)) {
+                        // Check for delete
+                        if ($date->addDays($delete_after_days)->isBeforeEqual(Time::today())) {
+                            echo '<br><b>I want to delete this because it is older than '.$delete_after_days.' days!</b>';
+                            unlink($full_path);
+                        } elseif (! $is_archive && $date->addDays($compress_after_days)->isBeforeEqual(Time::today())) {
+                            echo '<br><b>I want to compress this because it is older than '.$compress_after_days.' days!</b>';
+                            exec('gzip '.$full_path);
+                        } else {
+                            echo '<br><b>This is fine :)</b>';
+                        }
+                    } else {
+                        echo '<br><b>I don\'t care about this base name.</b>';
+                    }
+                }
+            }
+        }
+    }
+    
+    public static function jobCleanPlatformLogFilesFromInstance(\Platform\Server\Job $job) {
+        static::clean(['measure', 'datarecord'], 1, 30, true);
+    }
+
+    public static function jobCleanPlatformLogFilesFromServer(\Platform\Server\Job $job) {
+        static::clean(['job_scheduler'], 1, 30, true);
+    }
+    
 }

@@ -49,6 +49,15 @@ class Server extends Datarecord {
         Instance::ensureInDatabase();
         Job::ensureInDatabase();
     }
+    
+    public function ensureJobs() {
+        // Clean log files every day
+        $job = Job::getServerJobForServer($this, '\\Platform\\Utilities\\Log', 'jobCleanPlatformLogFilesFromServer', Job::FREQUENCY_SETTIME);
+        if (! $job->isInDatabase()) {
+            $job->next_start = \Platform\Utilities\Time::today()->add(0,30);
+            $job->save();
+        }
+    }
  
     /**
      * Ensure that the server table holds the current server.
@@ -65,6 +74,7 @@ class Server extends Datarecord {
             ));
             $server->save();
         }
+        $server->ensureJobs();
         return $server->server_id;
     }
     

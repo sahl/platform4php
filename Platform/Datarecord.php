@@ -191,6 +191,7 @@ class Datarecord implements DatarecordReferable {
      * Constructs the object and ensures that the structure is in place.
      */
     public function __construct(array $initialvalues = array()) {
+        if (Platform::getConfiguration('debug_mode')) static::$log_me = true;
         static::ensureStructure();
         $this->fillDefaultValues();
         $this->setFromArray($initialvalues);
@@ -1450,8 +1451,19 @@ class Datarecord implements DatarecordReferable {
             $this->values = $this->values_on_load;
         }
         switch (static::$structure[$field]['fieldtype']) {
-            default:
+            case self::FIELDTYPE_ARRAY:
+            case self::FIELDTYPE_FILE:
                 $result = $this->getTextValue($field);
+                break;
+            case self::FIELDTYPE_DATE:
+            case self::FIELDTYPE_DATETIME:
+                $result = $this->getRawValue($field)->get();
+                break;
+            case self::FIELDTYPE_REFERENCE_MULTIPLE:
+                $result = json_encode($this->getRawValue($field));
+                break;
+            default:
+                $result = $this->getRawValue($field);
                 break;
         }
         
@@ -1857,10 +1869,10 @@ class Datarecord implements DatarecordReferable {
     }
     
     public function logChange() {
-        $log = new Utilities\Log($this->getClassName(), ['6r']);
+        $log = new Utilities\Log('datarecord', ['6r']);
         $text = '';
-        if ($this->isInDatabase()) $text = 'Update '.$this->getClassName ().'('.$this->getKeyValue().') - ';
-        else $text = 'Create new '.$this->getClassName().'('.$this->getKeyValue().') - ';
+        if ($this->isInDatabase()) $text = 'CH '.$this->getClassName ().'('.$this->getKeyValue().') - ';
+        else $text = 'CR '.$this->getClassName().'('.$this->getKeyValue().') - ';
         $first = true;
         foreach ($this->getChangedFields() as $fieldname) {
             // Skip metadata
@@ -2163,7 +2175,7 @@ class Datarecord implements DatarecordReferable {
         echo '<ul style="margin-top: 3px; margin-bottom: 5px; font-size: 0.8em;">';
         if (! count($errors) && ! count($warnings)) echo '<li><span style="color: green;">All OK</span>';
         foreach ($errors as $error) echo '<li><span style="color: red;">'.$error.'</span>';
-        foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$error.'</span>';
+        foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$warning.'</span>';
         echo '</ul>';
     }
 
