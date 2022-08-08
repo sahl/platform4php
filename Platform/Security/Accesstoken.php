@@ -189,7 +189,7 @@ class Accesstoken extends Datarecord {
         $timestamp = new Time('now');
         $this->expire_date = $timestamp->add($seconds_to_live);
         // Make a dirty write primary for speed reasons
-        if ($this->isInDatabase()) Database::instanceQuery("UPDATE ".static::$database_table.' SET expire_date = '.$this->getFieldForDatabase('expire_date', $timestamp)." WHERE token_id = ".$this->token_id);
+        if ($this->isInDatabase()) Database::instanceQuery("UPDATE ".static::$database_table.' SET expire_date = '.$this->getFieldForDatabase('expire_date', $this->expire_date)." WHERE token_id = ".$this->token_id);
     }
     
     /**
