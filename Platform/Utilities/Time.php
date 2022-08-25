@@ -112,8 +112,8 @@ class Time {
      * @return bool|int Number of days or false if cannot calculate
      */
     public function getDaysUntil(Time $other_time) {
-        if ($this->timestamp == null || $other_time->getTimestamp() == null) return false;
-        $difference_in_seconds = $other_time->timestamp - $this->timestamp;
+        if ($this->getTimestamp() == null || $other_time->getTimestamp() == null) return false;
+        $difference_in_seconds = $other_time->getTimestamp() - $this->getTimestamp();
         return (int)($difference_in_seconds/(60*60*24));
     }
     
@@ -184,6 +184,29 @@ class Time {
     public function getMonth() : int {
         return date('n', $this->timestamp);
     }
+    
+    /**
+     * Get an array of all month names
+     * @return array
+     */
+    public static function getMonthsArray() : array {
+        return 
+            [
+                1 => Translation::translateForUser('January'),
+                2 => Translation::translateForUser('February'),
+                3 => Translation::translateForUser('March'),
+                4 => Translation::translateForUser('April'),
+                5 => Translation::translateForUser('May'),
+                6 => Translation::translateForUser('June'),
+                7 => Translation::translateForUser('July'),
+                8 => Translation::translateForUser('August'),
+                9 => Translation::translateForUser('September'),
+                10=> Translation::translateForUser('October'),
+                11=> Translation::translateForUser('November'),
+                12=> Translation::translateForUser('December'),
+            ];
+    }
+    
     
     /**
      * Get the number of months until another time
@@ -257,6 +280,23 @@ class Time {
      */
     public function getWeekday() : int {
         return (int) date('N', $this->timestamp);
+    }
+    
+    /**
+     * Get an array with all weekday names hashed by their index
+     * @return array
+     */
+    public static function getWeekDaysArray() : array {
+        return 
+            [
+                1 => Translation::translateForUser('Monday'),
+                2 => Translation::translateForUser('Tuesday'),
+                3 => Translation::translateForUser('Wednesday'),
+                4 => Translation::translateForUser('Thursday'),
+                5 => Translation::translateForUser('Friday'),
+                6 => Translation::translateForUser('Saturday'),
+                7 => Translation::translateForUser('Sunday'),
+            ];
     }
     
     /**

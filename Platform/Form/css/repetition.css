@@ -1,0 +1,23 @@
+.repetition_field .interval_type_container {
+    display: flex;
+}
+
+.repetition_field .year_container {
+    display: flex;
+}
+
+.repetition_field .repetition_interval {
+    width: 50px;
+}
+
+.repetition_field .month_exact_day_container {
+    display: flex;
+}
+
+.repetition_field .month_variable_day_container {
+    display: flex;
+}
+
+.repetition_field .month_dual_container {
+    display: flex;
+}

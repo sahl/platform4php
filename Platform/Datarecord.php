@@ -6,7 +6,6 @@ use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
 use Platform\Utilities\Errorhandler;
-use Platform\UI\EditComplex;
 
 class Datarecord implements DatarecordReferable {
 
@@ -455,6 +454,7 @@ class Datarecord implements DatarecordReferable {
         // Handle keys
         $this->values[$this->getKeyField()] = $otherobject->getKeyValue();
         $this->values_on_load = $values;
+        $this->is_in_database = $otherobject->isInDatabase();
     }
     
     /**
@@ -1010,7 +1010,9 @@ class Datarecord implements DatarecordReferable {
         foreach (static::$structure as $fieldname => $data) {
             if ($data['subfield']) continue;
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
-            $result[$fieldname] = $this->getValue($fieldname, self::RENDER_FORM);
+            $field = static::getFormFieldFromDefinition('', $data);
+            if ($field === null) continue;
+            $result[$fieldname] = ['fieldtype' => array_pop(explode('\\', get_class($field))), 'value' => $this->getValue($fieldname, self::RENDER_FORM)];
         }
         return $result;
     }
@@ -1135,6 +1137,8 @@ class Datarecord implements DatarecordReferable {
                 return '\''.Database::escape(json_encode($finalvalue)).'\'';
             case self::FIELDTYPE_OBJECT:
                 return '\''.Database::escape(serialize($value)).'\'';
+            case self::FIELDTYPE_REPETITION:
+                return $value === null ? 'NULL' : '\''.Database::escape(json_encode($value->getAsArray())).'\'';
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
                 $datetime = new Time($value);
@@ -1223,6 +1227,8 @@ class Datarecord implements DatarecordReferable {
                 return new \Platform\Form\FileField($definition['label'], $name, $options);
             case self::FIELDTYPE_CURRENCY:
                 return new \Platform\Form\CurrencyField($definition['label'], $name, $options);
+            case self::FIELDTYPE_REPETITION:
+                return new Form\RepetitionField($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 $options['class'] = $definition['foreign_class'];
                 return new \Platform\Form\DatarecordcomboboxField($definition['label'], $name, $options);
@@ -1274,6 +1280,8 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_HTMLTEXT:
             case self::FIELDTYPE_CURRENCY:
                 return $this->getRawValue($field);
+            case self::FIELDTYPE_REPETITION:
+                return $this->getRawValue($field) === null ? null : $this->getRawValue($field)->getAsArray();
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:
                 return (int)$this->getRawValue($field);
@@ -1309,6 +1317,8 @@ class Datarecord implements DatarecordReferable {
                 return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
             case self::FIELDTYPE_CURRENCY:
                 return $this->getRawValue($field.'_foreigncurrency').' '.$this->getRawValue($field.'_currency');
+            case self::FIELDTYPE_REPETITION:
+                return 'Repetition';
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 $result = array();
                 foreach ($this->getRawValue($field) as $item) {
@@ -1460,6 +1470,7 @@ class Datarecord implements DatarecordReferable {
                 $result = $this->getRawValue($field)->get();
                 break;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+            case self::FIELDTYPE_REPETITION:
                 $result = json_encode($this->getRawValue($field));
                 break;
             default:
@@ -1606,6 +1617,8 @@ class Datarecord implements DatarecordReferable {
                 return 'INT(1)';
             case self::FIELDTYPE_FLOAT:
                 return 'DOUBLE';
+            case self::FIELDTYPE_REPETITION:
+                return 'VARCHAR(255)';
             default:
                 return 'VARCHAR(255) NOT NULL';
         }
@@ -1979,6 +1992,10 @@ class Datarecord implements DatarecordReferable {
                 case self::FIELDTYPE_OBJECT:
                     if ($value === null) $this->setValue($key, null);
                     else $this->setValue($key, unserialize($value));
+                    break;
+                case self::FIELDTYPE_REPETITION:
+                    if ($value === null) $this->setValue($key, null);
+                    else $this->setValue($key, Utilities\Repetition::constructFromArray(json_decode($value,true)));
                     break;
                 default:
                     $this->setValue($key, $value);
@@ -2477,6 +2494,12 @@ class Datarecord implements DatarecordReferable {
                     if (! $this->values[$field.'_foreignvalue']) $this->values[$field.'_foreignvalue'] = $value;
                 }
                 break;
+            case self::FIELDTYPE_REPETITION:
+                if ($value === null) $this->values[$field] = null;
+                else if ($value instanceof Utilities\Repetition)  $this->values[$field] = $value;
+                else if (is_array($value)) $this->values[$field] = Utilities\Repetition::constructFromArray($value);
+                else trigger_error('Invalid value passed to '.$field, E_USER_ERROR);
+                break;
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:
                 if (is_array($value)) {
@@ -2597,6 +2620,7 @@ class Datarecord implements DatarecordReferable {
     const FIELDTYPE_DATETIME = 10;
     const FIELDTYPE_DATE = 11;
     const FIELDTYPE_CURRENCY = 12;
+    const FIELDTYPE_REPETITION = 13;
     
     const FIELDTYPE_EMAIL = 20;
     
