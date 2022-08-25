@@ -45,6 +45,9 @@ class ConditionMatch extends Condition {
                 } else {
                     return 'false';
                 }
+            case Datarecord::FIELDTYPE_REPETITION:
+                $this->manual_match = true;
+                return 'true';
             case Datarecord::FIELDTYPE_BOOLEAN:
                 return $this->fieldname.' = '.$this->getSQLFieldValue($this->value ? 1 : 0);
             default:
@@ -64,6 +67,9 @@ class ConditionMatch extends Condition {
             case Datarecord::FIELDTYPE_DATE:
                 $value = new Time($value);
                 return $object->getRawValue($this->fieldname)->isEqualTo($value);
+            case Datarecord::FIELDTYPE_REPETITION:
+                if (! $value instanceof Utilities\Time || $object->getRawValue($this->fieldname) === null) return false;
+                return $object->getRawValue($this->fieldname)->match($value);
             default:
                 return $object->getRawValue($this->fieldname) == $this->value;
         }

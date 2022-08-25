@@ -3,6 +3,12 @@ namespace Platform;
 
 class ConditionLike extends Condition {
     
+    private static $valid_field_types = [
+        Datarecord::FIELDTYPE_TEXT, 
+        Datarecord::FIELDTYPE_BIGTEXT,
+        Datarecord::FIELDTYPE_HTMLTEXT,
+    ];
+    
     public function __construct(string $fieldname, $value) {
         // Resolve datarecord to its ID
         if ($value instanceof Datarecord) $value = $value->getRawValue($value->getKeyField ());
@@ -49,11 +55,7 @@ class ConditionLike extends Condition {
         $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
         if (! $definition) return array('Invalid field '.$this->fieldname.' for like condition');
         if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for like condition');
-        if (in_array(
-                $definition['fieldtype'], 
-                array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT)
-            ))
-            return array('Field '.$this->field.' does not work with like condition');
+        if (! in_array($definition['fieldtype'], static::$valid_field_types)) return array('Field '.$this->field.' does not work with like condition');
         
         // Determine SQL use
         $this->setManualMatch($definition['store_in_metadata'] ? true : false);

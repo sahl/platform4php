@@ -3,6 +3,23 @@ namespace Platform;
 
 class ConditionOneOf extends Condition {
     
+    private static $valid_field_types = [
+        Datarecord::FIELDTYPE_TEXT, 
+        Datarecord::FIELDTYPE_INTEGER, 
+        Datarecord::FIELDTYPE_FLOAT,
+        Datarecord::FIELDTYPE_BIGTEXT,
+        Datarecord::FIELDTYPE_HTMLTEXT,
+        Datarecord::FIELDTYPE_DATETIME,
+        Datarecord::FIELDTYPE_DATE,
+        Datarecord::FIELDTYPE_CURRENCY,
+        Datarecord::FIELDTYPE_EMAIL,
+        Datarecord::FIELDTYPE_KEY,
+        Datarecord::FIELDTYPE_REFERENCE_SINGLE,
+        Datarecord::FIELDTYPE_REFERENCE_MULTIPLE,
+        Datarecord::FIELDTYPE_ARRAY,
+    ];
+    
+    
     public function __construct(string $fieldname, $values) {
         if (! is_array($values)) $values = array($values);
         $this->fieldname = $fieldname;
@@ -63,11 +80,7 @@ class ConditionOneOf extends Condition {
         $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
         if (! $definition) return array('Invalid field '.$this->fieldname.' for oneof condition');
         if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for oneof condition');
-        if (in_array(
-                $definition['fieldtype'], 
-                array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT)
-            ))
-            return array('Field '.$this->field.' does not work with oneof condition');
+        if (! in_array($definition['fieldtype'], static::$valid_field_types)) return array('Field '.$this->field.' does not work with oneof condition');
         
         // Determine SQL use
         $this->setManualMatch($definition['store_in_metadata'] ? true : false);

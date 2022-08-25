@@ -3,6 +3,19 @@ namespace Platform;
 
 class ConditionGreater extends Condition {
     
+    private static $valid_field_types = [
+        Datarecord::FIELDTYPE_TEXT, 
+        Datarecord::FIELDTYPE_INTEGER, 
+        Datarecord::FIELDTYPE_FLOAT,
+        Datarecord::FIELDTYPE_BIGTEXT,
+        Datarecord::FIELDTYPE_HTMLTEXT,
+        Datarecord::FIELDTYPE_DATETIME,
+        Datarecord::FIELDTYPE_DATE,
+        Datarecord::FIELDTYPE_CURRENCY,
+        Datarecord::FIELDTYPE_EMAIL,
+        Datarecord::FIELDTYPE_KEY,
+    ];
+    
     public function __construct(string $fieldname, $value) {
         // Resolve datarecord to its ID
         if ($value instanceof Datarecord) $value = $value->getRawValue($value->getKeyField ());
@@ -52,15 +65,7 @@ class ConditionGreater extends Condition {
         $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
         if (! $definition) return array('Invalid field '.$this->fieldname.' for greater condition');
         if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for greater condition');
-        if (in_array(
-                $definition['fieldtype'], 
-                array(Datarecord::FIELDTYPE_FILE, Datarecord::FIELDTYPE_IMAGE, Datarecord::FIELDTYPE_OBJECT,
-                    Datarecord::FIELDTYPE_ARRAY, Datarecord::FIELDTYPE_BIGTEXT, Datarecord::FIELDTYPE_BOOLEAN,
-                    Datarecord::FIELDTYPE_EMAIL, Datarecord::FIELDTYPE_ENUMERATION, Datarecord::FIELDTYPE_ENUMERATION_MULTI,
-                    Datarecord::FIELDTYPE_HTMLTEXT, Datarecord::FIELDTYPE_PASSWORD, 
-                    Datarecord::FIELDTYPE_REFERENCE_SINGLE, Datarecord::FIELDTYPE_REFERENCE_MULTIPLE, Datarecord::FIELDTYPE_REFERENCE_HYPER)
-            ))
-            return array('Field '.$this->field.' does not work with greater condition');
+        if (! in_array($definition['fieldtype'], static::$valid_field_types)) return array('Field '.$this->field.' does not work with greater condition');
         
         // Determine SQL use
         $this->setManualMatch($definition['store_in_metadata'] ? true : false);
