@@ -19,13 +19,19 @@ addPlatformComponentHandlerFunction('form', function(item) {
         });        
 
         // Check required fields
-        $('.form_required_field', $(this)).each(function() {
-            if ($(this).val().length == 0 && $(this).is(':visible')) {
+        $('input.form_required_field,select.form_required_field', $(this)).each(function() {
+            if ($(this).val().length == 0 && $(this).is(':visible') && ! $(this).is(':disabled')) {
                 $(this).setError('This is a required field');
                 allowsubmit = false;
             }
             return true;
         });
+        $('.multi_checkbox_container.form_required_field:visible', this).each(function() {
+            if (! $(this).find('input[type="checkbox"]:checked').length) {
+                $(this).setError('This is a required field');
+                allowsubmit = false;
+            }
+        })
         
         // Validate component fields
         $('.platform_component_fieldcomponent').each(function() {
@@ -37,6 +43,8 @@ addPlatformComponentHandlerFunction('form', function(item) {
         var hiddenfields = [];
 
         $('.platform_form_field:hidden,.platform_form_field:disabled', $(this)).each(function() {
+            // We accept hidden fields
+            if ($(this).is('[type="hidden"]')) return true;
             // We accept hidden texteditors
             if ($(this).is('.texteditor')) return true;
             var name = $(this).prop('name');
@@ -144,73 +152,90 @@ $.fn.attachErrors = function(errors) {
 }
 
 $.fn.attachValues = function(values) {
-    var element = this;
-    $.each(values, function(key, value) {
-        // Try for component
-        if (element.find('.platform_field_component_'+key).length) {
-            element.find('.platform_field_component_'+key).trigger('setvalue', value);
+    var form = this;
+    $.each(values, function(key, data) {
+        var fieldtype = data.fieldtype;
+        var value = data.value;
+        
+        // First we try to see if there is a special component for this field
+        if (form.find('.platform_field_component_'+key).length) {
+            form.find('.platform_field_component_'+key).trigger('setvalue', value);
         } else {
-            var el = element.find('[name="'+key+'"]');
-            if (el.length) {
-                if (el.is('input,textarea')) {
-                    if (el.is('[type=checkbox]')) {
-                        el.prop('checked', value == 1);
-                    } else {
-                        // Extract IDs from complex fields
-                        if (typeof value === 'object' && value !== null && value.id) value = value.id;
-                        el.val(value);
-                        if (el.is('.texteditor')) {
-                            el.summernote('reset');
-                            el.summernote('code', value);
-                        }
+            switch (fieldtype) {
+                case 'CheckboxField':
+                    var dom_node = form.find('[name="'+key+'"]');
+                    dom_node.prop('checked', value == 1);
+                    break;
+                case 'TexteditorField':
+                    var dom_node = form.find('[name="'+key+'"]');
+                    dom_node.summernote('reset');
+                    dom_node.summernote('code', value);
+                    break;
+                case 'CurrencyField':
+                    form.find('[name="'+key+'[localvalue]"]').val(value.localvalue);
+                    form.find('[name="'+key+'[currency]"]').val(value.currency);
+                    form.find('[name="'+key+'[foreignvalue]"]').val(value.foreignvalue);
+                    break;
+                case 'SelectField':
+                    var dom_node = form.find('[name="'+key+'"]');
+                    if (value !== null) dom_node.val(value);
+                    else dom_node.find('option:first-child').prop('selected', true);
+                    break;
+                case 'DatarecordcomboboxField':
+                case 'IndexedComboboxField':
+                case 'ComboboxField':
+                    var dom_node = form.find('[name="'+key+'[visual]"]');
+                    dom_node.val(value.visual);
+                    dom_node.prev().val(value.id);
+                    break;
+                case 'MulticheckboxField':
+                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'.multi_checkbox_container');
+                    checkWithId(dom_node, value);
+                    break;
+                case 'MultidatarecordcomboboxField':
+                case 'MultiplierSection':
+                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'_container .platform_form_multiplier');
+                    $.each(value, function(key, val) {
+                        dom_node.find('input[type="hidden"]:last').val(val.id);
+                        dom_node.find('input[type="text"]:last').val(val.visual).trigger('keyup');
+                    });
+                    break;
+                case 'FileField':
+                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'.platform_file_input_frame');
+                    dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
+                    break;
+                case 'RepetitionField':
+                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'_container.repetition_field');
+                    if (value == null) {
+                        dom_node.find('.repetition_interval').val(1);
+                        dom_node.find('.repetition_type').val('').trigger('change');
+                        break;
                     }
-                }
-                else if (el.is('select')) {
-                    if (value !== null) el.val(value);
-                    else el.find('option:first-child').prop('selected', true);
-                }
-            } else {
-                // Try for currency
-                if (value.localvalue) {
-                    console.log('Local '+value.localvalue+' for '+key);
-                    element.find('[name="'+key+'[localvalue]"]').val(value.localvalue);
-                    element.find('[name="'+key+'[currency]"]').val(value.currency);
-                    element.find('[name="'+key+'[foreignvalue]"]').val(value.foreignvalue);
-                    return true; // Continue
-                }
-                // Try for combobox
-                var el = element.find('[name="'+key+'[visual]"]');
-                if (el.length) {
-                    el.val(value.visual);
-                    el.prev().val(value.id);
-                } else {
-                    // Try for multicheckbox
-                    var el = element.find('#'+element.attr('id')+'_'+key+'.multi_checkbox_container');
-                    if (el.length) {
-                        $.each(value, function(key, val) {
-                            el.find('input[value="'+val+'"]').prop('checked', true);
-                        });
-                    } else {
-                        // Try for multiplier
-                        var el = element.find('#'+element.attr('id')+'_'+key+'_container .platform_form_multiplier');
-                        if (el.length) {
-                            $.each(value, function(key, val) {
-                                el.find('input[type="hidden"]:last').val(val.id);
-                                el.find('input[type="text"]:last').val(val.visual).trigger('keyup');
-                            });
-                        } else {
-                            // Try for file field
-                            var el = element.find('#'+element.attr('id')+'_'+key+'.platform_file_input_frame');
-                            if (el.length) {
-                                // Recode url
-                                el.prop('src', '/Platform/Form/php/file.php?form_name='+el.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
-                            }
-                        }
-                    }
-                }
+                    dom_node.find('.repetition_interval').val(value.interval);
+                    dom_node.find('.repetition_type').val(value.type).trigger('change');
+                    if (value.metadata.weekdays) checkWithId(dom_node.find('.weekdays'), value.metadata.weekdays);
+                    if (value.metadata.months) checkWithId(dom_node.find('.months'), value.metadata.months);
+                    if (value.metadata.monthday) dom_node.find('.monthday').val(value.metadata.monthday);
+                    if (value.metadata.occurrence) dom_node.find('.occurrence').val(value.metadata.occurrence);
+                    if (value.metadata.weekday) dom_node.find('.weekday').val(value.metadata.weekday);
+                    if (value.metadata.day) dom_node.find('.day').val(value.metadata.day);
+                    if (value.metadata.month) dom_node.find('.month').val(value.metadata.month);
+                    break;
+                default:
+                    var dom_node = form.find('[name="'+key+'"]');
+                    console.log('Set '+key+' to '+value+' ('+dom_node.length+')');
+                    dom_node.val(value);
+                    break;
             }
         }
     })
+    
+    function checkWithId(dom_node, ids) {
+        dom_node.find('input[type="checkbox"]').prop('checked', false);
+        $.each(ids, function(key, value) {
+            dom_node.find('input[value="'+value+'"]').prop('checked', true);
+        });
+    }
 }
 
 $.fn.loadValues = function(script, parameters = {}, onload = null) {

@@ -39,12 +39,14 @@ class Form extends \Platform\UI\Component {
         Page::JSFile('/Platform/Form/js/autosize.js');
         Page::JSFile('/Platform/Form/js/form.js');
         Page::JSFile('/Platform/Form/js/multiplier.js');
+        Page::JSFile('/Platform/Form/js/repetition.js');
         Page::JSFile('/Platform/Form/js/combobox.js');
         Page::JSFile('/Platform/Form/js/texteditor.js');
         Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
         Page::CSSFile('/Platform/Form/css/form.css');
         Page::CSSFile('/Platform/Form/css/layout.css');
         Page::CSSFile('/Platform/Form/css/texteditor.css');
+        Page::CSSFile('/Platform/Form/css/repetition.css');
         Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
         $this->addFormFieldNameSpace('Platform\\Form');
         
@@ -161,6 +163,21 @@ class Form extends \Platform\UI\Component {
     }
 
     /**
+     * Destroy an index in the given array
+     * @param array $index Index into array
+     * @param array $post Array to destroy from
+     */
+    private static function destroyIndexFromPost($index, &$post) {
+        $current = array_shift($index);
+        if ($current == '') return;
+        if (count($index)) {
+            if (isset($post[$current])) self::destroyIndexFromPost($index, $post[$current]);
+        } else {
+            unset($post[$current]);
+        }
+    }
+
+    /**
      * Extract a value from a complex field name such as field[1]
      * @param string $fieldname The complex field name
      * @param array $fragment The input array to retrieve data from
@@ -266,6 +283,16 @@ class Form extends \Platform\UI\Component {
             $this->addField($field);
         }
     }
+    
+    /**
+     * Transforms a name like formfield[innervalue][2] to an array [formfield,innervalue,2]
+     * @param string $form_name
+     * @return array
+     */
+    private static function getIndexFromFormName($form_name) : array {
+        return explode(',', str_replace(['[',']'], [',',''], $form_name));
+    }
+    
     
     /**
      * Get all values from the form
@@ -710,11 +737,16 @@ class Form extends \Platform\UI\Component {
         $result = true;
         
         // Determine hidden fields
-        $hiddenfields = $_POST['form_hiddenfields'] ? explode(' ', $_POST['form_hiddenfields']) : array();
+        $hidden_fields = $_POST['form_hiddenfields'] ? explode(' ', $_POST['form_hiddenfields']) : array();
+
+        foreach ($hidden_fields as $hidden_field) {
+            $indexes = self::getIndexFromFormName($hidden_field);
+            self::destroyIndexFromPost($indexes, $_POST);
+        }
         
         foreach ($this->fields as $field) {
             /* @var $field Field */
-            if ($field instanceof HTML || in_array($field->getName(), $hiddenfields) && ! $field instanceof Form\HiddenField) continue;
+            if ($field instanceof HTML || in_array($field->getName(), $hidden_fields) && ! $field instanceof Form\HiddenField) continue;
             $result = $field->parse(self::extractValue($field->getName(), $_POST)) && $result;
         }
         foreach ($this->validationfunctions as $validationfunction) {
