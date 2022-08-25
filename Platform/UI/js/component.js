@@ -103,8 +103,9 @@ $.fn.componentIOForm = function(form, func) {
         item.componentIO(form.serialize(), function(data) {
             if (! data.status) {
                 form.attachErrors(data.form_errors);
+            } else {
+                if (typeof func == 'function') func(data);
             }
-            if (typeof func == 'function') func(data);
         })
         return false;
     })

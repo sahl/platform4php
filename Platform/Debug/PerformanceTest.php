@@ -113,13 +113,13 @@ class PerformanceTest {
                     break;
                 case Datarecord::FIELDTYPE_DATETIME:
                     $time = new Time('now');
-                    $time->addDays(-rand(0,10*365));
-                    $time->add(-rand(0,60*60*24));
+                    $time = $time->addDays(-rand(0,10*365));
+                    $time = $time->add(-rand(0,60*60*24));
                     $object->setValue($key, $time);
                     break;
                 case Datarecord::FIELDTYPE_DATE:
                     $time = new Time('now');
-                    $time->addDays(-rand(0,10*365));
+                    $time = $time->addDays(-rand(0,10*365));
                     $object->setValue($key, $time);
                     break;
                 case Datarecord::FIELDTYPE_CURRENCY:

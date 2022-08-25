@@ -52,6 +52,7 @@
     width: 100%;
     box-sizing: border-box;
     min-width: 30px;
+    padding: 1px 2px;
 }
 
 .platform_form_field[type="checkbox"] {
