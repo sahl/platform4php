@@ -535,9 +535,8 @@ class Translation {
         
         $phrase = array_shift($args);
         
-        if (! self::isEnabled()) return $phrase;
-        
-        $translated_phrase = $platform_language[self::getUserLanguage()][$phrase] ?: $phrase;
+        if (self::isEnabled()) $translated_phrase = $platform_language[self::getUserLanguage()][$phrase] ?: $phrase;
+        else $translated_phrase = $phrase;
         
         return self::replaceStringParameters($translated_phrase, $args);
     }
