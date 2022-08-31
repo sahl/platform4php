@@ -39,6 +39,54 @@ class Repetition {
     }
     
     /**
+     * Get a human-readable description of this repetition
+     * @return string
+     */
+    public function getDescription() : string {
+        $types = [
+            self::REPEAT_DAILY => Translation::translateForUser('day'),
+            self::REPEAT_WEEKLY => Translation::translateForUser('week'),
+            self::REPEAT_MONTHLY => Translation::translateForUser('month'),
+            self::REPEAT_YEARLY => Translation::translateForUser('year')
+        ];
+        $result = Translation::translateForUser('Every');
+        if ($this->interval > 1) $result .= ' '.$this->interval.'.';
+        $result .= ' '.$types[$this->type];
+        switch ($this->type) {
+            case self::REPEAT_WEEKLY:
+                $weekdays = Time::getWeekDaysArray();
+                $result .= ' '.Translation::translateForUser('on').' ';
+                $days = [];
+                foreach ($this->metadata['weekdays'] as $day) {
+                    $days[] = $weekdays[$day];
+                }
+                $result .= implode(', ', $days);
+                break;
+            case self::REPEAT_MONTHLY:
+                $weekdays = Time::getWeekDaysArray();
+                if ($this->metadata['monthday']) {
+                    $result .= ' '.Translation::translateForUser('on the %1.', $this->metadata['monthday']);
+                } elseif ($this->metadata['weekday']) {
+                    $occurrence_array = [
+                        -2 => Translation::translateForUser('second-last'),
+                        -1 => Translation::translateForUser('last'),
+                        1 => Translation::translateForUser('first'),
+                        2 => Translation::translateForUser('second'),
+                        3 => Translation::translateForUser('third'),
+                        4 => Translation::translateForUser('fourth'),
+                    ];
+                    $result .= ' '.Translation::translateForUser('on the %1 %2', $occurrence_array[$this->metadata['occurrence']], $weekdays[$this->metadata['weekday']]);
+                }
+                break;
+            case self::REPEAT_YEARLY:
+                $months = Time::getMonthsArray();
+                $result .= ' '.Translation::translateForUser('on %1 %2.', $months[$this->metadata['month']], $this->metadata['day']);
+                break;
+        }
+        return $result;
+    }
+    
+    /**
      * Get this repetition as an array
      * @return array
      */

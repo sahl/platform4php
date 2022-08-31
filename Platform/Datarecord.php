@@ -1,11 +1,37 @@
 <?php
 namespace Platform;
 
+use Platform\Currency\Currency;
+use Platform\Form\CheckboxField;
+use Platform\Form\CurrencyField;
+use Platform\Form\DatarecordcomboboxField;
+use Platform\Form\DateField;
+use Platform\Form\DatetimeField;
+use Platform\Form\EmailField;
+use Platform\Form\Field;
+use Platform\Form\FileField;
+use Platform\Form\HiddenField;
+use Platform\Form\Layout;
+use Platform\Form\MulticheckboxField;
+use Platform\Form\MultidatarecordcomboboxField;
+use Platform\Form\NumberField;
+use Platform\Form\PasswordField;
+use Platform\Form\RepetitionField;
+use Platform\Form\SelectField;
+use Platform\Form\TextareaField;
+use Platform\Form\TexteditorField;
+use Platform\Form\TextField;
+use Platform\Security\Accesstoken;
 use Platform\Server\Job;
+use Platform\UI\EditComplex;
 use Platform\Utilities\Database;
+use Platform\Utilities\Errorhandler;
+use Platform\Utilities\Image;
+use Platform\Utilities\Log;
+use Platform\Utilities\Repetition;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
-use Platform\Utilities\Errorhandler;
+use Platform\Utilities\Translation;
 
 class Datarecord implements DatarecordReferable {
 
@@ -1150,7 +1176,7 @@ class Datarecord implements DatarecordReferable {
     
     /**
      * Get a form suitable for editing this object
-     * @return \Platform\Form
+     * @return Form
      */
     public static function getForm() : Form {
         static::ensureStructure();
@@ -1172,7 +1198,7 @@ class Datarecord implements DatarecordReferable {
         $form->addValidationFunction(get_called_class().'::validateForm');
         
         // Add layout if present
-        if (count(static::$layout)) $form->setLayout(Form\Layout::getLayoutFromArray (static::$layout));
+        if (count(static::$layout)) $form->setLayout(Layout::getLayoutFromArray (static::$layout));
         return $form;
     }
     
@@ -1180,7 +1206,7 @@ class Datarecord implements DatarecordReferable {
      * Return an input field suitable for handling the given field type
      * @param string $name Field name
      * @param array $definition Field definition
-     * @return \Platform\Form\Field
+     * @return Field
      */
     public static function getFormFieldFromDefinition(string $name, array $definition) {
         $options = array();
@@ -1189,7 +1215,7 @@ class Datarecord implements DatarecordReferable {
         if (in_array($definition['fieldtype'], [self::FIELDTYPE_ARRAY, self::FIELDTYPE_OBJECT])) return null;
         
         if ($definition['invisible']) {
-            return new \Platform\Form\HiddenField('', $name);
+            return new HiddenField('', $name);
         }
         
         if ($definition['form_group']) {
@@ -1198,49 +1224,49 @@ class Datarecord implements DatarecordReferable {
         
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_KEY:
-                return new \Platform\Form\HiddenField('', $name);
+                return new HiddenField('', $name);
             case self::FIELDTYPE_TEXT:
-                return new \Platform\Form\TextField($definition['label'], $name, $options);
+                return new TextField($definition['label'], $name, $options);
             case self::FIELDTYPE_BIGTEXT:
-                return new \Platform\Form\TextareaField($definition['label'], $name, $options);
+                return new TextareaField($definition['label'], $name, $options);
             case self::FIELDTYPE_HTMLTEXT:
-                return new \Platform\Form\TexteditorField($definition['label'], $name, $options);
+                return new TexteditorField($definition['label'], $name, $options);
             case self::FIELDTYPE_EMAIL:
-                return new \Platform\Form\EmailField($definition['label'], $name, $options);
+                return new EmailField($definition['label'], $name, $options);
             case self::FIELDTYPE_PASSWORD:
-                return new \Platform\Form\PasswordField($definition['label'], $name, $options);
+                return new PasswordField($definition['label'], $name, $options);
             case self::FIELDTYPE_INTEGER:
-                return new \Platform\Form\NumberField($definition['label'], $name, $options);
+                return new NumberField($definition['label'], $name, $options);
             case self::FIELDTYPE_FLOAT:
                 $options['step'] = 'any';
-                return new \Platform\Form\NumberField($definition['label'], $name, $options);
+                return new NumberField($definition['label'], $name, $options);
             case self::FIELDTYPE_BOOLEAN:
-                return new \Platform\Form\CheckboxField($definition['label'], $name, $options);
+                return new CheckboxField($definition['label'], $name, $options);
             case self::FIELDTYPE_DATETIME:
-                return new \Platform\Form\DatetimeField($definition['label'], $name, $options);
+                return new DatetimeField($definition['label'], $name, $options);
             case self::FIELDTYPE_DATE:
-                return new \Platform\Form\DateField($definition['label'], $name, $options);
+                return new DateField($definition['label'], $name, $options);
             case self::FIELDTYPE_FILE:
-                return new \Platform\Form\FileField($definition['label'], $name, $options);
+                return new FileField($definition['label'], $name, $options);
             case self::FIELDTYPE_IMAGE:
                 $options['images_only'] = true;
-                return new \Platform\Form\FileField($definition['label'], $name, $options);
+                return new FileField($definition['label'], $name, $options);
             case self::FIELDTYPE_CURRENCY:
-                return new \Platform\Form\CurrencyField($definition['label'], $name, $options);
+                return new CurrencyField($definition['label'], $name, $options);
             case self::FIELDTYPE_REPETITION:
-                return new Form\RepetitionField($definition['label'], $name, $options);
+                return new RepetitionField($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 $options['class'] = $definition['foreign_class'];
-                return new \Platform\Form\DatarecordcomboboxField($definition['label'], $name, $options);
+                return new DatarecordcomboboxField($definition['label'], $name, $options);
             case self::FIELDTYPE_ENUMERATION:
                 $options['options'] = $definition['enumeration'];
-                return new \Platform\Form\SelectField($definition['label'], $name, $options);
+                return new SelectField($definition['label'], $name, $options);
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 $options['options'] = $definition['enumeration'];
-                return new \Platform\Form\MulticheckboxField($definition['label'], $name, $options);
+                return new MulticheckboxField($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 $options['class'] = $definition['foreign_class'];
-                return new \Platform\Form\MultidatarecordcomboboxField($definition['label'], $name, $options);
+                return new MultidatarecordcomboboxField($definition['label'], $name, $options);
         }
         return null;
     }
@@ -1318,7 +1344,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_CURRENCY:
                 return $this->getRawValue($field.'_foreigncurrency').' '.$this->getRawValue($field.'_currency');
             case self::FIELDTYPE_REPETITION:
-                return 'Repetition';
+                return $this->getRawValue($field) !== null ? $this->getRawValue($field)->getDescription() : Translation::translateForUser('None');
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 $result = array();
                 foreach ($this->getRawValue($field) as $item) {
@@ -1675,7 +1701,7 @@ class Datarecord implements DatarecordReferable {
      * Get a default filter for this class to use for current user. This can
      * be used to improve performance, if the user is only allowed to see a 
      * subset of the data.
-     * @return \Platform\Filter
+     * @return Filter
      */
     public static final function getDefaultFilter() : Filter {
         $filter = new Filter(get_called_class());
@@ -1685,10 +1711,10 @@ class Datarecord implements DatarecordReferable {
     
     /**
      * Get a edit complex for this Datarecord
-     * @return \Platform\UI\EditComplex
+     * @return EditComplex
      */
-    public static function getEditComplex(array $parameters = array()) : UI\EditComplex {
-        return UI\EditComplex::EditComplex(get_called_class(), $parameters);        
+    public static function getEditComplex(array $parameters = array()) : EditComplex {
+        return EditComplex::EditComplex(get_called_class(), $parameters);        
     }
     
     /**
@@ -1882,7 +1908,7 @@ class Datarecord implements DatarecordReferable {
     }
     
     public function logChange() {
-        $log = new Utilities\Log('datarecord', ['6r']);
+        $log = new Log('datarecord', ['6r']);
         $text = '';
         if ($this->isInDatabase()) $text = 'CH '.$this->getClassName ().'('.$this->getKeyValue().') - ';
         else $text = 'CR '.$this->getClassName().'('.$this->getKeyValue().') - ';
@@ -1897,7 +1923,7 @@ class Datarecord implements DatarecordReferable {
             $text .= '=>';
             $text .= static::getLogValue($fieldname);
         }
-        $log->log(Security\Accesstoken::getCurrentUserID(), $text);
+        $log->log(Accesstoken::getCurrentUserID(), $text);
     }
     
     /**
@@ -1995,7 +2021,7 @@ class Datarecord implements DatarecordReferable {
                     break;
                 case self::FIELDTYPE_REPETITION:
                     if ($value === null) $this->setValue($key, null);
-                    else $this->setValue($key, Utilities\Repetition::constructFromArray(json_decode($value,true)));
+                    else $this->setValue($key, Repetition::constructFromArray(json_decode($value,true)));
                     break;
                 default:
                     $this->setValue($key, $value);
@@ -2490,14 +2516,14 @@ class Datarecord implements DatarecordReferable {
                     $this->values[$field.'_foreignvalue'] = $value['foreignvalue'];
                 } else {
                     $this->values[$field.'_localvalue'] = $value;
-                    if (! $this->values[$field.'_currency']) $this->values[$field.'_currency'] = Currency\Currency::getBaseCurrency();
+                    if (! $this->values[$field.'_currency']) $this->values[$field.'_currency'] = Currency::getBaseCurrency();
                     if (! $this->values[$field.'_foreignvalue']) $this->values[$field.'_foreignvalue'] = $value;
                 }
                 break;
             case self::FIELDTYPE_REPETITION:
                 if ($value === null) $this->values[$field] = null;
-                else if ($value instanceof Utilities\Repetition)  $this->values[$field] = $value;
-                else if (is_array($value)) $this->values[$field] = Utilities\Repetition::constructFromArray($value);
+                else if ($value instanceof Repetition)  $this->values[$field] = $value;
+                else if (is_array($value)) $this->values[$field] = Repetition::constructFromArray($value);
                 else trigger_error('Invalid value passed to '.$field, E_USER_ERROR);
                 break;
             case self::FIELDTYPE_FILE:
@@ -2543,7 +2569,7 @@ class Datarecord implements DatarecordReferable {
                     if (static::$structure[$field]['fieldtype'] == self::FIELDTYPE_IMAGE && static::$structure[$field]['image_max_width'] && static::$structure[$field]['image_max_height']) {
                         $max_width = static::$structure[$field]['image_max_width'];
                         $max_height = static::$structure[$field]['image_max_height'];
-                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: \Platform\Utilities\Image::RESIZE_STRATEGY_FILL;
+                        $strategy = static::$structure[$field]['image_resize_strategy'] ?: Image::RESIZE_STRATEGY_FILL;
                         $image = new Image();
                         $result = $image->attachFile($file, true);
                         if ($result) {
