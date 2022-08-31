@@ -100,8 +100,8 @@ class EditComplex extends Component {
         $menu = array();
         $name = $this->class::getObjectName();
         $short_class = $this->class::getClassName();
-        if ($this->class::isCopyAllowed()) $menu[] = new MenuItem('Copy '.$name, '#TRIGGER=copy_object');
         $menu[] = new MenuItem('Edit '.$name, '#TRIGGER=edit_object');
+        if ($this->class::isCopyAllowed()) $menu[] = new MenuItem('Copy '.$name, '#TRIGGER=copy_object');
         $menu[] = new MenuItem('Delete '.$name, '#TRIGGER=delete_object');
 
         $this->item_popup_menu = new Menu\PopupMenu();

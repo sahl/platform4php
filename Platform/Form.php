@@ -360,8 +360,9 @@ class Form extends \Platform\UI\Component {
     /**
      * Load values previously stored by calling saveOnSubmit on the same form
      * @param bool $auto_submit_if_values If true then autosubmit the form is values were found
+     * @return bool True if some values was loaded, otherwise false
      */
-    public function loadValues(bool $auto_submit_if_values = false) {
+    public function loadValues(bool $auto_submit_if_values = false) : bool {
         // Try for a property
         $values = Property::getForCurrentUser('platform_saved_forms', $this->form_id);
         // Try for session
@@ -370,7 +371,9 @@ class Form extends \Platform\UI\Component {
         if ($values) {
             $this->getValuesFromSerializedForm($values);
             if ($auto_submit_if_values) $this->setAutoSubmit(true);
+            return true;
         }
+        return false;
     }
     
     /**
