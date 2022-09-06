@@ -288,6 +288,7 @@ class Field {
     }
     
     protected function getAutoLabelAlignment() : int {
+        if ($this->form) return $this->form->getDefaultLabelAlignment ();
         return self::LABEL_ALIGN_LEFT;
     }
     
@@ -400,7 +401,7 @@ class Field {
         return $this->is_error;
     }
     
-    private static function isValidLabelPlacement($label_placement) : bool {
+    public static function isValidLabelPlacement($label_placement) : bool {
         return in_array($label_placement, [self::LABEL_ALIGN_TOP, self::LABEL_ALIGN_LEFT, self::LABEL_ALIGN_BOTTOM, self::LABEL_ALIGN_RIGHT, self::LABEL_ALIGN_NONE, self::LABEL_ALIGN_AUTO]);
     }
     

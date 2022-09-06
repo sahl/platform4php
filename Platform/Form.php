@@ -27,6 +27,8 @@ class Form extends \Platform\UI\Component {
     
     private $layout_applied = false;
     
+    protected $default_label_alignment = Field::LABEL_ALIGN_LEFT;
+    
     public static $is_secure = false;
 
     private $save_on_submit = self::SAVE_NO;
@@ -56,11 +58,23 @@ class Form extends \Platform\UI\Component {
     }
     
     public static function Form(string $form_id, string $filename = '') : Form {
-        $form = new Form();
+        $form = new static();
         $form->setFormID($form_id);
         $form->setID($form_id.'_component');
         if ($filename) $form->getFromFile ($filename);
         return $form;
+    }
+    
+    /**
+     * Convenience for adding a component as a field
+     * @param string $label Label
+     * @param string $name Field name
+     * @param UI\FieldComponent $field_component The component to use
+     */
+    public function addComponent(string $label, string $name, UI\FieldComponent $field_component) {
+        $component_field = new Form\ComponentField($label, $name);
+        $component_field->attachComponent($field_component);
+        $this->addField($component_field);
     }
     
     /**
@@ -221,6 +235,14 @@ class Form extends \Platform\UI\Component {
         $this->render();
         $html = ob_get_clean();
         return $html;
+    }
+    
+    /**
+     * Get the default label alignment for this form
+     * @return int
+     */
+    public function getDefaultLabelAlignment() : int {
+        return $this->default_label_alignment;
     }
 
     /**
@@ -650,6 +672,15 @@ class Form extends \Platform\UI\Component {
      */
     public function setAutoSubmit(bool $auto_submit = true) {
         $this->auto_submit = $auto_submit;
+    }
+    
+    /**
+     * Set the default label alignment for labels in this form
+     * @param int $label_alignment
+     */
+    public function setDefaultLabelAlignment(int $label_alignment) {
+        if (! Field::isValidLabelPlacement($label_alignment)) trigger_error('Invalid label placement: '.$label_alignment, E_USER_ERROR);
+        $this->default_label_alignment = $label_alignment;
     }
     
     /**

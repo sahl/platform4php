@@ -282,7 +282,7 @@ class Table extends Component {
      */
     public static function getTableFromClass(string $id, string $class, array $table_parameters = []) : Table {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
-        $table = Table::Table($id);
+        $table = static::Table($id);
         $table->setColumnsFromDatarecord($class);
         $table->setTabulatorOption('placeholder', 'No '.$class::getObjectName());
         $table->setTabulatorOption('show_selector', true);
