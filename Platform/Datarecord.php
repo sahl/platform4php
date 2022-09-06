@@ -902,7 +902,9 @@ class Datarecord implements DatarecordReferable {
      * @return type
      */
     public static function findByKeywords(string $keywords, string $output = 'DatarecordCollection') {
-        if (! in_array($output, array('DatarecordCollection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
+        // Backward compatibility
+        if ($output == 'DatarecordCollection') $output = 'Collection';
+        if (! in_array($output, array('Collection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
         $search_fields = array();
         $numeric_fields = [];
         // Locate search fields
@@ -913,7 +915,7 @@ class Datarecord implements DatarecordReferable {
             if (in_array($definition['fieldtype'], [static::FIELDTYPE_KEY, static::FIELDTYPE_INTEGER, static::FIELDTYPE_FLOAT])) $numeric_fields[] = $field;
         }
         if (! count($search_fields)) {
-            if ($output == 'DatarecordCollection') return new Collection();
+            if ($output == 'Collection') return new Collection();
             return array();
         }
         $filter = static::getDefaultFilter();

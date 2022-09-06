@@ -89,7 +89,8 @@ class Filter {
      */    
     public function addConditionFromJSON(string $json) {
         $array = json_decode($json, true);
-        $this->addCondition(Condition::getConditionFromArray($array['base_condition']));
+        if ($array['base_condition']) $array = $array['base_condition'];
+        $this->addCondition(Condition::getConditionFromArray($array));
     }
 
     /**
