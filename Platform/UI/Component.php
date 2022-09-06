@@ -84,6 +84,12 @@ class Component {
      * @var array
      */
     protected $registered_events = [];
+    
+    /**
+     * Sub components to this component
+     * @var array
+     */
+    protected $subcomponents = [];
 
     /**
      * Styles of this component
@@ -148,6 +154,24 @@ class Component {
      */
     public function addStyle(string $style) {
         $this->styles[] = $style;
+    }
+    
+    /**
+     * Add a subcomponent to this component
+     * @param Component $component
+     */
+    public function addSubcomponent(Component $component) {
+        $this->subcomponents[] = $component;
+    }
+    
+    /**
+     * Add several subcomponents to this component
+     * @param array $components
+     */
+    public function addSubcomponents(array $components) {
+        foreach ($components as $component) {
+            $this->addSubcomponent($component);
+        }
     }
     
     /**
@@ -299,9 +323,19 @@ class Component {
     }
     
     /**
+     * Render all subcomponents
+     */
+    protected function renderSubcomponents() {
+        foreach ($this->subcomponents as $subcomponent) {
+            $subcomponent->render();
+        }
+    }
+    
+    /**
      * Render the component content. Override in subclass.
      */
     public function renderContent() {
+        $this->renderSubcomponents();
     }
     
     /**
