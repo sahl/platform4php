@@ -41,6 +41,75 @@ class Layout {
     }
     
     /**
+     * Get HTML representing a given datarecord in the given layout
+     * @param \Platform\Datarecord $datarecord
+     * @return string
+     */
+    public function getHTMLFromDatarecord(\Platform\Datarecord $datarecord, $skip_empty = true) : string {
+        $full_definition = $datarecord->getFullDefinition();
+        $html = '<div class="form_layout_container">';
+        $group_id = 0;
+        
+        // gather all group widths
+        $group_widths = [];
+        foreach ($this->groups as $group) {
+            $group_widths[] = $group['width'];
+        }
+
+        // Generate a section with fields not belonging to the Layout to find out if it exists
+        $additional_html = '';
+        $fragments = []; $sorter = [];
+        foreach ($full_definition as $key => $definition) {
+            // Add fields that doesn't belong in a group
+            if (! $definition['layout_hide'] && ! $definition['invisible'] && ($definition['layout_group'] == 0 || $definition['layout_group'] > count($this->groups)) && (! $skip_empty || $datarecord->getFullValue($key))) {
+                $fragments[] = '<div class="row"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
+                $sorter[] = $definition['layout_priority'] ?: 1000;
+            }
+        }
+        array_multisort($sorter, SORT_ASC, $fragments);
+        $additional_html .= implode('', $fragments);
+        // If the final section exists add it to the widths, otherwise add a small fraction (to make it the rightmost item if we exactly matched the width
+        $group_widths[] = $additional_html ? 100 : 0.001;
+        
+        // Add the first element to the width
+        $current_width = $group_widths[0];
+        
+        foreach ($this->groups as $i => $group) {
+            $group_id++;
+            // Add the next element to the width to check if this will overflow the line, leaving this as the final object on the line
+            $current_width += $group_widths[$i+1];
+            // Add the final element class if the next line will overflow
+            if ($current_width > 100) {
+                $current_width -= 100;
+                $wrap_class = ' rightmost_group';
+            } else {
+                $wrap_class = '';
+            }
+            $html .= '<div class="form_layout_group '.$group['class'].$wrap_class.'" style="width: '.$group['width'].'%;">';
+            // Add relevant fields
+            $fragments = []; $sorter = [];
+            foreach ($full_definition as $key => $definition) {
+                if (! $definition['layout_hide'] && ! $definition['invisible'] && $definition['layout_group'] == $group_id && (! $skip_empty || $datarecord->getFullValue($key))) {
+                    $fragments[] = '<div class="row"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
+                    $sorter[] = $definition['layout_priority'] ?: 1000;
+                }
+            }
+            array_multisort($sorter, SORT_ASC, $fragments);
+            $html .= implode('', $fragments);
+            $html .= '</div>';
+        }
+        
+        // Add the additional html
+        if ($additional_html) {
+            $html .= '<div class="form_layout_group rightmost_group" style="width: 100%;">';
+            $html .= $additional_html;
+            $html .= '</div>';
+        }
+        $html .= '</div>';
+        return $html;
+    }
+    
+    /**
      * Construct a new layout from the given array. See addGroupsFromArray().
      * @param array $groups
      * @return Layout

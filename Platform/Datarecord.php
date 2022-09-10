@@ -1109,6 +1109,15 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get the full definition array of this Datarecord
+     * @return array
+     */
+    public static function getFullDefinition() : array {
+        static::ensureStructure();
+        return static::$structure;
+    }
+    
+    /**
      * Get the field definition for a particular field
      * @param string $field Field name
      * @return array
@@ -1220,8 +1229,8 @@ class Datarecord implements DatarecordReferable {
             return new HiddenField('', $name);
         }
         
-        if ($definition['form_group']) {
-            $options['group'] = $definition['form_group'];
+        if ($definition['layout_group']) {
+            $options['group'] = $definition['layout_group'];
         }
         
         switch ($definition['fieldtype']) {
@@ -1435,6 +1444,14 @@ class Datarecord implements DatarecordReferable {
      */
     public function getKeyValue() : int {
         return (int)$this->getRawValue($this->getKeyField());
+    }
+    
+    /**
+     * Get the layout for this datarecord.
+     * @return Layout
+     */
+    public function getLayout() : Layout {
+        return Layout::getLayoutFromArray(static::$layout);
     }
     
     /**
@@ -2152,7 +2169,7 @@ class Datarecord implements DatarecordReferable {
         if ($changed) $errors[] = 'Database was changed even though there should be no changes. This is probably a problem with Platform.';
         
         // Check definitions
-        $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'form_group', 'calculations', 'default_value', 'invisible',
+        $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'layout_group', 'calculations', 'default_value', 'invisible',
             'fieldtype', 'label', 'columnvisibility', 'default', 'subfield',
             'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup');
         
