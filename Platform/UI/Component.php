@@ -199,6 +199,16 @@ class Component {
     }
     
     /**
+     * Return a copy of this component
+     * @return Component
+     */
+    public function getCopy() : Component {
+        $component = new static();
+        $component->setPropertyMap($this->properties);
+        return $component;
+    }
+    
+    /**
      * Get the properties of this component encoded for frontend
      * @return string
      */
