@@ -209,6 +209,17 @@ class Component {
     }
     
     /**
+     * Get data which was previously stored using saveSessionProperty()
+     * @param string $property The name of the property
+     * @return mixed The data or false if no data was stored
+     */
+    public function getSessionProperty(string $property) {
+        if (isset($_SESSION['platform']['component_data'][$this->getID()][$property])) return $_SESSION['platform']['component_data'][$this->getID()][$property];
+        return false;
+    }
+    
+    
+    /**
      * Get the properties of this component encoded for frontend
      * @return string
      */
@@ -217,7 +228,8 @@ class Component {
     }
 
     /**
-     * Get HTML ID of this component
+     * Get HTML ID of this component. If none have been assigned a random ID is
+     * generated
      * @return string
      */
     public function getID() : string {
@@ -346,6 +358,15 @@ class Component {
      */
     public function renderContent() {
         $this->renderSubcomponents();
+    }
+    
+    /**
+     * Save some data regarding this componeent to the session, so it can be retrieved later by a component with the same ID
+     * @param string $key The key to save data under
+     * @param mixed $value The value to save
+     */
+    public function saveSessionProperty(string $key, $value) {
+        $_SESSION['platform']['component_data'][$this->getID()][$key] = $value;
     }
     
     /**
