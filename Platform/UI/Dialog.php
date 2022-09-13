@@ -53,16 +53,6 @@ class Dialog extends Component {
         $this->components[] = $component;
     }
     
-    /**
-     * Render a form as invisible to be used later with the javascript formDialog
-     * @param \Platform\Form $form Form to render (invisible)
-     */
-    public static function prepareForm(\Platform\Form $form) {
-        echo '<div class="platform_invisible">';
-        $form->render();
-        echo '</div>';
-    }
-    
     public function prepareData() {
         parent::prepareData();
         if (count($this->buttons)) $this->addData('buttons', $this->buttons);
@@ -75,6 +65,16 @@ class Dialog extends Component {
         echo $this->text;
         if ($this->form instanceof \Platform\Form) $this->form->render();
         foreach ($this->components as $component) $component->render();
+    }
+    
+    /**
+     * Render a form as invisible to be used later with the javascript formDialog
+     * @param \Platform\Form $form Form to render (invisible)
+     */
+    public static function renderFormForFormDialog(\Platform\Form $form) {
+        echo '<div class="platform_invisible">';
+        $form->render();
+        echo '</div>';
     }
     
     /**
