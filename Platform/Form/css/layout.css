@@ -6,4 +6,5 @@
 .form_layout_group {
     padding: 3px;
     overflow-x: hidden;
+    box-sizing: border-box;
 }
