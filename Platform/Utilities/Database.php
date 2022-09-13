@@ -215,7 +215,12 @@ class Database {
             if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$local_connection), E_USER_ERROR);
         }
         if (! self::$connected_instance) self::useInstance();
-        $result_set = mysqli_query(self::$local_connection, $query);
+        try {
+            $result_set = mysqli_query(self::$local_connection, $query);
+        } catch (\mysqli_sql_exception $e) {
+            if ($fail_on_error) trigger_error('Database error: '.mysqli_error(self::$local_connection).' when executing '.$query, E_USER_ERROR);
+            return false;
+        }
         if (self::$query_cache_enabled) self::cacheQuery($query);
         if ($result_set === false && $fail_on_error) trigger_error('Database error: '.mysqli_error(self::$local_connection).' when executing '.$query, E_USER_ERROR);
         self::$instance_queries++;
