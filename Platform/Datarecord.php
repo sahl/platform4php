@@ -1033,14 +1033,14 @@ class Datarecord implements DatarecordReferable {
      * Return all fields suitable for insertion into a form
      * @return array
      */
-    public function getAsArrayForForm() : array {
+    public function getAsArrayForForm(bool $include_field_types = false) : array {
         $result = array();
         foreach (static::$structure as $fieldname => $data) {
             if ($data['subfield']) continue;
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
             $field = static::getFormFieldFromDefinition('', $data);
             if ($field === null) continue;
-            $result[$fieldname] = ['fieldtype' => array_pop(explode('\\', get_class($field))), 'value' => $this->getValue($fieldname, self::RENDER_FORM)];
+            $result[$fieldname] = $include_field_types ? ['fieldtype' => array_pop(explode('\\', get_class($field))), 'value' => $this->getValue($fieldname, self::RENDER_FORM)] : $this->getValue($fieldname, self::RENDER_FORM);
         }
         return $result;
     }

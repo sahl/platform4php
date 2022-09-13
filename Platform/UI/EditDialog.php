@@ -50,7 +50,7 @@ class EditDialog extends Dialog {
                 if ($_POST['id']) $datarecord->loadForRead($_POST['id']);
                 if ($datarecord->canAccess()) {
                     $this->object_id = $_POST['id'];
-                    return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm()];
+                    return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm(true)];
                 }
                 return ['status' => false];
         }
