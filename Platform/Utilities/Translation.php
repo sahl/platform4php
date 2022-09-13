@@ -401,7 +401,6 @@ class Translation {
         if (! in_array($original_file, self::$translations_loaded_file_table)) self::$translations_loaded_file_table[] = $original_file;
         foreach (self::getLanguagesToLoad() as $language_key) {
             $translation_file = self::getTranslationFileFromOriginalFile($original_file, $language_key);
-            if ($_POST['powerdebug']) echo "\nTrying: ".$translation_file;
             if (file_exists($translation_file)) {
                 include_once $translation_file;
             } else {

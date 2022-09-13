@@ -81,7 +81,7 @@ function confirmDialog(title, text, callback_ok, callback_cancel) {
     ]).dialog('open');
 }
 
-function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel) {
+function formDialog(title, text, form_id, ok_text, callback_ok, callback_open, callback_cancel) {
     $('#platform_allpurpose_text').html(text);
     
     // Move any existing content back in place
@@ -90,7 +90,9 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel)
     // Ensure that the form is moved into place and shown
     var form_original_parent = $(form_id).parent();
     
-    $(form_id).appendTo('#platform_allpurpose_form').show().clearForm();
+    console.log(form_original_parent.prop('id'));
+    
+    $(form_id).appendTo('#platform_allpurpose_form').show();
     
     // (Re)bind submitter
     $(form_id).off('submit.allpurpose_dialog');
@@ -100,33 +102,50 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_cancel)
             $.each($(form_id).serializeArray(), function(key, value) {
                 return_values[value.name] = value.value;
             })
-            callback_ok(return_values);
+            callback_ok(return_values, function() {
+                $('#platform_allpurpose_dialog').dialog('close');
+                // Move form back in place
+                $(form_id).appendTo(form_original_parent);
+                // Be sure to clean form area
+                $('#platform_allpurpose_form').html('');
+            });
+        } else {
+            $('#platform_allpurpose_dialog').dialog('close');
+            // Move form back in place
+            $(form_id).appendTo(form_original_parent);
+            // Be sure to clean form area
+            $('#platform_allpurpose_form').html('');
         }
-        $('#platform_allpurpose_dialog').dialog('close');
-        // Move form back in place
-        $(form_id).appendTo(form_original_parent);
         return false;
     })
     
     if (ok_text == null) ok_text = 'Save';
     
-    $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
-        {
-            text: ok_text,
-            click: function() {
-                $(form_id).submit();
-            }
-        },
-        {
-            text: 'Cancel',
-            click:  function() {
-                $(this).dialog('close');
-                if (typeof(callback_cancel) == 'function') callback_cancel();
-                // Move form back in place
-                $(form_id).appendTo(form_original_parent);
-            }
-        }        
-    ]).dialog('open');
+    var open_dialog_form = true;
+    if (callback_open) {
+        if (! callback_open()) open_dialog_form = false;
+    }
+    
+    if (open_dialog_form) {
+        $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
+            {
+                text: ok_text,
+                click: function() {
+                    $(form_id).submit();
+                }
+            },
+            {
+                text: 'Cancel',
+                click:  function() {
+                    $(this).dialog('close');
+                }
+            }        
+        ]).dialog('option', 'close', function() {  
+            if (typeof(callback_cancel) == 'function') callback_cancel();
+            // Move form back in place
+            $(form_id).appendTo(form_original_parent);
+        }).dialog('open');
+    }
     
 }
 

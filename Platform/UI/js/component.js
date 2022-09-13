@@ -99,7 +99,7 @@ function addPlatformComponentHandlerFunction(class_name, func) {
 
 $.fn.componentIOForm = function(form, func) {
     var item = this;
-    form.submit(function() {
+    $(form).submit(function() {
         item.componentIO(form.serialize(), function(data) {
             if (! data.status) {
                 form.attachErrors(data.form_errors);
