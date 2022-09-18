@@ -2114,8 +2114,8 @@ class Datarecord implements DatarecordReferable {
      * hard delete that doesn't process referers
      */
     public static function purge() {
-        self::query("DELETE FROM ".static::$database_table);
-        self::query("ALTER TABLE ".static::$database_table." AUTO_INCREMENT = 1");
+        static::query("DELETE FROM ".static::$database_table);
+        static::query("ALTER TABLE ".static::$database_table." AUTO_INCREMENT = 1");
     }
     
     /**

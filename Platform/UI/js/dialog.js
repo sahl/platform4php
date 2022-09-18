@@ -90,8 +90,6 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_open, c
     // Ensure that the form is moved into place and shown
     var form_original_parent = $(form_id).parent();
     
-    console.log(form_original_parent.prop('id'));
-    
     $(form_id).appendTo('#platform_allpurpose_form').show();
     
     // (Re)bind submitter
