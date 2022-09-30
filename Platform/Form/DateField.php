@@ -15,6 +15,7 @@ class DateField extends Field {
     }
     
     public function setValue($value) {
+        if (! $value instanceof Time) $value = new Time($value);
         $this->value = $value;
     }
     

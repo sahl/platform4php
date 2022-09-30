@@ -33,7 +33,7 @@ class EditDialog extends Dialog {
         $class = $this->class;
         $form = $class::getForm();
         if ($form->isSubmitted()) {
-            if (! $form->validate()) return ['status' => false, 'errors' => $form->getAllErrors()];
+            if (! $form->validate()) return ['status' => false, 'form_errors' => $form->getAllErrors()];
             $datarecord = new $class();
             if ($this->object_id) $datarecord->loadForWrite($this->object_id);
             if ($datarecord->canEdit()) {
@@ -42,7 +42,8 @@ class EditDialog extends Dialog {
                 $datarecord->save();
                 return ['status' => true];
             }
-            return ['status' => false, 'message' => Translation::translateForUser('You are not allowed to edit this data')];
+            $form->triggerGlobalError(Translation::translateForUser('You are not allowed to edit this data'));
+            return ['status' => false, 'form_errors' => $form->getAllErrors()];
         }
         switch ($_POST['event']) {
             case 'datarecord_load':

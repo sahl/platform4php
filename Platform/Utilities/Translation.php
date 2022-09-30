@@ -22,7 +22,9 @@ class Translation {
                 $language_key = $match[1];
                 $phrases = self::getPhrasesFromTranslationFile($file);
                 foreach ($phrases as $original_phrase => $translated_phrase) {
-                    $data[$language_key][$original_phrase] = $translated_phrase;
+                    // Never overwrite an translated phrase with an untranslated phrase
+                    if (trim($translated_phrase) || ! isset($data[$language_key][$original_phrase]))
+                        $data[$language_key][$original_phrase] = $translated_phrase;
                 }
             }
         }

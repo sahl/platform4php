@@ -412,7 +412,7 @@ class Field {
      */
     public function parse($value) : bool {
         $this->value = $value;
-        if ($this->is_required && ! strlen($value)) {
+        if ($this->is_required && is_string($value) && ! strlen($value)) {
             $this->triggerError('This is a required field');
             return false;
         }
