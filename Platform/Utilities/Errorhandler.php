@@ -154,7 +154,7 @@ class Errorhandler {
     }
     
     public static function measure(string $text, $operation_count = false) {
-        self::$measures[] = array('timestamp' => microtime(true), 'text' => $text, 'operation_count' => $operation_count);
+        self::$measures[] = array('timestamp' => microtime(true), 'text' => $text, 'operation_count' => $operation_count, 'memory_use' => memory_get_usage());
         // Check if the measure limit is set and if it is exceeded
         if (self::$measure_time_limit !== false && self::$measure_time_start + self::$measure_time_limit < time()) {
             self::renderMeasures();
@@ -221,6 +221,8 @@ class Errorhandler {
             echo '<td>'.$measure['text'];
             if ($measure['operation_count']) echo ' (average '.number_format(($measure['timestamp']-$lasttime)/$measure['operation_count'],5).')';
             if ($measure['operation_count'] && $measure['timestamp']-$lasttime) echo ' (ops pr. sec '.number_format(1/(($measure['timestamp']-$lasttime)/$measure['operation_count']),2,'.','').')';
+            echo '</td><td>';
+            echo number_format($measure['memory_use']/1024/1024,2).' MB';
             echo '</td></tr>';
             $lasttime = $measure['timestamp'];
         }
