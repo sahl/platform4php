@@ -29,7 +29,8 @@ class Accesstoken extends Datarecord {
             ),
             'token_code' => array(
                 'label' => 'Token code',
-                'fieldtype' => self::FIELDTYPE_TEXT
+                'fieldtype' => self::FIELDTYPE_TEXT,
+                'key' => true,
             ),
             'user_ref' => array(
                 'label' => 'User',
