@@ -55,6 +55,12 @@ class Component {
     protected static $io_url = '/Platform/UI/php/component_io.php';
     
     /**
+     * Indicate if this is a container component
+     * @var boolean
+     */
+    protected static $is_container_component = false;
+    
+    /**
      * Indicate if this component have readied its data
      * @var bool
      */
@@ -291,6 +297,7 @@ class Component {
      */
     public function prepareData() {
         $this->is_ready = true;
+        if (static::$is_container_component) $this->addClass('platform_container_component');
     }
     
     /**

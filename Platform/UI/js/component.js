@@ -20,6 +20,18 @@ addCustomPlatformFunctionLast(function(item) {
         });
         
         $(this).on('redraw', function(e) {
+            if ($(this).is('.platform_container_component')) {
+                // If this is a container component, we instead ask to redraw all direct sub-components
+                var this_component = $(this);
+                $('.platform_component', this_component).each(function() {
+                    if ($(this).parent().closest('.platform_component')[0] == this_component[0]) {
+                        $(this).trigger('redraw');
+                    }
+                })
+                e.stopPropagation();
+                return true;
+            }
+            
             var componentproperties = $(this).data('componentproperties');
             var redraw_url = $(this).data('redraw_url');
             if (! redraw_url) {
