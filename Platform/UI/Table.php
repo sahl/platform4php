@@ -45,7 +45,7 @@ class Table extends Component {
         self::CSSFile('/Platform/UI/css/table.css');
         self::JSFile('https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.1/luxon.min.js');
         parent::__construct();
-        $this->setTabulatorOption('layout', 'fitColumns');
+        $this->setTabulatorOption('layout', 'fitDataTable');
         $this->setTabulatorOption('placeholder', 'No data');
         $this->setTabulatorOption('movableColumns', true);
         
@@ -127,14 +127,15 @@ class Table extends Component {
         // Get special configuration
         $fields = $classname::getTableFields(false);
         foreach ($fields as $field) {
-            $columndef[] = array(
+            $column = array(
                 'title' => $structure[$field]['label'],
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
                 'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
-                'formatter' => 'html',
-                'width' => $structure[$field]['width'] ?: 200
+                'formatter' => 'html'
             );
+            if ($structure[$field]['width']) $columndef['width'] = $structure[$field]['width'];
+            $columndef[] = $column;
         }
         return $columndef;
     }
