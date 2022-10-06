@@ -19,7 +19,6 @@ class Upgrades {
         if (!is_dir($directory)) trigger_error('No upgrade directory "'.$directory.'"', E_USER_ERROR);
         if (substr($directory,-1) != '/') $directory .= '/';
         $last_upgrade_date = static::getLastUpgradeDate();
-        $new_last_upgrade_date = new Time($last_upgrade_date);
         $dh = opendir($directory);
         if ($dh === false) trigger_error('Could not read directory "'.$directory.'"', E_USER_ERROR);
         $scripts_to_run = [];
@@ -29,26 +28,24 @@ class Upgrades {
                 // Don't run scripts prior to the latest script
                 $script_date = new Time($match[1].' '.str_replace('-',':',$match[2]));
                 if (! $last_upgrade_date->isNull() && $script_date->isBeforeEqual($last_upgrade_date)) continue;
-                if ($new_last_upgrade_date->isNull() || $new_last_upgrade_date->isBefore($script_date)) $new_last_upgrade_date = new Time($script_date);
                 // Don't run upgrade scripts during an installation
-                if ($match[3] == 'upgrade' && $is_installation) continue;
+                //if ($match[3] == 'upgrade' && $is_installation) continue;
                 // Add script and new last check date
-                $scripts_to_run[] = $file_name;
+                $scripts_to_run[$file_name] = ['file_name' => $file_name, 'type' => $match[3], 'script_date' => $script_date];
             }
         }
         // Check if we have anything to run
         if (count($scripts_to_run)) {
             // Ensure we run it chronological
-            sort($scripts_to_run);
+            ksort($scripts_to_run);
             foreach ($scripts_to_run as $script) {
-                include_once $directory.$script;
+                // Don't run upgrade scripts during an installation
+                if ($script['type'] != 'upgrade' || ! $is_installation)
+                    include_once $directory.$script['file_name'];
+                // Stamp new date no matter what
+                static::setLastUpgradeDate($script['script_date']);
             }
         }
-        if (! $last_upgrade_date->isEqualTo($new_last_upgrade_date)) {
-            // Stamp new upgrade date
-            static::setLastUpgradeDate($new_last_upgrade_date);
-        }
-        
     }
     
     /**
