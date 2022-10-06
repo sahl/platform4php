@@ -102,6 +102,15 @@ class Database {
     }
     
     /**
+     * Free a result and nulls the pointer
+     * @param resource $result
+     */
+    public static function finish(&$result) {
+        mysqli_free_result($result);
+        $result = null;
+    }
+    
+    /**
      * Get the last error message on the global connection
      * @return string
      */
@@ -207,16 +216,17 @@ class Database {
      * Query the instance database
      * @param string $query SQL query to carry out
      * @param bool $fail_on_error Set to true if a SQL error should trigger a php error.
+     * @param bool $use_buffer Indicate if we should receive a buffered result.
      * @return bool|resource Result set or false if an error occured.
      */
-    public static function instanceQuery(string $query, bool $fail_on_error = true) {
+    public static function instanceQuery(string $query, bool $fail_on_error = true, bool $use_buffer = true) {
         if (self::$local_connection === false) {
             $result = self::connectLocal();
             if (! $result) trigger_error('Could not connect to local database. Error: '.mysqli_error (self::$local_connection), E_USER_ERROR);
         }
         if (! self::$connected_instance) self::useInstance();
         try {
-            $result_set = mysqli_query(self::$local_connection, $query);
+            $result_set = mysqli_query(self::$local_connection, $query, $use_buffer ? MYSQLI_STORE_RESULT : MYSQLI_USE_RESULT);
         } catch (\mysqli_sql_exception $e) {
             if ($fail_on_error) trigger_error('Database error: '.mysqli_error(self::$local_connection).' when executing '.$query, E_USER_ERROR);
             return false;
@@ -226,6 +236,16 @@ class Database {
         self::$instance_queries++;
         self::$total_queries++;
         return $result_set;
+    }
+    
+    /**
+     * Perform an unbuffered database query to the instance database
+     * @param string $query SQL query to carry out
+     * @param bool $fail_on_error Set to true if a SQL error should trigger a php error.
+     * @return bool|resource Result set or false if an error occured.
+     */
+    public static function instanceUnbufferedQuery(string $query, bool $fail_on_error = true) {
+        return self::instanceQuery($query, $fail_on_error, false);
     }
     
     /**
