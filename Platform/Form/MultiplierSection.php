@@ -149,7 +149,7 @@ class MultiplierSection extends Field {
                     if (isset($this->value[$i][$old_field_name])) {
                         $field->setValue($this->value[$i][$old_field_name]);
                     } else {
-                        $field->setValue($field instanceof FieldMultiplier ? array() : '');
+                        $field->setValue($field instanceof MultiplierSection ? array() : '');
                     }
                 }
                 if (isset($this->error_cache[$i][$old_field_name])) {
