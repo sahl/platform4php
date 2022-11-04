@@ -229,6 +229,8 @@ $.fn.attachValues = function(values) {
             }
         }
     })
+
+    this.trigger('dataloaded');
     
     function checkWithId(dom_node, ids) {
         dom_node.find('input[type="checkbox"]').prop('checked', false);
