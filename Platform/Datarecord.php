@@ -1293,6 +1293,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_PASSWORD:
                 return $this->getRawValue($field) ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
+                if (static::$structure[$field]['invisible']) return $this->getRawValue($field);
                 return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
             case self::FIELDTYPE_BOOLEAN:
                 return $this->getRawValue($field) ? 1 : 0;
