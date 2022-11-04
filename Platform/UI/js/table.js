@@ -116,64 +116,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
         return ids;
     }
     
-
-    table.on('tableBuilt', function() {
-        if (filter_field) {
-            filter_field.keyup(function() {
-                var val = $(this).val();
-                if (val) filterTable(table, val);
-                else table.clearFilter();
-            })
-        }
-        
-        if (multipopup_id || itempopup_id) {
-            var columndefinition = {width: 20, headerSort: false, hozAlign: 'center', headerHozAlign: 'center'};
-            if (multipopup_id) {
-                columndefinition.title = '<i class="fa fa-pencil"></i>';
-                columndefinition.headerClick = function(event) {
-                    $('#'+multipopup_id).trigger('appear', [event, {info: getSelectedTableRows()}]);
-                }
-            }
-            if (itempopup_id) {
-                columndefinition.formatter = function(cell, formatterParams) {
-                    return '<i class="fa fa-pencil"></i>';
-                }
-                columndefinition.cellClick = function(event, cell) {
-                    $('#'+itempopup_id).trigger('appear', [event, {info: [cell.getRow().getIndex()]}]);
-                }
-            }
-            table.addColumn(columndefinition, true);
-        }
-        
-        $.each(action_buttons, function(key, element) {
-            table.addColumn({
-                formatter: function(cell, formatterParams) {
-                    return '<i class="fa '+key+'"></i>';
-                },
-                width: 40,
-                headerSort:false,
-                hozAlign: 'center',
-                cellClick: function(e, cell) {
-                    item.trigger(element, cell.getRow().getIndex());
-                }
-            }, true)
-        });
-
-        if (column_selector)
-            table.addColumn({
-                title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
-                    $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
-                }
-            }, false);
-
-
-        if (show_selector)
-            table.addColumn({
-                formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', hozAlign: 'center', headerHozAlign: 'center', headerSort:false, width: 15
-            }, true);
-        
-        updateMultiButtons();
-
+    item.on('reload_data', function() {
         if (control_form) {
             function makeObject(array) {
                 var res = {};
@@ -221,6 +164,68 @@ addPlatformComponentHandlerFunction('table', function(item) {
         if (typeof callback == 'function') {
             callback(table);
         }
+        
+    });
+    
+
+    table.on('tableBuilt', function() {
+        if (filter_field) {
+            filter_field.keyup(function() {
+                var val = $(this).val();
+                if (val) filterTable(table, val);
+                else table.clearFilter();
+            })
+        }
+        
+        if (multipopup_id || itempopup_id) {
+            var columndefinition = {width: 20, headerSort: false, hozAlign: 'center', headerHozAlign: 'center'};
+            if (multipopup_id) {
+                columndefinition.title = '<i style="cursor: pointer;" class="fa fa-pencil"></i>';
+                columndefinition.headerClick = function(event) {
+                    $('#'+multipopup_id).trigger('appear', [event, {info: getSelectedTableRows()}]);
+                }
+            }
+            if (itempopup_id) {
+                columndefinition.formatter = function(cell, formatterParams) {
+                    return '<i class="fa fa-pencil"></i>';
+                }
+                columndefinition.cellClick = function(event, cell) {
+                    $('#'+itempopup_id).trigger('appear', [event, {info: [cell.getRow().getIndex()]}]);
+                }
+            }
+            table.addColumn(columndefinition, true);
+        }
+        
+        $.each(action_buttons, function(key, element) {
+            table.addColumn({
+                formatter: function(cell, formatterParams) {
+                    return '<i class="fa '+key+'"></i>';
+                },
+                width: 40,
+                headerSort:false,
+                hozAlign: 'center',
+                cellClick: function(e, cell) {
+                    item.trigger(element, cell.getRow().getIndex());
+                }
+            }, true)
+        });
+
+        if (column_selector)
+            table.addColumn({
+                title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
+                    $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
+                }
+            }, false);
+
+
+        if (show_selector)
+            table.addColumn({
+                formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', hozAlign: 'center', headerHozAlign: 'center', headerSort:false, width: 15
+            }, true);
+        
+        updateMultiButtons();
+
+        item.trigger('reload_data');
         
     })
 
