@@ -26,4 +26,11 @@ addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
         form.submit();
         $(this).dialog('close');
     });
+    
+    dialog.on('reset_columns', function() {
+        item.componentIO({event: 'reset_columns', id: item.data('table_id')});
+        $(this).dialog('close');
+        attached_table.trigger('reload_data');
+    });
+    
 });

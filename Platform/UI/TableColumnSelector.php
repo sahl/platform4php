@@ -28,7 +28,7 @@ class TableColumnSelector extends Component {
     public function attachTable(Table $table) {
         $this->table_id = $table->getID();
         $this->setID($this->table_id.'_component_select');
-        $this->dialog = Dialog::Dialog($this->getID().'_dialog', 'Select columns', '', array('save_columns' => 'Select columns', 'close' => 'Cancel'), $table->getColumnSelectForm());
+        $this->dialog = Dialog::Dialog($this->getID().'_dialog', 'Select columns', '', array('save_columns' => 'Select columns', 'reset_columns' => 'Reset columns', 'close' => 'Cancel'), $table->getColumnSelectForm());
     }
 
     public function handleIO(): array {
@@ -43,6 +43,10 @@ class TableColumnSelector extends Component {
                 if (! isset($existingproperties[$element])) $existingproperties[$element]['visible'] = $isvisible == 1;
             }
             Property::setForCurrentUser('platform', 'table_configuration_'.$_POST['id'], $existingproperties);
+            return ['changed' => 1];
+        }
+        if ($_POST['event'] == 'reset_columns') {
+            Property::setForCurrentUser('platform', 'table_configuration_'.$_POST['id']);
             return ['changed' => 1];
         }
         return ['changed' => 0];
