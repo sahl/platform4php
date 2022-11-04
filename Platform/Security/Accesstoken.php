@@ -57,7 +57,7 @@ class Accesstoken extends Datarecord {
      */
     public static function acquire(User $user, int $seconds_to_live = 3600) : Accesstoken {
         if (! $user->isInDatabase()) trigger_error('Tried to acquire token for unsaved user!', E_USER_ERROR);
-        $accesstoken = self::generateBaseToken($seconds_to_live);
+        $accesstoken = static::generateBaseToken($seconds_to_live);
         $accesstoken->user_ref = $user->user_id;
         $accesstoken->save();
         self::$current_user_id = $accesstoken->user_ref;
@@ -70,7 +70,7 @@ class Accesstoken extends Datarecord {
      * @return Accesstoken The token
      */
     public static function acquireAnonymous(int $seconds_to_live = 3600) : Accesstoken {
-        $accesstoken = self::generateBaseToken($seconds_to_live);
+        $accesstoken = static::generateBaseToken($seconds_to_live);
         $accesstoken->setSession();
         return $accesstoken;
     }
@@ -99,12 +99,12 @@ class Accesstoken extends Datarecord {
      * @param bool $destroy_entire_session If this is set to true, then we destroy the entire PHP session
      */
     public static function destroySession(bool $destroy_entire_session = true) {
-        $accesstoken = self::getByTokencode(self::getSavedTokenCode());
+        $accesstoken = static::getByTokencode(static::getSavedTokenCode());
         // Nothing to destroy
         if (! $accesstoken->isInDatabase()) return;
         // Destroy it
-        Accesstoken::deleteByID($accesstoken->token_id);
-        Accesstoken::clearSession($destroy_entire_session);
+        static::deleteByID($accesstoken->token_id);
+        static::clearSession($destroy_entire_session);
     }
     
     /**
@@ -113,8 +113,7 @@ class Accesstoken extends Datarecord {
      * @return Accesstoken The generated access token
      */
     public static function generateBaseToken(int $seconds_to_live = 3600) : Accesstoken {
-        $class = get_called_class();
-        $accesstoken = new $class();
+        $accesstoken = new static();
         if (!Semaphore::wait('accesstoken_generator')) trigger_error('Waited for token generator for an excess amount of time.', E_USER_ERROR);
         $accesstoken->generateTokenCode();
         $timestamp = new Time('now');
@@ -132,7 +131,7 @@ class Accesstoken extends Datarecord {
         // Check if token exists
         do {
             $token_code = sha1(rand());
-            $filter = new Filter('\\Platform\\Security\\Accesstoken');
+            $filter = new Filter(get_called_class());
             $filter->addCondition(new ConditionMatch('token_code', $token_code));
         } while ($filter->execute()->getCount());
         $this->token_code = $token_code;
@@ -144,7 +143,7 @@ class Accesstoken extends Datarecord {
      * @return Accesstoken The Accesstoken or a new token if none was found
      */
     public static function getByTokencode(string $token_code) : Accesstoken {
-        if (! $token_code) return new Accesstoken ();
+        if (! $token_code) return new static();
         $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('token_code', $token_code));
         return $filter->executeAndGetFirst();
@@ -159,10 +158,16 @@ class Accesstoken extends Datarecord {
         if (! Instance::getActiveInstanceID()) return 0;
         if (! self::$current_user_id) {
             // Try to acquire from current accesstoken
-            $token = self::getByTokencode((string)self::getSavedTokenCode());            
+            $token = self::getByTokencode((string)static::getSavedTokenCode());            
             if ($token->isValid()) self::$current_user_id = $token->user_ref;
         }
         return self::$current_user_id;
+    }
+    
+    public static function getSavedToken() {
+        $token_code = static::getSavedTokenCode();
+        if (! $token_code) return null;
+        return static::getByTokencode($token_code);
     }
     
     /**
@@ -231,7 +236,7 @@ class Accesstoken extends Datarecord {
         if (Instance::getActiveInstanceID() === false) $valid = false;
         else {
             // Check if we have a (valid) access token
-            $token = self::getByTokencode(self::getSavedTokenCode());
+            $token = static::getByTokencode(static::getSavedTokenCode());
             if ($valid && ! $token->isValid()) $valid = false;
         }
         if (! $valid) {
@@ -242,11 +247,11 @@ class Accesstoken extends Datarecord {
                 $instance->activate();
             }
             if ($_GET['token_code']) {
-                $token = self::getByTokencode($_GET['token_code']);
+                $token = static::getByTokencode($_GET['token_code']);
                 $token->setSession();
                 Page::redirectToCurrent();
             }
-            self::saveLocation();
+            static::saveLocation();
         }
         
         if (! $valid && $redirect) {
@@ -268,7 +273,7 @@ class Accesstoken extends Datarecord {
      * @return bool True if token code validated
      */
     public static function validateTokenCode(string $token_code) : bool {
-        $access_token = Accesstoken::getByTokencode($token_code);
+        $access_token = static::getByTokencode($token_code);
         if (! $access_token->isInDatabase() || ! $access_token->isValid()) return false;
         self::$current_user_id = $access_token->user_ref;
         return true;
