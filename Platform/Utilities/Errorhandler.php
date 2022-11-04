@@ -216,7 +216,7 @@ class Errorhandler {
         $starttime = self::$measures[0]['timestamp'];
         $lasttime = $starttime;
         foreach (self::$measures as $measure) {
-            echo '<tr><td>'.number_format($measure['timestamp']-$starttime, 5,'.','').'</td>';
+            echo "\n".'<tr><td>'.number_format($measure['timestamp']-$starttime, 5,'.','').'</td>';
             echo '<td>+'.number_format($measure['timestamp']-$lasttime, 5,'.','').'</td>';
             echo '<td>'.$measure['text'];
             if ($measure['operation_count']) echo ' (average '.number_format(($measure['timestamp']-$lasttime)/$measure['operation_count'],5).')';
