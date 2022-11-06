@@ -1520,7 +1520,7 @@ class Datarecord implements DatarecordReferable {
                 $result = json_encode($this->getRawValue($field));
                 break;
             default:
-                $result = $this->getRawValue($field);
+                $result = (string)$this->getRawValue($field);
                 break;
         }
         
@@ -1528,6 +1528,7 @@ class Datarecord implements DatarecordReferable {
         if ($use_value_on_load) {
             $this->values = $stored_values;
         }
+        if ($result === null) $result = '[NULL]';
         if (strlen($result) > 200) $result = substr($result,0, 200).'...(+'.(strlen($result)-200).' bytes)';
         $result = '"'.str_replace('"', '\\"', $result).'"';
         return $result;
