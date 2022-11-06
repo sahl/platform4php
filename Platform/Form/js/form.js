@@ -121,13 +121,13 @@ $.fn.clearError = function() {
 }
 
 $.fn.clearForm = function() {
-    this.find('input[type!="hidden"][type!="checkbox"],input[type="hidden"][name!="form_event"][name!="form_name"]').not('.platform_dont_clear').val('');
+    this.find('input[type!="hidden"][type!="checkbox"][type!="submit"][type!="button"],input[type="hidden"][name!="form_event"][name!="form_name"]').not('.platform_dont_clear').val('');
     this.find('textarea').not('.platform_dont_clear').val('');
     this.find('textarea.texteditor').summernote('reset');
     this.find('[type="checkbox"]').not('.platform_dont_clear').prop('checked', false);
     this.find('select').not('.platform_dont_clear').find('option:first-child').prop('selected', true);
     this.find('.platform_form_multiplier').each(function() {
-        $(this).find('.platform_form_multiplier_element:not(:first)').remove();
+        $(this).find('.platform_form_multiplier_element:not(:first-child)').remove();
     });
     this.find('.platform_form_field_error').clearError();
     this.find('iframe').each(function() {
