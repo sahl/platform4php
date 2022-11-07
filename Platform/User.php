@@ -34,7 +34,8 @@ class User extends \Platform\DatarecordExtensible {
             'username' => array(
                 'label' => static::$username_is_email ? 'Email' : 'Username',
                 'required' => true,
-                'fieldtype' => static::$username_is_email ? self::FIELDTYPE_EMAIL : self::FIELDTYPE_TEXT
+                'fieldtype' => static::$username_is_email ? self::FIELDTYPE_EMAIL : self::FIELDTYPE_TEXT,
+                'searchable' => true,
             ),
             'password' => array(
                 'label' => 'Password',
