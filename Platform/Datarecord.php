@@ -1040,7 +1040,31 @@ class Datarecord implements DatarecordReferable {
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
             $field = static::getFormFieldFromDefinition('', $data);
             if ($field === null) continue;
-            $result[$fieldname] = $include_field_types ? ['fieldtype' => array_pop(explode('\\', get_class($field))), 'value' => $this->getValue($fieldname, self::RENDER_FORM)] : $this->getValue($fieldname, self::RENDER_FORM);
+            $value = $this->getValue($fieldname, self::RENDER_FORM);
+            if ($include_field_types) {
+                if ($data['fieldtype'] == self::FIELDTYPE_ARRAY && is_array($data['substructure'])) {
+                    // Map names to field types
+                    $inner_field_names = [];
+                    $inner_field_definitions = [];
+                    foreach ($data['substructure'] as $key => $substructure_definition) {
+                        $inner_field_names[$key] = array_pop(explode('\\', get_class(static::getFormFieldFromDefinition('', $substructure_definition))));
+                        $inner_field_definitions[$key] = $substructure_definition;
+                    }
+                    $new_values = [];
+                    foreach ($value as $element) {
+                        $inner_values = [];
+                        foreach ($element as $inner_field => $field_value) {
+                            if (! isset($inner_field_definitions[$inner_field])) continue;
+                            $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, $field_value, $inner_field_definitions[$inner_field])];
+                        }
+                        $new_values[] = $inner_values;
+                    }
+                    $value = $new_values;
+                }
+                $result[$fieldname] = ['fieldtype' => array_pop(explode('\\', get_class($field))), 'value' => $value];
+            } else {
+                $result[$fieldname] = $value;
+            }
         }
         return $result;
     }
@@ -1162,6 +1186,13 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_FLOAT:
                 return $value === null ? 'NULL' : (double)$value;
             case self::FIELDTYPE_ARRAY:
+                if (is_array($value)) {
+                    $finalvalue = array();
+                    foreach ($value as $k => $v) $finalvalue[$k] = $v;
+                } else {
+                    $finalvalue = [];
+                }
+                return '\''.Database::escape(json_encode($finalvalue)).'\'';
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 // Force string encoding
@@ -1222,8 +1253,6 @@ class Datarecord implements DatarecordReferable {
     public static function getFormFieldFromDefinition(string $name, array $definition) {
         $options = array();
         if ($definition['required']) $options['required'] = true;
-        // Some fields never yield a form field
-        if (in_array($definition['fieldtype'], [self::FIELDTYPE_ARRAY, self::FIELDTYPE_OBJECT])) return null;
         
         if ($definition['invisible']) {
             return new HiddenField('', $name);
@@ -1278,6 +1307,19 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 $options['class'] = $definition['foreign_class'];
                 return new MultidatarecordcomboboxField($definition['label'], $name, $options);
+            case self::FIELDTYPE_ARRAY:
+                if (is_array($definition['substructure'])) {
+                    $multiplier_section = new Form\MultiplierSection($definition['label'], $name, $options);
+                    foreach ($definition['substructure'] as $key => $substructure_element) {
+                        if (! is_array($substructure_element)) trigger_error('Could not parse substructure element', E_USER_ERROR);
+                        $multiplier_section->addFields(static::getFormFieldFromDefinition($key, $substructure_element));
+                    }
+                    return $multiplier_section;
+                } else {
+                    $multi_field = new Form\MultiField($definition['label'], $name, $options);
+                    $multi_field->addMultiField(new TextField($definition['label'], $name, $options));
+                    return $multi_field;
+                }
         }
         return null;
     }
@@ -1289,46 +1331,56 @@ class Datarecord implements DatarecordReferable {
      */
     public function getFormValue(string $field) {
         if (! isset(static::$structure[$field])) return null;
-        switch (static::$structure[$field]['fieldtype']) {
+        return $this->getFormValueByDefinition($this->getRawValue($field), $this->getTextValue($field), static::$structure[$field]);
+    }
+
+    /**
+     * Get a form value directly from a definition
+     * @param mixed $value Raw value
+     * @param mixed $textvalue Text value
+     * @param array $definition Definition
+     * @return mixed The value as appropriate for the form
+     */
+    public function getFormValueByDefinition($value, $textvalue, array $definition) {
+        switch ($definition['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
-                return $this->getRawValue($field) ? 'XXXXXX' : '';
+                return $value ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                if (static::$structure[$field]['invisible']) return $this->getRawValue($field);
-                return array('id' => $this->getRawValue($field), 'visual' => $this->getTextValue($field));
+                return array('id' => $value, 'visual' => $textvalue);
             case self::FIELDTYPE_BOOLEAN:
-                return $this->getRawValue($field) ? 1 : 0;
+                return $value ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 // Bail of no values
-                if (! count($this->getRawValue($field))) return array();
+                if (! count($value)) return array();
                 // We need to retrieve all the referred values
-                $class = static::$structure[$field]['foreign_class'];
+                $class = $definition['foreign_class'];
                 $filter = new Filter($class);
-                $filter->addCondition(new ConditionOneOf($class::getKeyField(), $this->getRawValue($field)));
+                $filter->addCondition(new ConditionOneOf($class::getKeyField(), $value));
                 $values = array();
                 foreach ($filter->execute()->getAll() as $foreignobject) {
                     $values[] = array('id' => $foreignobject->getRawValue($class::getKeyField()), 'visual' => $foreignobject->getTitle());
                 }
                 return $values;
             case self::FIELDTYPE_DATETIME:
-                return str_replace(' ', 'T', $this->getRawValue($field)->getReadable('Y-m-d H:i'));
+                return str_replace(' ', 'T', $value->getReadable('Y-m-d H:i'));
             case self::FIELDTYPE_DATE:
-                return $this->getRawValue($field)->getReadable('Y-m-d');
+                return $value->getReadable('Y-m-d');
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_HTMLTEXT:
             case self::FIELDTYPE_CURRENCY:
-                return $this->getRawValue($field);
+                return $value;
             case self::FIELDTYPE_REPETITION:
-                return $this->getRawValue($field) === null ? null : $this->getRawValue($field)->getAsArray();
+                return $value === null ? null : $value->getAsArray();
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:
-                return (int)$this->getRawValue($field);
+                return (int)$value;
             case self::FIELDTYPE_ARRAY:
             case self::FIELDTYPE_OBJECT:
-                return $this->getRawValue($field);
+                return $value;
             default:
-                return $this->getTextValue($field);
-        }
+                return $textvalue;
+        }        
     }
     
     /**
@@ -1520,7 +1572,7 @@ class Datarecord implements DatarecordReferable {
                 $result = json_encode($this->getRawValue($field));
                 break;
             default:
-                $result = (string)$this->getRawValue($field);
+                $result = $this->getRawValue($field);
                 break;
         }
         
@@ -2173,7 +2225,7 @@ class Datarecord implements DatarecordReferable {
         // Check definitions
         $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'layout_group', 'calculations', 'default_value', 'invisible',
             'fieldtype', 'label', 'columnvisibility', 'default', 'subfield',
-            'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup');
+            'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup', 'substructure');
         
         foreach (static::getStructure() as $field => $definition) {
             foreach ($definition as $key => $value) {

@@ -48,7 +48,10 @@ addPlatformComponentHandlerFunction('form', function(item) {
             // We accept hidden texteditors
             if ($(this).is('.texteditor')) return true;
             var name = $(this).prop('name');
-            if ($(this).data('realname')) name = $(this).data('realname');
+            if ($(this).data('realname')) {
+                console.log('In name '+name+' i found '+$(this).data('realname'));
+                name = $(this).data('realname');
+            }
             hiddenfields.push(name);
         });
         if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
@@ -152,60 +155,88 @@ $.fn.attachErrors = function(errors) {
 }
 
 $.fn.attachValues = function(values) {
-    var form = this;
+    var attach_element = this;
+    var form = attach_element.closest('form');
+
     $.each(values, function(key, data) {
         var fieldtype = data.fieldtype;
         var value = data.value;
+        var escaped_key = key.replace(/\[/g,"\\[").replace(/\]/g,"\\]");
+        
+        console.log('Target '+key);
+        console.log(value);
         
         // First we try to see if there is a special component for this field
-        if (form.find('.platform_field_component_'+key).length) {
-            form.find('.platform_field_component_'+key).trigger('setvalue', value);
+        if (attach_element.find('.platform_field_component_'+key).length) {
+            attach_element.find('.platform_field_component_'+key).trigger('setvalue', value);
         } else {
             switch (fieldtype) {
                 case 'CheckboxField':
-                    var dom_node = form.find('[name="'+key+'"]');
+                    var dom_node = attach_element.find('[name="'+key+'"]');
                     dom_node.prop('checked', value == 1);
                     break;
                 case 'TexteditorField':
-                    var dom_node = form.find('[name="'+key+'"]');
+                    var dom_node = attach_element.find('[name="'+key+'"]');
                     dom_node.summernote('reset');
                     dom_node.summernote('code', value);
                     break;
                 case 'CurrencyField':
-                    form.find('[name="'+key+'[localvalue]"]').val(value.localvalue);
-                    form.find('[name="'+key+'[currency]"]').val(value.currency);
-                    form.find('[name="'+key+'[foreignvalue]"]').val(value.foreignvalue);
+                    attach_element.find('[name="'+key+'[localvalue]"]').val(value.localvalue);
+                    attach_element.find('[name="'+key+'[currency]"]').val(value.currency);
+                    attach_element.find('[name="'+key+'[foreignvalue]"]').val(value.foreignvalue);
                     break;
                 case 'SelectField':
-                    var dom_node = form.find('[name="'+key+'"]');
+                    var dom_node = attach_element.find('[name="'+key+'"]');
                     if (value !== null) dom_node.val(value);
                     else dom_node.find('option:first-child').prop('selected', true);
                     break;
                 case 'DatarecordcomboboxField':
                 case 'IndexedComboboxField':
                 case 'ComboboxField':
-                    var dom_node = form.find('[name="'+key+'[visual]"]');
+                    var dom_node = attach_element.find('[name="'+key+'[visual]"]');
                     dom_node.val(value.visual);
                     dom_node.prev().val(value.id);
                     break;
                 case 'MulticheckboxField':
-                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'.multi_checkbox_container');
+                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'.multi_checkbox_container');
                     checkWithId(dom_node, value);
                     break;
                 case 'MultidatarecordcomboboxField':
-                case 'MultiplierSection':
-                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'_container .platform_form_multiplier');
+                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+escaped_key+'_container .platform_form_multiplier');
                     $.each(value, function(key, val) {
                         dom_node.find('input[type="hidden"]:last').val(val.id);
                         dom_node.find('input[type="text"]:last').val(val.visual).trigger('keyup');
                     });
                     break;
+                case 'MultiplierSection':
+                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'_container .platform_form_multiplier:first');
+                    var i = 0;
+                    $.each(value, function(dummy, val) {
+                        // This is each section
+                        var insert_node = dom_node.children('.platform_form_multiplier_element:last');
+                        var new_element = {};
+                        $.each(val, function(inner_key, inner_val) {
+                            inner_key = key+'['+(i)+']['+inner_key+']';
+                            new_element[inner_key] = inner_val;
+                            
+                        });
+                        insert_node.attachValues(new_element);
+                        insert_node.find('input[type!="checkbox"],textarea').trigger('keyup');
+                        i++;
+                    });
+                    break;
+                case 'MultiField':
+                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'_container .platform_form_multiplier');
+                    $.each(value, function(key, val) {
+                        dom_node.find('input[type="text"]:last').val(val).trigger('keyup');
+                    });
+                    break;
                 case 'FileField':
-                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'.platform_file_input_frame');
+                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'.platform_file_input_frame');
                     dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
                     break;
                 case 'RepetitionField':
-                    var dom_node = form.find('#'+form.attr('id')+'_'+key+'_container.repetition_field');
+                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'_container.repetition_field');
                     if (value == null) {
                         dom_node.find('.repetition_interval').val(1);
                         dom_node.find('.repetition_type').val('').trigger('change');
@@ -222,8 +253,7 @@ $.fn.attachValues = function(values) {
                     if (value.metadata.month) dom_node.find('.month').val(value.metadata.month);
                     break;
                 default:
-                    var dom_node = form.find('[name="'+key+'"]');
-                    console.log('Set '+key+' to '+value+' ('+dom_node.length+')');
+                    var dom_node = attach_element.find('[name="'+key+'"]');
                     dom_node.val(value);
                     break;
             }
