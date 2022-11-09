@@ -1342,6 +1342,7 @@ class Datarecord implements DatarecordReferable {
      * @return mixed The value as appropriate for the form
      */
     public function getFormValueByDefinition($value, $textvalue, array $definition) {
+        if ($definition['invisible']) return $value;
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
                 return $value ? 'XXXXXX' : '';
