@@ -117,6 +117,28 @@ addPlatformComponentHandlerFunction('table', function(item) {
     }
     
     item.on('reload_data', function() {
+        if (control_form) control_form.submit();
+        else {
+            initial_sort_completed = false;
+            if (data_request_event) {
+                var request = {};
+                if (jsonfilter) request.filter = jsonfilter;
+                item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
+                    table.setData(table_data);
+                    initial_sort_completed = true;
+                }])
+            } else {
+                table.setData(data_url);
+                initial_sort_completed = true;
+            }
+        }
+        if (typeof callback == 'function') {
+            callback(table);
+        }
+        return true;
+    });
+
+    table.on('tableBuilt', function() {
         if (control_form) {
             function makeObject(array) {
                 var res = {};
@@ -144,31 +166,8 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 }
                 return false;
             })
-            
-            // Do a delayed auto submit if configured
-            if (control_form.is('.platform_form_auto_submit')) control_form.submit();
-        } else {
-            if (data_request_event) {
-                var request = {};
-                if (jsonfilter) request.filter = jsonfilter;
-                item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
-                    table.setData(table_data);
-                    initial_sort_completed = true;
-                }])
-            } else {
-                if (table_configuration['ajaxURL']) table.setData();
-            }
         }
         
-
-        if (typeof callback == 'function') {
-            callback(table);
-        }
-        
-    });
-    
-
-    table.on('tableBuilt', function() {
         if (filter_field) {
             filter_field.keyup(function() {
                 var val = $(this).val();
@@ -178,7 +177,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
         }
         
         if (multipopup_id || itempopup_id) {
-            var columndefinition = {width: 20, headerSort: false, hozAlign: 'center', headerHozAlign: 'center'};
+            var columndefinition = {width: 20, headerSort: false, hozAlign: 'center', headerHozAlign: 'center', resizable: false};
             if (multipopup_id) {
                 columndefinition.title = '<i style="cursor: pointer;" class="fa fa-pencil"></i>';
                 columndefinition.headerClick = function(event) {
@@ -204,6 +203,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 width: 40,
                 headerSort:false,
                 hozAlign: 'center',
+                resizable: false,
                 cellClick: function(e, cell) {
                     item.trigger(element, cell.getRow().getIndex());
                 }
@@ -214,7 +214,8 @@ addPlatformComponentHandlerFunction('table', function(item) {
             table.addColumn({
                 title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
                     $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
-                }
+                },
+                resizable: false
             }, false);
 
 
@@ -263,27 +264,6 @@ addPlatformComponentHandlerFunction('table', function(item) {
             setMultiButton($(this), number_of_selected_rows);
         })
     }
-    
-    
-    item.on('reload_data', function() {
-        if (control_form) control_form.submit();
-        else {
-            initial_sort_completed = false;
-            if (data_request_event) {
-                var request = {};
-                if (jsonfilter) request.filter = jsonfilter;
-                item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
-                    table.setData(table_data);
-                    initial_sort_completed = true;
-                }])
-            } else {
-                table.setData(data_url);
-                initial_sort_completed = true;
-            }
-        }
-        return true;
-    })
-    
    
     item.on('multi_button', function(e) {
         if ($(e.target).hasClass('unselectable')) return false;

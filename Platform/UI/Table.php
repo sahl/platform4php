@@ -45,9 +45,9 @@ class Table extends Component {
         self::CSSFile('/Platform/UI/css/table.css');
         self::JSFile('https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.1/luxon.min.js');
         parent::__construct();
-        $this->setTabulatorOption('layout', 'fitDataTable');
         $this->setTabulatorOption('placeholder', 'No data');
         $this->setTabulatorOption('movableColumns', true);
+        $this->setTabulatorOption('autoResize', false);
         
         $this->addPropertyMap(['id' => null]);
     }
