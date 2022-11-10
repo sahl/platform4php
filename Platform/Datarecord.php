@@ -1055,7 +1055,16 @@ class Datarecord implements DatarecordReferable {
                         $inner_values = [];
                         foreach ($element as $inner_field => $field_value) {
                             if (! isset($inner_field_definitions[$inner_field])) continue;
-                            $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, $field_value, $inner_field_definitions[$inner_field])];
+                            switch ($inner_field_definitions[$inner_field]['fieldtype']) {
+                                case self::FIELDTYPE_REFERENCE_SINGLE:
+                                    $class = $inner_field_definitions[$inner_field]['foreign_class'];
+                                    $object = new $class();
+                                    $object->loadForRead($field_value, false);
+                                    $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, strip_tags($object->getTitle()), $inner_field_definitions[$inner_field])];
+                                    break;
+                                default:
+                                    $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, $field_value, $inner_field_definitions[$inner_field])];
+                            }
                         }
                         $new_values[] = $inner_values;
                     }
