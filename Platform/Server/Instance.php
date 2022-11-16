@@ -207,6 +207,16 @@ class Instance extends \Platform\Datarecord {
     }
     
     /**
+     * Get the server object this instance is present on.
+     * @return Server
+     */
+    public function getServer() : Server {
+        $server = new Server();
+        $server->loadForRead((int)$this->server_ref, false);
+        return $server;
+    }
+    
+    /**
      * Get the title of this instance
      * @return string
      */
