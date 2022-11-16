@@ -1263,6 +1263,9 @@ class Datarecord implements DatarecordReferable {
         $options = array();
         if ($definition['required']) $options['required'] = true;
         
+        // Some fields never yields a form field
+        if (in_array($definition['fieldtype'], [self::FIELDTYPE_OBJECT])) return null;
+        
         if ($definition['invisible']) {
             return new HiddenField('', $name);
         }
