@@ -128,7 +128,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
                     initial_sort_completed = true;
                 }])
             } else {
-                table.setData(data_url);
+                if (data_url) table.setData(data_url);
                 initial_sort_completed = true;
             }
         }
