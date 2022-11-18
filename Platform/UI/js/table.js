@@ -117,8 +117,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
     }
     
     item.on('reload_data', function() {
-        if (control_form) control_form.submit();
-        else {
+        if (! control_form) {
             initial_sort_completed = false;
             if (data_request_event) {
                 var request = {};
@@ -126,7 +125,7 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
                     table.setData(table_data);
                     initial_sort_completed = true;
-                }])
+                }]);
             } else {
                 if (data_url) table.setData(data_url);
                 initial_sort_completed = true;
@@ -166,6 +165,9 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 }
                 return false;
             })
+            
+            // Do a delayed auto submit if configured
+            if (control_form.is('.platform_form_auto_submit')) control_form.submit();            
         }
         
         if (filter_field) {
