@@ -1038,7 +1038,7 @@ class Datarecord implements DatarecordReferable {
         foreach (static::$structure as $fieldname => $data) {
             if ($data['subfield']) continue;
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
-            $field = static::getFormFieldFromDefinition('', $data);
+            $field = static::getFormFieldForField($fieldname);
             if ($field === null) continue;
             $value = $this->getValue($fieldname, self::RENDER_FORM);
             if ($include_field_types) {
@@ -1239,7 +1239,7 @@ class Datarecord implements DatarecordReferable {
         if ($script) $form->setScript($script);
         foreach (static::$structure as $key => $definition) {
             if ($definition['readonly'] || $key == 'metadata') continue;
-            $field = static::getFormFieldFromDefinition($key, $definition);
+            $field = static::getFormFieldForField($key);
             if ($field === null) continue;
 
             $form->addField($field);
@@ -1251,6 +1251,16 @@ class Datarecord implements DatarecordReferable {
         // Add layout if present
         if (count(static::$layout)) $form->setLayout(Layout::getLayoutFromArray (static::$layout));
         return $form;
+    }
+    
+    /**
+     * Get a proper form field for the specific field
+     * @param string $field The field
+     * @return \Platform\Form\Field A form field
+     */
+    public static function getFormFieldForField(string $field) {
+        if (! isset(static::$structure[$field])) trigger_error('Unknown field '.$field, E_USER_ERROR);
+        return static::getFormFieldFromDefinition($field, static::$structure[$field]);
     }
     
     /**
@@ -1267,6 +1277,8 @@ class Datarecord implements DatarecordReferable {
         if (in_array($definition['fieldtype'], [self::FIELDTYPE_OBJECT])) return null;
         
         if ($definition['invisible']) {
+            // Some elements cannot be represented as hidden fields
+            if (in_array($definition['fieldtype'], [self::FIELDTYPE_ARRAY, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER])) return null;
             return new HiddenField('', $name);
         }
         
@@ -1581,6 +1593,7 @@ class Datarecord implements DatarecordReferable {
                 $result = $this->getRawValue($field)->get();
                 break;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
+            case self::FIELDTYPE_OBJECT:
             case self::FIELDTYPE_REPETITION:
                 $result = json_encode($this->getRawValue($field));
                 break;
