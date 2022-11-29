@@ -48,12 +48,17 @@ class EditDialog extends Dialog {
         switch ($_POST['event']) {
             case 'datarecord_load':
                 $datarecord = new $class();
-                if ($_POST['id']) $datarecord->loadForRead($_POST['id']);
+                if ($_POST['id']) {
+                    $datarecord->loadForRead($_POST['id']);
+                    if (! $datarecord->canEdit()) return ['status' => false, 'error' => 'You are not allowed to edit this.'];
+                } else {
+                    if (! $datarecord->canCreate()) return ['status' => false, 'error' => 'You are not allowed to create a new element.'];
+                }
                 if ($datarecord->canAccess()) {
                     $this->object_id = $_POST['id'];
                     return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm(true)];
                 }
-                return ['status' => false];
+                return ['status' => false, 'error' => 'Unknown error'];
         }
     }
     

@@ -27,14 +27,18 @@ addPlatformComponentHandlerFunction('editdialog', function(element) {
     function openDialog(id) {
         form.clearForm();
         element.componentIO({event: 'datarecord_load', id: id}, function(data) {
-            if (id) {
-                $(element).dialog('option', 'title', 'Edit '+name).dialog('open');
+            if (data.status) {
+                if (id) {
+                    $(element).dialog('option', 'title', 'Edit '+name).dialog('open');
+                } else {
+                    $(element).dialog('option', 'title', 'New '+name).dialog('open');
+                }
+                form.attachValues(data.values);
+                element.dialog('open');
             } else {
-                $(element).dialog('option', 'title', 'New '+name).dialog('open');
+                warningDialog('Cannot edit', 'You cannot edit this element: '+data.error);
             }
-            form.attachValues(data.values);
         });
-        element.dialog('open');
     }
 
 });
