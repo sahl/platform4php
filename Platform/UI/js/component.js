@@ -109,12 +109,13 @@ function addPlatformComponentHandlerFunction(class_name, func) {
     platform_component_handler_class_names.push(class_name);
 }
 
-$.fn.componentIOForm = function(form, func) {
+$.fn.componentIOForm = function(form, func, failfunc) {
     var item = this;
     $(form).submit(function() {
         item.componentIO(form.serialize(), function(data) {
             if (! data.status) {
                 form.attachErrors(data.form_errors);
+                if (typeof failfunc == 'function') failfunc(data);
             } else {
                 if (typeof func == 'function') func(data);
             }
