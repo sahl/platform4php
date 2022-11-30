@@ -36,9 +36,15 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
         left -= item.offset().left;
         top -= item.offset().top;
         
+        // Prevent menu from exiting the screen
+        if (left + item.width() > $(window).width()-5) left = $(window).width() - item.width()-5;
+        if (top + item.height() > $(window).height()-5) top = $(window).height() - item.height()-5;
         item.css('left', left);
         item.css('top', top);
         $(window).on('click', function() {
+            hidePopupMenu();
+        });
+        $(window).on('resize', function() {
             hidePopupMenu();
         });
         clickevent.stopPropagation();
