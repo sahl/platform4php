@@ -307,6 +307,7 @@ class Database {
         if (! $instance) trigger_error('Tried to use instance database without having an active instance.', E_USER_ERROR);
         if ($instance == self::$connected_instance) return;
         if (self::$local_connection === false) self::connectLocal();
+        if (self::$local_connection === false) trigger_error('Failed to connect to instance database: '.mysqli_error(self::$local_connection), E_USER_ERROR);
         $result = mysqli_select_db(self::$local_connection, \Platform\Server\Instance::getActiveDatabaseName());
         if (! $result) trigger_error('Failed to use to instance database '.mysqli_error(self::$local_connection), E_USER_ERROR);
         self::$connected_instance = $instance;
