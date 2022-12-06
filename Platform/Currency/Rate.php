@@ -50,6 +50,16 @@ class Rate extends \Platform\Datarecord {
     }
     
     /**
+     * Get the reverse exchange rate on a given date
+     * @param string $currency Currency to get exchange rate for
+     * @param \Platform\Utilities\Time $date Date to check
+     * @return float The numeric exchange rate as it was on this date
+     */
+    public static function getReverseRate(string $currency, \Platform\Utilities\Time $date) : float {
+        return 10000.0/static::getRate($currency, $date);
+    }
+    
+    /**
      * Get the closest rate object on this date or before for the given currency
      * @param string $currency
      * @param \Platform\Utilities\Time $date
