@@ -43,8 +43,8 @@ class Form extends \Platform\UI\Component {
         Page::JSFile('/Platform/Form/js/multiplier.js');
         Page::JSFile('/Platform/Form/js/repetition.js');
         Page::JSFile('/Platform/Form/js/combobox.js');
-        Page::JSFile('/Platform/Form/js/texteditor.js');
         Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
+        Page::JSFile('/Platform/Form/js/texteditor.js');
         Page::CSSFile('/Platform/Form/css/form.css');
         Page::CSSFile('/Platform/Form/css/layout.css');
         Page::CSSFile('/Platform/Form/css/texteditor.css');

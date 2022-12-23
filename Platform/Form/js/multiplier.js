@@ -40,8 +40,8 @@ function platform_handle_multiplier_change() {
     if ((row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)')) && $(this).val() != '') {
         // We need to expand.
         console.log('We need to expand');
-        var new_row = row.clone(true);
-        new_row.off().find('*').off();
+        var new_row = row.clone(true); // We need to set true to bring data values along
+        new_row.off().find('*').off(); // Destroy all event listeners
         new_row.insertAfter(row);
         //new_row.appendTo($(this).closest('.platform_form_multiplier'));
         new_row.find('textarea,input[type!="checkbox"]').val('');

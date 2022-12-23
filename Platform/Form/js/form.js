@@ -49,7 +49,6 @@ addPlatformComponentHandlerFunction('form', function(item) {
             if ($(this).is('.texteditor')) return true;
             var name = $(this).prop('name');
             if ($(this).data('realname')) {
-                console.log('In name '+name+' i found '+$(this).data('realname'));
                 name = $(this).data('realname');
             }
             hiddenfields.push(name);
