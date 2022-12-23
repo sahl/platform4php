@@ -137,28 +137,30 @@ addPlatformComponentHandlerFunction('table', function(item) {
         return true;
     });
     
-    control_form.submit(function() {
-        if (! table.initialized) {
-            // The table is not ready, so convert to auto-submit
-            $(this).addClass('platform_form_auto_submit');
+    if (control_form) {
+        control_form.submit(function() {
+            if (! table.initialized) {
+                // The table is not ready, so convert to auto-submit
+                $(this).addClass('platform_form_auto_submit');
+                return false;
+            }
+            item.show();
+            initial_sort_completed = false;
+            if (data_request_event) {
+                var request = makeObject(control_form.serializeArray());
+                if (jsonfilter) request.filter = jsonfilter;
+                item.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
+                    table.setData(table_data);
+                    initial_sort_completed = true;
+                }])
+            } else {
+                var request = makeObject(control_form.serializeArray());
+                if (jsonfilter) request.filter = jsonfilter;
+                table.setData(data_url, request, "post");
+            }
             return false;
-        }
-        item.show();
-        initial_sort_completed = false;
-        if (data_request_event) {
-            var request = makeObject(control_form.serializeArray());
-            if (jsonfilter) request.filter = jsonfilter;
-            item.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
-                table.setData(table_data);
-                initial_sort_completed = true;
-            }])
-        } else {
-            var request = makeObject(control_form.serializeArray());
-            if (jsonfilter) request.filter = jsonfilter;
-            table.setData(data_url, request, "post");
-        }
-        return false;
-    });
+        });
+    }
     
 
     table.on('tableBuilt', function() {
