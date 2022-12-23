@@ -1053,17 +1053,19 @@ class Datarecord implements DatarecordReferable {
                     $new_values = [];
                     foreach ($value as $element) {
                         $inner_values = [];
-                        foreach ($element as $inner_field => $field_value) {
-                            if (! isset($inner_field_definitions[$inner_field])) continue;
-                            switch ($inner_field_definitions[$inner_field]['fieldtype']) {
-                                case self::FIELDTYPE_REFERENCE_SINGLE:
-                                    $class = $inner_field_definitions[$inner_field]['foreign_class'];
-                                    $object = new $class();
-                                    $object->loadForRead($field_value, false);
-                                    $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, strip_tags($object->getTitle()), $inner_field_definitions[$inner_field])];
-                                    break;
-                                default:
-                                    $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, $field_value, $inner_field_definitions[$inner_field])];
+                        if (is_array($element)) {
+                            foreach ($element as $inner_field => $field_value) {
+                                if (! isset($inner_field_definitions[$inner_field])) continue;
+                                switch ($inner_field_definitions[$inner_field]['fieldtype']) {
+                                    case self::FIELDTYPE_REFERENCE_SINGLE:
+                                        $class = $inner_field_definitions[$inner_field]['foreign_class'];
+                                        $object = new $class();
+                                        $object->loadForRead($field_value, false);
+                                        $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, strip_tags($object->getTitle()), $inner_field_definitions[$inner_field])];
+                                        break;
+                                    default:
+                                        $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, $field_value, $inner_field_definitions[$inner_field])];
+                                }
                             }
                         }
                         $new_values[] = $inner_values;
@@ -1157,7 +1159,8 @@ class Datarecord implements DatarecordReferable {
      */
     public static function getFieldDefinition(string $field) : array {
         static::ensureStructure();
-        return static::$structure[$field] ?: [];
+        if (! isset(static::$structure[$field])) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
+        return static::$structure[$field];
     }
     
     /**
@@ -2493,8 +2496,8 @@ class Datarecord implements DatarecordReferable {
         // Unlock a manual key semaphore (if any)
         Semaphore::release($manual_key_semaphore);
         
-        $this->onAfterSave($changed_fields);
         if ($is_new_object) $this->onAfterCreate();
+        $this->onAfterSave($changed_fields);
         
         return true;
     }
