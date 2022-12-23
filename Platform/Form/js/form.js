@@ -89,6 +89,9 @@ addPlatformComponentHandlerFunction('form', function(item) {
             if (data.status == 1) component.parent().find('.currency_localvalue').val(data.localvalue);
         })
     })
+    $('.currency_currency').change(function() {
+        if ($(this).val() == '') $(this).parent().find('.currency_foreignvalue').val('');
+    })
 
     // Clear errors when changing fields
      $('.platform_form_field',item).change(function() {

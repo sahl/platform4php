@@ -16,6 +16,7 @@ class CurrencyField extends Field {
             $this->triggerError('This is a required field');
             return false;
         }
+        if ($value['foreignvalue'] === '' || $value['currency'] == '') $value['foreignvalue'] = null;
         $this->value = $value;
         return true;
     }    
@@ -24,7 +25,7 @@ class CurrencyField extends Field {
         echo '<input style="width: 120px;" class="'.$this->getClassString().' currency_foreignvalue" type="number" name="'.$this->name.'[foreignvalue]" value="'.htmlentities($this->value['foreignvalue'], ENT_QUOTES).'"> ';
         echo '<select style="width: 75px;" name="'.$this->name.'[currency]" class="'.$this->getClassString().' currency_currency">';
         $enabled_currencies = \Platform\Currency\Currency::getEnabledCurrencies();
-        if (! in_array($this->value['currency'], $enabled_currencies)) $this->value['currency'] = \Platform\Currency\Currency::getBaseCurrency ();
+        echo '<option value="">';
         foreach ($enabled_currencies as $currency) {
             echo '<option value="'.$currency.'"';
             if ($currency == $this->value['currency']) echo ' selected';

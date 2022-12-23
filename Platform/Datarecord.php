@@ -1241,7 +1241,7 @@ class Datarecord implements DatarecordReferable {
         $script = self::getEditScript();
         if ($script) $form->setScript($script);
         foreach (static::$structure as $key => $definition) {
-            if ($definition['readonly'] || $key == 'metadata') continue;
+            if ($definition['readonly'] || $key == 'metadata' || $definition['subfield']) continue;
             $field = static::getFormFieldForField($key);
             if ($field === null) continue;
 
@@ -1434,7 +1434,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
             case self::FIELDTYPE_CURRENCY:
-                return $this->getRawValue($field.'_foreigncurrency').' '.$this->getRawValue($field.'_currency');
+                return $this->getRawValue($field.'_currency') ? $this->getRawValue($field.'_foreignvalue').' '.$this->getRawValue($field.'_currency') : $this->getRawValue($field.'_localvalue');
             case self::FIELDTYPE_REPETITION:
                 return $this->getRawValue($field) !== null ? $this->getRawValue($field)->getDescription() : Translation::translateForUser('None');
             case self::FIELDTYPE_ENUMERATION_MULTI:
@@ -1597,6 +1597,7 @@ class Datarecord implements DatarecordReferable {
                 break;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
             case self::FIELDTYPE_OBJECT:
+            case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_REPETITION:
                 $result = json_encode($this->getRawValue($field));
                 break;
@@ -2457,10 +2458,9 @@ class Datarecord implements DatarecordReferable {
         if ($this->isInDatabase()) {
             // Prepare update.
             $fielddefinitions = array();
-            foreach (static::$structure as $key => $definition) {
-                if (! $definition['store_in_metadata'] && $definition['store_in_database'] !== false) {
-                    $fielddefinitions[] = self::getAssignmentForDatabase($key, $this->values[$key]);
-                }
+            foreach ($this->getChangedFields() as $field) {
+                $definition = $this->getFieldDefinition($field);
+                $fielddefinitions[] = self::getAssignmentForDatabase($field, $this->values[$field]);
             }
             $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
             self::query($sql);
@@ -2618,8 +2618,6 @@ class Datarecord implements DatarecordReferable {
                     $this->values[$field.'_foreignvalue'] = $value['foreignvalue'];
                 } else {
                     $this->values[$field.'_localvalue'] = $value;
-                    if (! $this->values[$field.'_currency']) $this->values[$field.'_currency'] = Currency::getBaseCurrency();
-                    if (! $this->values[$field.'_foreignvalue']) $this->values[$field.'_foreignvalue'] = $value;
                 }
                 break;
             case self::FIELDTYPE_REPETITION:
