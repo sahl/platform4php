@@ -1,6 +1,6 @@
 var custom_platform_functions = [];
 var custom_platform_functions_last = [];
-
+var functions_registered = [];
 
 $(function() {
     $('body').applyPlatformFunctions();
@@ -18,10 +18,16 @@ $.fn.applyPlatformFunctions = function() {
 }
 
 function addCustomPlatformFunction(fn) {
+    var fn_as_string = fn.toString();
+    if (functions_registered.includes(fn_as_string)) return;
+    functions_registered.push(fn_as_string);
     custom_platform_functions.push(fn);
 }
 
 function addCustomPlatformFunctionLast(fn) {
+    var fn_as_string = fn.toString();
+    if (functions_registered.includes(fn_as_string)) return;
+    functions_registered.push(fn_as_string);
     custom_platform_functions_last.push(fn);
 }
 
