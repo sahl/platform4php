@@ -16,7 +16,7 @@ class RepetitionField extends Field {
     public function parse($value) : bool {
         if (is_array($value)) {
             // Pack data
-            $final_value = ['metadata' => []];
+            $final_value = [];
             
             foreach ($value as $key => $v) {
                 switch ($key) {
@@ -30,8 +30,10 @@ class RepetitionField extends Field {
                         $final_value['metadata'][$key] = $v;
                         break;
                 }
-                $this->value = $final_value;
             }
+            if (count($final_value)) $final_value['metadata'] = [];
+            else $final_value = null;
+            $this->value = $final_value;
         } else {
             $this->value = ['type' => 1, 'interval' => 1, 'metadata' => []];
         }
