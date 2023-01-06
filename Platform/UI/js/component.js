@@ -248,7 +248,12 @@ $.fn.componentIO = function(values, func) {
     $.post(component.data('io_url'), values, function(data) {
         if (data.destroy) component.remove();
         if (data.script) eval(data.script);
-        if (data.redirect) location.href = data.redirect;
+        if (data.redirect) {
+            if (data.target) 
+                window.open(data.redirect, data.target);
+            else 
+                location.href = data.redirect;
+        }
         if (data.properties) component.data('componentproperties', data.properties);
         if (data.data) {
             $.each(data.data, function(i, v) {
