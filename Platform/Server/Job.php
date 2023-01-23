@@ -172,7 +172,14 @@ class Job extends \Platform\Datarecord {
         $this->reloadForWrite();
         $file = $this->getOutputFile();
         if (file_exists($file)) {
-            $content = trim(implode('',file($file)));
+            // We read at most 10K bytes
+            $fh = fopen($file,'r');
+            if ($fh) {
+                $content = trim(fread($fh, 10 * 1024));
+                fclose($fh);
+            } else {
+                $content = 'Failed to read output file from job';
+            }
             if ($content) {
                 $this->log('error', $content, $this);
                 $this->error_count = $this->error_count + 1;
