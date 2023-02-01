@@ -514,9 +514,9 @@ class Datarecord implements DatarecordReferable {
         if (static::$delete_mode == self::DELETE_MODE_DELETE) {
             self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
             $number_of_items_deleted = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
-            unset($this->values[static::getKeyField()]);
             $this->access_mode = self::MODE_READ;
             $this->unlock();
+            unset($this->values[static::getKeyField()]);
         } else {
             if (static::$delete_mode == self::DELETE_MODE_EMPTY) $this->reset();
             if ($this->isInDatabase() && $this->is_deleted = 0) $number_of_items_deleted = 1;
@@ -1469,7 +1469,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function getForeignObject(string $field) {
         $raw = $this->getRawValue($field);
-        if (! $raw) return null;
+        if (! $raw) $raw = 0;
         switch (static::$structure[$field]['fieldtype']) {
             case self::FIELDTYPE_REFERENCE_HYPER:
                 $class = $raw['foreign_class'];
@@ -1479,19 +1479,20 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_REFERENCE_SINGLE:
                 $class = static::$structure[$field]['foreign_class'];
                 $object = new $class();
-                $object->loadForRead($raw);
+                $object->loadForRead($raw, false);
                 return $object;
             case self::FIELDTYPE_FILE:
             case self::FIELDTYPE_IMAGE:
                 $object = new File();
-                $object->loadForRead($raw);
+                $object->loadForRead($raw, false);
+                $object->folder = static::$structure[$field]['folder'];
                 return $object;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
                 $result = [];
                 $class = static::$structure[$field]['foreign_class'];
                 foreach ($raw as $value) {
                     $object = new $class();
-                    $object->loadForRead($value);
+                    $object->loadForRead($value, false);
                     $result[] = $object;
                 }
                 return $result;
