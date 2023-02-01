@@ -13,6 +13,8 @@ class Image {
     
     private $image_data = null;
     
+    private $preserved_name = null;
+    
     public function __construct($object = null) {
         if ($object instanceof File) {
             $this->attachFile($object);
@@ -45,6 +47,7 @@ class Image {
             trigger_error('Couldn\'t parse file data as valid image data.', E_USER_ERROR);
         }
         $this->image_data = $image;
+        $this->preserved_name = $file->getFilenameWithoutExtension();
         return true;
     }    
     
@@ -61,13 +64,13 @@ class Image {
      * @param \Platform\File $file File object
      * @param int $quality The desired jpeg quality
      */
-    public function attachToFileAsJPEG(File $file, int $quality = null) {
+    public function attachToFileAsJPEG(File $file, int $quality = -1) {
         if ($this->image_data == null) trigger_error('Tried to get image without data.', E_USER_ERROR);
         $temp_file = tempnam(Platform::getConfiguration('dir_temp'), 'platform_img');
         imagejpeg($this->image_data, $temp_file, $quality);
         // Try to preserve filename
         $name_without_extension = $file->getFilenameWithoutExtension();
-        if (! $name_without_extension) $name_without_extension = 'image';
+        if (! $name_without_extension) $name_without_extension = $this->preserved_name ?: 'image';
         $file->attachFile($temp_file);
         $file->filename = $name_without_extension.'.jpg';
         $file->mimetype = 'image/jpeg';
@@ -83,7 +86,7 @@ class Image {
         imagepng($this->image_data, $temp_file);
         // Try to preserve filename
         $name_without_extension = $file->getFilenameWithoutExtension();
-        if (! $name_without_extension) $name_without_extension = 'image';
+        if (! $name_without_extension) $name_without_extension = $this->preserved_name ?: 'image';
         $file->attachFile($temp_file);
         $file->filename = $name_without_extension.'.png';
         $file->mimetype = 'image/png';
@@ -150,7 +153,7 @@ class Image {
         $current_width = imagesx($this->image_data);
         $current_height = imagesy($this->image_data);
         if ($current_height <= $height && $current_width <= $width) {
-            if ($strategy == self::RESIZE_STRATEGY_FIT) return;
+            if (in_array($strategy, [self::RESIZE_STRATEGY_FILL,self::RESIZE_STRATEGY_FIT])) return;
             $this->crop($width, $height, $strategy);
         } else {
             $this->resize($width, $height, $strategy);
