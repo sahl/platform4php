@@ -209,8 +209,11 @@ class Job extends \Platform\Datarecord {
      * @param type $force_remove
      */
     public function delete(bool $force_remove = false) : bool {
-        $this->kill();
-        return parent::delete($force_remove);
+        // Delete the job
+        $result = parent::delete($force_remove);
+        // If it was deleted also kill it (in case it is running)
+        if ($result) $this->kill();
+        return $result;
     }
     
     /**
