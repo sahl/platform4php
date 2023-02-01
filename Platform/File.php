@@ -194,8 +194,9 @@ class File extends Datarecord {
      * @return string
      */
     public function getFilenameWithoutExtension() : string {
+        if ($this->filename === null) $this->filename = '';
         $dotposition = mb_strrpos($this->filename, '.');
-        return $dotposition === false ? $this->filename : mb_substr($this->filename,0,$dotposition+1);
+        return $dotposition === false ? $this->filename : mb_substr($this->filename,0,$dotposition);
     }
     
     /**

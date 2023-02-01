@@ -3,6 +3,8 @@ namespace Platform\Utilities;
 
 use Platform\Platform;
 
+mysqli_report(MYSQLI_REPORT_OFF);
+
 class Database {
     
     /**
