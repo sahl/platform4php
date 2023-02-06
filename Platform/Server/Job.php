@@ -348,7 +348,7 @@ class Job extends \Platform\Datarecord {
      */
     public function isRunning() : bool {
         if (! $this->process_id) return false;
-        $result = shell_exec('ps '.((int)$this->process_id));
+        $result = shell_exec('ps '.((int)$this->process_id).' 2> /dev/null');
         $isrunning = strpos($result, (string)$this->process_id) !== false;
         return $isrunning;
     }
@@ -359,7 +359,7 @@ class Job extends \Platform\Datarecord {
     public function kill() {
         if (! $this->process_id) return;
         $this->log('kill', 'Killed because '.$this->max_runtime.' minutes was exceeded!', $this);
-        exec('kill '.((int)$this->process_id));
+        exec('kill '.((int)$this->process_id).' 2> /dev/null');
         $this->reloadForWrite();
         $this->kill_count = $this->kill_count + 1;
         $this->save(false, true);
@@ -468,7 +468,7 @@ class Job extends \Platform\Datarecord {
         $this->last_start = Time::now();
         if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
         if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Time::now()->add(0, $this->frequency);
-        $result = (int)shell_exec('php '.static::getRunScript().' '.$this->job_id.' > '.$this->getOutputFile().' & echo $!');
+        $result = (int)shell_exec('php '.static::getRunScript().' '.$this->job_id.' > '.$this->getOutputFile().' 2> /dev/null & echo $!');
         if ($result) {
             self::log('started', 'Running with PID: '.$result, $this);
             $this->process_id = $result;
