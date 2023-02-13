@@ -26,6 +26,7 @@ class PasswordField extends Field {
         echo '<input type="hidden" name="'.$this->name.'__ischanged" value=0>';
         if ($this->inputwasparsed) $value = $this->value;
         else $value = $this->value ? 'XXXXXX' : '';
-        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';" type="password" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
+        $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
+        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="password" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
 }

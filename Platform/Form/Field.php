@@ -123,6 +123,12 @@ class Field {
     protected $options = array();
     
     /**
+     * Placeholder text for the input field
+     * @var type
+     */
+    protected $placeholder = '';
+    
+    /**
      * Field value
      * @var object 
      */
@@ -182,6 +188,10 @@ class Field {
         if ($options['field-width']) {
             $this->setFieldWidth($options['field-width']);
             unset($options['field-width']);
+        }
+        if ($options['placeholder']) {
+            $this->setPlaceholder($options['placeholder']);
+            unset($options['placeholder']);
         }
         if ($options['label-alignment']) {
             switch (strtolower($options['label-alignment'])) {
@@ -314,6 +324,14 @@ class Field {
      */
     public static function getDefaultLabelAlignment() : int {
         return self::$default_label_alignment;
+    }
+    
+    /**
+     * Get current placeholder text for this field
+     * @return string
+     */
+    public function getPlaceholder() : string {
+        return $this->placeholder;
     }
     
     public function getStyleString() : string {
@@ -588,6 +606,14 @@ class Field {
      */
     public function setOptions(array $options) {
         $this->options = $options;
+    }
+    
+    /**
+     * Set placeholder text for this field
+     * @param string $placeholder
+     */
+    public function setPlaceholder(string $placeholder) {
+        $this->placeholder = $placeholder;
     }
     
     /**
