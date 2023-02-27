@@ -11,7 +11,7 @@ class ConditionNOT extends Condition {
     
     /**
      * Attach a filter to this condition
-     * @param \Platform\Filter $filter
+     * @param Filter $filter
      */
     public function attachFilter(Filter $filter) {
         if ($this->condition instanceof Condition) $this->condition->attachFilter($filter);

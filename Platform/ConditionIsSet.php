@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+use Platform\Utilities\Time;
+
 class ConditionIsSet extends Condition {
     
     public function __construct(string $fieldname, $value = '') {

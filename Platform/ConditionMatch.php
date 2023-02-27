@@ -2,6 +2,7 @@
 namespace Platform;
 
 use Platform\Utilities\Database;
+use Platform\Utilities\Time;
 
 class ConditionMatch extends Condition {
     
@@ -68,7 +69,7 @@ class ConditionMatch extends Condition {
                 $value = new Time($value);
                 return $object->getRawValue($this->fieldname)->isEqualTo($value);
             case Datarecord::FIELDTYPE_REPETITION:
-                if (! $value instanceof Utilities\Time || $object->getRawValue($this->fieldname) === null) return false;
+                if (! $value instanceof Time || $object->getRawValue($this->fieldname) === null) return false;
                 return $object->getRawValue($this->fieldname)->match($value);
             default:
                 return $object->getRawValue($this->fieldname) == $this->value;

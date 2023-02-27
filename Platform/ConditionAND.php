@@ -12,7 +12,7 @@ class ConditionAND extends Condition {
     
     /**
      * Attach a filter to this condition
-     * @param \Platform\Filter $filter
+     * @param Filter $filter
      */
     public function attachFilter(Filter $filter) {
         if ($this->condition1 instanceof Condition) $this->condition1->attachFilter($filter);

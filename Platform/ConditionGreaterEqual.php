@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+use Platform\Utilities\Time;
+
 class ConditionGreaterEqual extends Condition {
 
     private static $valid_field_types = [

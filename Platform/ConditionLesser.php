@@ -1,6 +1,8 @@
 <?php
 namespace Platform;
 
+use Platform\Utilities\Time;
+
 class ConditionLesser extends Condition {
     
     private static $valid_field_types = [
