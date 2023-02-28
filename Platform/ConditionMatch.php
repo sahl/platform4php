@@ -66,7 +66,7 @@ class ConditionMatch extends Condition {
                 return in_array($this->value, $object->getRawValue($this->fieldname));
             case Datarecord::FIELDTYPE_DATETIME:
             case Datarecord::FIELDTYPE_DATE:
-                $value = new Time($value);
+                $value = new Time($this->value);
                 return $object->getRawValue($this->fieldname)->isEqualTo($value);
             case Datarecord::FIELDTYPE_REPETITION:
                 if (! $value instanceof Time || $object->getRawValue($this->fieldname) === null) return false;

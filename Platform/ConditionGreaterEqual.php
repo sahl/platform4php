@@ -55,7 +55,7 @@ class ConditionGreaterEqual extends Condition {
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_DATETIME:
             case Datarecord::FIELDTYPE_DATE:
-                $value = new Time($value);
+                $value = new Time($this->value);
                 return $object->getRawValue($this->fieldname)->isAfter($value) || $object->getRawValue($this->fieldname)->isEqualTo($value);
             default:
                 return $object->getRawValue($this->fieldname) >= $this->value;

@@ -55,7 +55,7 @@ class ConditionLesser extends Condition {
         switch ($fieldtype) {
             case Datarecord::FIELDTYPE_DATETIME:
             case Datarecord::FIELDTYPE_DATE:
-                $value = new Time($value);
+                $value = new Time($this->value);
                 return $object->getRawValue($this->fieldname)->isBefore($value);
             default:
                 return $object->getRawValue($this->fieldname) < $this->value;

@@ -52,7 +52,7 @@ class ConditionIsSet extends Condition {
                 return count($object->getRawValue($this->fieldname)) > 0;
             case Datarecord::FIELDTYPE_DATETIME:
             case Datarecord::FIELDTYPE_DATE:
-                $value = new Time($value);
+                $value = new Time($this->value);
                 return ! $object->getRawValue($this->fieldname)->isNull();
             default:
                 return $object->getRawValue($this->fieldname) != '';

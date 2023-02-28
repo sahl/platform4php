@@ -52,7 +52,11 @@ class Condition {
     }
     
     public function getAsJSON() : string {
-        return json_encode($this->getAsArray());
+        $array = $this->getAsArray();
+        // Transform value if necessary
+        if ($array['value'] instanceof Time) $array['value'] = $array['value']->get();
+        elseif ($array['value'] instanceof Datarecord) $array['value'] = $array['value']->getKeyValue();
+        return json_encode($array);
     }
     
     /**
