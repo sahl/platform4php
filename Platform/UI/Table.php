@@ -240,7 +240,7 @@ class Table extends Component {
                     $columns[$simple_foreign_class.'-'.$field] = $value;
                 }
             }
-            $result[] = $columns;
+            $result[$columns['id']] = $columns;
         }
         return $result;
     }
