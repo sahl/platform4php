@@ -196,7 +196,7 @@ $.fn.attachValues = function(values) {
                 case 'IndexedComboboxField':
                 case 'ComboboxField':
                     var dom_node = attach_element.find('[name="'+key+'[visual]"]');
-                    dom_node.val(value.visual);
+                    dom_node.val(value.visual).data('validated_value', value.visual);
                     dom_node.prev().val(value.id);
                     break;
                 case 'MulticheckboxField':
@@ -207,7 +207,7 @@ $.fn.attachValues = function(values) {
                     var dom_node = attach_element.find('#'+form.attr('id')+'_'+escaped_key+'_container .platform_form_multiplier');
                     $.each(value, function(key, val) {
                         dom_node.find('input[type="hidden"]:last').val(val.id);
-                        dom_node.find('input[type="text"]:last').val(val.visual).trigger('keyup');
+                        dom_node.find('input[type="text"]:last').val(val.visual).data('validated_value', value.visual).trigger('keyup');
                     });
                     break;
                 case 'MultiplierSection':
