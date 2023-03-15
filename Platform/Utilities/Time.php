@@ -425,8 +425,7 @@ class Time {
      * @return Time
      */
     public function startOfDay() : Time {
-        $this->timestamp = strtotime($this->get('Y-m-d 00:00:00'));
-        return $this;
+        return new Time(strtotime($this->get('Y-m-d 00:00:00')));
     }    
     
     /**
