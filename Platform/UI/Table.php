@@ -240,7 +240,7 @@ class Table extends Component {
                     $columns[$simple_foreign_class.'-'.$field] = $value;
                 }
             }
-            $result[$columns['id']] = $columns;
+            $result[] = $columns;
         }
         return $result;
     }
@@ -485,9 +485,8 @@ class Table extends Component {
      */
     public function setData(array $data) {
         $final_lines = [];
-        foreach ($data as $key => $lines) {
-            $line = $lines;
-            $line['id'] = $key;
+        foreach ($data as $key => $line) {
+            if (! $line['id']) $line['id'] = $key;
             $final_lines[] = $line;
         }
         $this->setTabulatorOption('data', $final_lines);
