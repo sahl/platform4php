@@ -75,7 +75,7 @@ class Page {
             if (in_array($js_file, self::$js_files)) return;
             
             Translation::renderJSFilesForFile($js_file);
-            echo '<script src="'.$js_file.'" type="text/javascript"></script>';
+            echo '<div class="platform_post_load_javascript" data-src="'.$js_file.'"></div>';
             
             self::$js_files[] = $js_file;            
         }

@@ -2,18 +2,56 @@ var custom_platform_functions = [];
 var custom_platform_functions_last = [];
 var functions_registered = [];
 
+var platform_scripts_registered = [];
+
 $(function() {
+    // Register all scripts on page
+    $('script').each(function() {
+        var src = $(this).attr('src');
+        platform_scripts_registered.push(src);
+    });
+
     $('body').applyPlatformFunctions();
+    
 });
 
 $.fn.applyPlatformFunctions = function() {
     var object = $(this);
-    custom_platform_functions.forEach(function(item) {
-        item(object);
-    })
-    custom_platform_functions_last.forEach(function(item) {
-        item(object);
-    })
+    
+    // Check for scripts to postload
+    var script_containers = $('.platform_post_load_javascript');
+    var script_count = script_containers.length;
+    script_containers.each(function() {
+        var src = $(this).data('src');
+        $(this).remove();
+        if (! platform_scripts_registered.includes(src)) {
+            platform_scripts_registered.push(src);
+            $.getScript(src, function() {
+                script_count--;
+                if (script_count < 1) {
+                    // All scripts are loaded. Now we can apply functions
+                    custom_platform_functions.forEach(function(item) {
+                        item(object);
+                    });
+                    custom_platform_functions_last.forEach(function(item) {
+                        item(object);
+                    });
+                }
+            });
+        } else {
+            script_count--;
+            if (script_count < 1) {
+                // All scripts are loaded. Now we can apply functions
+                console.log('Apply functions');
+                custom_platform_functions.forEach(function(item) {
+                    item(object);
+                });
+                custom_platform_functions_last.forEach(function(item) {
+                    item(object);
+                });
+            }
+        }
+    });
     return this;
 }
 
