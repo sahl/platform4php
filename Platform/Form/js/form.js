@@ -165,9 +165,6 @@ $.fn.attachValues = function(values) {
         var value = data.value;
         var escaped_key = key.replace(/\[/g,"\\[").replace(/\]/g,"\\]");
         
-        console.log('Target '+key);
-        console.log(value);
-        
         // First we try to see if there is a special component for this field
         if (attach_element.find('.platform_field_component_'+key).length) {
             attach_element.find('.platform_field_component_'+key).trigger('setvalue', value);

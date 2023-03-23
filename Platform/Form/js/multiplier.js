@@ -39,11 +39,9 @@ function platform_handle_multiplier_change() {
     // Check if we need to expand
     if ((row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)')) && $(this).val() != '') {
         // We need to expand.
-        console.log('We need to expand');
         var new_row = row.clone(true); // We need to set true to bring data values along
         new_row.off().find('*').off(); // Destroy all event listeners
         new_row.insertAfter(row);
-        //new_row.appendTo($(this).closest('.platform_form_multiplier'));
         new_row.find('textarea,input[type!="checkbox"]').val('');
         new_row.find('input[type="checkbox"]').attr('checked', false);
         new_row.find('.formfield_error').removeClass('formfield_error');
@@ -56,7 +54,6 @@ function platform_handle_multiplier_change() {
     } else {
         // We need to remove this row if it's empty, except if it is the last row or the last row of it's kind
         if (($(this).val() == '' || $(this).is('[type="checkbox"]:not(:checked)')) && ! platform_detect_values(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {
-            console.log('We need to shrink');
             var container = $(this).closest('.platform_form_multiplier');
             if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
                 row.prev().find('input[type!="hidden"],textarea').first().focus();
@@ -71,7 +68,6 @@ function platform_handle_multiplier_change() {
 }
 
 function platform_multiplier_fixnames(element) {
-    console.log('RUNNING FIXNAMES ON '+element.prop('id'));
     // Determine number of array markers in base name
     var base_name = element.prop('id').substring(element.closest('form').prop('id').length+1);
     console.log('Basename is '+base_name);
@@ -83,16 +79,13 @@ function platform_multiplier_fixnames(element) {
     var regexp = eval(regexp_string);
     var i = 0;
     element.children('.platform_form_multiplier_element').each(function() {
-        console.log('Row '+i);
         $(this).find('input,select,textarea').each(function() {
             var name = $(this).prop('name');
             var new_name = name.replace(regexp, '$1['+i+']$2');
-            console.log('Name replace '+name+' to '+new_name);
             var realname = $(this).data('realname');
             if (realname) {
                 var new_realname = realname.replace(regexp, '$1['+i+']$2');
                 if (new_realname) $(this).data('realname', new_realname);
-                console.log('Real name replace '+realname+' to '+new_realname);
             }
             var id = $(this).prop('id');
             var new_id = id.replace(regexp, '$1['+i+']$2');

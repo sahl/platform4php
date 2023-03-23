@@ -17,10 +17,11 @@ $(function() {
 
 $.fn.applyPlatformFunctions = function() {
     var object = $(this);
-    
     // Check for scripts to postload
     var script_containers = $('.platform_post_load_javascript');
     var script_count = script_containers.length;
+    // If there are no scripts, we can run the functions now
+    if (script_count == 0) runCustomPlatformFunctions(object);
     script_containers.each(function() {
         var src = $(this).data('src');
         $(this).remove();
@@ -28,31 +29,26 @@ $.fn.applyPlatformFunctions = function() {
             platform_scripts_registered.push(src);
             $.getScript(src, function() {
                 script_count--;
-                if (script_count < 1) {
-                    // All scripts are loaded. Now we can apply functions
-                    custom_platform_functions.forEach(function(item) {
-                        item(object);
-                    });
-                    custom_platform_functions_last.forEach(function(item) {
-                        item(object);
-                    });
-                }
+                // If last script is loaded, we can run functions now.
+                if (script_count < 1) runCustomPlatformFunctions(object);
             });
         } else {
             script_count--;
-            if (script_count < 1) {
-                // All scripts are loaded. Now we can apply functions
-                console.log('Apply functions');
-                custom_platform_functions.forEach(function(item) {
-                    item(object);
-                });
-                custom_platform_functions_last.forEach(function(item) {
-                    item(object);
-                });
-            }
+            // If last script is skipped, we can run functions now.
+            if (script_count < 1) runCustomPlatformFunctions(object);
         }
     });
     return this;
+}
+
+function runCustomPlatformFunctions(object) {
+    // All scripts are loaded. Now we can apply functions
+    custom_platform_functions.forEach(function(item) {
+        item(object);
+    });
+    custom_platform_functions_last.forEach(function(item) {
+        item(object);
+    });
 }
 
 function addCustomPlatformFunction(fn) {

@@ -1386,7 +1386,7 @@ class Datarecord implements DatarecordReferable {
                 $filter->addCondition(new ConditionOneOf($class::getKeyField(), $value));
                 $values = array();
                 foreach ($filter->execute()->getAll() as $foreignobject) {
-                    $values[] = array('id' => $foreignobject->getRawValue($class::getKeyField()), 'visual' => $foreignobject->getTitle());
+                    $values[] = array('id' => $foreignobject->getRawValue($class::getKeyField()), 'visual' => strip_tags($foreignobject->getTitle()));
                 }
                 return $values;
             case self::FIELDTYPE_DATETIME:
