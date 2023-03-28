@@ -4,8 +4,8 @@ addPlatformComponentHandlerFunction('editdialog', function(element) {
     
     var name = element.data('element_name');
     
-    element.on('new', function(e) {
-        openDialog(0);
+    element.on('new', function(event, values) {
+        openDialog(0, values);
         return false;
     });
     
@@ -16,7 +16,7 @@ addPlatformComponentHandlerFunction('editdialog', function(element) {
     
     element.componentIOForm(form, function(data) {
         element.dialog('close');
-        element.trigger('aftersave');
+        element.trigger('aftersave', data);
     });
     
     
@@ -24,19 +24,22 @@ addPlatformComponentHandlerFunction('editdialog', function(element) {
         form.submit();
     })
     
-    function openDialog(id) {
+    function openDialog(id, values) {
         form.clearForm();
         element.componentIO({event: 'datarecord_load', id: id}, function(data) {
             if (data.status) {
                 if (id) {
-                    $(element).dialog('option', 'title', 'Edit '+name).dialog('open');
+                    $(element).dialog('option', 'title', platform_TranslateForUser('Edit')+' '+name).dialog('open');
                 } else {
-                    $(element).dialog('option', 'title', 'New '+name).dialog('open');
+                    $(element).dialog('option', 'title', platform_TranslateForUser('New')+' '+name).dialog('open');
                 }
                 form.attachValues(data.values);
+                
+                if (typeof values == 'object')
+                    form.attachValues(values);
                 element.dialog('open');
             } else {
-                warningDialog('Cannot edit', 'You cannot edit this element: '+data.error);
+                warningDialog(platform_TranslateForUser('Cannot edit'), platform_TranslateForUser('You cannot edit this element: %1',data.error));
             }
         });
     }

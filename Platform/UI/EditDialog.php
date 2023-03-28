@@ -40,7 +40,8 @@ class EditDialog extends Dialog {
                 $values = $form->getValues();
                 $datarecord->setFromArray($values);
                 $datarecord->save();
-                return ['status' => true];
+                // return the ID of the edited object
+                return ['status' => true, 'object_id' => $datarecord->getRawValue($datarecord->getKeyField())];
             }
             $form->triggerGlobalError(Translation::translateForUser('You are not allowed to edit this data'));
             return ['status' => false, 'form_errors' => $form->getAllErrors()];
