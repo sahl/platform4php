@@ -86,6 +86,8 @@ class RepetitionField extends Field {
         $day_field = new SelectField(Translation::translateForUser('On the'), $this->name.'[day]', ['required' => true, 'class' => 'day', 'value' => $value['day'], 'options' => $monthday_options]);
         
         $month_field = new SelectField('', $this->name.'[month]', ['required' => true, 'value' => $value['month'], 'class' => 'month', 'options' => $month_options]);
+        
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().'">';
 
         echo '<div class="interval_type_container">';
         $interval_field->render();
@@ -121,6 +123,8 @@ class RepetitionField extends Field {
         $day_field->render();
         $month_field->render();
         echo '</div>';
+        echo '</div>';
+        
         echo '</div>';
     }
 }

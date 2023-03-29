@@ -364,7 +364,11 @@ class Form extends \Platform\UI\Component {
      */
     private static function injectValue(string $fieldname, &$target, $value) {
         if (preg_match('/^(.*?)\\[(.*?)\\](.*)/', $fieldname, $matches)) {
-            self::injectValue($matches[2].$matches[3], $target[$matches[1]], $value);
+            if ($matches[2] == '' && $matches[3] == '') {
+                $target[substr($fieldname,0,-2)][] = $value;
+            } else {
+                self::injectValue($matches[2].$matches[3], $target[$matches[1]], $value);
+            }
             return;
         }
         $target[$fieldname] = $value;

@@ -12,6 +12,6 @@ class HiddenField extends Field {
     }
     
     public function renderInput() {
-        echo '<input class="'.$this->getClassString().'" type="hidden" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" type="hidden" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
 }

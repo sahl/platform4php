@@ -70,7 +70,6 @@ function platform_handle_multiplier_change() {
 function platform_multiplier_fixnames(element) {
     // Determine number of array markers in base name
     var base_name = element.prop('id').substring(element.closest('form').prop('id').length+1);
-    console.log('Basename is '+base_name);
     // Catch all before relevant counter
     var regexp_string = '/('+base_name.replace(/(\[|\])/gi, '\\$1')+')';
     // Skip counter and get all following

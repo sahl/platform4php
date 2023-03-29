@@ -1033,49 +1033,14 @@ class Datarecord implements DatarecordReferable {
      * Return all fields suitable for insertion into a form
      * @return array
      */
-    public function getAsArrayForForm(bool $include_field_types = false) : array {
+    public function getAsArrayForForm() : array {
         $result = array();
         foreach (static::$structure as $fieldname => $data) {
             if ($data['subfield']) continue;
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
             $field = static::getFormFieldForField($fieldname);
             if ($field === null) continue;
-            $value = $this->getValue($fieldname, self::RENDER_FORM);
-            if ($include_field_types) {
-                if ($data['fieldtype'] == self::FIELDTYPE_ARRAY && is_array($data['substructure'])) {
-                    // Map names to field types
-                    $inner_field_names = [];
-                    $inner_field_definitions = [];
-                    foreach ($data['substructure'] as $key => $substructure_definition) {
-                        $inner_field_names[$key] = array_pop(explode('\\', get_class(static::getFormFieldFromDefinition('', $substructure_definition))));
-                        $inner_field_definitions[$key] = $substructure_definition;
-                    }
-                    $new_values = [];
-                    foreach ($value as $element) {
-                        $inner_values = [];
-                        if (is_array($element)) {
-                            foreach ($element as $inner_field => $field_value) {
-                                if (! isset($inner_field_definitions[$inner_field])) continue;
-                                switch ($inner_field_definitions[$inner_field]['fieldtype']) {
-                                    case self::FIELDTYPE_REFERENCE_SINGLE:
-                                        $class = $inner_field_definitions[$inner_field]['foreign_class'];
-                                        $object = new $class();
-                                        $object->loadForRead($field_value, false);
-                                        $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, strip_tags($object->getTitle()), $inner_field_definitions[$inner_field])];
-                                        break;
-                                    default:
-                                        $inner_values[$inner_field] = ['fieldtype' => $inner_field_names[$inner_field], 'value' => $this->getFormValueByDefinition($field_value, $field_value, $inner_field_definitions[$inner_field])];
-                                }
-                            }
-                        }
-                        $new_values[] = $inner_values;
-                    }
-                    $value = $new_values;
-                }
-                $result[$fieldname] = ['fieldtype' => array_pop(explode('\\', get_class($field))), 'value' => $value];
-            } else {
-                $result[$fieldname] = $value;
-            }
+            $result[$fieldname] = $this->getValue($fieldname, self::RENDER_FORM);
         }
         return $result;
     }

@@ -327,6 +327,16 @@ class Field {
     }
     
     /**
+     * Get the short class name of this field
+     * @return string
+     */
+    public function getFieldClass() : string {
+        $class = get_called_class();
+        if (strpos($class,'\\') !== false) $class = substr($class, strrpos($class,'\\')+1);
+        return $class;
+    }
+    
+    /**
      * Get current placeholder text for this field
      * @return string
      */
@@ -441,7 +451,7 @@ class Field {
      * Render the field
      */
     public function render() {
-        echo '<div class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="min-height: '.$this->row_height.'px;'.$this->getStyleString().'">';
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="min-height: '.$this->row_height.'px;'.$this->getStyleString().'">';
 
         // Handle alignment
         if (! $this->getLabel()) $this->setLabelAlignment (self::LABEL_ALIGN_NONE);

@@ -157,116 +157,20 @@ $.fn.attachErrors = function(errors) {
 }
 
 $.fn.attachValues = function(values) {
-    var attach_element = this;
-    var form = attach_element.closest('form');
-
-    $.each(values, function(key, data) {
-        var fieldtype = data.fieldtype;
-        var value = data.value;
-        var escaped_key = key.replace(/\[/g,"\\[").replace(/\]/g,"\\]");
+    var form = $(this).closest('form');    
+    $.each(values, function(key, value) {
+        // Get field by figuring out the ID
+        var field = $('#'+form.prop('id')+'_'+key);
+        // Skip if there wasn't such a field
+        if (field.length < 1) return true;
+        // Assign value
+        Platform.Form.setValue(field, value);
+        return true;
         
-        // First we try to see if there is a special component for this field
-        if (attach_element.find('.platform_field_component_'+key).length) {
-            attach_element.find('.platform_field_component_'+key).trigger('setvalue', value);
-        } else {
-            switch (fieldtype) {
-                case 'CheckboxField':
-                    var dom_node = attach_element.find('[name="'+key+'"]');
-                    dom_node.prop('checked', value == 1);
-                    break;
-                case 'TexteditorField':
-                    var dom_node = attach_element.find('[name="'+key+'"]');
-                    dom_node.summernote('reset');
-                    dom_node.summernote('code', value);
-                    break;
-                case 'CurrencyField':
-                    attach_element.find('[name="'+key+'[localvalue]"]').val(value.localvalue);
-                    attach_element.find('[name="'+key+'[currency]"]').val(value.currency);
-                    attach_element.find('[name="'+key+'[foreignvalue]"]').val(value.foreignvalue);
-                    break;
-                case 'SelectField':
-                    var dom_node = attach_element.find('[name="'+key+'"]');
-                    if (value !== null) dom_node.val(value);
-                    else dom_node.find('option:first-child').prop('selected', true);
-                    break;
-                case 'DatarecordcomboboxField':
-                case 'IndexedComboboxField':
-                case 'ComboboxField':
-                    var dom_node = attach_element.find('[name="'+key+'[visual]"]');
-                    dom_node.val(value.visual).data('validated_value', value.visual);
-                    dom_node.prev().val(value.id);
-                    break;
-                case 'MulticheckboxField':
-                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'.multi_checkbox_container');
-                    checkWithId(dom_node, value);
-                    break;
-                case 'MultidatarecordcomboboxField':
-                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+escaped_key+'_container .platform_form_multiplier');
-                    $.each(value, function(key, val) {
-                        dom_node.find('input[type="hidden"]:last').val(val.id);
-                        dom_node.find('input[type="text"]:last').val(val.visual).data('validated_value', value.visual).trigger('keyup');
-                    });
-                    break;
-                case 'MultiplierSection':
-                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'_container .platform_form_multiplier:first');
-                    var i = 0;
-                    $.each(value, function(dummy, val) {
-                        // This is each section
-                        var insert_node = dom_node.children('.platform_form_multiplier_element:last');
-                        var new_element = {};
-                        $.each(val, function(inner_key, inner_val) {
-                            inner_key = key+'['+(i)+']['+inner_key+']';
-                            new_element[inner_key] = inner_val;
-                            
-                        });
-                        insert_node.attachValues(new_element);
-                        insert_node.find('input[type!="checkbox"],textarea').trigger('keyup');
-                        i++;
-                    });
-                    break;
-                case 'MultiField':
-                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'_container .platform_form_multiplier');
-                    $.each(value, function(key, val) {
-                        dom_node.find('input[type="text"]:last').val(val).trigger('keyup');
-                    });
-                    break;
-                case 'FileField':
-                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'.platform_file_input_frame');
-                    dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+key+'&file_id='+value);
-                    break;
-                case 'RepetitionField':
-                    var dom_node = attach_element.find('#'+form.attr('id')+'_'+key+'_container.repetition_field');
-                    if (value == null) {
-                        dom_node.find('.repetition_interval').val(1);
-                        dom_node.find('.repetition_type').val('').trigger('change');
-                        break;
-                    }
-                    dom_node.find('.repetition_interval').val(value.interval);
-                    dom_node.find('.repetition_type').val(value.type).trigger('change');
-                    if (value.metadata.weekdays) checkWithId(dom_node.find('.weekdays'), value.metadata.weekdays);
-                    if (value.metadata.months) checkWithId(dom_node.find('.months'), value.metadata.months);
-                    if (value.metadata.monthday) dom_node.find('.monthday').val(value.metadata.monthday);
-                    if (value.metadata.occurrence) dom_node.find('.occurrence').val(value.metadata.occurrence);
-                    if (value.metadata.weekday) dom_node.find('.weekday').val(value.metadata.weekday);
-                    if (value.metadata.day) dom_node.find('.day').val(value.metadata.day);
-                    if (value.metadata.month) dom_node.find('.month').val(value.metadata.month);
-                    break;
-                default:
-                    var dom_node = attach_element.find('[name="'+key+'"]');
-                    dom_node.val(value);
-                    break;
-            }
-        }
     })
 
     this.trigger('dataloaded');
     
-    function checkWithId(dom_node, ids) {
-        dom_node.find('input[type="checkbox"]').prop('checked', false);
-        $.each(ids, function(key, value) {
-            dom_node.find('input[value="'+value+'"]').prop('checked', true);
-        });
-    }
 }
 
 $.fn.loadValues = function(script, parameters = {}, onload = null) {
@@ -290,4 +194,277 @@ function add_errors_to_form(form, errors) {
         form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
         $('#'+form_id, form).setError(error_message);
     })
+}
+
+
+Platform.Form = {
+    
+    /**
+     * Add an option to a field which supports this
+     * @param {jQuery} field_selector
+     * @param {Object} option
+     */
+    addOption: function(field_selector, option) {
+        
+    },
+
+    /**
+     * Clear the value from a field
+     * @param {jQuery} field_selector
+     */
+    clearValue: function(field_selector) {
+        field_selector.each(function() {
+            // Skip if not platform-field
+            if (! $(this).is('.platform_form_field')) return true;
+            var fieldtype = $(this).data('fieldclass');
+            switch (fieldtype) {
+                case 'CheckboxField':
+                    $(this).prop('checked', false);
+                    break;
+                case 'TexteditorField':
+                    $(this).summernote('reset');
+                    break;
+                case 'CurrencyField':
+                    var container = $(this).parent();
+                    container.find('.currency_localvalue').val('');
+                    container.find('.currency_currency').val('');
+                    container.find('.currency_foreignvalue').val('');
+                    break;
+                case 'SelectField':
+                    $(this).find('option:first-child').prop('selected', true);
+                    break;
+                case 'DatarecordcomboboxField':
+                case 'IndexedComboboxField':
+                    var container = $(this).parent();
+                    $(this).val('').data('validated_value', '');
+                    container.find('input[type="hidden"]').val('');
+                    break;
+                case 'MulticheckboxField':
+                    $(this).find('input[type="checkbox"]').prop('checked', false);
+                    break;
+                case 'MultidatarecordcomboboxField':
+                    $(this).find('.platform_form_multiplier_element').not(':first').remove();
+                    $(this).find('input[type="hidden"]').val('');
+                    $(this).find('input[type="text"]').val('');
+                    break;
+                case 'MultiplierSection':
+                    $(this).find('.platform_form_multiplier_element').not(':first').remove();
+                    $(this).find('.platform_form_field').each(function() {
+                        Platform.Form.clearValue($(this));
+                    })
+                    break;
+                case 'MultiField':
+                    $(this).find('.platform_form_multiplier_element').not(':first').remove();
+                    $(this).find('input[type="text"]').val('');
+                    break;
+                case 'FileField':
+                    var dom_node = $(this);
+                    dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+dom_node.data('name')+'&file_id=');
+                    break;
+                case 'RepetitionField':
+                    var dom_node = $(this);
+                    dom_node.find('.repetition_interval').val(1);
+                    dom_node.find('.repetition_type').val('').trigger('change');
+                    break;
+                default:
+                    $(this).val('');
+                    break;
+            }
+        })
+    },
+
+    /**
+     * Get the value from a field
+     * @param {jQuery} field_selector
+     * @returns {mixed}
+     */
+    getValue: function(field_selector) {
+        // Skip if not platform-field
+        if (! $(this).is('.platform_form_field')) return true;
+        var fieldtype = $(this).data('fieldclass');
+        switch (fieldtype) {
+            case 'CheckboxField':
+                return $(this).is(':checked');
+            case 'TexteditorField':
+                return $(this).summernote('code');
+            case 'CurrencyField':
+                var container = $(this).parent();
+                return {
+                    localvalue: container.find('.currency_localvalue').val(),
+                    currency: container.find('.currency_currency').val(),
+                    foreignvalue: container.find('.currency_foreignvalue').val()
+                }
+            case 'DatarecordcomboboxField':
+            case 'IndexedComboboxField':
+                var container = $(this).parent();
+                return {
+                    id: container.find('input[type="hidden"]').val(),
+                    visual: $(this).val(),
+                }
+            case 'MulticheckboxField':
+                var result = [];
+                $(this).find('input[type="checkbox"]:checked').each(function() {
+                    result.push($(this).val());
+                })
+                return result;
+            case 'MultidatarecordcomboboxField':
+                var result = [];
+                $(this).find('.platform_form_multiplier_element').each(function() {
+                    result.push({
+                        id: $(this).find('input[type="hidden"]').val(),
+                        visual: $(this).find('input[type="text"]').val()
+                    });
+                });
+                return result;
+            case 'MultiplierSection':
+                var result = [];
+                $(this).find('.platform_form_multiplier_element').each(function() {
+                    var inner_result = [];
+                    $(this).find('.platform_form_field').each(function() {
+                        inner_result.push(Platform.Form.getValue($(this)));
+                    })
+                    result.push(inner_result);
+                });
+                return result;
+            case 'MultiField':
+                var result = [];
+                $(this).find('input[type="text"]').each(function() {
+                    result.push($(this).val());
+                })
+                return result;
+            case 'FileField':
+                // Pending
+                return [];
+                break;
+            case 'RepetitionField':
+                // Pending
+                return [];
+            default:
+                return $(this).val();
+        }
+    },
+    
+    /**
+     * Removes an option from a field which supports this
+     * @param {jQuery} field_selector
+     * @param {Object} option
+     */
+    removeOption: function(field_selector, option) {
+        
+    },
+    
+    /**
+     * Set the value of a field.
+     * @param {jQuery} field_selector
+     * @param {Object} value
+     */
+    setValue: function(field_selector, value) {
+        field_selector.each(function() {
+            // Skip if not platform-field
+            if (! $(this).is('.platform_form_field')) return true;
+            var fieldtype = $(this).data('fieldclass');
+            switch (fieldtype) {
+                case 'CheckboxField':
+                    $(this).prop('checked', value == 1);
+                    break;
+                case 'TexteditorField':
+                    $(this).summernote('reset');
+                    $(this).summernote('code', value);
+                    break;
+                case 'CurrencyField':
+                    var container = $(this).parent();
+                    container.find('.currency_localvalue').val(value.localvalue);
+                    container.find('.currency_currency').val(value.currency);
+                    container.find('.currency_foreignvalue').val(value.foreignvalue);
+                    break;
+                case 'SelectField':
+                    if (value !== null) $(this).val(value);
+                    else $(this).find('option:first-child').prop('selected', true);
+                    break;
+                case 'DatarecordcomboboxField':
+                case 'IndexedComboboxField':
+                    var container = $(this).parent();
+                    $(this).val(value.visual).data('validated_value', value.visual);
+                    container.find('input[type="hidden"]').val(value.id);
+                    break;
+                case 'MulticheckboxField':
+                    checkWithId($(this), value);
+                    break;
+                case 'MultidatarecordcomboboxField':
+                    var element = $(this);
+                    $.each(value, function(key, val) {
+                        element.find('input[type="hidden"]:last').val(val.id);
+                        // Can't we do better than keyup?
+                        element.find('input[type="text"]:last').val(val.visual).data('validated_value', value.visual).trigger('keyup');
+                    });
+                    break;
+                case 'MultiplierSection':
+                    var i = 0;
+                    var base_id = $(this).prop('id');
+                    var element = $(this);
+                    $.each(value, function(dummy, val) {
+                        // This is each section
+                        var insert_node = element.children('.platform_form_multiplier_element:last');
+                        $.each(val, function(inner_key, inner_val) {
+                            var inner_id = base_id+'['+(i)+']['+inner_key+']';
+                            inner_id = inner_id.replace(/\[/g,"\\[").replace(/\]/g,"\\]");
+                            Platform.Form.setValue($('#'+inner_id), inner_val);
+                        });
+                        // Can't we do better than keyup?
+                        insert_node.find('input[type!="checkbox"],textarea').trigger('keyup');
+                        i++;
+                    });
+                    break;
+                case 'MultiField':
+                    var element = $(this);
+                    $.each(value, function(key, val) {
+                        // Can't we do better than keyup?
+                        element.find('input[type="text"]:last').val(val).trigger('keyup');
+                    });
+                    break;
+                case 'FileField':
+                    var dom_node = $(this);
+                    dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+dom_node.data('name')+'&file_id='+value);
+                    break;
+                case 'RepetitionField':
+                    var dom_node = $(this);
+                    if (value == null) {
+                        dom_node.find('.repetition_interval').val(1);
+                        dom_node.find('.repetition_type').val('').trigger('change');
+                        break;
+                    }
+                    dom_node.find('.repetition_interval').val(value.interval);
+                    dom_node.find('.repetition_type').val(value.type).trigger('change');
+                    if (value.metadata.weekdays) checkWithId(dom_node.find('.weekdays'), value.metadata.weekdays);
+                    if (value.metadata.months) checkWithId(dom_node.find('.months'), value.metadata.months);
+                    if (value.metadata.monthday) dom_node.find('.monthday').val(value.metadata.monthday);
+                    if (value.metadata.occurrence) dom_node.find('.occurrence').val(value.metadata.occurrence);
+                    if (value.metadata.weekday) dom_node.find('.weekday').val(value.metadata.weekday);
+                    if (value.metadata.day) dom_node.find('.day').val(value.metadata.day);
+                    if (value.metadata.month) dom_node.find('.month').val(value.metadata.month);
+                    break;
+                default:
+                    $(this).val(value);
+                    break;
+            }
+        })
+        
+        function checkWithId(dom_node, ids) {
+            dom_node.find('input[type="checkbox"]').prop('checked', false);
+            $.each(ids, function(key, value) {
+                dom_node.find('input[value="'+value+'"]').prop('checked', true);
+            });
+        }
+    },
+    
+    /**
+     * Validates a field
+     * @param {jQuery} field_selector
+     * @param {bool} show_error
+     * @returns {bool}
+     */
+    validate: function(field_selector, show_error) {
+        
+    }
+    
 }

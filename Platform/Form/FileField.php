@@ -43,7 +43,7 @@ class FileField extends Field {
         echo '<input type="hidden" name="'.$this->getName().'[status]" value="'.$value['status'].'">';
         echo '<input type="hidden" name="'.$this->getName().'[original_file]" value="'.$value['original_file'].'">';
         echo '<input type="hidden" name="'.$this->getName().'[temp_file]" value="'.$value['temp_file'].'">';
-        echo '<iframe id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 height=36 style="vertical-align: top;"></iframe>';
+        echo '<iframe data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&original_file='.$value['originalfile'].'" frameborder=0 height=36 style="vertical-align: top;"></iframe>';
     }
     
     public function setValue($value) {

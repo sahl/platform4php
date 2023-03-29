@@ -24,7 +24,7 @@ class MulticheckboxField extends Field {
         if (! $this->value) $this->value = array();
         $style = '';
         if ($this->height) $style = 'max-height: '.$this->height.'px; overflow: auto; padding: 3px;';
-        echo '<div id="'.$this->getFieldIdForHTML().'" style="'.$style.'" class="'.$this->getClassString().'" data-realname="'.$this->name.'">';
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" style="'.$style.'" class="'.$this->getClassString().'" data-realname="'.$this->name.'">';
         foreach ($this->options as $key => $option) {
             $checked = in_array($key, $this->value) ? ' checked' : '';
             echo '<input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'.$this->name.'[]" value="'.$key.'"'.$this->additional_attributes.$checked.'> '.$option.'<br>';

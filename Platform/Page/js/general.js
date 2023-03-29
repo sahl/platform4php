@@ -4,6 +4,8 @@ var functions_registered = [];
 
 var platform_scripts_registered = [];
 
+var Platform = {};
+
 $(function() {
     // Register all scripts on page
     $('script').each(function() {

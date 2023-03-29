@@ -22,7 +22,7 @@ class CurrencyField extends Field {
     }    
     
     public function renderInput() {
-        echo '<input style="width: 120px;" class="'.$this->getClassString().' currency_foreignvalue" type="number" name="'.$this->name.'[foreignvalue]" value="'.htmlentities($this->value['foreignvalue'], ENT_QUOTES).'"> ';
+        echo '<input style="width: 120px;" id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().' currency_foreignvalue" type="number" name="'.$this->name.'[foreignvalue]" value="'.htmlentities($this->value['foreignvalue'], ENT_QUOTES).'"> ';
         echo '<select style="width: 75px;" name="'.$this->name.'[currency]" class="'.$this->getClassString().' currency_currency">';
         $enabled_currencies = \Platform\Currency\Currency::getEnabledCurrencies();
         echo '<option value="">';
@@ -32,7 +32,7 @@ class CurrencyField extends Field {
             echo '>'.$currency;
         }
         echo '</select> <span class="fa fa-arrow-right"></span> ';
-        echo '<input style="width: 120px;" class="'.$this->getClassString().' currency_localvalue" type="number" name="'.$this->name.'[localvalue]" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value['localvalue'], ENT_QUOTES).'"'.$this->additional_attributes.'> ';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" style="width: 120px;" class="'.$this->getClassString().' currency_localvalue" type="number" name="'.$this->name.'[localvalue]" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value['localvalue'], ENT_QUOTES).'"'.$this->additional_attributes.'> ';
         echo '<select disabled=true style="width: 75px;">';
         echo '<option selected>'.\Platform\Currency\Currency::getBaseCurrency();
         echo '</select>';
