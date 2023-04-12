@@ -9,8 +9,14 @@ class DateField extends Field {
     
     public $field_width = self::FIELD_SIZE_SMALL;
     
+    private $allow_past = true; // if it is allowed to select a date in the past
+    
     public function __construct(string $label, string $name, array $options = array()) {
         $this->value = new Time();
+        if (isset($options['allow_past'])) {
+            $this->allow_past = (bool)$options['allow_past'];
+            unset($options['allow_past']);
+        }
         parent::__construct($label, $name, $options);
     }
     
@@ -26,7 +32,22 @@ class DateField extends Field {
     }
     
     public function renderInput() {
-        $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="date" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value->get('Y-m-d').'"'.$this->additional_attributes.'>';
+        // Determine all attributes
+        $attributes = ['data-fieldclass' => $this->getFieldClass(),
+                       'class' => $this->getClassString(),
+                       'style'=> 'max-width: '.$this->field_width.';"',
+                       'type' => 'date',
+                       'name' => $this->name,
+                       'id' => $this->getFieldIdForHTML(),
+                       'value' => $this->value->get('Y-m-d')
+            ];
+        if (trim($this->placeholder))
+            $attributes['placeholder'] = $this->placeholder;
+        if (!$this->allow_past)
+            $attributes['min'] = \Platform\Utilities\Time::today()->get('Y-m-d');
+        
+        foreach ($attributes as $name => $value)
+            $attributes[$name] = $name.'="'.$value.'"';
+        echo '<input ' . implode(' ', $attributes) . $this->additional_attributes.'>';
     }
 }

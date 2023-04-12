@@ -281,14 +281,14 @@ Platform.Form = {
     getValue: function(field_selector) {
         // Skip if not platform-field
         if (! $(this).is('.platform_form_field')) return true;
-        var fieldtype = $(this).data('fieldclass');
+        var fieldtype = $(field_selector).data('fieldclass');
         switch (fieldtype) {
             case 'CheckboxField':
-                return $(this).is(':checked');
+                return $(field_selector).is(':checked');
             case 'TexteditorField':
-                return $(this).summernote('code');
+                return $(field_selector).summernote('code');
             case 'CurrencyField':
-                var container = $(this).parent();
+                var container = $(field_selector).parent();
                 return {
                     localvalue: container.find('.currency_localvalue').val(),
                     currency: container.find('.currency_currency').val(),
@@ -296,31 +296,31 @@ Platform.Form = {
                 }
             case 'DatarecordcomboboxField':
             case 'IndexedComboboxField':
-                var container = $(this).parent();
+                var container = $(field_selector).parent();
                 return {
                     id: container.find('input[type="hidden"]').val(),
-                    visual: $(this).val(),
+                    visual: $(field_selector).val(),
                 }
             case 'MulticheckboxField':
                 var result = [];
                 $(this).find('input[type="checkbox"]:checked').each(function() {
-                    result.push($(this).val());
+                    result.push($(field_selector).val());
                 })
                 return result;
             case 'MultidatarecordcomboboxField':
                 var result = [];
-                $(this).find('.platform_form_multiplier_element').each(function() {
+                $(field_selector).find('.platform_form_multiplier_element').each(function() {
                     result.push({
-                        id: $(this).find('input[type="hidden"]').val(),
-                        visual: $(this).find('input[type="text"]').val()
+                        id: $(field_selector).find('input[type="hidden"]').val(),
+                        visual: $(field_selector).find('input[type="text"]').val()
                     });
                 });
                 return result;
             case 'MultiplierSection':
                 var result = [];
-                $(this).find('.platform_form_multiplier_element').each(function() {
+                $(field_selector).find('.platform_form_multiplier_element').each(function() {
                     var inner_result = [];
-                    $(this).find('.platform_form_field').each(function() {
+                    $(field_selector).find('.platform_form_field').each(function() {
                         inner_result.push(Platform.Form.getValue($(this)));
                     })
                     result.push(inner_result);
@@ -328,8 +328,8 @@ Platform.Form = {
                 return result;
             case 'MultiField':
                 var result = [];
-                $(this).find('input[type="text"]').each(function() {
-                    result.push($(this).val());
+                $(field_selector).find('input[type="text"]').each(function() {
+                    result.push($(field_selector).val());
                 })
                 return result;
             case 'FileField':
@@ -340,7 +340,7 @@ Platform.Form = {
                 // Pending
                 return [];
             default:
-                return $(this).val();
+                return $(field_selector).val();
         }
     },
     
