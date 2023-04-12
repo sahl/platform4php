@@ -280,7 +280,7 @@ Platform.Form = {
      */
     getValue: function(field_selector) {
         // Skip if not platform-field
-        if (! $(this).is('.platform_form_field')) return true;
+        if (! $(field_selector).is('.platform_form_field')) return true;
         var fieldtype = $(field_selector).data('fieldclass');
         switch (fieldtype) {
             case 'CheckboxField':
@@ -303,16 +303,16 @@ Platform.Form = {
                 }
             case 'MulticheckboxField':
                 var result = [];
-                $(this).find('input[type="checkbox"]:checked').each(function() {
-                    result.push($(field_selector).val());
+                $(field_selector).find('input[type="checkbox"]:checked').each(function() {
+                    result.push($(this).val());
                 })
                 return result;
             case 'MultidatarecordcomboboxField':
                 var result = [];
                 $(field_selector).find('.platform_form_multiplier_element').each(function() {
                     result.push({
-                        id: $(field_selector).find('input[type="hidden"]').val(),
-                        visual: $(field_selector).find('input[type="text"]').val()
+                        id: $(this).find('input[type="hidden"]').val(),
+                        visual: $(this).find('input[type="text"]').val()
                     });
                 });
                 return result;
