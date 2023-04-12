@@ -10,6 +10,17 @@ class Semaphore {
     private static $php_semaphore = false;
     
     /**
+     * Get the call stack saved in a specific semaphore.
+     * @param string $title Title of semaphore
+     * @return string Call stack stored or an empty string if no such semaphore is locked
+     */
+    public static function getCallStack(string $title) : string {
+        $semfile = self::getSemaphoreFileNameFromTitle($title);
+        if (!file_exists($semfile)) return '';
+        return (string)file_get_contents($semfile);
+    }
+    
+    /**
      * Get a real php semaphore
      * @return resource
      */
@@ -59,7 +70,8 @@ class Semaphore {
         }
         // Set the semaphore file
         $fh = fopen($semfile,'w');
-        fwrite($fh, $title);
+        // Write the call stack to the semaphore, so we can delve who locked it
+        fwrite($fh, implode("\n", Errorhandler::getFullCallStack()));
         fclose($fh);
         
         // Add it to carried semaphores
