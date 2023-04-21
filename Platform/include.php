@@ -6,6 +6,8 @@ $configfile = __DIR__.'/../../platform_config.php';
 
 require_once $configfile;
 
+if (! isset($platform_configuration) || ! is_array($platform_configuration)) $platform_configuration = [];
+
 // We need to load some classes before the autoloader can work
 $preload_list = array(
     '/Platform.php',
