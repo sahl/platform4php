@@ -142,7 +142,7 @@ class Instance extends \Platform\Datarecord {
      * @return int|bool False if no active instance
      */
     public static function getActiveInstanceID() {
-        return \Platform\Utilities::arraySafeRead($_SESSION, 'platform,activeinstance') ?: false;
+        return $_SESSION['platform']['activeinstance'] ?: false;
     }
     
     /**
@@ -150,7 +150,7 @@ class Instance extends \Platform\Datarecord {
      * @return string|bool Database name or false if no active instance
      */
     public static function getActiveDatabaseName() {
-        return \Platform\Utilities::arraySafeRead($_SESSION, 'platform,instancedatabase') ?: false;
+        return $_SESSION['platform']['instancedatabase'] ?: false;
     }
 
     /**
