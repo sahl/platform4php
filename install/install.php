@@ -17,7 +17,7 @@ $include_file = $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 if (! file_exists($include_file)) die('Couldn\'t locate Platform4PHP in '.$_SERVER['DOCUMENT_ROOT'].'Platform/ (Are you missing a / on DOCUMENT_ROOT?)');
 
 // Direct test
-$perform_test = \Platform\Utilities::arraySafeRead($_GET, 'dotest') == 1;
+$perform_test = array_key_exists('dotest', $_GET) && $_GET['dotest'] == 1;
 
 // Check for configuration file
 $configuration_file = install_get_config_file_name();
@@ -105,15 +105,7 @@ Page::renderPageend();
 
 
 function install_get_config_file_name() {
-    return install_get_parent_dir().'/platform_config.php';
-}
-
-function install_get_parent_dir() {
-    $root = $_SERVER['DOCUMENT_ROOT'];
-    // Strip trailing slash (if any)
-    if (substr($root,-1) == '/') $root = substr($root,0,-1);
-    // Go one dir up
-    return substr($root, 0, strrpos($root,'/'));
+    return __DIR__.'/../../platform_config.php';
 }
 
 function install_test_all(array &$errors) {
