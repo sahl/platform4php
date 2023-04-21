@@ -2,7 +2,7 @@
 use Platform\Utilities\Translation;
 use Platform\Page;
 
-$configfile = $_SERVER['DOCUMENT_ROOT'].'/../platform_config.php';
+$configfile = __DIR__.'/../../platform_config.php';
 
 require_once $configfile;
 

@@ -153,47 +153,47 @@ class Field {
         
         $this->setLabelAlignment(self::getDefaultLabelAlignment());
         
-        if ($options['required']) {
+        if (array_key_exists('required', $options)) {
             $this->is_required = true;
             unset($options['required']);
         }
-        if (isset($options['value'])) {
+        if (array_key_exists('value', $options)) {
             $this->setValue($options['value']);
             unset($options['value']);
         }
-        if ($options['options']) {
+        if (array_key_exists('options', $options)) {
             $this->setOptions($options['options']);
             unset($options['options']);
         }
-        if ($options['dont-clear']) {
+        if (array_key_exists('dont-clear', $options)) {
             $this->addClass('platform_dont_clear');
             unset($options['dont-clear']);
         }
-        if ($options['heading']) {
+        if (array_key_exists('heading', $options)) {
             $this->setHeading($options['heading']);
             unset($options['heading']);
         }
-        if ($options['class']) {
+        if (array_key_exists('class', $options)) {
             $this->addClass($options['class']);
             unset($options['class']);
         }
-        if ($options['container-class']) {
+        if (array_key_exists('containerclass', $options)) {
             $this->addContainerClass($options['containerclass']);
             unset($options['containerclass']);
         }        
-        if ($options['container-style']) {
+        if (array_key_exists('container-style', $options)) {
             $this->container_styles[] = $options['container-style'];
             unset($options['container-style']);
         }        
-        if ($options['field-width']) {
+        if (array_key_exists('field-width', $options)) {
             $this->setFieldWidth($options['field-width']);
             unset($options['field-width']);
         }
-        if ($options['placeholder']) {
+        if (array_key_exists('placeholder', $options)) {
             $this->setPlaceholder($options['placeholder']);
             unset($options['placeholder']);
         }
-        if ($options['label-alignment']) {
+        if (array_key_exists('label-alignment', $options)) {
             switch (strtolower($options['label-alignment'])) {
                 case 'auto': 
                     $this->setLabelAlignment(self::LABEL_ALIGN_AUTO);
@@ -219,17 +219,17 @@ class Field {
             unset($options['label-alignment']);
         }
         
-        if ($options['label-width']) {
+        if (array_key_exists('label-width', $options)) {
             $this->setLabelWidth($options['label-width']);
             unset($options['label-width']);
         }
         
-        if ($options['autofocus']) {
+        if (array_key_exists('autofocus', $options)) {
             $this->addClass('platform_autofocus');
-            unset($options['platform_autofocus']);
+            unset($options['autofocus']);
         }
         
-        if ($options['group']) {
+        if (array_key_exists('group', $options)) {
             $this->setGroup($options['group']);
             unset($options['group']);
         }

@@ -20,7 +20,7 @@ class Platform {
      */
     public static function getConfiguration(string $key) {
         global $platform_configuration;
-        return $platform_configuration[$key];
+        return array_key_exists($key, $platform_configuration) ? $platform_configuration[$key] : null;
     }
     
     /**

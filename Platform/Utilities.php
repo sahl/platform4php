@@ -13,6 +13,21 @@ class Utilities {
     }
     
     /**
+     * Safely read keys from an array
+     * @param array $array The array to read from
+     * @param string $key The keys to read separated by comma. So "test,name" would access $array['test']['name']
+     * @return mixed The value or null of no value
+     */
+    public static function arraySafeRead(array $array, string $key) {
+        $keys = explode(',', $key);
+        for ($i = 0; $i < count($keys); $i++) {
+            if (! array_key_exists($keys[$i], $array)) return null;
+            $array = $array[$keys[$i]];
+        }
+        return $array;
+    }
+    
+    /**
      * Translates a physical path to an URL. Only works when script is called from
      * web server
      * @param string $directory Directory to transform

@@ -31,6 +31,8 @@ if (! file_exists($configuration_file)) {
 }
 include $include_file;
 
+if (! isset($platform_configuration) || ! is_array($platform_configuration)) $platform_configuration = [];
+
 // Check administrator login if configured.
 if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
 
