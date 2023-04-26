@@ -1,6 +1,3 @@
-var $platform_language = [];
-var $user_language = [];
-
 function platform_TranslateForUser(phrase, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
     if ($platform_language[$user_language] && $platform_language[$user_language][phrase]) phrase = $platform_language[$user_language][phrase];
     if (arg1 == undefined)  return phrase;
