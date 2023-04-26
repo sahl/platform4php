@@ -18,13 +18,11 @@ class Utilities {
      * @param string $key The keys to read separated by comma. So "test,name" would access $array['test']['name']
      * @return mixed The value or null of no value
      */
-    public static function arraySafeRead(array $array, string $key) {
+    public static function arraySafeRead(array &$array, string $key) {
         $keys = explode(',', $key);
-        for ($i = 0; $i < count($keys); $i++) {
-            if (! array_key_exists($keys[$i], $array)) return null;
-            $array = $array[$keys[$i]];
-        }
-        return $array;
+        $this_key = array_shift($keys);
+        if (count($keys) < 1) return array_key_exists($this_key, $array) ? $array[$this_key] : null;
+        else return array_key_exists($this_key, $array) ? self::arraySafeRead($array[$this_key], implode(',',$keys)) : null;
     }
     
     /**
