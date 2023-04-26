@@ -901,7 +901,7 @@ class Datarecord implements DatarecordReferable {
      * "array" or "autocomplete"
      * @return type
      */
-    public static function findByKeywords(string $keywords, string $output = 'DatarecordCollection') {
+    public static function findByKeywords(string $keywords, string $output = 'DatarecordCollection', $additional_filter = null) {
         // Backward compatibility
         if ($output == 'DatarecordCollection') $output = 'Collection';
         if (! in_array($output, array('Collection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
@@ -919,6 +919,7 @@ class Datarecord implements DatarecordReferable {
             return array();
         }
         $filter = static::getDefaultFilter();
+        if ($additional_filter) $filter->addFilter($additional_filter);
         $parsed_keywords = self::parseKeywords($keywords);
         foreach ($parsed_keywords as $keyword) {
             $previouscondition = false;

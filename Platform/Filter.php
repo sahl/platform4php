@@ -107,6 +107,11 @@ class Filter {
         }
     }
     
+    public function addFilter(Filter $filter) {
+        if ($filter->getBaseClassName() != $this->getBaseClassName()) trigger_error('Tried to add incompatible filter', E_USER_ERROR);
+        $this->addCondition($filter->getBaseCondition());
+    }
+    
     
     /**
      * Execute this filter
@@ -163,6 +168,14 @@ class Filter {
      */
     public function getAsJSON() : string {
         return json_encode($this->getAsArray());
+    }
+    
+    /**
+     * Get the base condition of this filter
+     * @return type
+     */
+    public function getBaseCondition() {
+        return $this->base_condition;
     }
 
     /**

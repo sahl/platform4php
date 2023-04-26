@@ -5,6 +5,8 @@ class DatarecordcomboboxField extends IndexedComboboxField {
     
     protected $connected_class = false;
     
+    protected $filter = null;
+    
     public function __construct(string $label, string $name, array $options = array()) {
         $this->classes[] = 'platform_datarecord_combobox';
         if ($options['class']) {
@@ -51,6 +53,15 @@ class DatarecordcomboboxField extends IndexedComboboxField {
         }
         $this->setValue($value);
         return $result;
+    }
+    
+    /**
+     * Attach a filter to this datarecordcombobox
+     * @param \Platform\Filter $filter
+     */
+    public function setFilter(\Platform\Filter $filter) {
+        $this->filter = $filter;
+        $this->additional_attributes .= ' data-filter="'. htmlentities($filter->getAsJSON()).'"';
     }
     
     public function setValue($value) {

@@ -3,12 +3,14 @@ namespace Platform\Form;
 
 class MultidatarecordcomboboxField extends MultiplierSection {
     
+    private $datarecord_combobox = null;
+    
     public function __construct(string $label, string $name, array $options = array()) {
-        $datarecordcombobox = new DatarecordcomboboxField('', 'innercombobox', array('class' => $options['class']));
-        $datarecordcombobox->addContainerStyle('margin-top: 0px');
+        $this->datarecord_combobox = new DatarecordcomboboxField('', 'innercombobox', array('class' => $options['class']));
+        $this->datarecord_combobox->addContainerStyle('margin-top: 0px');
         unset($options['class']);
         parent::__construct($label, $name, $options);
-        $this->addFields($datarecordcombobox);
+        $this->addFields($this->datarecord_combobox);
     }
     
     public function parse($values) : bool {
@@ -28,6 +30,14 @@ class MultidatarecordcomboboxField extends MultiplierSection {
         }
         return $real_results;
     }
+    
+    /**
+     * Attach a filter to this datarecordcombobox
+     * @param \Platform\Filter $filter
+     */
+    public function setFilter(\Platform\Filter $filter) {
+        $this->datarecord_combobox->setFilter($filter);
+    }    
     
     public function setValue($values) {
         if (! is_array($values)) $values = array();

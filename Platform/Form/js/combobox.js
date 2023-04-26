@@ -3,8 +3,10 @@ addCustomPlatformFunction(function(item) {
         var element = $(this);
         // Destroy an already present autocomplete
         element.removeData('uiAutocomplete');
+        var source = element.data('source');
+        if (element.data('filter')) source += '&filter='+element.attr('data-filter');
         element.autocomplete({
-            source: element.data('source'),
+            source: source,
             minLength: 2,
             select: function(event, ui) {
                 if (element.hasClass('platform_indexed_combobox')) {
