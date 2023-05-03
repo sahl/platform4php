@@ -160,7 +160,7 @@ $.fn.attachValues = function(values) {
     var form = $(this).closest('form');    
     $.each(values, function(key, value) {
         // Get field by figuring out the ID
-        var field = $('#'+form.prop('id')+'_'+key);
+        var field = $('#'+form.attr('id')+'_'+key);
         // Skip if there wasn't such a field
         if (field.length < 1) return true;
         // Assign value
