@@ -1,5 +1,6 @@
 addPlatformComponentHandlerFunction('popupmenu', function(item) {
     item.on('appear', function(event, clickevent, parameters) {
+        item.trigger('popup_open');
         if (parameters == null) parameters = {};
         var element = parameters.appear_on ? parameters.appear_on : clickevent.target;
         if (parameters.info) item.data('platform_info', parameters.info);
@@ -29,6 +30,8 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
                 }
             break;
         }
+        // Close other popup menus
+        platform_PopupMenu_hide();
         // Adjust for any parent absolute container
         item.css('left', 0);
         item.css('top', 0);
@@ -41,12 +44,6 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
         if (top + item.height() > $(window).height()-5) top = $(window).height() - item.height()-5;
         item.css('left', left);
         item.css('top', top);
-        $(window).on('click', function() {
-            hidePopupMenu();
-        });
-        $(window).on('resize', function() {
-            hidePopupMenu();
-        });
         clickevent.stopPropagation();
     });
     
@@ -57,13 +54,7 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
         $(this).find('a').click();
     })
     
-    item.find('a').click(hidePopupMenu);
-    
-    function hidePopupMenu() {
-        if (! item.is(':visible')) return;
-        item.hide();
-        $(window).off('click', hidePopupMenu);
-    }
+    item.find('a').click(platform_PopupMenu_hide);
     
     if (item.data('attach_to')) {
         $(item.data('attach_to')).click(function(event) {
@@ -71,3 +62,10 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
         })
     }
 })
+
+// Hide all popup menus on generel click or resize
+$(window).on('click', platform_PopupMenu_hide);
+$(window).on('resize', platform_PopupMenu_hide);
+function platform_PopupMenu_hide() {
+    $('.platform_component_popupmenu:visible').hide();
+}
