@@ -95,6 +95,20 @@ class Repetition {
     }
     
     /**
+     * Get the next date matching this repetition. Will search 10 years ahead.
+     * @param Time $search_date The date to start searching from
+     * @param Time $start_date A start date for the repetition. If not given, todays date is used.
+     * @return Time|bool
+     */
+    public function getNextMatchingDate(Time $search_date, Time $start_date = null) {
+        if ($start_date === null) $start_date = Time::today();
+        for ($date = $search_date; $date->isBeforeEqual($search_date->addDays(0,0,10)); $date = $date->addDays(1)) {
+            if ($this->match($date, $start_date)) return $date;
+        }
+        return false;
+    }
+    
+    /**
      * Check if a given date matches this repetition
      * @param Time $date_to_match The date to check
      * @param Time $start_date A start date for the repetition. If not given, todays date is used
