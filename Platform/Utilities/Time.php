@@ -111,7 +111,7 @@ class Time {
      * @param \Platform\Utilities\Time $other_time
      * @return bool|int Number of days or false if cannot calculate
      */
-    public function getDaysUntil(Time $other_time) : bool|int {
+    public function getDaysUntil(Time $other_time) {
         if ($this->getTimestamp() == null || $other_time->getTimestamp() == null) return false;
         $difference_in_seconds = $other_time->startOfDay()->getTimestamp() - $this->startOfDay()->getTimestamp();
         return round($difference_in_seconds/(60*60*24));
