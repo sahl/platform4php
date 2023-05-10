@@ -260,7 +260,7 @@ $.fn.componentIO = function(values, func) {
                 component.data(i,v);
             });
         }
-        if (data.trigger) component.trigger(data.trigger);
+        if (data.trigger) component.trigger(data.trigger, data.parameters);
         if (data.redraw) component.trigger('redraw');
         if (typeof func == 'function') func(data);
     }, 'json');
