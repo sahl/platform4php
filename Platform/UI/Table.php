@@ -129,9 +129,9 @@ class Table extends Component {
                 'title' => $structure[$field]['label'],
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
-                'sorter' => self::getSorter((string)$structure[$field]['fieldtype']),
-                'formatter' => 'html'
             );
+            self::buildSorter($column, (int)$structure[$field]['fieldtype']);
+            self::buildFormatter($column, (int)$structure[$field]['fieldtype']);
             if ($structure[$field]['width']) $columndef['width'] = $structure[$field]['width'];
             $columndef[] = $column;
         }
@@ -163,6 +163,49 @@ class Table extends Component {
         $form->addClass('platform_table_control_form');
         $this->setTabulatorOption('control_form', $form->getFormId());
     }
+    
+    private static function buildFormatter(&$column, int $fieldtype) {
+        switch($fieldtype) {
+            case Datarecord::FIELDTYPE_DATE:
+                $column['formatter'] = 'datetime';
+                $column['formatterParams']['outputFormat'] = 'dd-MM-yyyy';
+                break;
+            case Datarecord::FIELDTYPE_DATETIME:
+                $column['formatter'] = 'datetime';
+                $column['formatterParams']['outputFormat'] = 'dd-MM-yyyy HH:mm:ss';
+                break;
+            default:
+                $column['formatter'] = 'html';
+                break;
+        }
+    }
+    
+    /**
+     * Get a sorter for a given field type
+     * @param int $fieldtype Field type constant.
+     * @return string Tabulator sorter
+     */
+    private static function buildSorter(&$column, int $fieldtype) {
+        switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_DATE:
+                $column['sorter'] = 'datetime';
+                $column['sorterParams']['format'] = 'yyyy-MM-dd HH:mm:ss';
+                break;
+            case Datarecord::FIELDTYPE_DATETIME:
+                $column['sorter'] = 'datetime';
+                $column['sorterParams']['format'] = 'yyyy-MM-dd HH:mm:ss';
+                break;
+            case Datarecord::FIELDTYPE_CURRENCY:
+            case Datarecord::FIELDTYPE_FLOAT:
+            case Datarecord::FIELDTYPE_INTEGER:
+                $column['sorter'] = 'number';
+                break;
+            default:
+                $column['sorter'] = 'alphanum';
+                break;
+        }
+    }
+    
     
     /**
      * Get a column selector component based on this table
@@ -230,6 +273,10 @@ class Table extends Component {
                         $text = substr($object->getTextValue($field),0,250);
                         $columns[$field] = $text;
                         break;
+                    case Datarecord::FIELDTYPE_DATE:
+                    case Datarecord::FIELDTYPE_DATETIME:
+                        $columns[$field] = $object->getRawValue($field)->get();
+                        break;
                     default:
                         $columns[$field] = $value;
                 }
@@ -296,26 +343,6 @@ class Table extends Component {
      */
     public function getTabulatorOption(string $option) {
         return $this->tabulator_options[$option];
-    }
-    
-    /**
-     * Get a sorter for a given field type
-     * @param int $fieldtype Field type constant.
-     * @return string Tabulator sorter
-     */
-    private static function getSorter(string $fieldtype) {
-        switch ($fieldtype) {
-            case Datarecord::FIELDTYPE_DATE:
-                return 'date';
-            case Datarecord::FIELDTYPE_DATETIME:
-                return 'datetime';
-            case Datarecord::FIELDTYPE_CURRENCY:
-            case Datarecord::FIELDTYPE_FLOAT:
-            case Datarecord::FIELDTYPE_INTEGER:
-                return 'number';
-            default:
-                return 'alphanum';
-        }
     }
     
     public function handleIO(): array {

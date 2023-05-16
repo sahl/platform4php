@@ -26,6 +26,10 @@ foreach ($preload_list as $script) {
 spl_autoload_register("PlatformAutoLoad");
 session_start();
 
+// Set display time zone from session
+Platform\Utilities\Time::setDisplayTimeZoneFromSession();
+Platform\Utilities\Time::setDateAndTimeFormatFromSession();
+
 // Load languages
 if (Translation::isEnabled()) {
     Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);

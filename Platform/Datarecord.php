@@ -1413,7 +1413,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_DATETIME:
                 return $this->getRawValue($field)->getReadable();
             case self::FIELDTYPE_DATE:
-                return $this->getRawValue($field)->getReadable('d-m-Y');
+                return $this->getRawValue($field)->getReadableDate();
             case self::FIELDTYPE_PASSWORD:
                 return $this->getRawValue($field) ? '---' : '';
             case self::FIELDTYPE_TEXT:
