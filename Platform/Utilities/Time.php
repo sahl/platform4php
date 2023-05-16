@@ -17,7 +17,7 @@ class Time {
     
     /**
      * Construct a new Time object
-     * @param mixed $time Either another time object to copy, a time string, a time stamp, "now" for current time "today" for today at midnight or "end_of_today" for today right before tomorrow.
+     * @param mixed $time Either another time object to copy, a time string in UTC, a time stamp, "now" for current time "today" for today at midnight or "end_of_today" for today right before tomorrow.
      */
     public function __construct($time = null) {
         Errorhandler::checkParams($time, array('string', '\\Platform\\Utilities\\Time', 'integer'));
@@ -26,7 +26,13 @@ class Time {
         elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
         elseif ($time == 'end_of_today') $this->timestamp = strtotime(self::now()->get('Y-m-d 23:59:59'));
         elseif (is_numeric($time)) $this->timestamp = (int)$time;
-        elseif ($time) $this->timestamp = strtotime($time);
+        elseif ($time) {
+            // Ensure we are UTC when setting
+            $stored_time_zone = date_default_timezone_get();
+            date_default_timezone_set('UTC');
+            $this->timestamp = strtotime($time);
+            date_default_timezone_set($stored_time_zone);
+        }
     }
     
     /**
