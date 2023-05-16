@@ -67,5 +67,5 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
 $(window).on('click', platform_PopupMenu_hide);
 $(window).on('resize', platform_PopupMenu_hide);
 function platform_PopupMenu_hide() {
-    $('.platform_component_popupmenu:visible').hide();
+    $('.platform_component_popupmenu:visible').hide().trigger('disappear');
 }
