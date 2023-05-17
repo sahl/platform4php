@@ -1,267 +1,260 @@
-var platform_component_handler_functions = [];
-var platform_component_handler_class_names = [];
-
-addCustomPlatformFunctionLast(function(item) {
-    var elements = item.find('.platform_component');
-    if (item.hasClass('platform_component')) if (elements.length) elements = elements.add(item); else elements = item;
+Platform.Component = class {
     
-    // General functions on elements
-    elements.each(function() {
-        var element = $(this);
+    handler_classes = [];
+    
+    dom_node = null;
+    
+    static dom_classes = [];
+    
+    static class_library = [];
+    
+    contained_dialogs = [];
+    
+    static addComponentClasses(selector) {
+        $.each(Platform.Component.class_library, function(key, library_element) {
+            selector.find('.'+library_element.dom_class).each(function() {
+                var component = new library_element.javascript_class($(this));
+            });
+            if (selector.is('.'+library_element.dom_class)) var component = new library_element.javascript_class(selector);
+        })
+    }
+    
+    apply() {
         
-        // Remove events if they exists
-        $(this).off('redraw');
+    }
+    
+    constructor(dom_node) {
+        this.dom_node = dom_node;
+        this.gatherDialogs();
+        this.apply();
+        dom_node.data('platform_component', this);
+    }
+    
+    static BindClass(dom_class, javascript_class) {
+        // Ensure we only add everything once.
+        if (Platform.Component.dom_classes.includes(dom_class)) return;
+
+        var library_element = {
+            dom_class: dom_class,
+            javascript_class: javascript_class,
+        }
         
-        // Gather dialog ID's within this component
-        var dialogs = [];
-        $('.platform_component_dialog', this).each(function() {
-            dialogs.push($(this).prop('id'));
+        Platform.Component.dom_classes.push(dom_class);
+        Platform.Component.class_library.push(library_element);
+    }
+    
+    gatherDialogs() {
+        $('.platform_component_dialog', this.dom_node).each(function() {
+            this.contained_dialogs.push($(this).prop('id'));
             return true;
-        });
-        
-        $(this).on('redraw', function(e) {
-            if ($(this).is('.platform_container_component')) {
-                // If this is a container component, we instead ask to redraw all direct sub-components
-                var this_component = $(this);
-                $('.platform_component', this_component).each(function() {
-                    if ($(this).parent().closest('.platform_component')[0] == this_component[0]) {
-                        $(this).trigger('redraw');
-                    }
-                })
-                e.stopPropagation();
-                return true;
-            }
-            
-            var componentproperties = $(this).data('componentproperties');
-            var redraw_url = $(this).data('redraw_url');
+        })
+    }
+    
+    redraw() {
+        if (this.dom_node.is('.platform_container_component')) {
+            // Redraw all subcomponents
+            this.dom_node.find('.platform_component').each(function() {
+                if ($(this).parent().closest('.platform_component')[0] == this.dom_node[0]) {
+                    // Redraw subcomponent.
+                }
+            })
+        } else {
+            var componentproperties = this.dom_node.data('componentproperties');
+            var redraw_url = this.dom_node.data('redraw_url');
             if (! redraw_url) {
-                e.stopPropagation();
                 return false;
             }
             
             // Destroy all dialogs within this component
-            $.each(dialogs, function(index, value) {
+            this.contained_dialogs.forEach(value => function(value) {
                 $('#'+value).dialog('destroy');
             })
+
+            var component = this;
             
-            var element = $(this);
-            $.post(redraw_url, {componentclass: $(this).data('componentclass'), componentproperties: componentproperties, componentid: $(this).prop('id')}, function(data) {
+            $.post(redraw_url, {componentclass: this.dom_node.data('componentclass'), componentproperties: componentproperties, componentid: this.dom_node.prop('id')}, function(data) {
                 // Destroy handlers
-                element.off();
-                element.html(data).applyPlatformFunctions();
+                Platform.apply(component.dom_node.html(data));
             });
-            e.stopPropagation();
-        });
-        
+            
+        }
+    }
+    
+    registerBackendEvents() {
         // Pass custom events to backend
-        if (element.data('registered_events')) {
-            $.each(element.data('registered_events').split(','), function(index, value) {
-                element.off(value);
-                element.on(value, function(event, parameter1, parameter2, parameter3) {
+        if (this.dom_node.data('registered_events')) {
+            $.each(this.dom_node.data('registered_events').split(','), function(index, value) {
+                this.dom_node.off(value);
+                this.dom_node.on(value, function(event, parameter1, parameter2, parameter3) {
                     if (parameter1 == '__data_request_event') {
                         // This is a datatable event, which needs to be handled another way
                         parameter2['event'] = value;
-                        element.componentIO(parameter2, function(data) {
+                        this.backendIO(parameter2, function(data) {
                             parameter3(data);
                         }); 
                     } else {
-                        element.componentIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); 
-                        event.stopImmediatePropagation(); 
+                        this.backendIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); 
                     }
                     return false;
                 });
             })
         }
-    });
-    
-    // Apply special functions in the same order they was included to ensure proper event stacking
-    $.each(platform_component_handler_functions, function(key, array_element) {
-        elements.each(function() {
-            var element = $(this);
-            if (element.hasClass('platform_component_'+array_element.class_name)) {
-                array_element.func(element);
-            }
-        });
-    });
-    
-    
-    // Fire component ready on all
-    elements.each(function() {
-        var element = $(this);
-        
-        // Check if a form is registered for IO
-        if (element.data('attached_form_id')) {
-            element.componentIOForm($('#'+element.data('attached_form_id'), element))
-        };
-        $(this).triggerHandler('component_ready');
-    });
-});
-
-function addPlatformComponentHandlerFunction(class_name, func) {
-    // Ensure we only add everything once.
-    if (platform_component_handler_class_names.includes(class_name)) return;
-    
-    var handler_element = {
-        class_name: class_name,
-        func: func
-    };
-    platform_component_handler_functions.push(handler_element);
-    platform_component_handler_class_names.push(class_name);
-}
-
-$.fn.componentIOForm = function(form, func, failfunc) {
-    var item = this;
-    $(form).submit(function() {
-        item.componentIO(form.serialize(), function(data) {
-            if (! data.status) {
-                form.attachErrors(data.form_errors);
-                if (typeof failfunc == 'function') failfunc(data);
-            } else {
-                if (typeof func == 'function') func(data);
-            }
-        })
-        return false;
-    })
-}
-
-var communication_stack = [];
-var communication_timer = null;
-
-$.fn.componentTimedIO = function(values, callback, polltime, precision) {
-    var component = this;
-    var object = {};
-    // Prepare communication object
-    object.values = values;
-    object.callback = callback;
-    object.polltime = polltime;
-    object.precision = precision;
-    object.component = component;
-    object.componentclass = component.data('componentclass');
-    object.componentproperties = component.data('componentproperties');
-    object.componentid = component.prop('id');
-    object.timeleft = polltime;
-    
-
-    // Add or replace to queue
-    var inserted = false;
-    $.each(communication_stack, function(id, element) {
-        if (element.component == component) {
-            communication_stack[id] = object;
-            inserted = true;
-            return false;
-        }
-        return true;
-    });
-    if (! inserted) communication_stack.push(object);
-    
-    if (! communication_timer) communication_timer = setTimeout(platformTimedIO, 1000);
-}
-
-$.fn.componentRemoveTimedIO = function() {
-    var component = this;
-    $.each(communication_stack, function(id, element) {
-        if (element.component == component) {
-            communication_stack.splice(id,1);
-            return false;
-        }
-        return true;
-    });
-    if (! communication_stack.length) {
-        clearTimeout(communication_timer);
-        comminication_timer = null;
     }
-}
-
-function platformTimedIO() {
-    console.log('Timed function running');
-    // Decrease everything and find if something needs to run now
-    var run_now = false;
-    $.each(communication_stack, function(id, element) {
-        element.timeleft -= 1;
-        if (element.timeleft < 1) {
-            run_now = true;
-        }
-        return true;
-    });
-    if (run_now) {
-        // We need to run now
-        var run_payload = [];
-        var callbacks = [];
-        var url = null;
-        $.each(communication_stack, function(id, element) {
-            if (element.timeleft - element.precision <= 0) {
-                var payload = {};
-                if (! url) url = element.component.data('io_url')
-                payload.componentclass = element.componentclass;
-                payload.componentproperties = element.componentproperties;
-                payload.componentid = element.componentid;
-                payload.values = element.values;
-                run_payload.push(payload);
-                callbacks.push(element.callback);
-                // Reset element
-                element.timeleft += element.polltime;
-            }
-        });
-        // Call it
-        var final_payload = {event: '__timedio', payloads: run_payload};
-        $.post(url, final_payload, function(data) {
-            console.log('Timed function calling in');
-            $.each(data, function(id, return_value) {
-                if (callbacks[id]) callbacks[id](return_value);
+    
+    addIOForm(form, func, failfunc) {
+        $(form).submit(function() {
+            this.backendIO(form.serialize(), function(data) {
+                if (! data.status) {
+                    form.attachErrors(data.form_errors);
+                    if (typeof failfunc == 'function') failfunc(data);
+                } else {
+                    if (typeof func == 'function') func(data);
+                }
             })
-            communication_timer = setTimeout(platformTimedIO, 1000);
-        }, 'json');
-        // Rearm
-    } else {
-        if (communication_stack.length) communication_timer = setTimeout(platformTimedIO, 1000);
-        
+            return false;
+        })
     }
+    
+    backendIO(values, func) {
+        var component = this;
+        // Values can be an object or a serialized string
+        if (typeof values == 'string') {
+            // It is a serialized string
+
+            // Inject class field
+            values += '&componentclass='+encodeURIComponent(this.dom_node.data('componentclass'));
+            // Inject properties    
+            values += '&componentproperties='+encodeURIComponent(this.dom_node.data('componentproperties'));
+            // Inject ID
+            values += '&componentid='+encodeURIComponent(this.dom_node.prop('id'));
+        } else {
+            // It is an array/object
+
+            // Inject class field
+            values['componentclass'] = this.dom_node.data('componentclass');
+            // Inject properties
+            values['componentproperties'] = this.dom_node.data('componentproperties');
+            // Inject ID
+            values['componentid'] = this.dom_node.prop('id');
+        }
+
+        // Post
+        $.post(this.dom_node.data('io_url'), values, function(data) {
+            if (data.destroy) component.dom_node.remove();
+            if (data.script) eval(data.script);
+            if (data.redirect) {
+                if (data.target) 
+                    window.open(data.redirect, data.target);
+                else 
+                    location.href = data.redirect;
+            }
+            if (data.properties) component.dom_node.data('componentproperties', data.properties);
+            if (data.data) {
+                $.each(data.data, function(i, v) {
+                    component.dom_node.data(i,v);
+                });
+            }
+            if (data.trigger) component.dom_node.trigger(data.trigger, data.parameters);
+            if (data.redraw) component.redraw();
+            if (typeof func == 'function') func(data);
+        }, 'json');
+    }
+    
+    static timed_IO_stack = [];
+    static IO_timer = null;
+
+    timedIO(values, callback, polltime, precision) {
+        var object = {};
+        // Prepare communication object
+        object.values = values;
+        object.callback = callback;
+        object.polltime = polltime;
+        object.precision = precision;
+        object.component = this;
+        object.componentclass = this.dom_node.data('componentclass');
+        object.componentproperties = this.dom_node.data('componentproperties');
+        object.componentid = this.dom_node.prop('id');
+        object.timeleft = polltime;
+
+
+        // Add or replace to queue
+        var inserted = false;
+        $.each(Platform.Component.timed_IO_stack, function(id, element) {
+            if (element.component == component) {
+                Platform.Component.timed_IO_stack[id] = object;
+                inserted = true;
+                return false;
+            }
+            return true;
+        });
+        if (! inserted) Platform.Component.timed_IO_stack.push(object);
+
+        if (! communication_timer) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
+    }
+
+    removeTimedIO() {
+        var component = this;
+        $.each(Platform.Component.timed_IO_stack, function(id, element) {
+            if (element.component == component) {
+                Platform.Component.timed_IO_stack.splice(id,1);
+                return false;
+            }
+            return true;
+        });
+        if (! Platform.Component.timed_IO_stack.length) {
+            clearTimeout(Platform.Component.IO_timer);
+            Platform.Component.IO_timer = null;
+        }
+    }
+
+    static executeTimedIO() {
+        // Decrease everything and find if something needs to run now
+        var run_now = false;
+        $.each(Platform.Component.timed_IO_stack, function(id, element) {
+            element.timeleft -= 1;
+            if (element.timeleft < 1) {
+                run_now = true;
+            }
+            return true;
+        });
+        if (run_now) {
+            // We need to run now
+            var run_payload = [];
+            var callbacks = [];
+            var url = null;
+            $.each(Platform.Component.timed_IO_stack, function(id, element) {
+                if (element.timeleft - element.precision <= 0) {
+                    var payload = {};
+                    if (! url) url = element.component.data('io_url')
+                    payload.componentclass = element.componentclass;
+                    payload.componentproperties = element.componentproperties;
+                    payload.componentid = element.componentid;
+                    payload.values = element.values;
+                    run_payload.push(payload);
+                    callbacks.push(element.callback);
+                    // Reset element
+                    element.timeleft += element.polltime;
+                }
+            });
+            // Call it
+            var final_payload = {event: '__timedio', payloads: run_payload};
+            $.post(url, final_payload, function(data) {
+                $.each(data, function(id, return_value) {
+                    if (callbacks[id]) callbacks[id](return_value);
+                })
+                communication_timer = setTimeout(Platform.Component.IO_timer, 1000);
+            }, 'json');
+            // Rearm
+        } else {
+            if (Platform.Component.timed_IO_stack.length) communication_timer = setTimeout(Platform.Component.IO_timer, 1000);
+
+        }
+    }
+
 }
 
-$.fn.componentIO = function(values, func) {
-    var component = this;
-    // This only works on components.
-    if (! component.hasClass('platform_component')) return;
-    
-    // Values can be an object or a serialized string
-    if (typeof values == 'string') {
-        // It is a serialized string
+Platform.addCustomFunctionLast(Platform.Component.addComponentClasses);
 
-        // Inject class field
-        values += '&componentclass='+encodeURIComponent(component.data('componentclass'));
-        // Inject properties    
-        values += '&componentproperties='+encodeURIComponent(component.data('componentproperties'));
-        // Inject ID
-        values += '&componentid='+encodeURIComponent(component.prop('id'));
-    } else {
-        // It is an array/object
-
-        // Inject class field
-        values['componentclass'] = component.data('componentclass');
-        // Inject properties
-        values['componentproperties'] = component.data('componentproperties');
-        // Inject ID
-        values['componentid'] = component.prop('id');
-    }
-    
-    // Post
-    $.post(component.data('io_url'), values, function(data) {
-        if (data.destroy) component.remove();
-        if (data.script) eval(data.script);
-        if (data.redirect) {
-            if (data.target) 
-                window.open(data.redirect, data.target);
-            else 
-                location.href = data.redirect;
-        }
-        if (data.properties) component.data('componentproperties', data.properties);
-        if (data.data) {
-            $.each(data.data, function(i, v) {
-                component.data(i,v);
-            });
-        }
-        if (data.trigger) component.trigger(data.trigger, data.parameters);
-        if (data.redraw) component.trigger('redraw');
-        if (typeof func == 'function') func(data);
-    }, 'json');
+$.fn.platformComponent = function() {
+    return this.data('platform_component');
 }
