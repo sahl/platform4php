@@ -148,7 +148,7 @@ function formDialog(title, text, form_id, ok_text, callback_ok, callback_open, c
 }
 
 
-addCustomPlatformFunctionLast(function(item) {
+Platform.addCustomFunctionLast(function(item) {
      $('.platform_component_dialog',item).each(function(e) {
         var buttons = [];
         var dialog = $(this);

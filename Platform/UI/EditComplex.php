@@ -2,7 +2,7 @@
 namespace Platform\UI;
 
 use Platform\Filter;
-use Platform\MenuItem;
+use Platform\Page\MenuItem;
 use Platform\UI\Menu\ButtonMenu;
 
 class EditComplex extends Component {

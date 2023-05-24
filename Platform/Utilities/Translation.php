@@ -314,7 +314,7 @@ class Translation {
             $_SESSION['platform']['instance_language_id'] = \Platform\Server\Instance::getActiveInstanceID();
             $_SESSION['platform']['instance_language'] = \Platform\Property::getForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
         }
-        return $_SESSION['platform']['instance_language'];
+        return $_SESSION['platform']['instance_language'] ?: 'en';
     }
 
     /**

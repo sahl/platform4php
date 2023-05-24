@@ -102,8 +102,9 @@ Platform.Component = class {
     }
     
     addIOForm(form, func, failfunc) {
+        var component = this;
         $(form).submit(function() {
-            this.backendIO(form.serialize(), function(data) {
+            component.backendIO(form.serialize(), function(data) {
                 if (! data.status) {
                     form.attachErrors(data.form_errors);
                     if (typeof failfunc == 'function') failfunc(data);

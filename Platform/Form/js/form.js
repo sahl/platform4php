@@ -5,28 +5,87 @@ $(function() {
     $('.platform_autofocus').first().focus();
 });
 
-addPlatformComponentHandlerFunction('form', function(item) {
-    $('form', item).submit(function(e) {
+Platform.Form = class extends Platform.Component {
+    
+    apply() {
+        var component = this;
+        var dom_node = this.dom_node;
+        this.dom_node.submit(function(e) {
+            if (component.validate()) {
+                e.stopImmediatePropagation();
+                return true;
+            }
+            return false;
+        })
+        
+        // Submit on enter for some fields
+        $('.platform_form_field', this.dom_node).not('textarea').keypress(function(e) {
+            if (e.keyCode == 13) {
+                e.stopImmediatePropagation();
+                $(this).closest('form').submit();
+                return false;
+            }
+        });
+        
+        // Add currency handler
+        $('.currency_currency,.currency_foreignvalue', this.dom_node).change(function() {
+            this.backendIO({
+                event: 'currency_lookup',
+                foreignvalue: dom_node.parent().find('.currency_foreignvalue').val(),
+                currency: dom_node.parent().find('.currency_currency').val()
+            }, function(data) {
+                if (data.status == 1) dom_node.parent().find('.currency_localvalue').val(data.localvalue);
+            })
+        })
+        $('.currency_currency', this.dom_node).change(function() {
+            if ($(this).val() == '') $(this).parent().find('.currency_foreignvalue').val('');
+        })
+
+        // Indicate on password-field when it is updated.
+        $('.platform-password',this.dom_node).change(function() {
+            $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
+            return true;
+        });
+
+        // Autosize required textareas
+        autosize($('textarea.autosize', this.dom_node));
+
+        // Autosubmit
+        $(this.dom_node).on('component_ready', function() {
+            // We cannot submit table control forms before the table is ready, so those submit is handled by the table
+            if (! dom_node.is('.platform_table_control_form')) dom_node.find('form.platform_form_auto_submit').submit();
+        });
+    }
+    
+    validate() {
         var allowsubmit = true;
+        this.dom_node.find('.platform_field_validate').each(function() {
+            var form_field = $(this).platformComponent();
+            form_field.clearError();
+            var result = form_field.validate();
+            if (! result) allowsubmit = false;
+        });
+        return allowsubmit;
+        
         
         // Clear all previous errors
-        $('.platform_form_global_error_container', $(this)).hide();
-        $('.platform_form_field,.platform_component_fieldcomponent', $(this)).clearError();
+        $('.platform_form_global_error_container', this.dom_node).hide();
+        $('.platform_form_field,.platform_component_fieldcomponent', this.dom_node).clearError();
         
         // Hide last item of multipliers as these should always be empty and not submitted or validated.
-        $('.platform_form_multiplier_element', $(this)).each(function() {
+        $('.platform_form_multiplier_element', this.dom_node).each(function() {
             if ($(this).is(':last-child')) $(this).hide();
         });        
 
         // Check required fields
-        $('input.form_required_field,select.form_required_field', $(this)).each(function() {
+        $('input.form_required_field,select.form_required_field', this.dom_node).each(function() {
             if ($(this).val().length == 0 && $(this).is(':visible') && ! $(this).is(':disabled')) {
                 $(this).setError('This is a required field');
                 allowsubmit = false;
             }
             return true;
         });
-        $('.multi_checkbox_container.form_required_field:visible', this).each(function() {
+        $('.multi_checkbox_container.form_required_field:visible', this.dom_node).each(function() {
             if (! $(this).find('input[type="checkbox"]:checked').length) {
                 $(this).setError('This is a required field');
                 allowsubmit = false;
@@ -34,7 +93,7 @@ addPlatformComponentHandlerFunction('form', function(item) {
         })
         
         // Validate component fields
-        $('.platform_component_fieldcomponent').each(function() {
+        $('.platform_component_fieldcomponent', this.dom_node).each(function() {
             $(this).trigger('validate');
             if ($(this).hasClass('platform_form_field_error')) allowsubmit = false;
         })
@@ -42,7 +101,7 @@ addPlatformComponentHandlerFunction('form', function(item) {
         // Gather hidden fields
         var hiddenfields = [];
 
-        $('.platform_form_field:hidden,.platform_form_field:disabled', $(this)).each(function() {
+        $('.platform_form_field:hidden,.platform_form_field:disabled', this.dom_node).each(function() {
             // We accept hidden fields
             if ($(this).is('[type="hidden"]')) return true;
             // We accept hidden texteditors
@@ -53,79 +112,35 @@ addPlatformComponentHandlerFunction('form', function(item) {
             }
             hiddenfields.push(name);
         });
-        if (hiddenfields.length) $(this).find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
+        if (hiddenfields.length) this.dom_node.find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
         
-        if (! allowsubmit) {
-            e.stopImmediatePropagation();
-        } else {
+        if (allowsubmit) {
             // Check if we should save form values
-            if ($(this).data('save_on_submit')) {
+            if (this.dom_node.data('save_on_submit')) {
                 $.post('/Platform/Form/php/save_form_values.php', {destination: $(this).data('save_on_submit'), formid: $(this).prop('id'), formdata: $(this).serialize()});
             }
         }
 
          // Show multipliers again
-        $('.platform_form_multiplier_element', $(this)).show();
+        $('.platform_form_multiplier_element', this.dom_node).show();
         return allowsubmit;
-     });
-     
-     // Submit on enter for some fields
-     $('.platform_form_field', item).not('textarea').keypress(function(e) {
-         if (e.keyCode == 13) {
-             e.stopImmediatePropagation();
-             $(this).closest('form').submit();
-             return false;
-         }
-     });
-     
-    // Add currency handler
-    $('.currency_currency,.currency_foreignvalue', item).change(function() {
-        var component = $(this);
-        item.componentIO({
-            event: 'currency_lookup',
-            foreignvalue: $(this).parent().find('.currency_foreignvalue').val(),
-            currency: $(this).parent().find('.currency_currency').val()
-        }, function(data) {
-            if (data.status == 1) component.parent().find('.currency_localvalue').val(data.localvalue);
-        })
-    })
-    $('.currency_currency').change(function() {
-        if ($(this).val() == '') $(this).parent().find('.currency_foreignvalue').val('');
-    })
+    }
+}
 
-    // Clear errors when changing fields
-     $('.platform_form_field',item).change(function() {
-         $(this).clearError();
-     });
-          
-    // Indicate on password-field when it is updated.
-    $('.platform-password',item).change(function() {
-        $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
-        return true;
-    });
-
-    // Autosize required textareas
-    autosize($('textarea.autosize', item));
-
-    // Autosubmit
-    $(item).on('component_ready', function() {
-        // We cannot submit table control forms before the table is ready, so those submit is handled by the table
-        if (! $(this).is('.platform_table_control_form')) $(this).find('form.platform_form_auto_submit').submit();
-    });
-});
+Platform.Component.BindClass('platform_component_form', Platform.Form);
 
 
-$.fn.setError = function(text) {
+$.fn.xxsetError = function(text) {
     this.addClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_field_error_container').html(text).slideDown();
     return this;
 }
 
-$.fn.clearError = function() {
+$.fn.xxclearError = function() {
     this.filter('.platform_form_field_error').removeClass('platform_form_field_error').closest('.platform_form_field_container').find('.platform_field_error_container').slideUp();
     return this;
 }
 
-$.fn.clearForm = function() {
+$.fn.xxclearForm = function() {
     this.find('input[type!="hidden"][type!="checkbox"][type!="submit"][type!="button"],input[type="hidden"][name!="form_event"][name!="form_name"]').not('.platform_dont_clear').val('');
     this.find('textarea').not('.platform_dont_clear').val('');
     this.find('textarea.texteditor').summernote('reset');
@@ -143,7 +158,7 @@ $.fn.clearForm = function() {
     return this;
 }
 
-$.fn.attachErrors = function(errors) {
+$.fn.xxattachErrors = function(errors) {
     var form = this;
     $.each(errors, function(form_id, error_message) {
         if (form_id == '__global') {
@@ -156,7 +171,7 @@ $.fn.attachErrors = function(errors) {
     
 }
 
-$.fn.attachValues = function(values) {
+$.fn.xxattachValues = function(values) {
     var form = $(this).closest('form');    
     $.each(values, function(key, value) {
         // Get field by figuring out the ID
@@ -173,7 +188,7 @@ $.fn.attachValues = function(values) {
     
 }
 
-$.fn.loadValues = function(script, parameters = {}, onload = null) {
+$.fn.xxloadValues = function(script, parameters = {}, onload = null) {
     var element = this;
     $.post(script, parameters, function(data) {
         if (data.status == 0) {
@@ -189,7 +204,7 @@ $.fn.loadValues = function(script, parameters = {}, onload = null) {
     return this;
 }
 
-function add_errors_to_form(form, errors) {
+function xxadd_errors_to_form(form, errors) {
     $.each(errors, function(form_id, error_message) {
         form_id = form_id.replace(/\[/g,'\\[').replace(/\]/g,'\\]');
         $('#'+form_id, form).setError(error_message);
@@ -204,7 +219,7 @@ Platform.Form = {
      * @param {jQuery} field_selector
      * @param {Object} option
      */
-    addOption: function(field_selector, option) {
+    xxaddOption: function(field_selector, option) {
         
     },
 
@@ -212,7 +227,7 @@ Platform.Form = {
      * Clear the value from a field
      * @param {jQuery} field_selector
      */
-    clearValue: function(field_selector) {
+    xxclearValue: function(field_selector) {
         field_selector.each(function() {
             // Skip if not platform-field
             if (! $(this).is('.platform_form_field')) return true;
@@ -278,7 +293,7 @@ Platform.Form = {
      * @param {jQuery} field_selector
      * @returns {mixed}
      */
-    getValue: function(field_selector) {
+    xxgetValue: function(field_selector) {
         // Skip if not platform-field
         if (! $(field_selector).is('.platform_form_field')) return true;
         var fieldtype = $(field_selector).data('fieldclass');
@@ -349,7 +364,7 @@ Platform.Form = {
      * @param {jQuery} field_selector
      * @param {Object} option
      */
-    removeOption: function(field_selector, option) {
+    xxremoveOption: function(field_selector, option) {
         
     },
     
@@ -358,7 +373,7 @@ Platform.Form = {
      * @param {jQuery} field_selector
      * @param {Object} value
      */
-    setValue: function(field_selector, value) {
+    xxsetValue: function(field_selector, value) {
         field_selector.each(function() {
             // Skip if not platform-field
             if (! $(this).is('.platform_form_field')) return true;
@@ -463,7 +478,7 @@ Platform.Form = {
      * @param {bool} show_error
      * @returns {bool}
      */
-    validate: function(field_selector, show_error) {
+    xxvalidate: function(field_selector, show_error) {
         
     }
     

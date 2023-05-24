@@ -1,16 +1,10 @@
 <?php
 namespace Platform\UI;
 
-use Platform\Page;
-use Platform\Form;
+use Platform\Page\Page;
+use Platform\Form\Form;
 
 class Component {
-    
-    /**
-     * Used to store an attached form ID
-     * @var string
-     */
-    private $attached_form_id = false;
     
     /**
      * Indicate if this component can be disabled.
@@ -37,10 +31,17 @@ class Component {
     private $classes = array();
     
     /**
+     * The component class of this component
+     * @var type
+     */
+    protected static $component_class = false;
+
+    /**
      * Component ID for HTML
      * @var bool|string 
      */
     private $component_id = false;
+    
     
     /**
      * Data for html tag
@@ -90,6 +91,12 @@ class Component {
      * @var array
      */
     protected $registered_events = [];
+
+    /**
+     * Used to store one or more attached form IDs
+     * @var string
+     */
+    private $registered_form_ids = [];
     
     /**
      * Sub components to this component
@@ -181,14 +188,6 @@ class Component {
     }
     
     /**
-     * Attach a form for using IO functions
-     * @param Form $form
-     */
-    public function attachIOForm(Form $form) {
-        $this->attached_form_id = $form->getFormId();
-    }
-    
-    /**
      * Check if this component is allowed to render
      * @return bool True if this component will render.
      */
@@ -202,6 +201,22 @@ class Component {
      */
     public static function CSSFile(string $css_file) {
         Page::CSSFile($css_file);
+    }
+    
+    /**
+     * Decode properties into this object
+     * @param string $properties
+     */
+    public function decodeProperties(string $properties) {
+        $this->properties = json_decode($properties, true);
+    }
+    
+    /**
+     * Get the class of this component
+     * @return string
+     */
+    public static function getComponentClass() : string {
+        return static::$component_class ?: '';
     }
     
     /**
@@ -230,7 +245,7 @@ class Component {
      * @return string
      */
     public function getEncodedProperties() : string {
-        return base64_encode(serialize($this->properties));
+        return json_encode($this->properties);
     }
 
     /**
@@ -309,25 +324,23 @@ class Component {
     }
 
     /**
+     * Attach a form for using IO functions
+     * @param Form|string $form or form ID
+     */
+    public function registerForm($form) {
+        $this->registered_form_ids[] = $form instanceof Form ? $form->getFormId() : $form;
+    }
+
+    /**
      * Renders the component
      */
     public function render() {
         if (! $this->is_ready) $this->prepareData();
         if (! $this->canRender()) return;
-        if ($this->attached_form_id) $this->addData('attached_form_id', $this->attached_form_id);
         
         $classes = $this->classes;
-        $classes[] = 'platform_component';
-        $classes[] = 'platform_component_'.$this->getName();
+        if ($this->getComponentClass()) $classes[] = $this->getComponentClass();
 
-        // Add parent object names
-        foreach (class_parents($this) as $class_name) {
-            $name = strtolower($class_name);
-            if (strpos($name,'\\')) $name = substr($name,strrpos($name,'\\')+1);
-            if ($name == 'component') continue;
-            $classes[] = 'platform_component_'.$name;
-        }
-        
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
         
         if (static::$can_redraw) {
@@ -338,6 +351,7 @@ class Component {
         $this->addData('componentproperties', $this->getEncodedProperties());
         
         if (count($this->registered_events)) $this->addData('registered_events', implode(',',$this->registered_events));
+        if (count($this->registered_form_ids)) $this->addData('registered_form_ids', implode(',',$this->registered_form_ids));
         
         echo '<div class="'.implode(' ',$classes).'" id="'.$this->getID().'"';
         foreach ($this->data as $key => $data) {

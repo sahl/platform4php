@@ -1,4 +1,4 @@
-addCustomPlatformFunction(function(item) {
+Platform.addCustomFunction(function(item) {
     $('textarea.texteditor', item).each(function() {
         var element = $(this);
         element.summernote({

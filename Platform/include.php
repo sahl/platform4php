@@ -1,6 +1,6 @@
 <?php
 use Platform\Utilities\Translation;
-use Platform\Page;
+use Platform\Page\Page;
 
 $configfile = __DIR__.'/../../platform_config.php';
 
@@ -45,18 +45,20 @@ set_error_handler('Platform\\Utilities\\Errorhandler::handler');
 umask(002);
 // INCLUDES
         
-// Translation system
-Page::queueJSFile('/Platform/Utilities/js/translation.js');
         
 // Jquery        
 Page::queueJSFile('/Platform/Jquery/js/jquery.js');
 Page::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
 Page::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 
-Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
-
 // General Platform
 Page::queueJSFile('/Platform/Page/js/general.js');
+
+// Translation system
+Page::queueJSFile('/Platform/Utilities/js/translation.js');
+
+Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
+
 Page::queueCSSFile('/Platform/Page/css/platform.css');
 Page::queueJSFile('/Platform/Page/js/menuitem.js');
 

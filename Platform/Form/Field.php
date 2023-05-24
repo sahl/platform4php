@@ -1,11 +1,12 @@
 <?php
 namespace Platform\Form;
 
-use Platform\Form;
-use Platform\Utilities;
+use Platform\Form\Form;
+use Platform\UI\Component;
+use Platform\Utilities\Utilities;
 use Platform\Utilities\Errorhandler;
 
-class Field {
+class Field extends Component {
     
     const LABEL_ALIGN_TOP = 1;
     const LABEL_ALIGN_LEFT = 2;
@@ -20,23 +21,7 @@ class Field {
     const FIELD_SIZE_SMALL = '120px';
     const FIELD_SIZE_TINY = '50px';
     
-    /**
-     * Classes to add to form field
-     * @var array 
-     */
-    protected $classes = array('platform_form_field');
-    
-    /**
-     * Classes to add to form field container
-     * @var array
-     */
-    protected $container_classes = array('platform_form_field_container');
-    
-    /**
-     * Special styles for the container
-     * @var array
-     */
-    protected $container_styles = array();
+    static protected $component_class = 'platform_component_form_field';
     
     /**
      * The current default label placement
@@ -129,6 +114,18 @@ class Field {
     protected $placeholder = '';
     
     /**
+     * Classes to apply to field
+     * @var array
+     */
+    protected $field_classes = [];
+    
+    /**
+     * Styles to apply to field
+     * @var array
+     */
+    protected $field_styles = [];
+    
+    /**
      * Field value
      * @var object 
      */
@@ -140,78 +137,86 @@ class Field {
      */
     protected $additional_attributes = '';
     
+    public function __construct() {
+        parent::__construct();
+        $this->addClass('platform_field_validate');
+        $this->addFieldClass('platform_form_field');
+        static::JSFile(Utilities::directoryToURL(__DIR__).'js/Field.js');
+    }
+    
     /**
      * Construct the form field
      * @param string $label Field label
      * @param string $name Field name
      * @param array $options Field options
      */
-    public function __construct(string $label, string $name, array $options = array()) {
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = new Static();
         if (in_array($name, array('form_event', 'form_name', 'form_hidden_fields'))) trigger_error('Used reserved form name', E_USER_ERROR);
-        $this->label = $label;
-        $this->name = $name;
+        $field->label = $label;
+        $field->name = $name;
         
-        $this->setLabelAlignment(self::getDefaultLabelAlignment());
+        $field->setLabelAlignment(self::getDefaultLabelAlignment());
         
         if (array_key_exists('required', $options)) {
-            $this->is_required = true;
+            $field->is_required = true;
             unset($options['required']);
         }
         if (array_key_exists('value', $options)) {
-            $this->setValue($options['value']);
+            $field->setValue($options['value']);
             unset($options['value']);
         }
         if (array_key_exists('options', $options)) {
-            $this->setOptions($options['options']);
+            $field->setOptions($options['options']);
             unset($options['options']);
         }
         if (array_key_exists('dont-clear', $options)) {
-            $this->addClass('platform_dont_clear');
+            $field->addFieldClass('platform_dont_clear');
             unset($options['dont-clear']);
         }
         if (array_key_exists('heading', $options)) {
-            $this->setHeading($options['heading']);
+            $field->setHeading($options['heading']);
             unset($options['heading']);
         }
         if (array_key_exists('class', $options)) {
-            $this->addClass($options['class']);
+            $field->addFieldClass($options['class']);
             unset($options['class']);
         }
         if (array_key_exists('containerclass', $options)) {
-            $this->addContainerClass($options['containerclass']);
+            $field->addContainerClass($options['containerclass']);
             unset($options['containerclass']);
         }        
         if (array_key_exists('container-style', $options)) {
-            $this->container_styles[] = $options['container-style'];
+            $field->container_styles[] = $options['container-style'];
             unset($options['container-style']);
         }        
         if (array_key_exists('field-width', $options)) {
-            $this->setFieldWidth($options['field-width']);
+            $field->setFieldWidth($options['field-width']);
             unset($options['field-width']);
         }
         if (array_key_exists('placeholder', $options)) {
-            $this->setPlaceholder($options['placeholder']);
+            $field->setPlaceholder($options['placeholder']);
             unset($options['placeholder']);
         }
         if (array_key_exists('label-alignment', $options)) {
             switch (strtolower($options['label-alignment'])) {
                 case 'auto': 
-                    $this->setLabelAlignment(self::LABEL_ALIGN_AUTO);
+                    $field->setLabelAlignment(self::LABEL_ALIGN_AUTO);
                     break;
                 case 'top': 
-                    $this->setLabelAlignment(self::LABEL_ALIGN_TOP);
+                    $field->setLabelAlignment(self::LABEL_ALIGN_TOP);
                     break;
                 case 'bottom': 
-                    $this->setLabelAlignment(self::LABEL_ALIGN_BOTTOM);
+                    $field->setLabelAlignment(self::LABEL_ALIGN_BOTTOM);
                     break;
                 case 'left': 
-                    $this->setLabelAlignment(self::LABEL_ALIGN_LEFT);
+                    $field->setLabelAlignment(self::LABEL_ALIGN_LEFT);
                     break;
                 case 'right': 
-                    $this->setLabelAlignment(self::LABEL_ALIGN_RIGHT);
+                    $field->setLabelAlignment(self::LABEL_ALIGN_RIGHT);
                     break;
                 case 'none': 
-                    $this->setLabelAlignment(self::LABEL_ALIGN_NONE);
+                    $field->setLabelAlignment(self::LABEL_ALIGN_NONE);
                     break;
                 default:
                     trigger_error('Unknown alignment: '.$options['label-alignment'], E_USER_ERROR);
@@ -220,55 +225,44 @@ class Field {
         }
         
         if (array_key_exists('label-width', $options)) {
-            $this->setLabelWidth($options['label-width']);
+            $field->setLabelWidth($options['label-width']);
             unset($options['label-width']);
         }
         
         if (array_key_exists('autofocus', $options)) {
-            $this->addClass('platform_autofocus');
+            $field->addFieldClass('platform_autofocus');
             unset($options['autofocus']);
         }
         
         if (array_key_exists('group', $options)) {
-            $this->setGroup($options['group']);
+            $field->setGroup($options['group']);
             unset($options['group']);
         }
         
-        if ($this->is_required) $this->classes[] = 'form_required_field';
+        if ($field->is_required) $field->addClass('form_required_field');
         
         foreach ($options as $key => $val) {
-            $this->additional_attributes .= ' '.$key.'="'.$val.'"';
+            $field->additional_attributes .= ' '.$key.'="'.$val.'"';
         }
+        return $field;
     }
     
     /**
-     * Add one or more class to the field
+     * Add one or more class to the field itself
      * @param string|array $classes Class name or array of class names
      */
-    public function addClass($classes) {
-        Errorhandler::checkParams($classes, array('string', 'array'));
+    public function addFieldClass($classes) {
         if (! is_array($classes)) $classes = array($classes);
-        foreach ($classes as $class) $this->classes[] = $class;
-    }
-    
-    /**
-     * Add one or more class to the container of the field
-     * @param string|array $classes Class name or array of class names
-     */
-    public function addContainerClass($classes) {
-        Errorhandler::checkParams($classes, array('string', 'array'));
-        if (! is_array($classes)) $classes = array($classes);
-        foreach ($classes as $class) $this->container_classes[] = $class;
+        foreach ($classes as $class) $this->field_classes[] = $class;
     }
     
     /**
      * Add a style to the container of this field
      * @param string|array $styles Style or array of styles
      */
-    public function addContainerStyle($styles) {
-        Errorhandler::checkParams($styles, array('string', 'array'));
+    public function addFieldStyle($styles) {
         if (! is_array($styles)) $styles = array($styles);
-        foreach ($styles as $style) $this->container_styles[] = $style;
+        foreach ($styles as $style) $this->field_styles[] = $style;
     }
     
     /**
@@ -281,7 +275,7 @@ class Field {
     
     /**
      * Attach this field to a form
-     * @param \Platform\Form $form
+     * @param Form $form
      */
     public function attachToForm(Form $form) {
         $this->form = $form;
@@ -300,14 +294,6 @@ class Field {
     protected function getAutoLabelAlignment() : int {
         if ($this->form) return $this->form->getDefaultLabelAlignment ();
         return self::LABEL_ALIGN_LEFT;
-    }
-    
-    /**
-     * Get a string with all classes.
-     * @return string
-     */
-    public function getClassString() : string {
-        return implode(' ',$this->classes);
     }
     
     /**
@@ -336,16 +322,16 @@ class Field {
         return $class;
     }
     
+    public function getFieldClasses() : string {
+        return implode(' ', $this->field_classes);
+    }
+    
     /**
      * Get current placeholder text for this field
      * @return string
      */
     public function getPlaceholder() : string {
         return $this->placeholder;
-    }
-    
-    public function getStyleString() : string {
-        return implode(';',$this->container_styles);
     }
     
     /**
@@ -450,9 +436,7 @@ class Field {
     /**
      * Render the field
      */
-    public function render() {
-        echo '<div data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getContainerClassString().'" id="'.$this->getFieldIdForHTML().'_container" style="min-height: '.$this->row_height.'px;'.$this->getStyleString().'">';
-
+    public function renderContent() {
         // Handle alignment
         if (! $this->getLabel()) $this->setLabelAlignment (self::LABEL_ALIGN_NONE);
         
@@ -494,8 +478,6 @@ class Field {
                 $this->renderErrorContainer($this->errortext);
             break;
         }
-        
-        echo '</div>';
     }
     
     /**
@@ -574,7 +556,7 @@ class Field {
      * Set the form to focus this field
      */
     public function setFocus() {
-        $this->addClass('platform_autofocus');
+        $this->addFieldClass('platform_autofocus');
     }
     
     /**

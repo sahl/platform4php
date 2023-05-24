@@ -3,9 +3,10 @@ namespace Platform\Form;
 
 class CheckboxField extends Field {
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
-        $this->classes[] = 'platform_checkbox';
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = parent::Field($label, $name, $options);
+        $field->addClass('platform_checkbox');
+        return $field;
     }
     
     public function parse($value) : bool {
@@ -16,6 +17,6 @@ class CheckboxField extends Field {
     
     public function renderInput() {
         $checked = $this->value ? ' checked' : '';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" type="checkbox" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="1"'.$this->additional_attributes.$checked.'> ';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" type="checkbox" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="1"'.$this->additional_attributes.$checked.'> ';
     }
 }

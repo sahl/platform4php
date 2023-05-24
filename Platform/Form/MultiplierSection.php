@@ -1,7 +1,7 @@
 <?php
 namespace Platform\Form;
 
-use Platform\Form;
+use Platform\Form\Form;
 
 class MultiplierSection extends Field {
     
@@ -65,7 +65,7 @@ class MultiplierSection extends Field {
 
     /**
      * Attach this field to a form
-     * @param \Platform\Form $form
+     * @param \Platform\Form\Form $form
      */
     public function attachToForm(Form $form) {
         $this->form = $form;

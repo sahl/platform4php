@@ -1,7 +1,7 @@
 <?php
 namespace Platform\UI\Menu;
 
-use Platform\Page;
+use Platform\Page\Page;
 use Platform\UI\Component;
 use Platform\Utilities;
 

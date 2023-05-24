@@ -1,4 +1,4 @@
-addCustomPlatformFunction(function(item) {
+Platform.addCustomFunction(function(item) {
     platform_add_multiplier_functionality($('.platform_form_multiplier_element', item));
     
     $('.platform_sortable', item).sortable({

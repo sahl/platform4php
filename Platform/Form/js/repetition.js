@@ -1,4 +1,4 @@
-addCustomPlatformFunction(function(item) {
+Platform.addCustomFunction(function(item) {
     $('.repetition_field', item).each(function() {
         var element = $(this);
         

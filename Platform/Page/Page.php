@@ -1,5 +1,5 @@
 <?php
-namespace Platform;
+namespace Platform\Page;
 
 use Platform\Utilities\Translation;
 
@@ -135,9 +135,7 @@ class Page {
             echo '<link rel="stylesheet" href="'.$css_file.'" type="text/css">';
         }
         
-        if (Translation::isEnabled()) {
-            Translation::renderHeadSection();
-        }
+        Translation::renderHeadSection();
         
         if (! is_array($js_files)) $js_files = array($js_files);
         $js_files = array_merge(self::$js_files, $js_files);

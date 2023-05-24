@@ -3,8 +3,8 @@ namespace Platform\Server;
 
 use Platform\Filter;
 use Platform\Platform;
-use Platform\Server;
-use Platform\User;
+use Platform\Server\Server;
+use Platform\Security\User;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Database;
 
@@ -288,7 +288,7 @@ class Instance extends \Platform\Datarecord {
         \Platform\File::ensureInDatabase();
         \Platform\Utilities\Mail::ensureInDatabase();
         \Platform\ExtensibleField::ensureInDatabase();
-        \Platform\User::ensureInDatabase();
+        \Platform\Security\User::ensureInDatabase();
         \Platform\Property::ensureInDatabase();
         \Platform\Currency\Rate::ensureInDatabase();
     }

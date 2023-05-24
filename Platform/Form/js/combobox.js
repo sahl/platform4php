@@ -1,4 +1,4 @@
-addCustomPlatformFunction(function(item) {
+Platform.addCustomFunction(function(item) {
     $('.platform_combobox', item).each(function() {
         var element = $(this);
         // Destroy an already present autocomplete
