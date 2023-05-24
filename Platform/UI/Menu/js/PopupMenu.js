@@ -1,5 +1,8 @@
 addPlatformComponentHandlerFunction('popupmenu', function(item) {
     item.on('appear', function(event, clickevent, parameters) {
+        if (!GlobalInterface.openPopup(item, platform_PopupMenu_hide))  // check if popup is allowed
+            return;
+        
         item.trigger('popup_open');
         if (parameters == null) parameters = {};
         var element = parameters.appear_on ? parameters.appear_on : clickevent.target;
@@ -30,8 +33,6 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
                 }
             break;
         }
-        // Close other popup menus
-        platform_PopupMenu_hide();
         // Adjust for any parent absolute container
         item.css('left', 0);
         item.css('top', 0);
@@ -67,5 +68,7 @@ addPlatformComponentHandlerFunction('popupmenu', function(item) {
 $(window).on('click', platform_PopupMenu_hide);
 $(window).on('resize', platform_PopupMenu_hide);
 function platform_PopupMenu_hide() {
-    $('.platform_component_popupmenu:visible').hide().trigger('disappear');
+    if ($('.platform_component_popupmenu:visible').length == 0)   return;
+    $('.platform_component_popupmenu').hide().trigger('disappear');
+    GlobalInterface.clearPopup();
 }
