@@ -87,7 +87,7 @@ class Time {
      */
     public static function daysInMonth(int $month, int $year) : int {
         $timestamp = mktime(0, 0, 0, $month, 1, $year);
-        return date('t', $timestamp);
+        return gmdate('t', $timestamp);
     }
     
     /**
@@ -105,7 +105,7 @@ class Time {
      * @return string
      */
     public function get(string $format = 'Y-m-d H:i:s') {
-        return $this->timestamp !== null ? date($format, $this->timestamp) : null;
+        return $this->timestamp !== null ? gmdate($format, $this->timestamp) : null;
     }
     
     /**
@@ -121,7 +121,7 @@ class Time {
      * @return string
      */
     public function getDate() : string {
-        return date('Y-m-d', $this->timestamp);
+        return gmdate('Y-m-d', $this->timestamp);
     }
     
     /**
@@ -137,7 +137,7 @@ class Time {
      * @return int
      */
     public function getDay() : int {
-        return date('j', $this->timestamp);
+        return gmdate('j', $this->timestamp);
     }
     
     /**
@@ -166,7 +166,7 @@ class Time {
      * @return int Days in month
      */
     public function getDaysInMonth() : int {
-        return date('t', $this->timestamp);
+        return gmdate('t', $this->timestamp);
     }
 
     /**
@@ -194,7 +194,7 @@ class Time {
     }
     
     public function getHour() : int {
-        return (int)date('G', $this->timestamp);
+        return (int)gmdate('G', $this->timestamp);
     }
     
     /**
@@ -216,7 +216,7 @@ class Time {
     }
     
     public function getMinute() : int {
-        return (int)date('i', $this->timestamp);
+        return (int)gmdate('i', $this->timestamp);
     }
     
     /**
@@ -224,7 +224,7 @@ class Time {
      * @return int
      */
     public function getMonth() : int {
-        return date('n', $this->timestamp);
+        return gmdate('n', $this->timestamp);
     }
     
     /**
@@ -310,7 +310,7 @@ class Time {
     }
     
     public function getSecond() : int {
-        return (int)date('s', $this->timestamp);
+        return (int)gmdate('s', $this->timestamp);
     }
 
     /**
@@ -318,7 +318,7 @@ class Time {
      * @return string
      */
     public function getTime() : string {
-        return date('H:i:s', $this->timestamp);
+        return gmdate('H:i:s', $this->timestamp);
     }    
     
     /**
@@ -343,7 +343,7 @@ class Time {
      * @return int
      */
     public function getWeek() : int {
-        return (int)date('W', $this->timestamp);
+        return (int)gmdate('W', $this->timestamp);
     }
     
     /**
@@ -351,7 +351,7 @@ class Time {
      * @return int
      */
     public function getWeekday() : int {
-        return (int) date('N', $this->timestamp);
+        return (int) gmdate('N', $this->timestamp);
     }
     
     /**
@@ -376,7 +376,7 @@ class Time {
      * @return int
      */
     public function getYear() : int {
-        return (int) date('Y', $this->timestamp);
+        return (int) gmdate('Y', $this->timestamp);
     }
     
     /**
@@ -564,7 +564,7 @@ class Time {
      */
     public static function weeksInYear(int $year) : int {
         $ts = mktime(0,0,0,12,28,$year);
-        return (int)date('W', $ts);
+        return (int)gmdate('W', $ts);
     }
     
     private static $timezone_array = [
