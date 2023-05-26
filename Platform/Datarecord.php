@@ -2055,7 +2055,8 @@ class Datarecord implements DatarecordReferable {
             switch ($definition['fieldtype']) {
                 case self::FIELDTYPE_DATE:
                 case self::FIELDTYPE_DATETIME:
-                    $metadata[$key] = $this->values[$key]->get();
+                    if ($this->values[$key] && $this->values[$key] instanceof Time)
+                        $metadata[$key] = $this->values[$key]->get();
                     break;
                 default:
                     $metadata[$key] = $this->values[$key];
@@ -2427,6 +2428,7 @@ class Datarecord implements DatarecordReferable {
             $fielddefinitions = array();
             foreach ($this->getChangedFields() as $field) {
                 $definition = $this->getFieldDefinition($field);
+                if ($definition['store_in_database']) continue;
                 $fielddefinitions[] = self::getAssignmentForDatabase($field, $this->values[$field]);
             }
             $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
