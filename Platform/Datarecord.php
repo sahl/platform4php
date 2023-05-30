@@ -2428,7 +2428,7 @@ class Datarecord implements DatarecordReferable {
             $fielddefinitions = array();
             foreach ($this->getChangedFields() as $field) {
                 $definition = $this->getFieldDefinition($field);
-                if ($definition['store_in_database']) continue;
+                if ($definition['store_in_metadata']) continue;
                 $fielddefinitions[] = self::getAssignmentForDatabase($field, $this->values[$field]);
             }
             $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
