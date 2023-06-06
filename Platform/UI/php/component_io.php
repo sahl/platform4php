@@ -11,7 +11,7 @@ if ($_POST['event'] == '__timedio') {
             continue;
         }
         $component = new $class();
-        $component->decodeProperties($payload['componentproperties']);
+        if ($payload['componentproperties']) $component->decodeProperties($payload['componentproperties']);
         $component->setID($payload['componentid']);
         $component->prepareData();
         $_POST = $payload['values'];
@@ -30,7 +30,7 @@ $component = new $class();
 
 if (! $component instanceof \Platform\UI\Component) die('Not a component');
 
-$component->decodeProperties($_POST['componentproperties']);
+if ($_POST['componentproperties']) $component->decodeProperties($_POST['componentproperties']);
 $component->setID($_POST['componentid']);
 $component->prepareData();
 

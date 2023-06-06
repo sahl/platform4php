@@ -48,18 +48,9 @@ class Form extends Component {
     private $validationfunctions = array();
     
     public function __construct() {
-        Page::JSFile('/Platform/Form/js/autosize.js');
-        Page::JSFile('/Platform/Form/js/form.js');
-        Page::JSFile('/Platform/Form/js/multiplier.js');
-        Page::JSFile('/Platform/Form/js/repetition.js');
-        Page::JSFile('/Platform/Form/js/combobox.js');
-        Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
-        Page::JSFile('/Platform/Form/js/texteditor.js');
-        Page::CSSFile('/Platform/Form/css/form.css');
-        Page::CSSFile('/Platform/Form/css/layout.css');
-        Page::CSSFile('/Platform/Form/css/texteditor.css');
-        Page::CSSFile('/Platform/Form/css/repetition.css');
-        Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
+        Page::JSFile('/Platform/Form/js/Form.js');
+        Page::CSSFile('/Platform/Form/css/Form.css');
+        Page::CSSFile('/Platform/Form/css/Layout.css');
         $this->addFormFieldNameSpace('Platform\\Form');
         
         $this->addPropertyMap(['form_id' => '']);
@@ -183,7 +174,7 @@ class Form extends Component {
      * @param string $html HTML to add
      */
     public function addHTML(string $html) {
-        $this->addField(new HTML($html));
+        $this->addField(HTML::HTML($html));
     }
 
     /**
@@ -356,16 +347,6 @@ class Form extends Component {
         $this->setValues($values);
     }
     
-    public function handleIO(): array {
-        switch($_POST['event']) {
-            case 'currency_lookup':
-                if (!is_numeric($_POST['foreignvalue']) || !Currency::isValidCurrency($_POST['currency'])) return ['status' => 0];
-                $rate = Rate::getRate($_POST['currency'], Time::today());
-                return ['status' => 1, 'localvalue' => $_POST['foreignvalue']/($rate/100)];
-        }
-        return parent::handleIO();
-    }
-    
     /**
      * Inject a value into a complex field name
      * @param string $fieldname Complex field name
@@ -390,7 +371,7 @@ class Form extends Component {
      * @return bool
      */
     public function isSubmitted() : bool {
-        return ($_POST['form_name'] == $this->form_id);
+        return ($_POST['form_name'] && $_POST['form_name'] == $this->form_id);
     }
     
     /**
@@ -464,9 +445,9 @@ class Form extends Component {
                         $storedfields[] = $fields;
                         $fields = array();
                     }
-                    $fields[] = new HTML($tag['text']);
+                    $fields[] = HTML::HTML($tag['text']);
                 } else {
-                    $fields[] = new HTML('<'.$element);
+                    $fields[] = HTML::HTML('<'.$element);
                 }
             } else {
                 if (strtolower($tag['tag']) == '/multiplier') {
@@ -476,9 +457,9 @@ class Form extends Component {
                     $multiplier->addFields($fields);
                     reset($restorefields);
                     $fields = $restorefields;
-                    $fields[] = new HTML($tag['text']);
+                    $fields[] = HTML::HTML($tag['text']);
                 }
-                $fields[] = new HTML('<'.$element);
+                $fields[] = HTML::HTML('<'.$element);
             }
         }
         return $fields;

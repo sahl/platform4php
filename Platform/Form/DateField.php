@@ -9,15 +9,20 @@ class DateField extends Field {
     
     public $field_width = self::FIELD_SIZE_SMALL;
     
-    private $allow_past = true; // if it is allowed to select a date in the past
+    public $allow_past = true; // if it is allowed to select a date in the past
     
-    public function __construct(string $label, string $name, array $options = array()) {
+    public function __construct() {
+        parent::__construct();
         $this->value = new Time();
+    }
+    
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = parent::Field($label, $name, $options);
         if (isset($options['allow_past'])) {
-            $this->allow_past = (bool)$options['allow_past'];
+            $field->allow_past = (bool)$options['allow_past'];
             unset($options['allow_past']);
         }
-        parent::__construct($label, $name, $options);
+        return $field;
     }
     
     public function setValue($value) {
@@ -27,6 +32,8 @@ class DateField extends Field {
     
     public function parse($value) : bool {
         if (! parent::parse($value)) return false;
+        $timezone = Time::getDisplayTimeZoneFromSession();
+        if ($timezone) $value .= ' '.$timezone;
         $this->value = new Time($value);
         return true;
     }
@@ -34,7 +41,7 @@ class DateField extends Field {
     public function renderInput() {
         // Determine all attributes
         $attributes = ['data-fieldclass' => $this->getFieldClass(),
-                       'class' => $this->getClassString(),
+                       'class' => $this->getFieldClasses(),
                        'style'=> 'max-width: '.$this->field_width.';"',
                        'type' => 'date',
                        'name' => $this->name,

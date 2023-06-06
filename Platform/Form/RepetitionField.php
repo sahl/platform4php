@@ -7,16 +7,21 @@ use Platform\Utilities\Translation;
 
 class RepetitionField extends Field {
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
-        $this->addContainerClass('repetition_field');
+    protected static $component_class = 'platform_component_repetition_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/RepetitionField.js'); 
+        static::CSSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/css/RepetitionField.css'); 
         $this->value = ['type' => 1, 'interval' => 1, 'metadata' => []];
+        $this->addClass('repetition_field');
     }
     
     public function parse($value) : bool {
         if (is_array($value)) {
             // Pack data
-            $final_value = [];
+            $final_value = ['metadata' => []];
             
             foreach ($value as $key => $v) {
                 switch ($key) {
@@ -31,8 +36,7 @@ class RepetitionField extends Field {
                         break;
                 }
             }
-            if (count($final_value)) $final_value['metadata'] = [];
-            else $final_value = null;
+            if (! count($final_value)) $final_value = null;
             $this->value = $final_value;
         } else {
             $this->value = ['type' => 1, 'interval' => 1, 'metadata' => []];
@@ -69,25 +73,25 @@ class RepetitionField extends Field {
         $month_options = Time::getMonthsArray();
         
         
-        $type_field = new SelectField('', $this->name.'[type]', ['required' => $this->is_required, 'class' => 'repetition_type', 'options' => $type_options, 'value' => $value['type']]);
+        $type_field = SelectField::Field('', $this->name.'[type]', ['required' => $this->is_required, 'class' => 'repetition_type', 'options' => $type_options, 'value' => $value['type']]);
         
-        $interval_field = new NumberField(Translation::translateForUser('Every'), $this->name.'[interval]', ['required' => true, 'class' => 'repetition_interval', 'value' => $value['interval'] ?: 1]);
+        $interval_field = NumberField::Field(Translation::translateForUser('Every'), $this->name.'[interval]', ['required' => true, 'class' => 'repetition_interval', 'value' => $value['interval'] ?: 1]);
         
-        $weekdays_field = new MulticheckboxField(Translation::translateForUser('Weekdays'), $this->name.'[weekdays]', ['required' => true, 'class' => 'weekdays', 'value' => $value['weekdays'], 'options' => $weekday_options]);
+        $weekdays_field = MulticheckboxField::Field(Translation::translateForUser('Weekdays'), $this->name.'[weekdays]', ['required' => true, 'class' => 'weekdays', 'value' => $value['weekdays'], 'options' => $weekday_options]);
         
-        $months_field = new MulticheckboxField(Translation::translateForUser('In these months'), $this->name.'[months]', ['required' => true, 'class' => 'months', 'value' => $value['months'], 'options' => $month_options]);
+        $months_field = MulticheckboxField::Field(Translation::translateForUser('In these months'), $this->name.'[months]', ['required' => true, 'class' => 'months', 'value' => $value['months'], 'options' => $month_options]);
         
-        $monthday_field = new SelectField(Translation::translateForUser('On the'), $this->name.'[monthday]', ['required' => true, 'class' => 'monthday', 'value' => $value['monthday'], 'options' => $monthday_options]);
+        $monthday_field = SelectField::Field(Translation::translateForUser('On the'), $this->name.'[monthday]', ['required' => true, 'class' => 'monthday', 'value' => $value['monthday'], 'options' => $monthday_options]);
         
-        $occurrence_field = new SelectField('', $this->name.'[occurrence]', ['required' => true, 'class' => 'occurrence', 'value' => $value['occurrence'], 'options' => $occurrence_options]);
+        $occurrence_field = SelectField::Field('', $this->name.'[occurrence]', ['required' => true, 'class' => 'occurrence', 'value' => $value['occurrence'], 'options' => $occurrence_options]);
         
-        $weekday_field = new SelectField('', $this->name.'[weekday]', ['required' => true, 'class' => 'weekday', 'value' => $value['weekday'], 'options' => $weekday_options]);
+        $weekday_field = SelectField::Field('', $this->name.'[weekday]', ['required' => true, 'class' => 'weekday', 'value' => $value['weekday'], 'options' => $weekday_options]);
         
-        $day_field = new SelectField(Translation::translateForUser('On the'), $this->name.'[day]', ['required' => true, 'class' => 'day', 'value' => $value['day'], 'options' => $monthday_options]);
+        $day_field = SelectField::Field(Translation::translateForUser('On the'), $this->name.'[day]', ['required' => true, 'class' => 'day', 'value' => $value['day'], 'options' => $monthday_options]);
         
-        $month_field = new SelectField('', $this->name.'[month]', ['required' => true, 'value' => $value['month'], 'class' => 'month', 'options' => $month_options]);
+        $month_field = SelectField::Field('', $this->name.'[month]', ['required' => true, 'value' => $value['month'], 'class' => 'month', 'options' => $month_options]);
         
-        echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().'">';
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" class="'.$this->getFieldClasses().'">';
 
         echo '<div class="interval_type_container">';
         $interval_field->render();

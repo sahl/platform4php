@@ -5,9 +5,15 @@ class HTML extends Field {
     
     public static $fieldcounter = 0;
     
-    public function __construct(string $html) {
-        parent::__construct('', 'htmlfield'.(self::$fieldcounter++), array());
-        $this->value = $html;
+    public static function Field(string $label, string $name, array $options = []): static {
+        if ($name == '') $name = 'html_field'.(static::$fieldcounter++);
+        return parent::Field($label, $name, $options);
+    }
+    
+    public static function HTML(string $html) {
+        $field = static::Field('', '');
+        $field->value = $html;
+        return $field;
     }
     
     public function parse($value) : bool {

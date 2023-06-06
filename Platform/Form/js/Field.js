@@ -1,11 +1,13 @@
 Platform.Form.Field = class extends Platform.Component {
     
+    initialize() {
+    }
+    
     addOption(key, value) {
-        
     }
     
     clear() {
-        
+        this.dom_node.find('input').val('');
     }
     
     clearError() {
@@ -51,4 +53,4 @@ Platform.Form.Field = class extends Platform.Component {
     }
 }
 
-Platform.Component.BindClass('platform_component_form_field', Platform.Form.Field);
+Platform.Component.bindClass('platform_component_field', Platform.Form.Field);

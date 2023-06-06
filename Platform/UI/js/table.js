@@ -1,207 +1,162 @@
-var tablebuffer = [];
-
-addPlatformComponentHandlerFunction('table', function(item) {
-    var element = item;
-    var initial_sort_completed = false;
-
-    var table_configuration = {
-        pagination: false,
-        paginationElement: $('.pagination')[0],
-    }
-    $.extend(table_configuration,item.data('tabulator_options'));
+Platform.Table = class extends Platform.Component {
     
-    item.find('.table_configuration').html('').show();
-
-    var action_buttons = [];
-    if (table_configuration['action_buttons']) {
-        action_buttons = table_configuration['action_buttons'];
-        delete table_configuration['action_buttons'];
-    }
-
-    var show_selector = false;
-    if (table_configuration['show_selector']) {
-        show_selector = true;
-        delete table_configuration['show_selector'];
-    }
-    var column_selector = false;
-    if (table_configuration['column_selector']) {
-        column_selector = true;
-        delete table_configuration['column_selector'];
-    }
+    dont_save_next_sort = false;
     
-    var itempopup_id = false;
-    var multipopup_id = false;
+    table_is_initialized = false;
     
-    if (table_configuration['platform_multipopup_id']) {
-        multipopup_id = table_configuration['platform_multipopup_id'];
-        delete table_configuration['platform_multipopup_id'];
+    item_popup_dom_node_id = false;
+    
+    multi_popup_dom_node_id = false;
+    
+    control_form_dom_node = false;
+    
+    action_buttons = [];
+    
+    table_data_url = false;
+    
+    data_request_event = null;
+    
+    platform_data_filter_as_json = null;
+    
+    filter_field = false;
+    
+    show_column_selector = false;
+    
+    add_checkbox_row = false;
+    
+    tabulator = null;
+    
+    initialize() {
+        this.initializeTabulator();
+        this.addEventListeners();
     }
     
-    if (table_configuration['platform_itempopup_id']) {
-        itempopup_id = table_configuration['platform_itempopup_id'];
-        delete table_configuration['platform_itempopup_id'];
-    }
     
-
-    var control_form = false;
-    var data_url = false;
-    if (table_configuration['control_form']) {
-        control_form = $('#'+table_configuration['control_form']);
-        // Hijack the data URL to prevent initial display.
-        data_url = table_configuration['ajaxURL'];
-        delete table_configuration['ajaxURL'];
-        delete table_configuration['control_form'];
-    }
-    
-    var data_request_event = null;
-    var jsonfilter = null;
-    // Check if we want to get data to the table through an event
-    if (table_configuration['data_request_event']) {
-        data_request_event = table_configuration['data_request_event'];
-        delete table_configuration['data_request_event'];
-        // Destroy data URL to ensure data is fetched through event
-        delete table_configuration['ajaxURL'];
-        if (table_configuration['jsonfilter']) {
-            jsonfilter = table_configuration['jsonfilter'];
-            delete table_configuration['jsonfilter'];
-        }
-    } else {
-        if (table_configuration['jsonfilter']) {
-            table_configuration['ajaxConfig'] = 'post';
-            table_configuration['ajaxParams'] = {filter: table_configuration['jsonfilter']};
-            delete table_configuration['jsonfilter'];
-        }
-    }
-
-    var filter_field = false;
-    if (table_configuration['filter_field']) {
-        filter_field = $('#'+table_configuration['filter_field']);
-        delete table_configuration['filter_field'];
-    }
-
-    var callback = false;
-    if (table_configuration['callback_function']) {
-        callback = eval(table_configuration['callback_function']);
-        delete table_configuration['callback_function'];
-    }
-
-    if (! table_configuration.data)
-        table_configuration.data = [];
-
-    var table = new Tabulator('#'+item.attr('id')+'_table', table_configuration);
-    
-    table.on('columnResized', function() {
-        saveTableLayout(element.attr('id'));
-    });
-    
-    table.on('columnMoved', function() {
-        saveTableLayout(element.attr('id'));
-    });
-    
-    table.on('dataSorted', function(sorters) {
-        if (sorters.length && initial_sort_completed) {
-            saveTableSort(element.attr('id'), sorters[0].field, sorters[0].dir);
-        }
-    });
+    initializeTabulator() {
+        var dom_node = this.dom_node;
         
-    table.on('rowSelectionChanged', function() {
-        updateMultiButtons();
-    });
-
-    function getSelectedTableRows() {
-        var ids = [];
-        $.each(table.getSelectedRows(), function(i, elements) {
-          ids.push(elements._row.data.id);
-        });
-        return ids;
-    }
-    
-    item.on('reload_data', function() {
-        if (! control_form) {
-            initial_sort_completed = false;
-            if (data_request_event) {
-                var request = {};
-                if (jsonfilter) request.filter = jsonfilter;
-                item.trigger(data_request_event, ['__data_request_event', request, function(table_data) {
-                    table.setData(table_data);
-                    initial_sort_completed = true;
-                }]);
-            } else {
-                if (data_url) table.setData(data_url);
-                initial_sort_completed = true;
-            }
-        }
-        if (typeof callback == 'function') {
-            callback(table);
-        }
-        return true;
-    });
-    
-    if (control_form) {
-        control_form.submit(function() {
-            if (! table.initialized) {
-                // The table is not ready, so convert to auto-submit
-                $(this).addClass('platform_form_auto_submit');
-                return false;
-            }
-            item.show();
-            initial_sort_completed = false;
-            if (data_request_event) {
-                var request = makeObject(control_form.serializeArray());
-                if (jsonfilter) request.filter = jsonfilter;
-                item.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
-                    table.setData(table_data);
-                    initial_sort_completed = true;
-                }])
-            } else {
-                var request = makeObject(control_form.serializeArray());
-                if (jsonfilter) request.filter = jsonfilter;
-                table.setData(data_url, request, "post");
-            }
-            return false;
-        });
-    }
-    
-
-    table.on('tableBuilt', function() {
-        if (control_form) {
-
-            item.hide();
-
-            
-            // Do a delayed auto submit if configured
-            if (control_form.is('.platform_form_auto_submit')) control_form.submit();            
+        // The configuration array for Tabulator
+        var table_configuration = {
+            pagination: false,
+            paginationElement: $('.pagination')[0],
         }
         
-        if (filter_field) {
-            filter_field.keyup(function() {
+        // Extend the configuration with configuration data
+        $.extend(table_configuration,dom_node.data('tabulator_options'));
+        
+        // Here we read configuration options that are for Platform and not for Tabulator
+
+        // Read action buttons which is buttons that display on the individual line from the configuration array
+        if (table_configuration['action_buttons']) {
+            this.action_buttons = table_configuration['action_buttons'];
+            delete table_configuration['action_buttons'];
+        }
+
+        // Read if we should show a selector on each row
+        if (table_configuration['show_selector']) {
+            this.add_checkbox_row = true;
+            delete table_configuration['show_selector'];
+        }
+        
+        // Read if we should attach a column-selector
+        if (table_configuration['column_selector']) {
+            this.show_column_selector = true;
+            delete table_configuration['column_selector'];
+        }
+
+        // Read the name of the multi-popup dom node
+        if (table_configuration['platform_multipopup_id']) {
+            this.multi_popup_dom_node_id = table_configuration['platform_multipopup_id'];
+            delete table_configuration['platform_multipopup_id'];
+        }
+
+        // Read the name of the item-popup dom node
+        if (table_configuration['platform_itempopup_id']) {
+            this.item_popup_dom_node_id = table_configuration['platform_itempopup_id'];
+            delete table_configuration['platform_itempopup_id'];
+        }
+
+        // Read the form ID of a form controlling this table.
+        if (table_configuration['control_form']) {
+            this.control_form_dom_node = $('#'+table_configuration['control_form']);
+            // We remove the ajaxURL (if any) to prevent an initial display of the table
+            this.table_data_url = table_configuration['ajaxURL'];
+            delete table_configuration['ajaxURL'];
+            delete table_configuration['control_form'];
+        }
+
+        // Check if we have configured data to be retrieved by an event
+        if (table_configuration['data_request_event']) {
+            this.data_request_event = table_configuration['data_request_event'];
+            delete table_configuration['data_request_event'];
+            // We also destroy the ajaxURL in this case.
+            delete table_configuration['ajaxURL'];
+        }
+        
+        // Check if he have added a json filter which needs to be applied
+        if (table_configuration['jsonfilter']) {
+            this.platform_data_filter_as_json = table_configuration['jsonfilter'];
+            if (! this.data_request_event) {
+                // We only need to do this, when not receiving data through an event
+                table_configuration['ajaxConfig'] = 'post';
+                table_configuration['ajaxParams'] = {filter: table_configuration['jsonfilter']};
+            }
+            delete table_configuration['jsonfilter'];
+        }
+
+        // CHeck if we have added a speciel filter field to filter the table content
+        if (table_configuration['filter_field']) {
+            this.filter_field = $('#'+table_configuration['filter_field']);
+            delete table_configuration['filter_field'];
+        }
+
+        // If we have not provided data from the backend, we send an empty array
+        if (! table_configuration.data)
+            table_configuration.data = [];
+
+        // And now we can initialize the table
+        this.tabulator = new Tabulator('#'+dom_node.attr('id')+'_table', table_configuration);
+    }
+    
+    initializeFilterField() {
+        if (this.filter_field) {
+            this.filter_field.keyup(function() {
                 var val = $(this).val();
-                if (val) filterTable(table, val);
-                else table.clearFilter();
+                if (val) this.filterTable(val);
+                else this.tabulator.clearFilter();
             })
         }
-        
-        if (multipopup_id || itempopup_id) {
+    }
+    
+    initializePopupMenus() {
+        var component = this;
+        if (this.multi_popup_dom_node_id || this.item_popup_dom_node_id) {
+            // If we have either menu, we need to add a column for them
             var columndefinition = {width: 20, headerSort: false, hozAlign: 'center', headerHozAlign: 'center', resizable: false};
-            if (multipopup_id) {
+            if (this.multi_popup_dom_node_id) {
+                // We add a pencil icon in the top if we have a multi popup menu
                 columndefinition.title = '<i style="cursor: pointer;" class="fa fa-pencil"></i>';
                 columndefinition.headerClick = function(event) {
-                    $('#'+multipopup_id).trigger('appear', [event, {info: getSelectedTableRows()}]);
+                    $('#'+component.multi_popup_dom_node_id).platformComponent().show(event, {info: component.getSelectedRows()}); // Todo. This can be nicer
                 }
             }
-            if (itempopup_id) {
+            if (this.item_popup_dom_node_id) {
+                // We add a pencil icon to each entry, if we have an item popup menu
                 columndefinition.formatter = function(cell, formatterParams) {
                     return '<i class="fa fa-pencil"></i>';
                 }
                 columndefinition.cellClick = function(event, cell) {
-                    $('#'+itempopup_id).trigger('appear', [event, {info: [cell.getRow().getIndex()]}]);
+                    $('#'+component.item_popup_dom_node_id).platformComponent().show(event, {info: [cell.getRow().getIndex()]}); // Todo. This can be nicer
                 }
             }
-            table.addColumn(columndefinition, true);
+            // Now add the new column to the table
+            this.tabulator.addColumn(columndefinition, true);
         }
-        
-        $.each(action_buttons, function(key, element) {
-            table.addColumn({
+    }
+    
+    initializeActionbuttons() {
+        $.each(this.action_buttons, function(key, element) {
+            this.tabulator.addColumn({
                 formatter: function(cell, formatterParams) {
                     return '<i class="fa '+key+'"></i>';
                 },
@@ -210,108 +165,196 @@ addPlatformComponentHandlerFunction('table', function(item) {
                 hozAlign: 'center',
                 resizable: false,
                 cellClick: function(e, cell) {
-                    item.trigger(element, cell.getRow().getIndex());
+                    this.dom_node.trigger(element, cell.getRow().getIndex());
                 }
             }, true)
         });
+    }
+    
+    initializeTable() {
+        if (this.control_form) {
+            // If we are using a control form, we hide the table until first submit
+            this.dom_node.hide();
+            
+            // If the form should auto-submit, we do this now
+            if (this.control_form.is('.platform_form_auto_submit')) this.control_form.submit();
+        }
+        
+        this.initializeFilterField();
+        
+        this.initializePopupMenus();
+        
+        this.initializeActionbuttons();
+        
 
-        if (column_selector)
-            table.addColumn({
+        if (this.show_column_selector)
+            this.tabulator.addColumn({
                 title: '<span style="cursor: pointer;" class="fa fa-ellipsis-h"></span>', headerHozAlign: 'center', headerSort:false, width: 15, headerClick: function() {
-                    $('#'+item.prop('id')+'_component_select_dialog').dialog('open');
+                    $('#'+this.dom_node.prop('id')+'_component_select_dialog').dialog('open');
                 },
                 resizable: false
             }, false);
 
 
-        if (show_selector)
-            table.addColumn({
+        if (this.add_checkbox_row)
+            this.tabulator.addColumn({
                 formatter:"rowSelection", titleFormatter:"rowSelection", field: 'checkboxcolumn', hozAlign: 'center', headerHozAlign: 'center', headerSort:false, width: 15
             }, true);
         
-        updateMultiButtons();
+        this.updateMultiButtons();
 
-        item.trigger('reload_data');
+        this.loadData();
+    }
+    
+    addEventListeners() {
+        var component = this;
+        this.dom_node.on('columnResized', function() {
+            component.saveTableLayout(element.attr('id'));
+        });
+
+        this.dom_node.on('columnMoved', function() {
+            component.saveTableLayout(element.attr('id'));
+        });
+
+        this.dom_node.on('dataSorted', function(sorters) {
+            if (sorters.length && ! this.dont_save_next_sort) {
+                component.saveTableSort(sorters[0].field, sorters[0].dir);
+            }
+        });
+
+        this.dom_node.on('rowSelectionChanged', function() {
+            component.updateMultiButtons();
+        });
         
-    })
+        this.dom_node.on('reloadData', function() {
+            component.loadData();
+        });
+        
+        this.tabulator.on('tableBuilt', function() {
+            component.initializeTable();
+        });
 
-    function saveTableLayout(tableid) {
-       var table = getTableByID(tableid);
+        
+    }
+    
+    getSelectedRows() {
+        var ids = [];
+        $.each(this.tabulator.getSelectedRows(), function(i, elements) {
+          ids.push(elements._row.data.id);
+        });
+        return ids;
+    }
+    
+    setupControlForm() {
+        if (this.control_form) {
+            var component = this;
+            // Setup a custom submit handler for this form
+            this.control_form.submit(function() {
+                if (! component.table_is_initialized) {
+                    // We cannot submit the form before the table is initialised, so we instead convert the form to
+                    // an auto-submit
+                    $(this).addClass('platform_form_auto_submit');
+                    return false;
+                }
+                // We show the table on first submit
+                component.dom_element.show();
+                // As the submit triggers a sort, we ignore it, as it is the same sort as last time
+                component.dont_save_next_sort = true;
+                if (component.data_request_event) {
+                    // Request data using an event. We need to inject the form in the request.
+                    var request = Platform.Table.makeObject($(this).serializeArray());
+                    if (component.platform_data_filter_as_json) request.filter = component.platform_data_filter_as_json;
+                    component.dom_node.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
+                        component.tabulator.setData(table_data);
+                    }]);
+                } else {
+                    // We just need to fetch data from an url
+                    var request = Platform.Table.makeObject($(this).serializeArray());
+                    if (component.platform_data_filter_as_json) request.filter = component.platform_data_filter_as_json;
+                    component.tabulator.setData(component.table_data_url, request, "post");
+                }
+                return false;
+            });
+            
+        }
+    }
+    
+    loadData() {
+        if (this.control_form) {
+            // The form is controlled by a form, which we need to submit.
+            this.control_form.submit();
+        } else {
+            if (this.data_request_event) {
+                // We are to throw an event to fetch data
+                var request = {};
+                if (this.platform_data_filter_as_json) request.filter = this.platform_data_filter_as_json;
+                var component = this;
+                this.dom_node.trigger(this.data_request_event, ['__data_request_event', request, function(table_data) {
+                    component.tabulator.setData(table_data);
+                    component.initial_sort_completed = true;
+                }]);
+            } else {
+                // Just get data from the configured URL
+                var request = {};
+                if (component.platform_data_filter_as_json) request.filter = component.platform_data_filter_as_json;
+                component.tabulator.setData(component.table_data_url, request, "post");
+            }
+        }
+    }
+    
+    saveTableLayout() {
        var columns = [];
-       $.each(table.getColumns(), function(key, element) {
+       $.each(this.tabulator.getColumns(), function(key, element) {
            if (element._column.definition && element._column.definition.field) {
                columns.push({field: element._column.definition.field, width: element._column.width});
            }
        })
-       item.componentIO({event: 'saveorderandwidth', properties: columns});
+       this.backendIO({event: 'saveorderandwidth', properties: columns});
     }
    
-    function saveTableSort(tableid, column, direction) {
-        item.componentIO({event: 'savesort', column:column, direction: direction});
+    saveTableSort(column, direction) {
+        this.backendIO({event: 'savesort', column:column, direction: direction});
     }
     
-    function setMultiButton(element, number_of_selected_rows) {
+    static setMultiButton(element, number_of_selected_rows) {
         var available = element.data('selectable') == 0 || element.data('selectable') == 2 && number_of_selected_rows >= 1 || number_of_selected_rows == 1;
         if (available) element.removeClass('unselectable');
         else element.addClass('unselectable');
     }
     
-    function updateMultiButtons() {
-        if (! table) return;
+    updateMultiButtons() {
         var ids = [];
-        $.each(table.getSelectedRows(), function(i, elements) {
+        $.each(this.tabulator.getSelectedRows(), function(i, elements) {
           ids.push(elements._row.data.id);
         });        
         
         var number_of_selected_rows = ids.length;
         
-        $('.multi_button', item).each(function() {
-            setMultiButton($(this), number_of_selected_rows);
+        $('.multi_button', this.dom_node).each(function() {
+            Platform.Table.setMultiButton($(this), number_of_selected_rows);
         })
     }
+
+    filterTable(string) {
+        var filter_elements = [];
+        $.each(this.tabulator.getColumns(), function(key, element) {
+            if (element._column.definition && element._column.definition.field) {
+                filter_elements.push({field: element._column.definition.field, type: "like", value: string});
+            }
+        });
+        this.tabulator.setFilter([filter_elements]);
+    }    
     
-    function makeObject(array) {
+    static makeObject(array) {
         var res = {};
         array.forEach(function(val) {
             res[val.name] = val.value;
         })
         return res;
     }    
-   
-    item.on('multi_button', function(e) {
-        if ($(e.target).hasClass('unselectable')) return false;
-        var ids = [];
-        $.each(table.getSelectedRows(), function(i, elements) {
-          ids.push(elements._row.data.id);
-        });
-        item.trigger($(e.target).data('secondary_event'), ids.join());
-    })
     
-})
 
-function filterTable(table, string) {
-    var filter_elements = [];
-    $.each(table.getColumns(), function(key, element) {
-        if (element._column.definition && element._column.definition.field) {
-            filter_elements.push({field: element._column.definition.field, type: "like", value: string});
-        }
-    });
-    table.setFilter([filter_elements]);
 }
 
-function getSelectedTableIds(tableid) {
-    var table = getTableByID(tableid);
-    var ids = [];
-    if ( table != undefined) {
-        $.each(table.getSelectedRows(), function(i, elements) {
-            ids.push(elements._row.data.id);
-        })
-    }
-    return ids;
-}
-
-function getTableByID(id) {
-    if (id.charAt(0) != '#') id = '#'+id;
-    var table = Tabulator.findTable(id+'_table')[0];
-    return table;
-}
+Platform.Component.bindClass('platform_component_table', Platform.Table);
+    

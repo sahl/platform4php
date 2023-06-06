@@ -7,16 +7,18 @@ $(function() {
 
 Platform.Form = class extends Platform.Component {
     
-    apply() {
+    initialize() {
         var component = this;
         var dom_node = this.dom_node;
-        this.dom_node.submit(function(e) {
+        this.dom_node.find('form').submit(function(e) {
             if (component.validate()) {
-                e.stopImmediatePropagation();
                 return true;
             }
+            e.stopImmediatePropagation();
             return false;
         })
+
+        /*
         
         // Submit on enter for some fields
         $('.platform_form_field', this.dom_node).not('textarea').keypress(function(e) {
@@ -26,30 +28,7 @@ Platform.Form = class extends Platform.Component {
                 return false;
             }
         });
-        
-        // Add currency handler
-        $('.currency_currency,.currency_foreignvalue', this.dom_node).change(function() {
-            this.backendIO({
-                event: 'currency_lookup',
-                foreignvalue: dom_node.parent().find('.currency_foreignvalue').val(),
-                currency: dom_node.parent().find('.currency_currency').val()
-            }, function(data) {
-                if (data.status == 1) dom_node.parent().find('.currency_localvalue').val(data.localvalue);
-            })
-        })
-        $('.currency_currency', this.dom_node).change(function() {
-            if ($(this).val() == '') $(this).parent().find('.currency_foreignvalue').val('');
-        })
-
-        // Indicate on password-field when it is updated.
-        $('.platform-password',this.dom_node).change(function() {
-            $(this).closest('.platform_form_field_container').find('input[type="hidden"]').val(1);
-            return true;
-        });
-
-        // Autosize required textareas
-        autosize($('textarea.autosize', this.dom_node));
-
+        */
         // Autosubmit
         $(this.dom_node).on('component_ready', function() {
             // We cannot submit table control forms before the table is ready, so those submit is handled by the table
@@ -57,77 +36,72 @@ Platform.Form = class extends Platform.Component {
         });
     }
     
+    attachErrors(errors) {
+        var component = this;
+        $.each(errors, function(fieldname, error_text) {
+            var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+fieldname+'_component').platformComponent();
+            if (! field_component) return true;
+            field_component.setError(error_text);
+        })
+    }
+    
+    attachValues(values) {
+        var component = this;
+        $.each(values, function(fieldname, value) {
+            var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+fieldname+'_component').platformComponent();
+            if (! field_component) return true;
+            field_component.clear();
+            field_component.setValue(value);
+        })
+    }
+    
+    clear() {
+        return;
+        this.dom_node.find('.platform_form_field').each(function() {
+            $(this).platformComponent().clear();
+        });
+    }
+    
+    submit() {
+        this.dom_node.find('form').submit();
+    }
+    
     validate() {
         var allowsubmit = true;
-        this.dom_node.find('.platform_field_validate').each(function() {
-            var form_field = $(this).platformComponent();
-            form_field.clearError();
-            var result = form_field.validate();
-            if (! result) allowsubmit = false;
-        });
-        return allowsubmit;
+        var form_node = this.dom_node.find('form');
         
-        
-        // Clear all previous errors
-        $('.platform_form_global_error_container', this.dom_node).hide();
-        $('.platform_form_field,.platform_component_fieldcomponent', this.dom_node).clearError();
-        
-        // Hide last item of multipliers as these should always be empty and not submitted or validated.
-        $('.platform_form_multiplier_element', this.dom_node).each(function() {
-            if ($(this).is(':last-child')) $(this).hide();
-        });        
-
-        // Check required fields
-        $('input.form_required_field,select.form_required_field', this.dom_node).each(function() {
-            if ($(this).val().length == 0 && $(this).is(':visible') && ! $(this).is(':disabled')) {
-                $(this).setError('This is a required field');
+        this.dom_node.find('.platform_form_field').each(function() {
+            var field_component = $(this).platformComponent();
+            if (! field_component.validate()) {
                 allowsubmit = false;
             }
-            return true;
         });
-        $('.multi_checkbox_container.form_required_field:visible', this.dom_node).each(function() {
-            if (! $(this).find('input[type="checkbox"]:checked').length) {
-                $(this).setError('This is a required field');
-                allowsubmit = false;
-            }
-        })
-        
-        // Validate component fields
-        $('.platform_component_fieldcomponent', this.dom_node).each(function() {
-            $(this).trigger('validate');
-            if ($(this).hasClass('platform_form_field_error')) allowsubmit = false;
-        })
 
         // Gather hidden fields
         var hiddenfields = [];
 
-        $('.platform_form_field:hidden,.platform_form_field:disabled', this.dom_node).each(function() {
+        $('input,select,textarea', form_node).filter(':hidden,:disabled').each(function() {
             // We accept hidden fields
             if ($(this).is('[type="hidden"]')) return true;
             // We accept hidden texteditors
             if ($(this).is('.texteditor')) return true;
             var name = $(this).prop('name');
-            if ($(this).data('realname')) {
-                name = $(this).data('realname');
-            }
+            name = name.replace('[]', '');
             hiddenfields.push(name);
         });
-        if (hiddenfields.length) this.dom_node.find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
-        
+        if (hiddenfields.length) form_node.find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
+
         if (allowsubmit) {
             // Check if we should save form values
             if (this.dom_node.data('save_on_submit')) {
-                $.post('/Platform/Form/php/save_form_values.php', {destination: $(this).data('save_on_submit'), formid: $(this).prop('id'), formdata: $(this).serialize()});
+                $.post('/Platform/Form/php/save_form_values.php', {destination: this.dom_node.data('save_on_submit'), formid: form_node.prop('id'), formdata: form_node.serialize()});
             }
         }
-
-         // Show multipliers again
-        $('.platform_form_multiplier_element', this.dom_node).show();
         return allowsubmit;
     }
 }
 
-Platform.Component.BindClass('platform_component_form', Platform.Form);
+Platform.Component.bindClass('platform_component_form', Platform.Form);
 
 
 $.fn.xxsetError = function(text) {
@@ -212,7 +186,7 @@ function xxadd_errors_to_form(form, errors) {
 }
 
 
-Platform.Form = {
+Platform.xxxForm = {
     
     /**
      * Add an option to a field which supports this

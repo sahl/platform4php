@@ -20,6 +20,8 @@ class EditComplex extends Component {
      */
     public $column_selector;
     
+    static protected $component_class = 'platform_editcomplex';
+    
     /**
      * Edit dialog
      * @var EditDialog
@@ -57,7 +59,7 @@ class EditComplex extends Component {
     public function __construct() {
         $this->addPropertyMap(['class' => '']);
 
-        self::JSFile('/Platform/UI/js/editcomplex.js');
+        self::JSFile('/Platform/UI/js/EditComplex.js');
         self::CSSFile('/Platform/UI/css/EditComplex.css');
 
         parent::__construct();

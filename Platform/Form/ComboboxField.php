@@ -5,13 +5,21 @@ class ComboboxField extends Field {
     
     protected $datasource = false;
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        $this->classes[] = 'platform_combobox';
+    protected static $component_class = 'platform_component_form_comboboxfield';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Combobox.js');
+    }
+    
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = parent::Field($label, $name, $options);
+        $field->addClass('platform_combobox');
         if ($options['datasource']) {
             $this->setDatasource($options['datasource']);
             unset($options['datasource']);
         }
-        parent::__construct($label, $name, $options);
+        return $field;
     }
     
     public function renderInput() {

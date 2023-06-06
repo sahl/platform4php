@@ -1,7 +1,12 @@
 <?php
 namespace Platform;
 
+use Platform\Form\Form;
+use Platform\Form\HiddenField;
+use Platform\Form\SelectField;
+use Platform\Page\Page;
 use Platform\Utilities\Database;
+use Platform\Utilities\Semaphore;
 
 class ExtensibleField extends Datarecord {
     
@@ -105,8 +110,8 @@ class ExtensibleField extends Datarecord {
     
     public static function getForm() : Form {
         $form = parent::getForm();
-        $form->addField(new \Platform\Form\HiddenField('', 'class', array('dont-clear' => true)));
-        $form->replaceField(new \Platform\Form\SelectField(self::$structure['linked_class']['label'], 'linked_class', array('required' => true, 'options' => self::$remote_classes)), 'linked_class');
+        $form->addField(new HiddenField('', 'class', array('dont-clear' => true)));
+        $form->replaceField(new SelectField(self::$structure['linked_class']['label'], 'linked_class', array('required' => true, 'options' => self::$remote_classes)), 'linked_class');
         return $form;
     }
     

@@ -42,31 +42,27 @@ register_shutdown_function('Platform\\Utilities\\Errorhandler::shutdown');
 // Register error handler
 set_error_handler('Platform\\Utilities\\Errorhandler::handler');
 
-umask(002);
-// INCLUDES
-        
-        
 // Jquery        
 Page::queueJSFile('/Platform/Jquery/js/jquery.js');
 Page::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
 Page::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 
 // General Platform
-Page::queueJSFile('/Platform/Page/js/general.js');
+Page::queueJSFile('/Platform/Page/js/Platform.js');
 
 // Translation system
-Page::queueJSFile('/Platform/Utilities/js/translation.js');
+Page::queueJSFile('/Platform/Utilities/js/Translation.js');
 
 Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
 
-Page::queueCSSFile('/Platform/Page/css/platform.css');
-Page::queueJSFile('/Platform/Page/js/menuitem.js');
+Page::queueCSSFile('/Platform/Page/css/Platform.css');
+Page::queueJSFile('/Platform/Page/js/MenuItem.js');
 
 // Components
-Page::queueCSSFile('/Platform/UI/css/component.css');
-Page::queueJSFile('/Platform/UI/js/component.js');
-Page::queueJSFile('/Platform/Form/js/form.js');
-Page::queueJSFile('/Platform/UI/js/dialog.js');
+Page::queueCSSFile('/Platform/UI/css/Component.css');
+Page::queueJSFile('/Platform/UI/js/Component.js');
+Page::queueJSFile('/Platform/Form/js/Form.js');
+Page::queueJSFile('/Platform/UI/js/Dialog.js');
 
 // Google dialogs
 Page::queueJSFile('https://www.gstatic.com/charts/loader.js');

@@ -21,7 +21,7 @@ class Field extends Component {
     const FIELD_SIZE_SMALL = '120px';
     const FIELD_SIZE_TINY = '50px';
     
-    static protected $component_class = 'platform_component_form_field';
+    static protected $component_class = 'platform_component_field';
     
     /**
      * The current default label placement
@@ -139,8 +139,7 @@ class Field extends Component {
     
     public function __construct() {
         parent::__construct();
-        $this->addClass('platform_field_validate');
-        $this->addFieldClass('platform_form_field');
+        $this->addClass('platform_form_field');
         static::JSFile(Utilities::directoryToURL(__DIR__).'js/Field.js');
     }
     
@@ -270,7 +269,7 @@ class Field extends Component {
      * @param array $error_array Array to add to
      */
     public function addErrors(array &$error_array) {
-        if ($this->isError()) $error_array[$this->getFieldIdForHTML ()] = $this->getErrorText ();
+        if ($this->isError()) $error_array[$this->getName()] = $this->getErrorText ();
     }
     
     /**
@@ -279,6 +278,7 @@ class Field extends Component {
      */
     public function attachToForm(Form $form) {
         $this->form = $form;
+        $this->setID($form->getFormId().'_'.$this->getName().'_component');
     }
     
     /**
@@ -640,7 +640,7 @@ class Field extends Component {
         // We cannot trigger an error, if an error is already triggered.
         if ($this->is_error) return;
         $this->is_error = true;
-        $this->classes[] = 'formfield_error';
+        $this->addFieldClass('formfield_error');
         $this->errortext = $errortext;
     }
 }

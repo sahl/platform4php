@@ -7,6 +7,8 @@ class Dialog extends Component {
     
     private $components = [];
     
+    protected static $component_class = 'platform_dialog';
+    
     protected $properties = [
         'title' => '',
         'text' => '',

@@ -1,98 +1,117 @@
-addPlatformComponentHandlerFunction('editcomplex', function(element) {
+Platform.EditComplex = class extends Platform.Component {
     
-    // Data object title
-    var name = element.data('name');
+    name = '';
     
-    // My ID
-    var id = element.prop('id');
+    id = '';
     
-    // Short class name
-    var shortclass = element.data('shortclass');
+    shortclass = '';
     
-    // The edit dialog
-    var edit_dialog = element.find('#'+shortclass+'_edit_dialog');
+    edit_dialog_dom = null;
     
-    // The column select dialog
-    var column_select_dialog = element.find('#'+id+'_table_component_select');
+    column_select_dialog_dom = null;
     
-    // The table div
-    var table_div = $('#'+id+'_table');
+    table = null;
+    
+    initialize() {
+        var component = this;
+        
+        // Data object title
+        this.name = this.dom_node.data('name');
 
-    // Reload table data when edit dialog saves
-    edit_dialog.on('aftersave', function() {
-        table_div.trigger('reload_data');
-    })
+        // My ID
+        this.id = this.dom_node.prop('id');
 
-    // Create new item
-    element.on('create_object', function() {
-        edit_dialog.trigger('new');
-        return false;
-    })
-    
-    element.on('copy_objects', function(event) {
-        var ids = $(event.target).closest('.platform_component_popupmenu').data('platform_info');
-        if (ids.length < 1) warningDialog('Cannot copy', 'You must select at least one item to copy.');
-        else 
-            confirmDialog('Copy', 'Are you sure you want to copy the selected '+name, function() {
-                element.componentIO({event: 'datarecord_copy', ids: ids}, function(data) {
+        // Short class name
+        this.shortclass = this.dom_node.data('shortclass');
+
+        // The edit dialog
+        this.edit_dialog = this.dom_node.find('#'+this.shortclass+'_edit_dialog');
+
+        // The column select dialog
+        this.column_select_dialog = this.dom_node.find('#'+this.id+'_table_component_select');
+
+        // The table
+        this.table_div = $('#'+this.id+'_table');
+
+        // Reload table data when edit dialog saves
+        component.edit_dialog.on('aftersave', function() {
+            component.table_div.platformComponent().loadData();
+        })
+
+        // Create new item
+        component.dom_node.on('create_object', function() {
+            component.edit_dialog.trigger('new');
+            return false;
+        })
+
+        component.dom_node.on('copy_objects', function(event) {
+            var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
+            if (ids.length < 1) Platform.Dialog.warningDialog('Cannot copy', 'You must select at least one item to copy.');
+            else 
+                Platform.Dialog.confirmDialog('Copy', 'Are you sure you want to copy the selected '+name, function() {
+                    component.backendIO({event: 'datarecord_copy', ids: ids}, function(data) {
+                        // Reload tabulator
+                        component.table_div.platformComponent().loadData();
+                    })
+                })
+            return false;
+        });
+
+        component.dom_node.on('copy_object', function(event) {
+            var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
+            Platform.Dialog.confirmDialog('Copy', 'Are you sure you want to copy this '+name, function() {
+                component.backendIO({event: 'datarecord_copy', ids: ids}, function(data) {
                     // Reload tabulator
-                    table_div.trigger('reload_data');
+                    component.table_div.platformComponent().loadData();
                 })
             })
-        return false;
-    });
-    
-    element.on('copy_object', function(event) {
-        var ids = $(event.target).closest('.platform_component_popupmenu').data('platform_info');
-        confirmDialog('Copy', 'Are you sure you want to copy this '+name, function() {
-            element.componentIO({event: 'datarecord_copy', ids: ids}, function(data) {
-                // Reload tabulator
-                table_div.trigger('reload_data');
-            })
-        })
-        return false;
-    });
-    
-    element.on('edit_objects', function(event) {
-        var ids = $(event.target).closest('.platform_component_popupmenu').data('platform_info');
-        if (ids.length != 1) warningDialog('Cannot edit', 'You need to select exactly one element to edit.');
-        else edit_dialog.trigger('edit', ids[0]);
-        return false;
-    })
-    
-    element.on('edit_object', function(event) {
-        var id = $(event.target).closest('.platform_component_popupmenu').data('platform_info');
-        edit_dialog.trigger('edit', id[0]);
-        return false;
-    });
+            return false;
+        });
 
-    element.on('delete_objects', function(event) {
-        var ids = $(event.target).closest('.platform_component_popupmenu').data('platform_info');
-        confirmDialog('Delete', 'Are you sure you want to delete the selected '+name, function() {
-            element.componentIO({event: 'datarecord_delete', ids: ids}, function(data) {
-                if (data.status == 0) {
-                    warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
-                }
-                // Reload tabulator
-                table_div.trigger('reload_data');
-            })
+        component.dom_node.on('edit_objects', function(event) {
+            var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
+            if (ids.length != 1) Platform.Dialog.warningDialog('Cannot edit', 'You need to select exactly one element to edit.');
+            else component.edit_dialog.trigger('edit', ids[0]);
+            return false;
         })
-        return false;
-    });
-    
-    element.on('delete_object', function(event) {
-        var ids = $(event.target).closest('.platform_component_popupmenu').data('platform_info');
-        confirmDialog('Delete', 'Are you sure you want to delete this '+name, function() {
-            element.componentIO({event: 'datarecord_delete', ids: ids}, function(data) {
-                // Reload tabulator
-                table_div.trigger('reload_data');
-            })
-        })
-        return false;
-    });
 
-    element.on('select_columns', function(event) {
-        column_select_dialog.trigger('open');
-        return false;
-    });
-});
+        component.dom_node.on('edit_object', function(event) {
+            var id = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
+            component.edit_dialog.trigger('edit', id[0]);
+            return false;
+        });
+
+        component.dom_node.on('delete_objects', function(event) {
+            var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
+            Platform.Dialog.confirmDialog('Delete', 'Are you sure you want to delete the selected '+name, function() {
+                component.backendIO({event: 'datarecord_delete', ids: ids}, function(data) {
+                    if (data.status == 0) {
+                        Platform.Dialog.warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
+                    }
+                    // Reload tabulator
+                    component.table_div.platformComponent().loadData();
+                })
+            })
+            return false;
+        });
+
+        component.dom_node.on('delete_object', function(event) {
+            var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
+            Platform.Dialog.confirmDialog('Delete', 'Are you sure you want to delete this '+name, function() {
+                component.backendIO({event: 'datarecord_delete', ids: ids}, function(data) {
+                    // Reload tabulator
+                    component.table_div.platformComponent().loadData();
+                })
+            })
+            return false;
+        });
+
+        component.dom_node.on('select_columns', function(event) {
+            component.column_select_dialog.trigger('open');
+            return false;
+        });
+        
+    }
+}
+
+Platform.Component.bindClass('platform_editcomplex', Platform.EditComplex);

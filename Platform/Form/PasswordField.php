@@ -5,6 +5,14 @@ class PasswordField extends Field {
     
     private $inputwasparsed = false;
     
+    protected static $component_class = 'platform_component_password_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/PasswordField.js'); 
+    }
+    
     public function getValue() {
         if ($this->inputwasparsed) return $this->value;
         return null;

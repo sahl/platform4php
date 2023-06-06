@@ -28,6 +28,8 @@ class Table extends Component {
     
     private $tabulator_options = array();
     
+    protected static $component_class = 'platform_component_table';
+    
     private $data_request_event = null;
     
     private $include_column_selector = false;
@@ -275,7 +277,7 @@ class Table extends Component {
                         break;
                     case Datarecord::FIELDTYPE_DATE:
                     case Datarecord::FIELDTYPE_DATETIME:
-                        $columns[$field] = $object->getRawValue($field)->get();
+                        $columns[$field] = $object->getRawValue($field)->getReadable('Y-m-d h:i:s');
                         break;
                     default:
                         $columns[$field] = $value;

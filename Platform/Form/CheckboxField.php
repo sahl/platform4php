@@ -3,9 +3,16 @@ namespace Platform\Form;
 
 class CheckboxField extends Field {
     
+    protected static $component_class = 'platform_component_checkbox_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/CheckboxField.js'); 
+    }
+    
     public static function Field(string $label, string $name, array $options = array()) {
         $field = parent::Field($label, $name, $options);
-        $field->addClass('platform_checkbox');
         return $field;
     }
     

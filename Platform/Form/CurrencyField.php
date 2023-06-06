@@ -1,10 +1,33 @@
 <?php
 namespace Platform\Form;
 
+use Platform\Currency\Currency;
+use Platform\Currency\Rate;
+use Platform\Utilities\Time;
+use Platform\Utilities\Utilities;
+
 class CurrencyField extends Field {
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
+    public static $component_class = 'platform_component_currency_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
+        static::JSFile(Utilities::directoryToURL(__DIR__).'/js/CurrencyField.js'); 
+    }
+    
+    public static function Field(string $label, string $name, array $options = []): static {
+        return parent::Field($label, $name, $options);
+    }
+    
+    public function handleIO(): array {
+        switch($_POST['event']) {
+            case 'currency_lookup':
+                if (!is_numeric($_POST['foreignvalue']) || !Currency::isValidCurrency($_POST['currency'])) return ['status' => 0];
+                $rate = Rate::getRate($_POST['currency'], Time::today());
+                return ['status' => 1, 'localvalue' => $_POST['foreignvalue']/($rate/100)];
+        }
+        return parent::handleIO();
     }
     
     public function parse($value) : bool {
@@ -22,9 +45,9 @@ class CurrencyField extends Field {
     }    
     
     public function renderInput() {
-        echo '<input style="width: 120px;" id="'.$this->getFieldIdForHTML().'" class="'.$this->getClassString().' currency_foreignvalue" type="number" name="'.$this->name.'[foreignvalue]" value="'.htmlentities($this->value['foreignvalue'], ENT_QUOTES).'"> ';
-        echo '<select style="width: 75px;" name="'.$this->name.'[currency]" class="'.$this->getClassString().' currency_currency">';
-        $enabled_currencies = \Platform\Currency\Currency::getEnabledCurrencies();
+        echo '<input style="width: 120px;" id="'.$this->getFieldIdForHTML().'" class="'.$this->getFieldClasses().' currency_foreignvalue" type="number" name="'.$this->name.'[foreignvalue]" value="'.htmlentities($this->value['foreignvalue'], ENT_QUOTES).'"> ';
+        echo '<select style="width: 75px;" name="'.$this->name.'[currency]" class="'.$this->getFieldClasses().' currency_currency">';
+        $enabled_currencies = Currency::getEnabledCurrencies();
         echo '<option value="">';
         foreach ($enabled_currencies as $currency) {
             echo '<option value="'.$currency.'"';
@@ -32,9 +55,9 @@ class CurrencyField extends Field {
             echo '>'.$currency;
         }
         echo '</select> <span class="fa fa-arrow-right"></span> ';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" style="width: 120px;" class="'.$this->getClassString().' currency_localvalue" type="number" name="'.$this->name.'[localvalue]" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value['localvalue'], ENT_QUOTES).'"'.$this->additional_attributes.'> ';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" style="width: 120px;" class="'.$this->getFieldClasses().' currency_localvalue" type="number" name="'.$this->name.'[localvalue]" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value['localvalue'], ENT_QUOTES).'"'.$this->additional_attributes.'> ';
         echo '<select disabled=true style="width: 75px;">';
-        echo '<option selected>'.\Platform\Currency\Currency::getBaseCurrency();
+        echo '<option selected>'.Currency::getBaseCurrency();
         echo '</select>';
     }
 }

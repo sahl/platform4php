@@ -11,26 +11,39 @@ var Platform = {
     apply(selector) {
         selector = $(selector);
         // Check for scripts to postload
-        var script_containers = $('.platform_post_load_javascript');
+        var script_containers = $('.platform_post_load_javascript', selector);
         var script_count = script_containers.length;
         // If there are no scripts, we can run the functions now
-        if (script_count == 0) Platform.runCustomFunctions(selector);
+        if (script_count == 0) {
+            Platform.runCustomFunctions(selector);
+            return;
+        }
+        // Gather them
+        var scripts_to_load = [];
         script_containers.each(function() {
             var src = $(this).data('src');
             $(this).remove();
-            if (! Platform.scripts_loaded.includes(src)) {
-                Platform.registerScript(src);
-                $.getScript(src, function() {
-                    script_count--;
-                    // If last script is loaded, we can run functions now.
-                    if (script_count < 1) Platform.runCustomFunctions(selector);
-                });
+            scripts_to_load.push(src);
+        })
+        
+        function loadNextScript() {
+            var src = scripts_to_load.shift();
+            if (Platform.scripts_loaded.includes(src)) {
+                if (scripts_to_load.length) loadNextScript();
+                Platform.runCustomFunctions(selector);
             } else {
-                script_count--;
-                // If last script is skipped, we can run functions now.
-                if (script_count < 1) Platform.runCustomFunctions(selector);
+                $.get(src).done(function() {
+                    if (scripts_to_load.length) loadNextScript();
+                    Platform.runCustomFunctions(selector);
+                }).fail(function(jqxhr, settings, exception) {
+                    console.log('Error loading '+src);
+                    console.log(jqxhr);
+                    console.log(settings);
+                    console.log(exception);
+                });
             }
-        });
+        }
+        loadNextScript();
     },
     
     /**

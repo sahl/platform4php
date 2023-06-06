@@ -34,7 +34,7 @@ class Component {
      * The component class of this component
      * @var type
      */
-    protected static $component_class = false;
+    protected static $component_class = 'platform_component';
 
     /**
      * Component ID for HTML
@@ -80,12 +80,6 @@ class Component {
      */
     protected $properties = array();
 
-    /**
-     * URL used for component redrawing
-     * @var string
-     */
-    protected static $redraw_url = '/Platform/UI/php/component_get_content.php';
-    
     /**
      * Keeping registered events
      * @var array
@@ -244,8 +238,8 @@ class Component {
      * Get the properties of this component encoded for frontend
      * @return string
      */
-    public function getEncodedProperties() : string {
-        return json_encode($this->properties);
+    public function getEncodedProperties() : array {
+        return $this->properties;
     }
 
     /**
@@ -343,9 +337,6 @@ class Component {
 
         if (static::$can_disable) $classes[] = 'platform_component_candisable';
         
-        if (static::$can_redraw) {
-            $this->addData('redraw_url', static::$redraw_url);
-        }
         $this->addData('io_url', static::$io_url);
         $this->addData('componentclass', get_called_class());
         $this->addData('componentproperties', $this->getEncodedProperties());

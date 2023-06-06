@@ -14,23 +14,29 @@ Platform.Component = class {
         $.each(Platform.Component.class_library, function(key, library_element) {
             selector.find('.'+library_element.dom_class).each(function() {
                 var component = new library_element.javascript_class($(this));
+                component.componentInitialize();
+                component.initialize();
             });
             if (selector.is('.'+library_element.dom_class)) var component = new library_element.javascript_class(selector);
         })
     }
     
-    apply() {
+    initialize() {
         
+    }
+    
+    componentInitialize() {
+        this.gatherDialogs();
+        this.registerBackendEvents();
+        this.registerBackendForms();
     }
     
     constructor(dom_node) {
         this.dom_node = dom_node;
-        this.gatherDialogs();
-        this.apply();
         dom_node.data('platform_component', this);
     }
     
-    static BindClass(dom_class, javascript_class) {
+    static bindClass(dom_class, javascript_class) {
         // Ensure we only add everything once.
         if (Platform.Component.dom_classes.includes(dom_class)) return;
 
@@ -44,8 +50,9 @@ Platform.Component = class {
     }
     
     gatherDialogs() {
+        var component = this;
         $('.platform_component_dialog', this.dom_node).each(function() {
-            this.contained_dialogs.push($(this).prop('id'));
+            component.contained_dialogs.push($(this).prop('id'));
             return true;
         })
     }
@@ -81,22 +88,33 @@ Platform.Component = class {
     }
     
     registerBackendEvents() {
+        var component = this;
         // Pass custom events to backend
         if (this.dom_node.data('registered_events')) {
             $.each(this.dom_node.data('registered_events').split(','), function(index, value) {
-                this.dom_node.off(value);
-                this.dom_node.on(value, function(event, parameter1, parameter2, parameter3) {
+                component.dom_node.off(value);
+                component.dom_node.on(value, function(event, parameter1, parameter2, parameter3) {
                     if (parameter1 == '__data_request_event') {
                         // This is a datatable event, which needs to be handled another way
                         parameter2['event'] = value;
-                        this.backendIO(parameter2, function(data) {
+                        component.backendIO(parameter2, function(data) {
                             parameter3(data);
                         }); 
                     } else {
-                        this.backendIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); 
+                        component.backendIO({event: value, parameter1: parameter1, parameter2: parameter2, parameter3: parameter3 }); 
                     }
                     return false;
                 });
+            })
+        }
+    }
+    
+    registerBackendForms() {
+        var component = this;
+        // Pass selected forms to backend
+        if (this.dom_node.data('registered_form_ids')) {
+            $.each(this.dom_node.data('registered_form_ids').split(','), function(index, value) {
+                component.addIOForm($('#'+value, component.dom_node));
             })
         }
     }
@@ -106,7 +124,7 @@ Platform.Component = class {
         $(form).submit(function() {
             component.backendIO(form.serialize(), function(data) {
                 if (! data.status) {
-                    form.attachErrors(data.form_errors);
+                    form.closest('.platform_component_form').platformComponent().attachErrors(data.form_errors);
                     if (typeof failfunc == 'function') failfunc(data);
                 } else {
                     if (typeof func == 'function') func(data);
@@ -125,7 +143,7 @@ Platform.Component = class {
             // Inject class field
             values += '&componentclass='+encodeURIComponent(this.dom_node.data('componentclass'));
             // Inject properties    
-            values += '&componentproperties='+encodeURIComponent(this.dom_node.data('componentproperties'));
+            values += '&componentproperties='+encodeURIComponent(JSON.stringify(this.dom_node.data('componentproperties')));
             // Inject ID
             values += '&componentid='+encodeURIComponent(this.dom_node.prop('id'));
         } else {
@@ -134,7 +152,7 @@ Platform.Component = class {
             // Inject class field
             values['componentclass'] = this.dom_node.data('componentclass');
             // Inject properties
-            values['componentproperties'] = this.dom_node.data('componentproperties');
+            values['componentproperties'] = JSON.stringify(this.dom_node.data('componentproperties'));
             // Inject ID
             values['componentid'] = this.dom_node.prop('id');
         }
@@ -171,7 +189,7 @@ Platform.Component = class {
         object.callback = callback;
         object.polltime = polltime;
         object.precision = precision;
-        object.component = this;
+        object.component = this.dom_node;
         object.componentclass = this.dom_node.data('componentclass');
         object.componentproperties = this.dom_node.data('componentproperties');
         object.componentid = this.dom_node.prop('id');
@@ -189,8 +207,8 @@ Platform.Component = class {
             return true;
         });
         if (! inserted) Platform.Component.timed_IO_stack.push(object);
-
-        if (! communication_timer) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
+        
+        if (! Platform.Component.IO_timer) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
     }
 
     removeTimedIO() {
@@ -210,6 +228,7 @@ Platform.Component = class {
 
     static executeTimedIO() {
         // Decrease everything and find if something needs to run now
+
         var run_now = false;
         $.each(Platform.Component.timed_IO_stack, function(id, element) {
             element.timeleft -= 1;
@@ -243,11 +262,11 @@ Platform.Component = class {
                 $.each(data, function(id, return_value) {
                     if (callbacks[id]) callbacks[id](return_value);
                 })
-                communication_timer = setTimeout(Platform.Component.IO_timer, 1000);
+                Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
             }, 'json');
             // Rearm
         } else {
-            if (Platform.Component.timed_IO_stack.length) communication_timer = setTimeout(Platform.Component.IO_timer, 1000);
+            if (Platform.Component.timed_IO_stack.length) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
 
         }
     }
@@ -255,6 +274,8 @@ Platform.Component = class {
 }
 
 Platform.addCustomFunctionLast(Platform.Component.addComponentClasses);
+
+Platform.Component.bindClass('platform_component', Platform.Component);
 
 $.fn.platformComponent = function() {
     return this.data('platform_component');

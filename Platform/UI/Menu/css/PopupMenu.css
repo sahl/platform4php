@@ -1,29 +1,29 @@
-.platform_component_popupmenu {
+.platform_menu_popupmenu {
     position: absolute;
     background: white;
     border: 1px solid black;
     display: none;
 }
 
-.platform_component_popupmenu > div {
+.platform_menu_popupmenu > div {
     padding: 3px 10px 3px 3px;
     cursor: pointer;
 }
 
-.platform_component_popupmenu > div:hover {
+.platform_menu_popupmenu > div:hover {
     background: gray;
 }
 
-.platform_component_popupmenu > div > a {
+.platform_menu_popupmenu > div > a {
     text-decoration: none;
     color: black;
 }
 
-.platform_component_popupmenu > div:hover > a {
+.platform_menu_popupmenu > div:hover > a {
     color: white;
 }
 
 
-.platform_component_popupmenu > div:not(:last-child) {
+.platform_menu_popupmenu > div:not(:last-child) {
     border-bottom: 1px solid black;
 }
