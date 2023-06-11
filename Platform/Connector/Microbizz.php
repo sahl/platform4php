@@ -221,7 +221,16 @@ class Microbizz {
         if (! $result['status'] || ! $result['result']) die('Could not validate session with Microbizz.');
         $_SESSION['microbizz_validated_sessiontoken'] = $_GET['sessiontoken'];
         $_SESSION['microbizz_stored_instance'] = $_GET['instance_id'];
+        $_SESSION['microbizz_validated_user_id'] = $result['result']['userid'];
         return true;
+    }
+    
+    /**
+     * Get the ID of the last user with a validated session
+     * @return int User ID
+     */
+    public static function getValidatedUserID() {
+        return (int) $_SESSION['microbizz_validated_user_id'];
     }
     
 }
