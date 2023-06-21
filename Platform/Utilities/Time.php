@@ -33,18 +33,19 @@ class Time {
      */
     public function __construct($time = null) {
         Errorhandler::checkParams($time, array('string', '\\Platform\\Utilities\\Time', 'integer'));
+        // Ensure we are UTC when setting
+        $stored_time_zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
         elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
         elseif ($time == 'end_of_today') $this->timestamp = strtotime(self::now()->get('Y-m-d 23:59:59'));
         elseif (is_numeric($time)) $this->timestamp = (int)$time;
         elseif ($time) {
-            // Ensure we are UTC when setting
-            $stored_time_zone = date_default_timezone_get();
-            date_default_timezone_set('UTC');
             $this->timestamp = strtotime($time);
-            date_default_timezone_set($stored_time_zone);
         }
+        date_default_timezone_set($stored_time_zone);
     }
     
     /**
