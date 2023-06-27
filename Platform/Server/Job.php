@@ -358,7 +358,7 @@ class Job extends \Platform\Datarecord {
      */
     public function kill() {
         if (! $this->process_id) return;
-        $this->log('kill', 'Killed because '.$this->max_runtime.' minutes was exceeded!', $this);
+        $this->log('kill', 'Killing job '.$this->job_id.' with PID: '.$this->process_id, $this);
         exec('kill '.((int)$this->process_id).' 2> /dev/null');
         $this->reloadForWrite();
         $this->kill_count = $this->kill_count + 1;
@@ -394,10 +394,11 @@ class Job extends \Platform\Datarecord {
             // Get running jobs
             $running_jobs = self::getRunningJobs();
             // Go over jobs to check if finished or overdue
-            $used_slots = 0; $current_job_count = 0;
+            $used_slots = 0; $current_job_count = 0; $pending_job_count = 0;
             foreach ($running_jobs as $running_job) {
                 if ($running_job->isRunning()) {
                     if ($running_job->isOverdue()) {
+                        $this->log('overdue', 'Job have exceeded '.$this->max_runtime.' minutes runtime.', $this);
                         $running_job->kill();
                         $running_job->cleanUp();
                     } else {
@@ -411,6 +412,7 @@ class Job extends \Platform\Datarecord {
             if ($used_slots < self::SLOT_CAPACITY) {
                 // Check for new jobs
                 $pending_jobs = self::getPendingJobs();
+                $pending_job_count = count($pending_jobs);
                 foreach ($pending_jobs as $pending_job) {
                     if ($pending_job->slot_size + $used_slots > self::SLOT_CAPACITY) {
                         // No room for next job. Bail...
@@ -418,10 +420,11 @@ class Job extends \Platform\Datarecord {
                     }
                     $pending_job->start();
                     $current_job_count++;
+                    $pending_job_count--;
                     $used_slots += $pending_job->slot_size;
                 }
             }
-            if ($current_job_count) self::log('capacity', 'Slot use '.$used_slots.'/'.self::SLOT_CAPACITY.' on '.$current_job_count.' jobs. ('.(count($pending_jobs)-$current_job_count).' waiting for free slots)');
+            if ($current_job_count) self::log('capacity', 'Slot use '.$used_slots.'/'.self::SLOT_CAPACITY.' on '.$current_job_count.' jobs. ('.$pending_job_count.' waiting for free slots)');
             // Sleep a little
             sleep(4);
         }
