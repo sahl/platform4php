@@ -11,17 +11,21 @@ Platform.Component = class {
     contained_dialogs = [];
     
     static addComponentClasses(selector) {
+        var found_components = [];
         $.each(Platform.Component.class_library, function(key, library_element) {
             selector.find('.'+library_element.dom_class).each(function() {
                 var component = new library_element.javascript_class($(this));
                 component.componentInitialize();
-                component.initialize();
+                found_components.push(component);
             });
             if (selector.is('.'+library_element.dom_class)) {
                 var component = new library_element.javascript_class(selector);
                 component.componentInitialize();
-                component.initialize();
+                found_components.push(component);
             }
+        })
+        $.each(found_components, function(key, component) {
+            component.initialize();
         })
     }
     
@@ -55,7 +59,7 @@ Platform.Component = class {
     
     gatherDialogs() {
         var component = this;
-        $('.platform_component_dialog', this.dom_node).each(function() {
+        $('.platform_base_dialog', this.dom_node).each(function() {
             component.contained_dialogs.push($(this).prop('id'));
             return true;
         })
@@ -74,14 +78,16 @@ Platform.Component = class {
             var componentproperties = this.dom_node.data('componentproperties');
             
             // Destroy all dialogs within this component
-            this.contained_dialogs.forEach(value => function(value) {
+            this.contained_dialogs.forEach(function(value) {
                 $('#'+value).dialog('destroy');
             })
 
             var component = this;
             
+            // Destroy handlers
+            component.dom_node.off();
+            
             this.backendIO({event: 'redraw', componentclass: this.dom_node.data('componentclass'), componentproperties: componentproperties, componentid: this.dom_node.prop('id')}, function(data) {
-                // Destroy handlers
                 component.dom_node.html(data);
                 component.dom_node.data('platform_component', null); // Remove existing platform reference
                 Platform.apply(component.dom_node);

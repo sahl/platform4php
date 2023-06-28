@@ -78,10 +78,10 @@ var Platform = {
             fn(selector);
         });
         if (! Platform.did_onetime_run) {
+            Platform.did_onetime_run = true;
             Platform.onetime_functions.forEach(function(fn) {
                 fn();
             });
-            Platform.did_onetime_run = true;
         }
     },
     

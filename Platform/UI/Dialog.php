@@ -19,6 +19,7 @@ class Dialog extends Component {
     
     public function __construct() {
         parent::__construct();
+        $this->addClass('platform_base_dialog');
         $this->addClass('platform_invisible'); // This breaks tables in dialogs
     }
     
