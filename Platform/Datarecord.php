@@ -34,6 +34,7 @@ use Platform\Utilities\Repetition;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
 use Platform\Utilities\Translation;
+use Platform\Utilities\Utilities;
 
 class Datarecord implements DatarecordReferable {
 
@@ -557,7 +558,7 @@ class Datarecord implements DatarecordReferable {
                             if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
                         } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
                             $values = $referring_object->getRawValue($key);
-                            Utility::arrayRemove($values, $deleted_id);
+                            Utilities::arrayRemove($values, $deleted_id);
                             $referring_object->setValue($key, $values);
                         }
                     }
@@ -1325,23 +1326,29 @@ class Datarecord implements DatarecordReferable {
      */
     public function getFormValue(string $field) {
         if (! isset(static::$structure[$field])) return null;
-        return $this->getFormValueByDefinition($this->getRawValue($field), $this->getTextValue($field), static::$structure[$field]);
+        return $this->getFormValueByDefinition($this->getRawValue($field), static::$structure[$field]);
     }
 
     /**
      * Get a form value directly from a definition
      * @param mixed $value Raw value
-     * @param mixed $textvalue Text value
      * @param array $definition Definition
      * @return mixed The value as appropriate for the form
      */
-    public function getFormValueByDefinition($value, $textvalue, array $definition) {
+    public function getFormValueByDefinition($value, array $definition) {
         if ($definition['invisible']) return $value;
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
                 return $value ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                return array('id' => $value, 'visual' => $textvalue);
+                $visual = '';
+                if ($value) {
+                    // Resolve foreign class 
+                    $object = new $definition['foreign_class']();
+                    $object->loadForRead($value);
+                    $visual = $object->getTitle();
+                }
+                return array('id' => $value, 'visual' => $visual);
             case self::FIELDTYPE_BOOLEAN:
                 return $value ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
@@ -1371,10 +1378,23 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_IMAGE:
                 return (int)$value;
             case self::FIELDTYPE_ARRAY:
+                if ($definition['substructure']) {
+                    $result = [];
+                    foreach ($value as $v) {
+                        $subresult = [];
+                        foreach ($definition['substructure'] as $key => $subdefinition) {
+                            $subresult[$key] = $this->getFormValueByDefinition($v[$key], $subdefinition);
+                        }
+                        $result[] = $subresult;
+                    }
+                    return $result;
+                } else {
+                    return $value;
+                }
             case self::FIELDTYPE_OBJECT:
                 return $value;
             default:
-                return $textvalue;
+                return $value;
         }        
     }
     

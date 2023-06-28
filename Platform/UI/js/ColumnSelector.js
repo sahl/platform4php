@@ -1,3 +1,11 @@
+Platform.ColumnSelector = class extends Platform.Component {
+    
+    initialize() {
+        
+    }
+    
+}
+/*
 addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
     var attached_table = Tabulator.findTable('#'+item.data('table_id')+'_table')[0];
     
@@ -32,5 +40,6 @@ addPlatformComponentHandlerFunction('tablecolumnselector', function(item) {
         $(this).dialog('close');
         attached_table.trigger('reload_data');
     });
-    
 });
+*/
+Platform.Component.bindClass('platform_component_column_selector', Platform.ColumnSelector);

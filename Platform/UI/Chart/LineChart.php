@@ -1,9 +1,11 @@
 <?php
 namespace Platform\UI\Chart;
 
-use Platform\Utilities;
+use Platform\Utilities\Utilities;
 
 class LineChart extends Chart {
+    
+    protected static $component_class = 'platform_component_line_chart';
 
     public function __construct() {
         parent::__construct();

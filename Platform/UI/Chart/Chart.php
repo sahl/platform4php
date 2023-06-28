@@ -2,7 +2,7 @@
 namespace Platform\UI\Chart;
 
 use Platform\UI\Component;
-use Platform\Utilities;
+use Platform\Utilities\Utilities;
 
 class Chart extends Component {
 

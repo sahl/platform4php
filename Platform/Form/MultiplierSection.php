@@ -157,7 +157,7 @@ class MultiplierSection extends Field {
                 $old_field_name = $field->getName();
                 // Generate new field name
                 $field->setName($this->getName().'['.$i.']['.$old_field_name.']');
-                $field->setID($field->getName().'_component');
+                $field->setID($this->form->getFormId().'_'.$field->getName().'_component');
                 // Set value and trigger error if any
                 if (! $field instanceof HTML) {
                     if (isset($this->value[$i][$old_field_name])) {

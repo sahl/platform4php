@@ -81,7 +81,7 @@ Platform.Dialog = class extends Platform.Component {
         ]).dialog('open');
     }
 
-    formDialog(title, text, form_id, ok_text, callback_ok, callback_open, callback_cancel) {
+    static formDialog(title, text, form_id, ok_text, callback_ok, callback_open, callback_cancel) {
         $('#platform_allpurpose_text').html(text);
 
         // Ensure that the form is moved into place and shown

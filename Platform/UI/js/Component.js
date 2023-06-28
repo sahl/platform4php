@@ -17,7 +17,11 @@ Platform.Component = class {
                 component.componentInitialize();
                 component.initialize();
             });
-            if (selector.is('.'+library_element.dom_class)) var component = new library_element.javascript_class(selector);
+            if (selector.is('.'+library_element.dom_class)) {
+                var component = new library_element.javascript_class(selector);
+                component.componentInitialize();
+                component.initialize();
+            }
         })
     }
     
@@ -63,14 +67,11 @@ Platform.Component = class {
             this.dom_node.find('.platform_component').each(function() {
                 if ($(this).parent().closest('.platform_component')[0] == this.dom_node[0]) {
                     // Redraw subcomponent.
+                    $(this).platformComponent().redraw();
                 }
             })
         } else {
             var componentproperties = this.dom_node.data('componentproperties');
-            var redraw_url = this.dom_node.data('redraw_url');
-            if (! redraw_url) {
-                return false;
-            }
             
             // Destroy all dialogs within this component
             this.contained_dialogs.forEach(value => function(value) {
@@ -79,9 +80,11 @@ Platform.Component = class {
 
             var component = this;
             
-            $.post(redraw_url, {componentclass: this.dom_node.data('componentclass'), componentproperties: componentproperties, componentid: this.dom_node.prop('id')}, function(data) {
+            this.backendIO({event: 'redraw', componentclass: this.dom_node.data('componentclass'), componentproperties: componentproperties, componentid: this.dom_node.prop('id')}, function(data) {
                 // Destroy handlers
-                Platform.apply(component.dom_node.html(data));
+                component.dom_node.html(data);
+                component.dom_node.data('platform_component', null); // Remove existing platform reference
+                Platform.apply(component.dom_node);
             });
             
         }
@@ -121,7 +124,7 @@ Platform.Component = class {
     
     addIOForm(form, func, failfunc) {
         var component = this;
-        $(form).submit(function() {
+        $(form).off('submit.ioform').on('submit.ioform', function() {
             component.backendIO(form.serialize(), function(data) {
                 if (! data.status) {
                     form.closest('.platform_component_form').platformComponent().attachErrors(data.form_errors);
@@ -183,6 +186,7 @@ Platform.Component = class {
     static IO_timer = null;
 
     timedIO(values, callback, polltime, precision) {
+        var component = this.dom_node;
         var object = {};
         // Prepare communication object
         object.values = values;
@@ -249,7 +253,7 @@ Platform.Component = class {
                     payload.componentclass = element.componentclass;
                     payload.componentproperties = element.componentproperties;
                     payload.componentid = element.componentid;
-                    payload.values = element.values;
+                    payload.values = (typeof element.values == 'function') ? element.values() : element.values;
                     run_payload.push(payload);
                     callbacks.push(element.callback);
                     // Reset element
@@ -273,10 +277,13 @@ Platform.Component = class {
 
 }
 
-Platform.addCustomFunctionLast(Platform.Component.addComponentClasses);
+Platform.addCustomFunction(Platform.Component.addComponentClasses);
 
 Platform.Component.bindClass('platform_component', Platform.Component);
 
 $.fn.platformComponent = function() {
-    return this.data('platform_component');
+    var component = this.data('platform_component');
+    if (component) return component;
+    if (this.parent().length) return this.parent().platformComponent();
+    return null;
 }

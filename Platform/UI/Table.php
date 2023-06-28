@@ -42,9 +42,9 @@ class Table extends Component {
      */
     public function __construct() {
         self::JSFile('https://unpkg.com/tabulator-tables@5.2.7/dist/js/tabulator.min.js');
-        self::JSFile('/Platform/UI/js/table.js');
+        self::JSFile('/Platform/UI/js/Table.js');
         self::CSSFile('https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css');
-        self::CSSFile('/Platform/UI/css/table.css');
+        self::CSSFile('/Platform/UI/css/Table.css');
         self::JSFile('https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.1/luxon.min.js');
         parent::__construct();
         $this->setTabulatorOption('placeholder', 'No data');

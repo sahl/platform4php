@@ -2,6 +2,7 @@
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 if ($_POST['event'] == '__timedio') {
+    \Platform\Page\Page::setPagestarted();
     $result = [];
     // This is a timed io event, with multiple payloads
     foreach ($_POST['payloads'] as $payload) {
@@ -37,7 +38,13 @@ $component->prepareData();
 if ($class::$is_secure && !\Platform\Security\Accesstoken::validateSession()) die('Must be logged in');
 
 if ($_POST['event'] == 'redraw') {
-    if ($component->canRender()) $component->renderContent();
+    if ($component->canRender()) {
+        \Platform\Page\Page::setPagestarted();
+        ob_start();
+        $component->renderContent();
+        $content = ob_get_clean();
+        echo json_encode($content);
+    }
     exit;
 }
 
