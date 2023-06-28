@@ -33,8 +33,16 @@ Platform.Form.ComboboxField = class extends Platform.Form.Field {
     
     setValue(value) {
         var element = this.dom_node.find('input[type="text"]');
-        element.val(value.visual);
-        element.prev().val(value.id);
+        if (value.id === undefined) {
+            element.val('...');
+            this.backendIO({event: 'resolve', id: value}, function(data) {
+                element.prev().val(value);
+                element.val(data.visual);
+            })
+        } else {
+            element.val(value.visual);
+            element.prev().val(value.id);
+        }
     }
     
     getValue() {

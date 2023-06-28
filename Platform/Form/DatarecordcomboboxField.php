@@ -24,6 +24,15 @@ class DatarecordcomboboxField extends IndexedComboboxField {
     }
     
     public function handleIO(): array {
+        if ($_POST['event'] == 'resolve') {
+            $output = ['visual' => ''];
+            if (class_exists($this->connected_class)) {
+                $object = new $this->connected_class();
+                $object->loadForRead($_POST['id'], false);
+                if ($object->isInDatabase() && $object->canAccess()) $output = ['visual' => strip_tags($object->getTitle())];
+            }
+            return $output;
+        }
         if ($_POST['event'] == 'autocomplete') {
             if (!class_exists($this->connected_class)) { $output = array(); }
             else {

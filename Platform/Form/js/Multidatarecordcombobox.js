@@ -7,11 +7,12 @@ Platform.Form.MultidatarecordCombobox = class extends Platform.Form.MultiplierSe
     }
     
     setValue(value) {
+        this.clear();
+        var component = this;
         var element = this.dom_node;
          $.each(value, function(key, val) {
-             element.find('input[type="hidden"]:last').val(val.id);
-             // Can't we do better than keyup?
-             element.find('input[type="text"]:last').val(val.visual).data('validated_value', value.visual).trigger('keyup');
+             element.find('.platform_form_multiplier_element:last-child').children().platformComponent().setValue(val);
+             component.checkForChanges(element.find('.platform_form_multiplier_element:last-child'));
          });
     }
 }
