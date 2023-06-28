@@ -6,7 +6,11 @@ var Platform = {
     
     functions_registered: [],
     
+    onetime_functions: [],
+    
     scripts_loaded: [],
+    
+    did_onetime_run: false,
     
     apply(selector) {
         selector = $(selector);
@@ -34,7 +38,7 @@ var Platform = {
             } else {
                 $.get(src).done(function() {
                     if (scripts_to_load.length) loadNextScript();
-                    Platform.runCustomFunctions(selector);
+                    else Platform.runCustomFunctions(selector);
                 }).fail(function(jqxhr, settings, exception) {
                     console.log('Error loading '+src);
                     console.log(jqxhr);
@@ -73,6 +77,12 @@ var Platform = {
         Platform.custom_functions_last.forEach(function(fn) {
             fn(selector);
         });
+        if (! Platform.did_onetime_run) {
+            Platform.onetime_functions.forEach(function(fn) {
+                fn();
+            });
+            Platform.did_onetime_run = true;
+        }
     },
     
     addCustomFunction(fn) {
@@ -109,6 +119,10 @@ var Platform = {
             })
         })
     },
+    
+    ready(func) {
+        Platform.onetime_functions.push(func);
+    }
     
 };
 
