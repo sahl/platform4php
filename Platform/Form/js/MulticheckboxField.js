@@ -1,7 +1,20 @@
 Platform.Form.MulticheckboxField = class extends Platform.Form.Field {
     
+    addOption(key, value) {
+        var html = '<div class="platform_multicheck_option"><input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'+this.dom_node.find('.platform_multicheck_container').data('realname')+'[]" value="'+key+'"> '+value+'</div>';
+        this.dom_node.find('.platform_multicheck_container').append(html);
+    }
+    
     clear() {
         this.dom_node.find('input[type="checkbox"]').prop('checked', false);
+    }
+    
+    clearOptions() {
+        this.dom_node.find('.platform_multicheck_container').html('');
+    }
+    
+    removeOption(key) {
+        this.dom_node.find('input[value="'+key+'"]').parent().remove();
     }
 
     getValue() {

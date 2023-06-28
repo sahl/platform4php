@@ -15,6 +15,9 @@ Platform.Form.Field = class extends Platform.Component {
         this.dom_node.find('.platform_field_error_container').html('').slideUp();
     }
     
+    clearOptions() {
+    }
+    
     isEmpty() {
         return this.getValue() == '';
     }
@@ -33,7 +36,12 @@ Platform.Form.Field = class extends Platform.Component {
     }
     
     setOptions(options) {
-        
+        var field = this;
+        this.clearOptions();
+        $.each(options, function(key, value) {
+            console.log(key);
+            field.addOption(key, value);
+        })
     }
     
     setRequired(value) {

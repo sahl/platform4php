@@ -1,5 +1,18 @@
 Platform.Form.SelectField = class extends Platform.Form.Field {
     
+    addOption(key, value) {
+        var html = '<option value="'+key+'"> '+value+'</option>';
+        this.dom_node.find('select').append(html);
+    }
+
+    clearOptions() {
+        this.dom_node.find('select').html('');
+    }
+
+    removeOption(key) {
+        this.dom_node.find('option[value="'+key+'"]').remove();
+    }
+    
     clear() {
         this.dom_node.find('option:first-child').prop('selected', true);
     }

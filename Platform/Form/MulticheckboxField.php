@@ -11,6 +11,7 @@ class MulticheckboxField extends Field {
         parent::__construct();
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/MulticheckboxField.js'); 
+        $this->addFieldClass('platform_multicheck_container');
     }
     
     public static function Field(string $label, string $name, array $options = array()) {
@@ -33,10 +34,10 @@ class MulticheckboxField extends Field {
         if (! $this->value) $this->value = array();
         $style = '';
         if ($this->height) $style = 'max-height: '.$this->height.'px; overflow: auto; padding: 3px;';
-        echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" style="'.$style.'" class="'.$this->getFieldClasses().'" data-realname="'.$this->name.'">';
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" style="'.$style.'" class="'.$this->getFieldClasses().'" data-realname="'.$this->name.'"'.$this->additional_attributes.'>';
         foreach ($this->options as $key => $option) {
             $checked = in_array($key, $this->value) ? ' checked' : '';
-            echo '<input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'.$this->name.'[]" value="'.$key.'"'.$this->additional_attributes.$checked.'> '.$option.'<br>';
+            echo '<div class="platform_multicheck_option"><input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'.$this->name.'[]" value="'.$key.'"'.$checked.'> '.$option.'</div>';
         }
         echo '</div>';
     }
