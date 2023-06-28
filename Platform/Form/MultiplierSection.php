@@ -149,7 +149,7 @@ class MultiplierSection extends Field {
     }
     
     public function renderInput() {
-        echo '<div data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" id="'.$this->getFieldIdForHTML().'" data-basename="'.$this->getName().'" '.$this->additional_attributes.'>';
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="margin:0px;padding:0px;" id="'.$this->getFieldIdForHTML().'" data-basename="'.$this->getName().'" '.$this->additional_attributes.'>';
         for ($i = 0; $i < count($this->value)+1; $i++) {
             echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {

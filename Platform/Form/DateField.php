@@ -7,8 +7,6 @@ use Platform\Utilities\Time;
 
 class DateField extends Field {
     
-    public $field_width = self::FIELD_SIZE_SMALL;
-    
     public $allow_past = true; // if it is allowed to select a date in the past
     
     public function __construct() {
