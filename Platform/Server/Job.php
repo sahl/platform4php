@@ -398,7 +398,7 @@ class Job extends \Platform\Datarecord {
             foreach ($running_jobs as $running_job) {
                 if ($running_job->isRunning()) {
                     if ($running_job->isOverdue()) {
-                        $this->log('overdue', 'Job have exceeded '.$this->max_runtime.' minutes runtime.', $this);
+                        $running_job->log('overdue', 'Job have exceeded '.$this->max_runtime.' minutes runtime.', $this);
                         $running_job->kill();
                         $running_job->cleanUp();
                     } else {
