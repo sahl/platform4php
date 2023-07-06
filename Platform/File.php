@@ -354,13 +354,13 @@ class File extends Datarecord {
         switch ($this->content_source) {
             case 'file':
                 if (file_exists($this->content)) {
-                    $this->ensureFolderInStore($this->folder);
+                    if ($this->folder) $this->ensureFolderInStore($this->folder);
                     $result = copy($this->content, $this->getCompleteFilename());
                     if (! $result) trigger_error('Couldn\'t copy '.$this->content.' to '.$this->getCompleteFilename(), E_USER_ERROR);
                 }
                 break;
             case 'binary_data':
-                $this->ensureFolderInStore($this->folder);
+                if ($this->folder) $this->ensureFolderInStore($this->folder);
                 $fh = fopen($this->getCompleteFilename(), 'w');
                 if (! $fh) trigger_error('Couldn\'t write binary data to '.$this->getCompleteFilename (), E_USER_ERROR);
                 fwrite($fh, $this->content);
