@@ -412,7 +412,7 @@ class Endpoint {
                             // Store binary content in temporary file
                             $temp_file_name = File::getTempFilename();
                             $fh = fopen($temp_file_name, 'w');
-                            if (! $fh) $this->respondErrorAndDie(500, 'Error writing temporary file handling field '.$key);
+                            if (! $fh) static::respondErrorAndDie(500, 'Error writing temporary file handling field '.$key);
                             fwrite($fh, $binary_data);
                             fclose($fh);
                             // Build compatible input array
