@@ -19,7 +19,7 @@ class RepetitionField extends Field {
     }
     
     public function parse($value) : bool {
-        if (is_array($value)) {
+        if (is_array($value) && count($value)) {
             // Pack data
             $final_value = ['metadata' => []];
             
