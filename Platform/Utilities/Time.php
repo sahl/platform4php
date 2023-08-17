@@ -25,7 +25,7 @@ class Time {
      * Default visual time format
      * @var string
      */
-    private static $time_format = 'h:i';
+    private static $time_format = 'H:i';
     
     /**
      * Construct a new Time object
@@ -471,6 +471,17 @@ class Time {
      */
     public static function now() {
         return new Time('now');
+    }
+    
+    /**
+     * Parse the time from a time string in the display time zone
+     * @param string $display_time
+     * @return Time
+     */
+    public static function parseFromDisplayTime(string $display_time) : Time {
+        if (! self::$time_zone_object) return new Time($display_time);
+        return new Time($display_time.' '.self::$time_zone_object->getName());
+        
     }
     
     /**
