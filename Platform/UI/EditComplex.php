@@ -39,6 +39,8 @@ class EditComplex extends Component {
     
     public $item_popup_menu;
     
+    private $new_item_values = [];
+    
     
     public $table_parameters = [];
     
@@ -189,6 +191,8 @@ class EditComplex extends Component {
     
     public function prepareData() {
         parent::prepareData();
+        
+        if ($this->new_item_values) $this->addData('new_item_values', $this->new_item_values);
 
         $this->addData('name', $this->class::getObjectName());
         $this->addData('shortclass', $this->class::getClassName());
@@ -220,6 +224,14 @@ class EditComplex extends Component {
             if (! in_array($action_location, [self::ACTION_LOCATION_INLINE, self::ACTION_LOCATION_BUTTON_MENU, self::ACTION_LOCATION_BUTTONS])) trigger_error('Invalid action location', E_USER_ERROR);
         }
         $this->action_locations = $action_locations;
+    }
+    
+    /**
+     * Set values to attach to new element created in this editcomplex
+     * @param array $values
+     */
+    public function setNewItemValues(array $values) {
+        $this->new_item_values = $values;
     }
     
 }

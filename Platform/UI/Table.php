@@ -45,7 +45,7 @@ class Table extends Component {
         self::JSFile('/Platform/UI/js/Table.js');
         self::CSSFile('https://unpkg.com/tabulator-tables@5.2.7/dist/css/tabulator.min.css');
         self::CSSFile('/Platform/UI/css/Table.css');
-        self::JSFile('https://cdnjs.cloudflare.com/ajax/libs/luxon/2.3.1/luxon.min.js');
+        self::JSFile('https://cdnjs.cloudflare.com/ajax/libs/luxon/3.4.0/luxon.min.js');
         parent::__construct();
         $this->setTabulatorOption('placeholder', 'No data');
         $this->setTabulatorOption('movableColumns', true);
@@ -277,7 +277,7 @@ class Table extends Component {
                         break;
                     case Datarecord::FIELDTYPE_DATE:
                     case Datarecord::FIELDTYPE_DATETIME:
-                        $columns[$field] = $object->getRawValue($field)->getReadable('Y-m-d h:i:s');
+                        $columns[$field] = $object->getRawValue($field)->getReadable('Y-m-d H:i:s');
                         break;
                     default:
                         $columns[$field] = $value;

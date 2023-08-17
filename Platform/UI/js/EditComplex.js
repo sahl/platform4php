@@ -6,11 +6,15 @@ Platform.EditComplex = class extends Platform.Component {
     
     shortclass = '';
     
+    edit_dialog = null;
+    
     edit_dialog_dom = null;
     
     column_select_dialog_dom = null;
     
     table = null;
+    
+    new_item_values = null;
     
     initialize() {
         var component = this;
@@ -25,22 +29,29 @@ Platform.EditComplex = class extends Platform.Component {
         this.shortclass = this.dom_node.data('shortclass');
 
         // The edit dialog
-        this.edit_dialog = this.dom_node.find('#'+this.shortclass+'_edit_dialog');
+        this.edit_dialog_dom = $('#'+this.shortclass+'_edit_dialog');
+        
+        // The edit dialog javascript object
+        this.edit_dialog = this.edit_dialog_dom.platformComponent();
 
         // The column select dialog
-        this.column_select_dialog = this.dom_node.find('#'+this.id+'_table_component_select');
+        this.column_select_dialog = $('#'+this.id+'_table_component_select');
 
         // The table
         this.table_div = $('#'+this.id+'_table');
 
         // Reload table data when edit dialog saves
-        component.edit_dialog.on('aftersave', function() {
+        component.edit_dialog_dom.on('aftersave', function() {
             component.table_div.platformComponent().loadData();
         })
-
+        
+        // Load new item values from data if any
+        var new_item_values = component.dom_node.data('new_item_values');
+        if (new_item_values) this.setNewItemValues(new_item_values);
+        
         // Create new item
         component.dom_node.on('create_object', function() {
-            component.edit_dialog.trigger('new');
+            component.edit_dialog.openDialog(0, component.new_item_values);
             return false;
         })
 
@@ -71,13 +82,13 @@ Platform.EditComplex = class extends Platform.Component {
         component.dom_node.on('edit_objects', function(event) {
             var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
             if (ids.length != 1) Platform.Dialog.warningDialog('Cannot edit', 'You need to select exactly one element to edit.');
-            else component.edit_dialog.trigger('edit', ids[0]);
+            else component.edit_dialog.openDialog(ids[0]);
             return false;
         })
 
         component.dom_node.on('edit_object', function(event) {
             var id = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
-            component.edit_dialog.trigger('edit', id[0]);
+            component.edit_dialog.openDialog(id[0]);
             return false;
         });
 
@@ -111,6 +122,10 @@ Platform.EditComplex = class extends Platform.Component {
             return false;
         });
         
+    }
+    
+    setNewItemValues(values) {
+        this.new_item_values = values;
     }
 }
 

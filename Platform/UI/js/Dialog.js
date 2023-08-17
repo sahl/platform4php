@@ -38,7 +38,7 @@ Platform.Dialog = class extends Platform.Component {
         this.dialog_options = $.extend(standard_options, options);
     }
     
-    initialize() {
+    initializeLast() {
         var component = this;
         this.dom_node.dialog(this.dialog_options);
         this.dom_node.on('close', function() {

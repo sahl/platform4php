@@ -27,9 +27,17 @@ Platform.Component = class {
         $.each(found_components, function(key, component) {
             component.initialize();
         })
+        
+        $.each(found_components, function(key, component) {
+            component.initializeLast();
+        })
     }
     
     initialize() {
+        
+    }
+    
+    initializeLast() {
         
     }
     

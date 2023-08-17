@@ -2,7 +2,6 @@
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 if ($_POST['event'] == '__timedio') {
-    \Platform\Page\Page::setPagestarted();
     $result = [];
     // This is a timed io event, with multiple payloads
     foreach ($_POST['payloads'] as $payload) {
