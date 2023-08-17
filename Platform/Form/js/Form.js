@@ -56,7 +56,6 @@ Platform.Form = class extends Platform.Component {
     }
     
     clear() {
-        return;
         this.dom_node.find('.platform_form_field').each(function() {
             $(this).platformComponent().clear();
         });
