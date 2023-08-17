@@ -2094,6 +2094,10 @@ class Datarecord implements DatarecordReferable {
                     if ($value === null) $this->setValue($key, null);
                     else $this->setValue($key, Repetition::constructFromArray(json_decode($value,true)));
                     break;
+                case self::FIELDTYPE_DATE:
+                case self::FIELDTYPE_DATETIME:
+                    $this->setValue($key, new Time($value));
+                    break;
                 default:
                     $this->setValue($key, $value);
             }
@@ -2575,7 +2579,9 @@ class Datarecord implements DatarecordReferable {
                 break;
             case self::FIELDTYPE_DATETIME:
             case self::FIELDTYPE_DATE:
-                $this->values[$field] = new Time($value);
+                // We assume that all string-based dates are given in the display time zone, so we parse from that.
+                if (is_string($value) && ! is_numeric($value)) $this->values[$field] = Time::parseFromDisplayTime($value);
+                else $this->values[$field] = new Time($value);
                 break;
             case self::FIELDTYPE_CURRENCY:
                 if (is_array($value)) {
