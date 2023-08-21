@@ -480,6 +480,7 @@ class Time {
      */
     public static function parseFromDisplayTime(string $display_time) : Time {
         if (! self::$time_zone_object) return new Time($display_time);
+        if (! $display_time) return new Time();
         return new Time($display_time.' '.self::$time_zone_object->getName());
         
     }
