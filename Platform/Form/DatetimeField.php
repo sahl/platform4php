@@ -8,6 +8,7 @@ class DatetimeField extends Field {
     
     public function __construct() {
         parent::__construct();
+        $this->value = new Time();
     }
     
     public static function Field(string $label, string $name, array $options = array()) {
@@ -15,13 +16,22 @@ class DatetimeField extends Field {
         return $field;
     }
     
+    public function parse($value): bool {
+        $result = parent::parse($value);
+        if ($result) {
+            $this->value = Time::parseFromDisplayTime($value);
+        }
+        return $result;
+    }
+    
     
     public function setValue($value) {
-        $this->value = $value;
+        $this->value = new Time($value);
     }
     
     public function renderInput() {
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$this->value.'"'.$this->additional_attributes.'>';
+        $date_value = str_replace(' ', 'T', $this->value->getReadable('Y-m-d H:i'));
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$date_value.'"'.$this->additional_attributes.'>';
     }
 }

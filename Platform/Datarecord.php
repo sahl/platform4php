@@ -1035,16 +1035,17 @@ class Datarecord implements DatarecordReferable {
     
     /**
      * Return all fields suitable for insertion into a form
+     * @param $for_json Indicate if we should return values for JSON
      * @return array
      */
-    public function getAsArrayForForm() : array {
+    public function getAsArrayForForm($for_json = false) : array {
         $result = array();
         foreach (static::$structure as $fieldname => $data) {
             if ($data['subfield']) continue;
             //if (($data['invisible'] || $data['readonly']) && $data['fieldtype'] != self::FIELDTYPE_KEY) continue;
             $field = static::getFormFieldForField($fieldname);
             if ($field === null) continue;
-            $result[$fieldname] = $this->getValue($fieldname, self::RENDER_FORM);
+            $result[$fieldname] = $this->getFormValue($fieldname, $for_json);
         }
         return $result;
     }
@@ -1322,20 +1323,22 @@ class Datarecord implements DatarecordReferable {
     /**
      * Get a value suitable for a form from this object
      * @param string $field Field name
+     * @param bool $for_json Indicate if the returned value should be JSON compatible
      * @return mixed 
      */
-    public function getFormValue(string $field) {
+    public function getFormValue(string $field, bool $for_json = false) {
         if (! isset(static::$structure[$field])) return null;
-        return $this->getFormValueByDefinition($this->getRawValue($field), static::$structure[$field]);
+        return $this->getFormValueByDefinition($this->getRawValue($field), static::$structure[$field], $for_json);
     }
 
     /**
      * Get a form value directly from a definition
      * @param mixed $value Raw value
      * @param array $definition Definition
+     * @param bool $for_json Indicate if the returned value should be JSON compatible
      * @return mixed The value as appropriate for the form
      */
-    public function getFormValueByDefinition($value, array $definition) {
+    public function getFormValueByDefinition($value, array $definition, bool $for_json = false) {
         if ($definition['invisible']) return $value;
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
@@ -1364,9 +1367,9 @@ class Datarecord implements DatarecordReferable {
                 }
                 return $values;
             case self::FIELDTYPE_DATETIME:
-                return str_replace(' ', 'T', $value->getReadable('Y-m-d H:i'));
+                return $for_json ? str_replace(' ', 'T', $value->getReadable('Y-m-d H:i')) : $value;
             case self::FIELDTYPE_DATE:
-                return $value->getReadable('Y-m-d');
+                return $for_json ? $value->getReadable('Y-m-d') : $value;
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_HTMLTEXT:
@@ -1383,7 +1386,7 @@ class Datarecord implements DatarecordReferable {
                     foreach ($value as $v) {
                         $subresult = [];
                         foreach ($definition['substructure'] as $key => $subdefinition) {
-                            $subresult[$key] = $this->getFormValueByDefinition($v[$key], $subdefinition);
+                            $subresult[$key] = $this->getFormValueByDefinition($v[$key], $subdefinition, $for_json);
                         }
                         $result[] = $subresult;
                     }
