@@ -59,7 +59,7 @@ Platform.EditComplex = class extends Platform.Component {
             var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
             if (ids.length < 1) Platform.Dialog.warningDialog('Cannot copy', 'You must select at least one item to copy.');
             else 
-                Platform.Dialog.confirmDialog('Copy', 'Are you sure you want to copy the selected '+name, function() {
+                Platform.Dialog.confirmDialog('Copy', 'Are you sure you want to copy the selected '+component.name, function() {
                     component.backendIO({event: 'datarecord_copy', ids: ids}, function(data) {
                         // Reload tabulator
                         component.table_div.platformComponent().loadData();
@@ -70,7 +70,7 @@ Platform.EditComplex = class extends Platform.Component {
 
         component.dom_node.on('copy_object', function(event) {
             var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
-            Platform.Dialog.confirmDialog('Copy', 'Are you sure you want to copy this '+name, function() {
+            Platform.Dialog.confirmDialog('Copy', 'Are you sure you want to copy this '+component.name, function() {
                 component.backendIO({event: 'datarecord_copy', ids: ids}, function(data) {
                     // Reload tabulator
                     component.table_div.platformComponent().loadData();
@@ -94,10 +94,10 @@ Platform.EditComplex = class extends Platform.Component {
 
         component.dom_node.on('delete_objects', function(event) {
             var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
-            Platform.Dialog.confirmDialog('Delete', 'Are you sure you want to delete the selected '+name, function() {
+            Platform.Dialog.confirmDialog('Delete', 'Are you sure you want to delete the selected '+component.name, function() {
                 component.backendIO({event: 'datarecord_delete', ids: ids}, function(data) {
                     if (data.status == 0) {
-                        Platform.Dialog.warningDialog('Could not delete data', 'Could not delete '+name+'(s). Error was: '+data.errormessage);
+                        Platform.Dialog.warningDialog('Could not delete data', 'Could not delete '+component.name+'(s). Error was: '+data.errormessage);
                     }
                     // Reload tabulator
                     component.table_div.platformComponent().loadData();
@@ -108,7 +108,7 @@ Platform.EditComplex = class extends Platform.Component {
 
         component.dom_node.on('delete_object', function(event) {
             var ids = $(event.target).closest('.platform_menu_popupmenu').data('platform_info');
-            Platform.Dialog.confirmDialog('Delete', 'Are you sure you want to delete this '+name, function() {
+            Platform.Dialog.confirmDialog('Delete', 'Are you sure you want to delete this '+component.name, function() {
                 component.backendIO({event: 'datarecord_delete', ids: ids}, function(data) {
                     // Reload tabulator
                     component.table_div.platformComponent().loadData();

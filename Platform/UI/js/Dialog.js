@@ -152,6 +152,7 @@ $(function() {
     $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div><div id="platform_allpurpose_form"></div></div>');
     var dialog = new Platform.Dialog($('#platform_allpurpose_dialog'));
     dialog.initialize();
+    dialog.initializeLast();
 });
 
 
