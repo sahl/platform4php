@@ -2,9 +2,12 @@
 namespace Platform\UI;
 
 use Platform\Utilities\Translation;
+use Platform\Utilities\Utilities;
 
 
 class EditDialog extends Dialog {
+    
+    protected static $component_class = 'platform_editdialog';
     
     public function __construct() {
         parent::__construct();
@@ -12,7 +15,7 @@ class EditDialog extends Dialog {
             ['class' => null,
              'object_id' => 0]
         );
-        self::JSFile(\Platform\Utilities::directoryToURL(__DIR__).'/js/EditDialog.js');
+        self::JSFile(Utilities::directoryToURL(__DIR__).'js/EditDialog.js');
     }
     
     public static function EditDialog(string $class) : EditDialog {

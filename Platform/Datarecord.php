@@ -1,7 +1,6 @@
 <?php
 namespace Platform;
 
-use Platform\Currency\Currency;
 use Platform\Form\CheckboxField;
 use Platform\Form\CurrencyField;
 use Platform\Form\DatarecordcomboboxField;
@@ -10,10 +9,13 @@ use Platform\Form\DatetimeField;
 use Platform\Form\EmailField;
 use Platform\Form\Field;
 use Platform\Form\FileField;
+use Platform\Form\Form;
 use Platform\Form\HiddenField;
 use Platform\Form\Layout;
 use Platform\Form\MulticheckboxField;
 use Platform\Form\MultidatarecordcomboboxField;
+use Platform\Form\MultiField;
+use Platform\Form\MultiplierSection;
 use Platform\Form\NumberField;
 use Platform\Form\PasswordField;
 use Platform\Form\RepetitionField;
@@ -32,6 +34,7 @@ use Platform\Utilities\Repetition;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
 use Platform\Utilities\Translation;
+use Platform\Utilities\Utilities;
 
 class Datarecord implements DatarecordReferable {
 
@@ -555,7 +558,7 @@ class Datarecord implements DatarecordReferable {
                             if ($referring_object->getRawValue($key) == $deleted_id) $referring_object->setValue($key, 0);
                         } elseif ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE) {
                             $values = $referring_object->getRawValue($key);
-                            Utility::arrayRemove($values, $deleted_id);
+                            Utilities::arrayRemove($values, $deleted_id);
                             $referring_object->setValue($key, $values);
                         }
                     }
@@ -1226,7 +1229,7 @@ class Datarecord implements DatarecordReferable {
     /**
      * Get a proper form field for the specific field
      * @param string $field The field
-     * @return \Platform\Form\Field A form field
+     * @return Field A form field
      */
     public static function getFormFieldForField(string $field) {
         if (! isset(static::$structure[$field])) trigger_error('Unknown field '.$field, E_USER_ERROR);
@@ -1249,7 +1252,7 @@ class Datarecord implements DatarecordReferable {
         if ($definition['invisible']) {
             // Some elements cannot be represented as hidden fields
             if (in_array($definition['fieldtype'], [self::FIELDTYPE_ARRAY, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER])) return null;
-            return new HiddenField('', $name);
+            return HiddenField::Field('', $name);
         }
         
         if ($definition['layout_group']) {
@@ -1258,60 +1261,59 @@ class Datarecord implements DatarecordReferable {
         
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_KEY:
-                return new HiddenField('', $name);
+                return HiddenField::Field('', $name);
             case self::FIELDTYPE_TEXT:
-                return new TextField($definition['label'], $name, $options);
+                return TextField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_BIGTEXT:
-                return new TextareaField($definition['label'], $name, $options);
+                return TextareaField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_HTMLTEXT:
-                return new TexteditorField($definition['label'], $name, $options);
+                return TexteditorField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_EMAIL:
-                return new EmailField($definition['label'], $name, $options);
+                return EmailField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_PASSWORD:
-                return new PasswordField($definition['label'], $name, $options);
+                return PasswordField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_INTEGER:
-                return new NumberField($definition['label'], $name, $options);
+                return NumberField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_FLOAT:
                 $options['step'] = 'any';
-                return new NumberField($definition['label'], $name, $options);
+                return NumberField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_BOOLEAN:
-                return new CheckboxField($definition['label'], $name, $options);
+                return CheckboxField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_DATETIME:
-                return new DatetimeField($definition['label'], $name, $options);
+                return DatetimeField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_DATE:
-                return new DateField($definition['label'], $name, $options);
+                return DateField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_FILE:
-                return new FileField($definition['label'], $name, $options);
+                return FileField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_IMAGE:
                 $options['images_only'] = true;
-                return new FileField($definition['label'], $name, $options);
+                return FileField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_CURRENCY:
-                return new CurrencyField($definition['label'], $name, $options);
+                return CurrencyField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_REPETITION:
-                return new RepetitionField($definition['label'], $name, $options);
+                return RepetitionField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                $options['class'] = $definition['foreign_class'];
-                return new DatarecordcomboboxField($definition['label'], $name, $options);
+                $options['datarecord_class'] = $definition['foreign_class'];
+                return DatarecordcomboboxField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_ENUMERATION:
                 $options['options'] = $definition['enumeration'];
-                return new SelectField($definition['label'], $name, $options);
+                return SelectField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_ENUMERATION_MULTI:
                 $options['options'] = $definition['enumeration'];
-                return new MulticheckboxField($definition['label'], $name, $options);
+                return MulticheckboxField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                $options['class'] = $definition['foreign_class'];
-                return new MultidatarecordcomboboxField($definition['label'], $name, $options);
+                $options['datarecord_class'] = $definition['foreign_class'];
+                return MultidatarecordcomboboxField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_ARRAY:
                 if (is_array($definition['substructure'])) {
-                    $multiplier_section = new Form\MultiplierSection($definition['label'], $name, $options);
+                    $multiplier_section = MultiplierSection::Field($definition['label'], $name, $options);
                     foreach ($definition['substructure'] as $key => $substructure_element) {
                         if (! is_array($substructure_element)) trigger_error('Could not parse substructure element', E_USER_ERROR);
                         $multiplier_section->addFields(static::getFormFieldFromDefinition($key, $substructure_element));
                     }
                     return $multiplier_section;
                 } else {
-                    $multi_field = new Form\MultiField($definition['label'], $name, $options);
-                    $multi_field->addMultiField(new TextField($definition['label'], $name, $options));
+                    $multi_field = MultiField::MultiField(TextField::Field($definition['label'], $name, $options));
                     return $multi_field;
                 }
         }
@@ -1326,24 +1328,30 @@ class Datarecord implements DatarecordReferable {
      */
     public function getFormValue(string $field, bool $for_json = false) {
         if (! isset(static::$structure[$field])) return null;
-        return $this->getFormValueByDefinition($this->getRawValue($field), $this->getTextValue($field), static::$structure[$field], $for_json);
+        return $this->getFormValueByDefinition($this->getRawValue($field), static::$structure[$field], $for_json);
     }
 
     /**
      * Get a form value directly from a definition
      * @param mixed $value Raw value
-     * @param mixed $textvalue Text value
      * @param array $definition Definition
      * @param bool $for_json Indicate if the returned value should be JSON compatible
      * @return mixed The value as appropriate for the form
      */
-    public function getFormValueByDefinition($value, $textvalue, array $definition, bool $for_json = false) {
+    public function getFormValueByDefinition($value, array $definition, bool $for_json = false) {
         if ($definition['invisible']) return $value;
         switch ($definition['fieldtype']) {
             case self::FIELDTYPE_PASSWORD:
                 return $value ? 'XXXXXX' : '';
             case self::FIELDTYPE_REFERENCE_SINGLE:
-                return array('id' => $value, 'visual' => $textvalue);
+                $visual = '';
+                if ($value) {
+                    // Resolve foreign class 
+                    $object = new $definition['foreign_class']();
+                    $object->loadForRead($value);
+                    $visual = $object->getTitle();
+                }
+                return array('id' => $value, 'visual' => $visual);
             case self::FIELDTYPE_BOOLEAN:
                 return $value ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
@@ -1373,10 +1381,23 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_IMAGE:
                 return (int)$value;
             case self::FIELDTYPE_ARRAY:
+                if ($definition['substructure']) {
+                    $result = [];
+                    foreach ($value as $v) {
+                        $subresult = [];
+                        foreach ($definition['substructure'] as $key => $subdefinition) {
+                            $subresult[$key] = $this->getFormValueByDefinition($v[$key], $subdefinition, $for_json);
+                        }
+                        $result[] = $subresult;
+                    }
+                    return $result;
+                } else {
+                    return $value;
+                }
             case self::FIELDTYPE_OBJECT:
                 return $value;
             default:
-                return $textvalue;
+                return $value;
         }        
     }
     
@@ -2087,6 +2108,8 @@ class Datarecord implements DatarecordReferable {
                 case self::FIELDTYPE_ARRAY:
                 case self::FIELDTYPE_ENUMERATION_MULTI:
                 case self::FIELDTYPE_REFERENCE_MULTIPLE:
+                    // Handle null values
+                    if ($value == '') $value = '[]';
                     $this->setValue($key, json_decode($value, true));
                     break;
                 case self::FIELDTYPE_OBJECT:

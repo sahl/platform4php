@@ -1,4 +1,4 @@
-addCustomPlatformFunction(function(item) {
+Platform.addCustomFunction(function(item) {
      $('.platform_menuitem',item).click(function(e) {
         // Handle special urls
         var url = new String($(this).attr('href'));

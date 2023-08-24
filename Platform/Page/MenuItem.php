@@ -1,5 +1,5 @@
 <?php
-namespace Platform;
+namespace Platform\Page;
 
 class MenuItem {
     
@@ -60,7 +60,7 @@ class MenuItem {
      * @param string $classes Class on menu item html
      * @param string $icon FA icon name or image file
      * @param array $data Data on html tag with values hashed by keys
-     * @return \Platform\MenuItem
+     * @return \Platform\Page\MenuItem
      */
     public static function constructByID(string $text, string $id, string $classes = '', string $icon = '', array $data = array(), array $submenu_items = array()) {
         return new MenuItem($text, '#', $id, $classes, $icon, $data, $submenu_items);
@@ -71,7 +71,7 @@ class MenuItem {
      * @param string $text Text on menu item
      * @param type $submenu_items
      * @param array $submenu_items An array with MenuItem's intended as submenu to this item
-     * @return \Platform\MenuItem
+     * @return \Platform\Page\MenuItem
      */
     public static function constructSubmenu(string $text, array $submenu_items) {
         return new MenuItem($text, '#', '', '', '', array(), $submenu_items);

@@ -3,18 +3,47 @@ namespace Platform\Form;
 
 class DatarecordcomboboxField extends IndexedComboboxField {
     
-    protected $connected_class = false;
-    
     protected $filter = null;
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        $this->classes[] = 'platform_datarecord_combobox';
-        if ($options['class']) {
-            $this->connected_class = $options['class'];
-            $this->setDatasource('/Platform/Form/php/io_combobox.php?class='.$this->connected_class);
-            unset($options['class']);
+    public function __construct() {
+        parent::__construct();
+        $this->addPropertyMap([
+            'connected_class' => false
+        ]);
+    }
+    
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = parent::Field($label, $name, $options);
+        $field->addClass('platform_datarecord_combobox');
+        if ($options['datarecord_class']) {
+            $field->connected_class = $options['datarecord_class'];
+            $field->setDatasource('/Platform/Form/php/io_combobox.php?class='.$field->connected_class);
+            unset($options['datarecord_class']);
         }
-        parent::__construct($label, $name, $options);
+        return $field;
+    }
+    
+    public function handleIO(): array {
+        if ($_POST['event'] == 'resolve') {
+            $output = ['visual' => ''];
+            if (class_exists($this->connected_class)) {
+                $object = new $this->connected_class();
+                $object->loadForRead($_POST['id'], false);
+                if ($object->isInDatabase() && $object->canAccess()) $output = ['visual' => strip_tags($object->getTitle())];
+            }
+            return $output;
+        }
+        if ($_POST['event'] == 'autocomplete') {
+            if (!class_exists($this->connected_class)) { $output = array(); }
+            else {
+                if ($_POST['filter']) $filter = \Platform\Filter::getFilterFromJSON($_POST['filter']);
+                else $filter = null;
+                $output = $this->connected_class::findByKeywords($_POST['term'], 'autocomplete', $filter);
+            }
+            return ['callback_options' => $output];
+            
+        }
+        return parent::handleIO();
     }
     
     public function parse($value) : bool {

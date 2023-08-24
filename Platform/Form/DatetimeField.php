@@ -6,9 +6,14 @@ use Platform\Utilities\Time;
 
 class DatetimeField extends Field {
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
+    public function __construct() {
+        parent::__construct();
         $this->value = new Time();
+    }
+    
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = parent::Field($label, $name, $options);
+        return $field;
     }
     
     public function parse($value): bool {
@@ -19,6 +24,7 @@ class DatetimeField extends Field {
         return $result;
     }
     
+    
     public function setValue($value) {
         $this->value = new Time($value);
     }
@@ -26,6 +32,6 @@ class DatetimeField extends Field {
     public function renderInput() {
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
         $date_value = str_replace(' ', 'T', $this->value->getReadable('Y-m-d H:i'));
-        echo '<input class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$date_value.'"'.$this->additional_attributes.'>';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="datetime-local" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.$date_value.'"'.$this->additional_attributes.'>';
     }
 }

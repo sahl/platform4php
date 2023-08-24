@@ -64,7 +64,7 @@ class Condition {
      * @param array $array Array earlier packed with toArray()
      * @return \Platform\ConditionMatch|\Platform\ConditionLike|\Platform\ConditionNOT|\Platform\ConditionLesserEqual|\Platform\ConditionOneOf|\Platform\ConditionGreater|\Platform\ConditionGreaterEqual|\Platform\FilterConditionLesser|\Platform\ConditionOR|\Platform\ConditionAND
      */
-    public static function getConditionFromArray(array $array) : Condition {
+    public static function getConditionFromArray(array $array) {
         if ($array === null) return null;
         switch ($array['type']) {
             case 'AND':

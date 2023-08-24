@@ -3,12 +3,21 @@ namespace Platform\Form;
 
 class MultiField extends MultiplierSection {
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
+    protected static $component_class = 'platform_component_form_multi_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js');
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/MultiField.js');
     }
     
-    public static function construct(Field $field) {
-        $finalfield = new MultiField('', '', []);
+    public static function Field(string $label = '', string $name = '', array $options = []) {
+        $field = parent::Field($label, $name, $options);
+        return $field;
+    }
+    
+    public static function MultiField(Field $field) {
+        $finalfield = static::Field();
         $finalfield->addMultiField($field);
         return $finalfield;
     }

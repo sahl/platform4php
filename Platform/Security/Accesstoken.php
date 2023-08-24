@@ -5,9 +5,9 @@ use Platform\ConditionLesser;
 use Platform\ConditionMatch;
 use Platform\Datarecord;
 use Platform\Filter;
-use Platform\Page;
+use Platform\Page\Page;
 use Platform\Server\Instance;
-use Platform\User;
+use Platform\Security\User;
 use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
@@ -35,7 +35,7 @@ class Accesstoken extends Datarecord {
             'user_ref' => array(
                 'label' => 'User',
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => 'Platform\User'
+                'foreign_class' => 'Platform\Security\User'
             ),
             'seconds_to_live' => array(
                 'label' => 'Seconds to live',

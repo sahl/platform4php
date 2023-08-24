@@ -342,7 +342,7 @@ class File extends Datarecord {
             $old_filename = $this->getCompleteFilename(false);
             if (file_exists($old_filename)) {
                 // We need to move it into place
-                $this->ensureFolderInStore($this->folder);
+                if ($this->folder) $this->ensureFolderInStore($this->folder);
                 $result = rename($old_filename, $this->getCompleteFilename());
                 if (! $result) trigger_error('Couldn\'t move file content from folder '.$this->values_on_load['folder'].' to '.$this->folder, E_USER_ERROR);
             }

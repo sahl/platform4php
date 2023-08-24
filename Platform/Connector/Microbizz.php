@@ -3,10 +3,10 @@ namespace Platform\Connector;
 
 use Platform\Platform;
 use Platform\File;
-use Platform\Form;
+use Platform\Form\Form;
 use Platform\Form\HiddenField;
 use Platform\Form\SubmitButton;
-use Platform\Page;
+use Platform\Page\Page;
 use Platform\Property;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;

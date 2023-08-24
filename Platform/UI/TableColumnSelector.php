@@ -10,10 +10,12 @@ class TableColumnSelector extends Component {
     protected $dialog = null;
     
     protected static $can_redraw = false;
+    
+    protected static $component_class = 'platform_component_column_selector';
 
     public function __construct() {
         parent::__construct();
-        self::JSFile('/Platform/UI/js/columnselector.js');
+        self::JSFile('/Platform/UI/js/ColumnSelector.js');
         $this->addPropertyMap(
                 ['table_id' => null]
         );

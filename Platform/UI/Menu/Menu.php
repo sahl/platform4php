@@ -1,7 +1,7 @@
 <?php
 namespace Platform\UI\Menu;
 
-use Platform\MenuItem;
+use Platform\Page\MenuItem;
 use Platform\UI\Component;
 
 class Menu extends Component {

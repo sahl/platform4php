@@ -1,5 +1,5 @@
 <?php
-namespace Platform;
+namespace Platform\Utilities;
 
 class Utilities {
 

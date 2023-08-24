@@ -1,5 +1,5 @@
 <?php
-namespace Platform;
+namespace Platform\Security;
 
 Use Platform\Security\Accesstoken;
 

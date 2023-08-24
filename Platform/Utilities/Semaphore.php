@@ -99,7 +99,7 @@ class Semaphore {
         
         if (file_exists($semfile)) unlink($semfile);
         sem_release($php_semaphore);
-        \Platform\Utilities::arrayRemove(self::$carried_semaphores, $semfile);
+        Utilities::arrayRemove(self::$carried_semaphores, $semfile);
     }
     
     /**

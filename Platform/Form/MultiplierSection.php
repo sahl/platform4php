@@ -1,7 +1,7 @@
 <?php
 namespace Platform\Form;
 
-use Platform\Form;
+use Platform\Form\Form;
 
 class MultiplierSection extends Field {
     
@@ -9,16 +9,25 @@ class MultiplierSection extends Field {
     
     private $error_cache = array();
     
-    public function __construct(string $label = '', string $name = '', array $options = array()) {
-        $this->classes[] = 'platform_formfield_container';
-        $this->value = array();
+    protected static $component_class = 'platform_component_form_multiplier_section';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'js/Field.js');
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'js/MultiplierSection.js');
+        $this->value = [];
+        $this->addClass('platform_form_multiplier');
+    }
+    
+    public static function Field(string $label = '', string $name = '', array $options = array()) {
+        $field = parent::Field($label, $name, $options);
+        $field->addClass('platform_formfield_container');
         if ($options['sortable']) {
-            $this->container_classes[] = 'platform_sortable';
+            $field->addClass('platform_sortable');
             unset($options['sortable']);
         }
         // No label for this field?
-        parent::__construct($label, $name, $options);
-        $this->addClass('platform_form_multiplier');
+        return $field;
     }
     
     /**
@@ -47,7 +56,9 @@ class MultiplierSection extends Field {
     public function addFields($fields) {
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
+            if (! $field->getName()) trigger_error('No name', E_USER_ERROR);
             //if ($field instanceof FieldMultiplier) trigger_error('You cannot add a multiplier to another multiplier!', E_USER_ERROR);
+            if ($this->form) $field->setID($this->form->getFormId().'_'.$this->getName().'_'.$field->getName().'_component');
             $this->contained_fields[] = $field;
         }
     }
@@ -65,11 +76,14 @@ class MultiplierSection extends Field {
 
     /**
      * Attach this field to a form
-     * @param \Platform\Form $form
+     * @param \Platform\Form\Form $form
      */
     public function attachToForm(Form $form) {
-        $this->form = $form;
-        foreach ($this->contained_fields as $field) $field->attachToForm($form);
+        parent::attachToForm($form);
+        foreach ($this->contained_fields as $field) {
+            $field->attachToForm($form);
+            $field->setID($form->getFormId().'_'.$this->getName().'_'.$field->getName().'_component');
+        }
     }
     
     /**
@@ -95,7 +109,6 @@ class MultiplierSection extends Field {
     
     
     public function parse($values) : bool {
-
         // Determine hidden fields
         $hiddenfields = $_POST['form_hiddenfields'] ? explode(' ', $_POST['form_hiddenfields']) : array();
         
@@ -136,7 +149,7 @@ class MultiplierSection extends Field {
     }
     
     public function renderInput() {
-        echo '<div data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" id="'.$this->getFieldIdForHTML().'" data-basename="'.$this->getName().'" '.$this->additional_attributes.'>';
+        echo '<div data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="margin:0px;padding:0px;" id="'.$this->getFieldIdForHTML().'" data-basename="'.$this->getName().'" '.$this->additional_attributes.'>';
         for ($i = 0; $i < count($this->value)+1; $i++) {
             echo '<div class="platform_form_multiplier_element">';
             foreach ($this->contained_fields as $field) {
@@ -144,6 +157,7 @@ class MultiplierSection extends Field {
                 $old_field_name = $field->getName();
                 // Generate new field name
                 $field->setName($this->getName().'['.$i.']['.$old_field_name.']');
+                $field->setID($this->form->getFormId().'_'.$field->getName().'_component');
                 // Set value and trigger error if any
                 if (! $field instanceof HTML) {
                     if (isset($this->value[$i][$old_field_name])) {

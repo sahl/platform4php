@@ -2,19 +2,28 @@
 namespace Platform\Form;
 
 class TextareaField extends TextField {
+    
+    protected static $component_class = 'platform_component_textarea_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/TextareaField.js'); 
+    }
 
-    public function __construct(string $label, string $name, array $options = array()) {
+    public static function Field(string $label, string $name, array $options = array()) {
+        $field = parent::Field($label, $name, $options);
         if ($options['no_autosize']) {
             unset($options['no_autosize']);
         } else {
-            $this->classes[] = 'autosize';
+            $field->addClass('autosize');
         }
-        parent::__construct($label, $name, $options);
+        return $field;
     }
     
     public function renderInput() {
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
-        echo '<textarea data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';"'.$placeholder.' name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
+        echo '<textarea data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
         echo $this->value;
         echo '</textarea>';
     }

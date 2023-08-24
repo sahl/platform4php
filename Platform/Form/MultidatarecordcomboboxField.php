@@ -5,13 +5,28 @@ class MultidatarecordcomboboxField extends MultiplierSection {
     
     private $datarecord_combobox = null;
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        $this->datarecord_combobox = new DatarecordcomboboxField('', 'innercombobox', array('class' => $options['class']));
-        $this->datarecord_combobox->addContainerStyle('margin-top: 0px');
-        unset($options['class']);
-        parent::__construct($label, $name, $options);
+    protected static $component_class = 'platform_component_form_multidatarecordcombobox';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js');
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Multidatarecordcombobox.js');
+        $this->datarecord_combobox = DatarecordcomboboxField::Field('', 'innercombobox');
+        $this->datarecord_combobox->addFieldStyle('margin-top: 0px');
         $this->addFields($this->datarecord_combobox);
     }
+    
+    public static function Field(string $label = '', string $name = '', array $options = array()) {
+        $field = parent::Field($label, $name, $options);
+        $field->addClass('platform_formfield_container');
+        if ($options['datarecord_class']) {
+            $field->datarecord_combobox->connected_class = $options['datarecord_class'];
+            unset($options['datarecord_class']);
+        }
+        // No label for this field?
+        return $field;
+    }
+    
     
     public function parse($values) : bool {
         $result = parent::parse($values);

@@ -1,9 +1,9 @@
 <?php
 namespace Platform\UI\Menu;
 
-use Platform\Page;
+use Platform\Page\Page;
 use Platform\UI\Component;
-use Platform\Utilities;
+use Platform\Utilities\Utilities;
 
 class PopupMenu extends Menu {
     
@@ -17,11 +17,16 @@ class PopupMenu extends Menu {
     
     private $location = self::LOCATION_MOUSE;
     
+    protected static $component_class = 'platform_menu_popupmenu';
+    
     private $attached_component = null;
     
     public function __construct() {
         Page::JSFile(Utilities::directoryToURL(__DIR__).'js/PopupMenu.js');
         Page::CSSFile(Utilities::directoryToURL(__DIR__).'css/PopupMenu.css');
+        $this->setPropertyMap([
+            'info' => []
+        ]);
         parent::__construct();
     }
     

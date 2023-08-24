@@ -1,47 +1,53 @@
-addPlatformComponentHandlerFunction('editdialog', function(element) {
+Platform.EditDialog = class extends Platform.Dialog {
     
-    var form = element.find('form');
+    form = null;
     
-    var name = element.data('element_name');
+    name = '';
     
-    element.on('new', function(event, values) {
-        openDialog(0, values);
-        return false;
-    });
+    constructor(dom_node) {
+        super(dom_node);
+    }
     
-    element.on('edit', function(e, id) {
-        openDialog(id);
-        return false;
-    })
+    initializeLast() {
+        var component = this;
+        super.initializeLast();
+        this.form = this.dom_node.find('.platform_component_form').platformComponent();
+        this.name = this.dom_node.data('element_name');
+
+        this.addIOForm(this.form.dom_node.find('form'), function(data) {
+            component.dom_node.dialog('close');
+            component.dom_node.trigger('aftersave', data);
+        });
+        
+        this.dom_node.on('save', function() {
+            component.form.submit();
+            return false;
+        })
+    }
     
-    element.componentIOForm(form, function(data) {
-        element.dialog('close');
-        element.trigger('aftersave', data);
-    });
-    
-    
-    element.on('save', function(e) {
-        form.submit();
-    })
-    
-    function openDialog(id, values) {
-        form.clearForm();
-        element.componentIO({event: 'datarecord_load', id: id}, function(data) {
+    openDialog(id, values) {
+        var component = this;
+        this.form.clear();
+        component.backendIO({event: 'datarecord_load', id: id}, function(data) {
             if (data.status) {
                 if (id) {
-                    $(element).dialog('option', 'title', platform_TranslateForUser('Edit')+' '+name).dialog('open');
+                    component.dom_node.dialog('option', 'title', Platform.Translation.forUser('Edit')+' '+name).dialog('open');
+                    component.dom_node.trigger('editdialog_edit');
                 } else {
-                    $(element).dialog('option', 'title', platform_TranslateForUser('New')+' '+name).dialog('open');
+                    component.dom_node.dialog('option', 'title', Platform.Translation.forUser('New')+' '+name).dialog('open');
+                    component.dom_node.trigger('editdialog_new');
                 }
-                form.attachValues(data.values);
+                component.form.attachValues(data.values);
                 
                 if (typeof values == 'object')
-                    form.attachValues(values);
-                element.dialog('open');
+                    component.form.attachValues(values);
+                component.dom_node.dialog('open');
             } else {
-                warningDialog(platform_TranslateForUser('Cannot edit'), platform_TranslateForUser('You cannot edit this element: %1',data.error));
+                Dialog.warningDialog(Platform.Translation.forUser('Cannot edit'), Platform.Translation.forUser('You cannot edit this element: %1',data.error));
             }
         });
     }
+    
+}
 
-});
+Platform.Component.bindClass('platform_editdialog', Platform.EditDialog);

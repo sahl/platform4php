@@ -55,6 +55,11 @@
     padding: 1px 2px;
 }
 
+.platform_form_field_component {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
 .platform_form_field[type="checkbox"] {
     margin: 0px;
     vertical-align: -2px;
@@ -68,8 +73,4 @@
     font-size: 0.7em;
     color: red;
     display: none;
-}
-
-.platform_form_line_air {
-    display: flex;
 }

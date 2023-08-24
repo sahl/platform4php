@@ -5,8 +5,12 @@ class PasswordField extends Field {
     
     private $inputwasparsed = false;
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
+    protected static $component_class = 'platform_component_password_field';
+    
+    public function __construct() {
+        parent::__construct();
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/PasswordField.js'); 
     }
     
     public function getValue() {
@@ -27,6 +31,6 @@ class PasswordField extends Field {
         if ($this->inputwasparsed) $value = $this->value;
         else $value = $this->value ? 'XXXXXX' : '';
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="password" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="password" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
 }

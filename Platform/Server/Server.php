@@ -1,9 +1,14 @@
 <?php
-namespace Platform;
+namespace Platform\Server;
 
+use Platform\ConditionMatch;
+use Platform\Datarecord;
+use Platform\Filter;
+use Platform\Platform;
 use Platform\Server\Instance;
 use Platform\Server\Job;
 use Platform\Utilities\Database;
+use Platform\Utilities\Time;
 
 class Server extends Datarecord {
     
@@ -54,7 +59,7 @@ class Server extends Datarecord {
         // Clean log files every day
         $job = Job::getServerJobForServer($this, '\\Platform\\Utilities\\Log', 'jobCleanPlatformLogFilesFromServer', Job::FREQUENCY_SETTIME);
         if (! $job->isInDatabase()) {
-            $job->next_start = \Platform\Utilities\Time::today()->add(0,30);
+            $job->next_start = Time::today()->add(0,30);
             $job->save();
         }
     }

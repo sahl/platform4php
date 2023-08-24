@@ -122,9 +122,9 @@ class Layout {
     
     /**
      * Apply this layout to a form by replacing the form fields
-     * @param \Platform\Form $form
+     * @param \Platform\Form\Form $form
      */
-    public function apply(\Platform\Form $form) {
+    public function apply(\Platform\Form\Form $form) {
         // Extract all fields
         $fields = $form->getAllFields();
         

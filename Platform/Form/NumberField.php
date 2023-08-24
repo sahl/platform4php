@@ -3,10 +3,6 @@ namespace Platform\Form;
 
 class NumberField extends Field {
     
-    public function __construct(string $label, string $name, array $options = array()) {
-        parent::__construct($label, $name, $options);
-    }
-    
     public function parse($value) : bool {
         if (! parent::parse($value)) return false;
         if ($this->value === '') {
@@ -22,6 +18,6 @@ class NumberField extends Field {
     
     public function renderInput() {
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="number" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' type="number" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
 }

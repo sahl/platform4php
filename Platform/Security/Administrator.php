@@ -2,8 +2,8 @@
 namespace Platform\Security;
 
 use Platform\Platform;
-use Platform\Form;
-use Platform\Page;
+use Platform\Form\Form;
+use Platform\Page\Page;
 use Platform\Form\PasswordField;
 use Platform\Form\SubmitButton;
 

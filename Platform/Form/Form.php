@@ -1,11 +1,19 @@
 <?php
-namespace Platform;
+namespace Platform\Form;
 
-use Platform\Form\HTML;
+use Platform\Currency\Currency;
+use Platform\Currency\Rate;
 use Platform\Form\Field;
+use Platform\Form\HTML;
+use Platform\Page\Page;
+use Platform\Property;
+use Platform\UI\Component;
+use Platform\UI\FieldComponent;
 use Platform\Utilities\Errorhandler;
+use Platform\Utilities\Time;
+use Platform\Utilities\Translation;
 
-class Form extends \Platform\UI\Component {
+class Form extends Component {
     
     const SAVE_NO = 0;
     const SAVE_SESSION = 1;
@@ -23,6 +31,8 @@ class Form extends \Platform\UI\Component {
     
     private $global_errors = array();
     
+    static protected $component_class = 'platform_component_form';
+    
     protected $layout = null;
     
     private $layout_applied = false;
@@ -38,18 +48,9 @@ class Form extends \Platform\UI\Component {
     private $validationfunctions = array();
     
     public function __construct() {
-        Page::JSFile('/Platform/Form/js/autosize.js');
-        Page::JSFile('/Platform/Form/js/form.js');
-        Page::JSFile('/Platform/Form/js/multiplier.js');
-        Page::JSFile('/Platform/Form/js/repetition.js');
-        Page::JSFile('/Platform/Form/js/combobox.js');
-        Page::JSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.js');
-        Page::JSFile('/Platform/Form/js/texteditor.js');
-        Page::CSSFile('/Platform/Form/css/form.css');
-        Page::CSSFile('/Platform/Form/css/layout.css');
-        Page::CSSFile('/Platform/Form/css/texteditor.css');
-        Page::CSSFile('/Platform/Form/css/repetition.css');
-        Page::CSSFile('https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-lite.min.css');
+        Page::JSFile('/Platform/Form/js/Form.js');
+        Page::CSSFile('/Platform/Form/css/Form.css');
+        Page::CSSFile('/Platform/Form/css/Layout.css');
         $this->addFormFieldNameSpace('Platform\\Form');
         
         $this->addPropertyMap(['form_id' => '']);
@@ -69,23 +70,23 @@ class Form extends \Platform\UI\Component {
      * Convenience for adding a component as a field
      * @param string $label Label
      * @param string $name Field name
-     * @param UI\FieldComponent $field_component The component to use
+     * @param FieldComponent $field_component The component to use
      */
-    public function addComponent(string $label, string $name, UI\FieldComponent $field_component) {
-        $component_field = new Form\ComponentField($label, $name);
+    public function addComponent(string $label, string $name, FieldComponent $field_component) {
+        $component_field = new ComponentField($label, $name);
         $component_field->attachComponent($field_component);
         $this->addField($component_field);
     }
     
     /**
      * Add one or more fields to a form
-     * @param \Platform\Form\Field|array<\Platform\Form\Field> $fields Field(s) to add
+     * @param Field|array<\Platform\Form\Field> $fields Field(s) to add
      */
     public function addField($fields) {
         Errorhandler::checkParams($fields, array('\\Platform\\Form\\Field', 'array'));
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
-            if (! $field instanceof \Platform\Form\Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+            if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
             $this->fields[] = $field;
         }
         $field->attachToForm($this);
@@ -94,7 +95,7 @@ class Form extends \Platform\UI\Component {
     /**
      * Add fields after another field in this form. If no match the field are
      * inserted last in form
-     * @param \Platform\Form\Field|array<\Platform\Form\Field> $fields Field(s) to add
+     * @param Field|array<\Platform\Form\Field> $fields Field(s) to add
      * @param string $fieldname Field name to insert this field after.
      */
     public function addFieldAfter($fields, string $fieldname = '') {
@@ -124,7 +125,7 @@ class Form extends \Platform\UI\Component {
     /**
      * Add fields before another field in this form. If no match field are inserted
      * first in form
-     * @param \Platform\Form\Field|array<\Platform\Form\Field> $fields Field(s) to add
+     * @param Field|array<\Platform\Form\Field> $fields Field(s) to add
      * @param string $fieldname Field name to insert this field before.
      */
     public function addFieldBefore($fields, string $fieldname = '') {
@@ -173,7 +174,7 @@ class Form extends \Platform\UI\Component {
      * @param string $html HTML to add
      */
     public function addHTML(string $html) {
-        $this->addField(new Form\HTML($html));
+        $this->addField(HTML::HTML($html));
     }
 
     /**
@@ -259,7 +260,7 @@ class Form extends \Platform\UI\Component {
      * MULTIPLIER_FIELD_NAME_IN_FORM/FIELD_NAME_IN_MULTIPLIER
      * TODO: Handle nested multipliers
      * @param string $fieldname Field name to find
-     * @return bool|\Platform\Form\Field The field or false if no field was found
+     * @return bool|Field The field or false if no field was found
      */
     public function getFieldByName(string $fieldname) {
         if (strpos($fieldname,'/')) {
@@ -346,16 +347,6 @@ class Form extends \Platform\UI\Component {
         $this->setValues($values);
     }
     
-    public function handleIO(): array {
-        switch($_POST['event']) {
-            case 'currency_lookup':
-                if (!is_numeric($_POST['foreignvalue']) || !Currency\Currency::isValidCurrency($_POST['currency'])) return ['status' => 0];
-                $rate = Currency\Rate::getRate($_POST['currency'], Utilities\Time::today());
-                return ['status' => 1, 'localvalue' => $_POST['foreignvalue']/($rate/100)];
-        }
-        return parent::handleIO();
-    }
-    
     /**
      * Inject a value into a complex field name
      * @param string $fieldname Complex field name
@@ -380,7 +371,7 @@ class Form extends \Platform\UI\Component {
      * @return bool
      */
     public function isSubmitted() : bool {
-        return ($_POST['form_name'] == $this->form_id);
+        return ($_POST['form_name'] && $_POST['form_name'] == $this->form_id);
     }
     
     /**
@@ -443,20 +434,20 @@ class Form extends \Platform\UI\Component {
                     // Handle value properties
                     foreach ($tag['properties'] as $key => $value) {
                         if (substr($key,0,6) == 'value-') {
-                            $tag['properties']['options'][substr($key,6)] = Utilities\Translation::translateForUser($value);
+                            $tag['properties']['options'][substr($key,6)] = Translation::translateForUser($value);
                             unset($tag['properties'][$key]);
                         }
                     }
                     
-                    $fields[] = new $class($label, $name, $tag['properties']);
+                    $fields[] = $class::Field($label, $name, $tag['properties']);
                     // If we encounter a multiplier, we want to direct the following fields into that
                     if (strtolower($tag['tag']) == 'multiplier') {
                         $storedfields[] = $fields;
                         $fields = array();
                     }
-                    $fields[] = new HTML($tag['text']);
+                    $fields[] = HTML::HTML($tag['text']);
                 } else {
-                    $fields[] = new HTML('<'.$element);
+                    $fields[] = HTML::HTML('<'.$element);
                 }
             } else {
                 if (strtolower($tag['tag']) == '/multiplier') {
@@ -466,9 +457,9 @@ class Form extends \Platform\UI\Component {
                     $multiplier->addFields($fields);
                     reset($restorefields);
                     $fields = $restorefields;
-                    $fields[] = new HTML($tag['text']);
+                    $fields[] = HTML::HTML($tag['text']);
                 }
-                $fields[] = new HTML('<'.$element);
+                $fields[] = HTML::HTML('<'.$element);
             }
         }
         return $fields;
@@ -632,7 +623,7 @@ class Form extends \Platform\UI\Component {
     /**
      * Replaces a field in the form with a new field. If no match the field are
      * inserted last in form
-     * @param \Platform\Form\Field|array<\Platform\Form\Field> $fields Field(s) to add
+     * @param Field|array<\Platform\Form\Field> $fields Field(s) to add
      * @param string $fieldname Field name to replace.
      */
     public function replaceField($fields, string $fieldname) {
@@ -713,9 +704,9 @@ class Form extends \Platform\UI\Component {
     
     /**
      * Set the layout of this form
-     * @param Form\Layout $layout
+     * @param Layout $layout
      */
-    public function setLayout(Form\Layout $layout) {
+    public function setLayout(Layout $layout) {
         $this->layout = $layout;
     }
     
@@ -784,7 +775,7 @@ class Form extends \Platform\UI\Component {
         
         foreach ($this->fields as $field) {
             /* @var $field Field */
-            if ($field instanceof HTML || in_array($field->getName(), $hidden_fields) && ! $field instanceof Form\HiddenField) continue;
+            if ($field instanceof HTML || in_array($field->getName(), $hidden_fields) && ! $field instanceof HiddenField) continue;
             $result = $field->parse(self::extractValue($field->getName(), $_POST)) && $result;
         }
         foreach ($this->validationfunctions as $validationfunction) {

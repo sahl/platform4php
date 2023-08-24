@@ -11,7 +11,7 @@ if ($_POST['event'] == '__timedio') {
             continue;
         }
         $component = new $class();
-        $component->setPropertyMap(unserialize(base64_decode($payload['componentproperties'])));
+        if ($payload['componentproperties']) $component->decodeProperties($payload['componentproperties']);
         $component->setID($payload['componentid']);
         $component->prepareData();
         $_POST = $payload['values'];
@@ -27,13 +27,25 @@ $class = $_POST['componentclass'];
 if (!class_exists($class)) die('Class does not exist');
 
 $component = new $class();
-$component->setPropertyMap(unserialize(base64_decode($_POST['componentproperties'])));
-$component->setID($_POST['componentid']);
-$component->prepareData();
 
 if (! $component instanceof \Platform\UI\Component) die('Not a component');
 
+if ($_POST['componentproperties']) $component->decodeProperties($_POST['componentproperties']);
+$component->setID($_POST['componentid']);
+$component->prepareData();
+
 if ($class::$is_secure && !\Platform\Security\Accesstoken::validateSession()) die('Must be logged in');
+
+if ($_POST['event'] == 'redraw') {
+    if ($component->canRender()) {
+        \Platform\Page\Page::setPagestarted();
+        ob_start();
+        $component->renderContent();
+        $content = ob_get_clean();
+        echo json_encode($content);
+    }
+    exit;
+}
 
 $result = $component->handleIO();
 
