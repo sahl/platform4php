@@ -5,7 +5,7 @@ Platform.Form.CheckboxField = class extends Platform.Form.Field {
     }
 
     getValue() {
-        this.dom_node.find('input[type="checkbox"]').prop('checked') ? 1 : 0;
+        return this.dom_node.find('input[type="checkbox"]').prop('checked') ? 1 : 0;
     }
 
     setValue(value) {

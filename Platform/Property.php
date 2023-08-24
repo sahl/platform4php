@@ -22,7 +22,7 @@ class Property extends \Platform\Datarecord {
                 'label' => 'User',
                 'required' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => '\\Platform\\User',
+                'foreign_class' => '\\Platform\\Security\\User',
                 'key' => 'property,subproperty'
             ),
             'property' => array(

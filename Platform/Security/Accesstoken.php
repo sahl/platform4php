@@ -35,7 +35,7 @@ class Accesstoken extends Datarecord {
             'user_ref' => array(
                 'label' => 'User',
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => 'Platform\User'
+                'foreign_class' => 'Platform\Security\User'
             ),
             'seconds_to_live' => array(
                 'label' => 'Seconds to live',
