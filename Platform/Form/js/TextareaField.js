@@ -9,7 +9,6 @@ Platform.Form.TextareaField = class extends Platform.Form.Field {
     }
 
     setValue(value) {
-        console.log(value);
         this.dom_node.find('textarea').val(value);
     }
     

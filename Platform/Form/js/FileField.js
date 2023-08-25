@@ -1,7 +1,6 @@
 Platform.Form.FileField = class extends Platform.Form.Field {
     
     clear() {
-        console.log('Clear');
         var dom_node = this.dom_node.find('iframe');
         dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+dom_node.data('name')+'&file_id=');
     }

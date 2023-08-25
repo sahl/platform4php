@@ -6,7 +6,6 @@ Platform.Form.RepetitionField = class extends Platform.Form.Field {
         var user_change = true;
 
         $('.repetition_type', element).change(function() {
-            console.log('Fire change');
             $('.typesection', element).hide();
             $('.type'+$(this).val()).show();
             if (user_change) {

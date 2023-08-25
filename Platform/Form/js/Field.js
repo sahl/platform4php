@@ -39,7 +39,6 @@ Platform.Form.Field = class extends Platform.Component {
         var field = this;
         this.clearOptions();
         $.each(options, function(key, value) {
-            console.log(key);
             field.addOption(key, value);
         })
     }

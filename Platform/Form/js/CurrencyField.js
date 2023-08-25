@@ -1,8 +1,6 @@
-console.log('Load currency');
 Platform.Form.CurrencyField = class extends Platform.Form.Field {
     
     initialize() {
-        console.log('Initialize currency');
         var component = this;
         $('.currency_currency,.currency_foreignvalue', component.dom_node).change(function() {
             component.backendIO({

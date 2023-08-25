@@ -3,7 +3,6 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     initialize() {
         var component = this;
         // Add handlers to find if something has changed
-        console.log('Apply Multiplier to '+component.dom_node.prop('id'));
         this.dom_node.find('.platform_form_multiplier_element').each(function() {
             component.primeRow($(this));
         })
@@ -12,7 +11,6 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     primeRow(row) {
         // Check if we entered another multiplier
         if (! row.closest('.platform_form_multiplier').is(this.dom_node)) {
-            console.log('We went to deep. Leave this for another.');
             return;
         }
         var component = this;
@@ -32,10 +30,8 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     }    
     
     checkForChanges(row) {
-        console.log('Change check in '+this.dom_node.prop('id'));
         // Check if we entered another multiplier
         if (! row.closest('.platform_form_multiplier').is(this.dom_node)) {
-            console.log('We went to deep. Leave this for another.');
             return;
         }
         // Check if we need to expand
@@ -72,15 +68,12 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     adjustNames() {
         var component = this.dom_node;
         // Determine number of array markers in base name
-        console.log('I am examining '+component.prop('id'));
         var base_name = component.prop('id').substring(component.closest('form').prop('id').length+1);
         base_name = base_name.substring(0,base_name.length-10);
-        console.log('Extract base name: '+base_name);
         // Catch all before relevant counter
         var regexp_string = '/('+base_name.replace(/(\[|\])/gi, '\\$1')+')';
         // Skip counter and get all following
         regexp_string += '\\[\\d*\\](\\.*)/i';
-        console.log(regexp_string);
         var regexp = eval(regexp_string);
         var i = 0;
         component.find('.platform_form_multiplier_element').each(function() {
@@ -140,20 +133,14 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         var element = this.dom_node;
         var base_id = new String(element.prop('id'));
         base_id = base_id.substring(0,base_id.length-10);
-        console.log('BASE ID '+base_id);
-        console.log(value);
         $.each(value, function(index, val) {
             // This is each section
             var insert_node = element.children('.platform_form_multiplier_element:last');
             $.each(val, function(inner_key, inner_val) {
                 var inner_id = base_id+'['+(i)+']['+inner_key+']';
                 inner_id = inner_id.replace(/\[/g,"\\[").replace(/\]/g,"\\]")+'_component';
-                console.log('Target is '+inner_id);
-                console.log($('#'+inner_id).length);
                 var input_component = $('#'+inner_id).platformComponent();
                 if (input_component) {
-                    console.log('Assign value');
-                    console.log(inner_val);
                     input_component.setValue(inner_val);
                     component.checkForChanges(input_component.dom_node.closest('.platform_form_multiplier_element'));
                 }

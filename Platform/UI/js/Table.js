@@ -251,7 +251,6 @@ Platform.Table = class extends Platform.Component {
     }
     
     setupControlForm() {
-        console.log('Setup control form');
         if (this.control_form_dom_node) {
             var component = this;
             // Setup a custom submit handler for this form
