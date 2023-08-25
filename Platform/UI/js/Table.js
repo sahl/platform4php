@@ -302,7 +302,7 @@ Platform.Table = class extends Platform.Component {
                 // Just get data from the configured URL
                 var request = {};
                 if (this.platform_data_filter_as_json) request.filter = this.platform_data_filter_as_json;
-                this.tabulator.setData(component.table_data_url, request, "post");
+                this.tabulator.setData(this.table_data_url, request, "post");
             }
         }
     }

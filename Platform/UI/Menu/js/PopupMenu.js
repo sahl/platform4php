@@ -1,9 +1,10 @@
 Platform.PopupMenu = class extends Platform.Component {
     
     initialize() {
+        var component = this;
         if (this.dom_node.data('attach_to')) {
             $(this.dom_node.data('attach_to')).click(function(event) {
-                this.show(event);
+                component.show(event);
             })
         }
     }
