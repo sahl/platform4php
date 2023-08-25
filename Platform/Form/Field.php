@@ -298,14 +298,6 @@ class Field extends Component {
     }
     
     /**
-     * Get a string with all classes for container.
-     * @return string
-     */
-    public function getContainerClassString() : string {
-        return implode(' ',$this->container_classes);
-    }    
-    
-    /**
      * Get the default label placement
      * @return int
      */

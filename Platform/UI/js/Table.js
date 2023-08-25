@@ -150,13 +150,14 @@ Platform.Table = class extends Platform.Component {
                 }
             }
             // Now add the new column to the table
-            this.tabulator.addColumn(columndefinition, true);
+            component.tabulator.addColumn(columndefinition, true);
         }
     }
     
     initializeActionbuttons() {
+        var component = this;
         $.each(this.action_buttons, function(key, element) {
-            this.tabulator.addColumn({
+            component.tabulator.addColumn({
                 formatter: function(cell, formatterParams) {
                     return '<i class="fa '+key+'"></i>';
                 },
@@ -172,12 +173,14 @@ Platform.Table = class extends Platform.Component {
     }
     
     initializeTable() {
-        if (this.control_form) {
+        this.setupControlForm();
+        
+        if (this.control_form_dom_node) {
             // If we are using a control form, we hide the table until first submit
             this.dom_node.hide();
             
             // If the form should auto-submit, we do this now
-            if (this.control_form.is('.platform_form_auto_submit')) this.control_form.submit();
+            if (this.control_form_dom_node.is('.platform_form_auto_submit')) this.control_form_dom_node.submit();
         }
         
         this.initializeFilterField();
@@ -204,6 +207,8 @@ Platform.Table = class extends Platform.Component {
         this.updateMultiButtons();
 
         this.loadData();
+        
+        this.table_is_initialized = true;
     }
     
     addEventListeners() {
@@ -246,10 +251,11 @@ Platform.Table = class extends Platform.Component {
     }
     
     setupControlForm() {
-        if (this.control_form) {
+        console.log('Setup control form');
+        if (this.control_form_dom_node) {
             var component = this;
             // Setup a custom submit handler for this form
-            this.control_form.submit(function() {
+            this.control_form_dom_node.submit(function() {
                 if (! component.table_is_initialized) {
                     // We cannot submit the form before the table is initialised, so we instead convert the form to
                     // an auto-submit
@@ -257,14 +263,14 @@ Platform.Table = class extends Platform.Component {
                     return false;
                 }
                 // We show the table on first submit
-                component.dom_element.show();
+                component.dom_node.show();
                 // As the submit triggers a sort, we ignore it, as it is the same sort as last time
                 component.dont_save_next_sort = true;
                 if (component.data_request_event) {
                     // Request data using an event. We need to inject the form in the request.
                     var request = Platform.Table.makeObject($(this).serializeArray());
                     if (component.platform_data_filter_as_json) request.filter = component.platform_data_filter_as_json;
-                    component.dom_node.trigger(data_request_event, ['__data_request_event', request , function(table_data) {
+                    component.dom_node.trigger(component.data_request_event, ['__data_request_event', request , function(table_data) {
                         component.tabulator.setData(table_data);
                     }]);
                 } else {
@@ -289,15 +295,15 @@ Platform.Table = class extends Platform.Component {
                 var request = {};
                 if (this.platform_data_filter_as_json) request.filter = this.platform_data_filter_as_json;
                 var component = this;
-                this.dom_node.trigger(this.data_request_event, ['__data_request_event', request, function(table_data) {
+                this.dom_node.trigger(component.data_request_event, ['__data_request_event', request, function(table_data) {
                     component.tabulator.setData(table_data);
                     component.initial_sort_completed = true;
                 }]);
             } else {
                 // Just get data from the configured URL
                 var request = {};
-                if (component.platform_data_filter_as_json) request.filter = component.platform_data_filter_as_json;
-                component.tabulator.setData(component.table_data_url, request, "post");
+                if (this.platform_data_filter_as_json) request.filter = this.platform_data_filter_as_json;
+                this.tabulator.setData(component.table_data_url, request, "post");
             }
         }
     }

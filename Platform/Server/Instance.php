@@ -40,7 +40,7 @@ class Instance extends \Platform\Datarecord {
                 'required' => true,
                 'readonly' => true,
                 'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => '\\Platform\\Server'
+                'foreign_class' => '\\Platform\\Server\\Server'
             ),
             'is_initiated' => array(
                 'label' => 'Is initiated',

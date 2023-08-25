@@ -67,18 +67,6 @@ class Form extends Component {
     }
     
     /**
-     * Convenience for adding a component as a field
-     * @param string $label Label
-     * @param string $name Field name
-     * @param FieldComponent $field_component The component to use
-     */
-    public function addComponent(string $label, string $name, FieldComponent $field_component) {
-        $component_field = new ComponentField($label, $name);
-        $component_field->attachComponent($field_component);
-        $this->addField($component_field);
-    }
-    
-    /**
      * Add one or more fields to a form
      * @param Field|array<\Platform\Form\Field> $fields Field(s) to add
      */

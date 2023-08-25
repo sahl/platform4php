@@ -69,7 +69,7 @@ class Server extends Datarecord {
      */
     public static function ensureThisServer() : int {
         if (! $_SERVER['HTTP_HOST']) return false;
-        $filter = new Filter('Platform\\Server');
+        $filter = new Filter('Platform\\Server\\Server');
         $filter->addCondition(new ConditionMatch('hostname', $_SERVER['HTTP_HOST']));
         $server = $filter->executeAndGetFirst();
         if (! $server->isInDatabase()) {
