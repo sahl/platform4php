@@ -539,6 +539,12 @@ class Form extends Component {
         return array('tag' => $tagname, 'properties' => $properties, 'text' => $currentvalue);
     }
     
+    
+    public function prepareData() {
+        parent::prepareData();
+        if ($this->save_on_submit != self::SAVE_NO) $this->addData('save_on_submit', $this->save_on_submit);
+    }
+    
     /**
      * Remove all fields from this form.
      */
@@ -591,8 +597,6 @@ class Form extends Component {
         if ($this->auto_submit) $form_class_string .= ' platform_form_auto_submit';
         
         $additional_data = '';
-        
-        if ($this->save_on_submit != self::SAVE_NO) $additional_data .= ' data-save_on_submit="'.$this->save_on_submit.'"';
         
         echo '<form id="'.$this->form_id.'" method="post" class="'.$form_class_string.'" action="'.$this->action.'"'.$additional_data.'>';
         echo '<input type="hidden" name="form_name" value="'.$this->form_id.'">';
