@@ -39,16 +39,20 @@ Platform.Form = class extends Platform.Component {
     attachErrors(errors) {
         var component = this;
         $.each(errors, function(fieldname, error_text) {
-            var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+fieldname+'_component').platformComponent();
-            if (! field_component) return true;
-            field_component.setError(error_text);
+            if (fieldname == '__global') {
+                component.dom_node.find('.platform_form_global_error_container').html('<ul><li>'+error_text.join('<li>')+'</ul>').show();
+            } else {
+                var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+Platform.escapeSelector(fieldname)+'_component').platformComponent();
+                if (! field_component) return true;
+                field_component.setError(error_text);
+            }
         })
     }
     
     attachValues(values) {
         var component = this;
         $.each(values, function(fieldname, value) {
-            var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+fieldname+'_component').platformComponent();
+            var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+Platform.escapeSelector(fieldname)+'_component').platformComponent();
             if (! field_component) return true;
             field_component.clear();
             field_component.setValue(value);
@@ -56,6 +60,7 @@ Platform.Form = class extends Platform.Component {
     }
     
     clear() {
+        this.dom_node.find('.platform_form_global_error_container').html('').hide();
         this.dom_node.find('.platform_form_field').each(function() {
             $(this).platformComponent().clear();
             $(this).platformComponent().clearError();
@@ -67,7 +72,7 @@ Platform.Form = class extends Platform.Component {
     }
     
     getFieldByName(name) {
-        return this.dom_node.find('#'+this.dom_node.children('form').prop('id')+'_'+name+'_component').platformComponent();
+        return this.dom_node.find('#'+this.dom_node.children('form').prop('id')+'_'+Platform.escapeSelector(name)+'_component').platformComponent();
     }
     
     validate() {

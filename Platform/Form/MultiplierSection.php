@@ -113,6 +113,8 @@ class MultiplierSection extends Field {
         $hiddenfields = $_POST['form_hiddenfields'] ? explode(' ', $_POST['form_hiddenfields']) : array();
         
         $totalresult = true;
+        if (! is_array($values)) return true;
+        
         // Always remove last entry as it is empty
         array_pop($values);
         $this->value = array();

@@ -123,6 +123,10 @@ var Platform = {
         })
     },
     
+    escapeSelector(selector) {
+        return selector.replace( /(:|\.|\[|\]|,)/g, "\\$1" ); 
+    },
+    
     ready(func) {
         Platform.onetime_functions.push(func);
     }
