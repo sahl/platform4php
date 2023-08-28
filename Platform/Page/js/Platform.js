@@ -33,8 +33,11 @@ var Platform = {
         function loadNextScript() {
             var src = scripts_to_load.shift();
             if (Platform.scripts_loaded.includes(src)) {
-                if (scripts_to_load.length) loadNextScript();
-                Platform.runCustomFunctions(selector);
+                if (scripts_to_load.length) {
+                    loadNextScript();
+                } else {
+                    Platform.runCustomFunctions(selector);
+                }
             } else {
                 $.get(src).done(function() {
                     if (scripts_to_load.length) loadNextScript();
