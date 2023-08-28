@@ -56,7 +56,7 @@ class MultiplierSection extends Field {
     public function addFields($fields) {
         if (! is_array($fields)) $fields = array($fields);
         foreach ($fields as $field) {
-            if (! $field->getName()) trigger_error('No name', E_USER_ERROR);
+            if (! $field->getName() && ! $field instanceof HTML) trigger_error('No name', E_USER_ERROR);
             //if ($field instanceof FieldMultiplier) trigger_error('You cannot add a multiplier to another multiplier!', E_USER_ERROR);
             if ($this->form) $field->setID($this->form->getFormId().'_'.$this->getName().'_'.$field->getName().'_component');
             $this->contained_fields[] = $field;
