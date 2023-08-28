@@ -30,7 +30,7 @@ Platform.Component = class {
         
         $.each(found_components, function(key, component) {
             component.initializeLast();
-            component.dom_node.trigger('component_ready');
+            component.dom_node.triggerHandler('component_ready');
         })
     }
     
