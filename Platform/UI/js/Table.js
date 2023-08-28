@@ -166,7 +166,7 @@ Platform.Table = class extends Platform.Component {
                 hozAlign: 'center',
                 resizable: false,
                 cellClick: function(e, cell) {
-                    this.dom_node.trigger(element, cell.getRow().getIndex());
+                    component.dom_node.trigger(element, cell.getRow().getIndex());
                 }
             }, true)
         });
@@ -178,9 +178,6 @@ Platform.Table = class extends Platform.Component {
         if (this.control_form_dom_node) {
             // If we are using a control form, we hide the table until first submit
             this.dom_node.hide();
-            
-            // If the form should auto-submit, we do this now
-            if (this.control_form_dom_node.is('.platform_form_auto_submit')) this.control_form_dom_node.submit();
         }
         
         this.initializeFilterField();
@@ -206,9 +203,11 @@ Platform.Table = class extends Platform.Component {
         
         this.updateMultiButtons();
 
+        this.table_is_initialized = true;
+
         this.loadData();
         
-        this.table_is_initialized = true;
+        
     }
     
     addEventListeners() {
@@ -285,9 +284,9 @@ Platform.Table = class extends Platform.Component {
     }
     
     loadData() {
-        if (this.control_form) {
+        if (this.control_form_dom_node) {
             // The form is controlled by a form, which we need to submit.
-            this.control_form.submit();
+            this.control_form_dom_node.submit();
         } else {
             if (this.data_request_event) {
                 // We are to throw an event to fetch data
