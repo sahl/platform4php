@@ -96,8 +96,12 @@ class Time {
      * @return Time
      */
     public function endOfDay() : Time {
-        $newtimestamp = strtotime($this->get('Y-m-d 23:59:59'));
-        return new Time($newtimestamp);
+        // Ensure we are UTC when setting
+        $stored_time_zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        $newtimestamp = new Time(strtotime($this->get('Y-m-d 23:59:59')));
+        date_default_timezone_set($stored_time_zone);
+        return $newtimestamp;
     }
     
     /**
@@ -506,7 +510,12 @@ class Time {
     }
     
     public function setDay(int $day) {
-        return new Time(strtotime($this->get('Y-m-'.str_pad($day,2,'0', STR_PAD_LEFT).' H:i:s')));
+        // Ensure we are UTC when setting
+        $stored_time_zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        $newtimestamp = new Time(strtotime($this->get('Y-m-'.str_pad($day,2,'0', STR_PAD_LEFT).' H:i:s')));
+        date_default_timezone_set($stored_time_zone);
+        return $newtimestamp;
     }
 
     /**
@@ -529,7 +538,12 @@ class Time {
     }
 
     public function setMonth(int $month) {
-        return new Time(strtotime($this->get('Y-'.str_pad($month,2,'0', STR_PAD_LEFT).'-d H:i:s')));
+        // Ensure we are UTC when setting
+        $stored_time_zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        $newtimestamp = new Time(strtotime($this->get('Y-'.str_pad($month,2,'0', STR_PAD_LEFT).'-d H:i:s')));
+        date_default_timezone_set($stored_time_zone);
+        return $newtimestamp;
     }
     
     /**
@@ -543,7 +557,12 @@ class Time {
     }
     
     public function setYear(int $year) {
-        return new Time(strtotime($this->get($year.'-m-d H:i:s')));
+        // Ensure we are UTC when setting
+        $stored_time_zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        $newtimestamp = new Time(strtotime($this->get($year.'-m-d H:i:s')));
+        date_default_timezone_set($stored_time_zone);
+        return $newtimestamp;
     }
     
     /**
@@ -551,7 +570,12 @@ class Time {
      * @return Time
      */
     public function startOfDay() : Time {
-        return new Time(strtotime($this->get('Y-m-d 00:00:00')));
+        // Ensure we are UTC when setting
+        $stored_time_zone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+        $newtimestamp = new Time(strtotime($this->get('Y-m-d 00:00:00')));
+        date_default_timezone_set($stored_time_zone);
+        return $newtimestamp;
     }    
     
     /**
