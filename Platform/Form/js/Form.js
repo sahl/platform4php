@@ -57,13 +57,18 @@ Platform.Form = class extends Platform.Component {
             field_component.clear();
             field_component.setValue(value);
         })
+        this.dom_node.trigger('values_changed');
     }
     
     clear() {
         this.dom_node.find('.platform_form_global_error_container').html('').hide();
         this.dom_node.find('.platform_form_field').each(function() {
-            $(this).platformComponent().clear();
-            $(this).platformComponent().clearError();
+            var component = $(this).platformComponent();
+            // Some components can be cleared after they were gathered
+            if (component) {
+                component.clear();
+                component.clearError();
+            }
         });
     }
     

@@ -139,7 +139,7 @@ Platform.Component = class {
     
     addIOForm(form, func, failfunc) {
         var component = this;
-        $(form).off('submit.ioform').on('submit.ioform', function() {
+        form.off('submit.ioform').on('submit.ioform', function() {
             component.backendIO(form.serialize(), function(data) {
                 if (! data.status) {
                     form.closest('.platform_component_form').platformComponent().attachErrors(data.form_errors);
