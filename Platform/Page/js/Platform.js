@@ -47,6 +47,8 @@ var Platform = {
                     console.log(jqxhr);
                     console.log(settings);
                     console.log(exception);
+                    if (scripts_to_load.length) loadNextScript();
+                    else Platform.runCustomFunctions(selector);
                 });
             }
         }
