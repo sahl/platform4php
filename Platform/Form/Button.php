@@ -10,6 +10,6 @@ class Button extends Field {
     }
     
     public function renderInput() {
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" type="button" value="'.$this->label.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" type="button" value="'.$this->label.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
     }
 }

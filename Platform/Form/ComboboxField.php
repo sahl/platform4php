@@ -23,7 +23,7 @@ class ComboboxField extends Field {
     }
     
     public function renderInput() {
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getClassString().'" type="text" style="max-width: '.$this->field_width.';" id="'.$this->getFieldIdForHTML().'" name="'.$this->name.'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" type="text" style="max-width: '.$this->field_width.';" id="'.$this->getFieldIdForHTML().'" name="'.$this->name.'" value="'.htmlentities($this->value, ENT_QUOTES).'"'.$this->additional_attributes.' data-source="'.$this->datasource.'">';
     }
     
     public function setDatasource(string $datasource) {
