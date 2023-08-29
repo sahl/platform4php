@@ -5,7 +5,7 @@ class HTML extends Field {
     
     public static $fieldcounter = 0;
     
-    public static function Field(string $label, string $name, array $options = []): static {
+    public static function Field(string $label, string $name, array $options = []): Field {
         if ($name == '') $name = 'html_field'.(static::$fieldcounter++);
         return parent::Field($label, $name, $options);
     }

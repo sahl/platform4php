@@ -16,7 +16,7 @@ class CurrencyField extends Field {
         static::JSFile(Utilities::directoryToURL(__DIR__).'/js/CurrencyField.js'); 
     }
     
-    public static function Field(string $label, string $name, array $options = []): static {
+    public static function Field(string $label, string $name, array $options = []): Field {
         return parent::Field($label, $name, $options);
     }
     

@@ -15,7 +15,7 @@ class FileField extends Field {
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/FileField.js'); 
     }
     
-    public static function Field(string $label, string $name, array $options = []): static {
+    public static function Field(string $label, string $name, array $options = []): Field {
         $images_only = false;
         if ($options['images_only']) {
             $images_only = true;
