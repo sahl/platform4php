@@ -66,6 +66,19 @@ Platform.Component = class {
         Platform.Component.class_library.push(library_element);
     }
     
+    static getClassBinding(dom_class) {
+        var result = null;
+        $.each(Platform.Component.class_library, function(key, library_element) {
+            if (dom_class == library_element.dom_class) {
+                result = library_element.javascript_class;
+                return false;
+            }
+        })
+        return result;
+    }
+    
+    
+    
     gatherDialogs() {
         var component = this;
         $('.platform_base_dialog', this.dom_node).each(function() {
