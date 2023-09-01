@@ -13,6 +13,7 @@ $preload_list = array(
     '/Platform.php',
     '/Utilities/Errorhandler.php',
     '/DatarecordReferable.php',
+    '/UI/Serializable.php',
     '/Datarecord.php',
     '/Server/Instance.php',
     '/Utilities/Translation.php',
