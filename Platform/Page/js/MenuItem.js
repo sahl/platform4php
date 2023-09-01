@@ -1,5 +1,6 @@
 Platform.addCustomFunction(function(item) {
      $('.platform_menuitem',item).click(function(e) {
+        if (Platform.PopupMenu) Platform.PopupMenu.hideAll();
         // Handle special urls
         var url = new String($(this).attr('href'));
         if (url.substr(0,6) == '#POST=') {

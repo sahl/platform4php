@@ -8,6 +8,7 @@ Platform.PopupMenu = class extends Platform.Component {
                 component.show(event, { 'appear_on': dom_node });
             })
         }
+        this.dom_node.click(Platform.PopupMenu.hideAll);
     }
     
     show(clickevent, parameters) {
@@ -43,7 +44,14 @@ Platform.PopupMenu = class extends Platform.Component {
                 }
             break;
         }
+        // Prevent menu from exiting the screen
+        if (left-$(window).scrollLeft() + dom_element.width() > $(window).width()-5) left = $(window).width() - dom_element.width()-5;
+        if (top-$(window).scrollTop() + dom_element.height() > $(window).height()-5) top = $(window).height() - dom_element.height()-5;
+        if (left-$(window).scrollLeft() < 5) left = $(window).width() + 5;
+        if (top-$(window).scrollTop() < 5) top = $(window).height() + 5;
+        
         Platform.PopupMenu.hideAll();
+        
         // Adjust for any parent absolute container
         dom_element.css('left', 0);
         dom_element.css('top', 0);
@@ -51,9 +59,6 @@ Platform.PopupMenu = class extends Platform.Component {
         left -= dom_element.offset().left;
         top -= dom_element.offset().top;
         
-        // Prevent menu from exiting the screen
-        if (left + dom_element.width() > $(window).width()-5) left = $(window).width() - dom_element.width()-5;
-        if (top + dom_element.height() > $(window).height()-5) top = $(window).height() - dom_element.height()-5;
         dom_element.css('left', left);
         dom_element.css('top', top);
         clickevent.stopPropagation();
