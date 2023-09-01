@@ -202,7 +202,13 @@ class Component {
      * @param string $properties
      */
     public function decodeProperties(string $properties) {
-        $this->properties = json_decode($properties, true);
+        $result = json_decode($properties, true);
+        foreach ($result as $key => $value) {
+            if (is_array($value) && array_key_exists('__objecttype', $value)) {
+                $value = $value['__objecttype']::constructFromSerialized($value);
+            }
+            $this->properties[$key] = $value;
+        }
     }
     
     /**
@@ -239,7 +245,17 @@ class Component {
      * @return string
      */
     public function getEncodedProperties() : array {
-        return $this->properties;
+        $result = [];
+        foreach ($this->properties as $key => $value) {
+            if (is_object($value)) {
+                if (! $value instanceof Serializable) trigger_error('An object must implement Platform\\UI\\Serializable to be used as a property', E_USER_ERROR);
+                $array = $value->getSerialized();
+                $array['__objecttype'] = get_class($value);
+                $value = $array;
+            }
+            $result[$key] = $value;
+        }
+        return $result;
     }
 
     /**

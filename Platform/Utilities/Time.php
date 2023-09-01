@@ -1,7 +1,7 @@
 <?php
 namespace Platform\Utilities;
 
-class Time {
+class Time implements \Platform\UI\Serializable {
     
     /**
      * Internal representation as a timestamp
@@ -46,6 +46,23 @@ class Time {
             $this->timestamp = strtotime($time);
         }
         date_default_timezone_set($stored_time_zone);
+    }
+    
+    /**
+     * Construct a new Time object from serialized data
+     * @param array $data
+     * @return \Platform\UI\Serializable
+     */
+    public static function constructFromSerialized(array $data): \Platform\UI\Serializable {
+        return new Time($data['date']);
+    }
+    
+    /**
+     * Get a serialized version of the object
+     * @return array
+     */
+    public function getSerialized(): array {
+        return ['date' => $this->get()];
     }
     
     /**
