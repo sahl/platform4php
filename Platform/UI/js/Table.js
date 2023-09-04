@@ -298,10 +298,12 @@ Platform.Table = class extends Platform.Component {
                     component.initial_sort_completed = true;
                 }]);
             } else {
-                // Just get data from the configured URL
-                var request = {};
-                if (this.platform_data_filter_as_json) request.filter = this.platform_data_filter_as_json;
-                this.tabulator.setData(this.table_data_url, request, "post");
+                // Just get data from the configured URL (if present)
+                if (this.table_data_url) {
+                    var request = {};
+                    if (this.platform_data_filter_as_json) request.filter = this.platform_data_filter_as_json;
+                    this.tabulator.setData(this.table_data_url, request, "post");
+                }
             }
         }
     }
