@@ -1351,7 +1351,7 @@ class Datarecord implements DatarecordReferable {
                     $object->loadForRead($value);
                     $visual = $object->getTitle();
                 }
-                return array('id' => $value, 'visual' => $visual);
+                return array('id' => $value, 'visual' => strip_tags($visual));
             case self::FIELDTYPE_BOOLEAN:
                 return $value ? 1 : 0;
             case self::FIELDTYPE_REFERENCE_MULTIPLE:
