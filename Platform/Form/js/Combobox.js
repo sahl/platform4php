@@ -1,6 +1,6 @@
 Platform.Form.ComboboxField = class extends Platform.Form.Field {
     
-    initialize() {
+    initializeLast() {
         var component = this;
         var element = this.dom_node.find('input[type="text"]');
         // Destroy an already present autocomplete
