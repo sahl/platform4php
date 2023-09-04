@@ -1,6 +1,6 @@
 Platform.Form.ComboboxField = class extends Platform.Form.Field {
     
-    initializeLast() {
+    initialize() {
         var component = this;
         var element = this.dom_node.find('input[type="text"]');
         // Destroy an already present autocomplete
@@ -22,6 +22,11 @@ Platform.Form.ComboboxField = class extends Platform.Form.Field {
             },
             change: function(event, ui) {
                 if (element.val() != element.data('validated_value')) $(this).prev().val('0');
+            },
+            open: function(event, ui) {
+                // As the containing form can have moved into a dialog since initialization we check for zindex.
+                var zindex = Platform.Form.ComboboxField.zIndex(element);
+                $(element).autocomplete('widget').css('z-index', zindex+1);
             }
         });
         return true;
@@ -52,6 +57,15 @@ Platform.Form.ComboboxField = class extends Platform.Form.Field {
     
     isEmpty() {
         return this.dom_node.find('input[type="text"]').val() == '';
+    }
+    
+    static zIndex(element) {
+        var zindex = parseInt(element.css('z-index'));
+        if (isNaN(zindex)) {
+            if (element.parent().length) return Platform.Form.ComboboxField.zIndex(element.parent());
+            return 0;
+        }
+        return zindex;
     }
     
 }
