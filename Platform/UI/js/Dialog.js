@@ -34,6 +34,14 @@ Platform.Dialog = class extends Platform.Component {
                 $('.platform_autofocus', this).first().focus();
             }
         }
+        
+        if (dom_node.find('.dialog_configuration').html()) {
+            if (! options) options = [];
+            $.each(JSON.parse(dom_node.find('.dialog_configuration').html()), function(key, element) {
+                options[key] = element;
+            })
+        }
+        
     
         this.dialog_options = $.extend(standard_options, options);
     }
@@ -154,28 +162,4 @@ $(function() {
     dialog.initialize();
     dialog.initializeLast();
 });
-
-
-
-/*
-Platform.addCustomFunctionLast(function(item) {
-     $('.platform_component_dialog',item).each(function(e) {
-        var buttons = [];
-        var dialog = $(this);
-        $.each($(this).data('buttons'), function(event, title) {
-            buttons.push({
-                text: title,
-                click: function() {dialog.trigger(event);}
-            });
-        });
-        var options = [];
-        if (item.find('.dialog_configuration').html()) {
-            $.each(JSON.parse(item.find('.dialog_configuration').html()), function(key, element) {
-                options[key] = element;
-            })
-        }
-        $(this).platformDialog(buttons, options);
-     })
- });
-*/
 
