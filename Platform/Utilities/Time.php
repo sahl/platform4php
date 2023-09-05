@@ -306,6 +306,7 @@ class Time implements \Platform\UI\Serializable {
             $datetime = new \DateTime();
             $datetime->setTimestamp($this->timestamp);
             if (self::$time_zone_object) $datetime->setTimezone(self::$time_zone_object);
+            else $datetime->setTimezone(new \DateTimeZone("UTC"));
             return $datetime->format($format);
         }
         return '';
