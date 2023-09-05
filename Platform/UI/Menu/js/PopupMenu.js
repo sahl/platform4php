@@ -14,6 +14,7 @@ Platform.PopupMenu = class extends Platform.Component {
     show(clickevent, parameters) {
         var component = this;
         var dom_element = this.dom_node;
+        if (! parameters) parameters = {};
         
         dom_element.trigger('appear');
         var target_element = parameters.appear_on ? parameters.appear_on : clickevent.target;
