@@ -49,9 +49,6 @@ Platform.Dialog = class extends Platform.Component {
     initializeLast() {
         var component = this;
         this.dom_node.dialog(this.dialog_options);
-        this.dom_node.on('close', function() {
-            component.dom_node.dialog('close');
-        })
     }
     
     static warningDialog(title, text, callback) {
@@ -151,6 +148,13 @@ Platform.Dialog = class extends Platform.Component {
         }
     }
     
+    open() {
+        this.dom_node.dialog('open');
+    }
+    
+    close() {
+        this.dom_node.dialog('close');
+    }
 }
 
 Platform.Component.bindClass('platform_dialog', Platform.Dialog);

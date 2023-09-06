@@ -233,8 +233,8 @@ class Table extends Component {
         }
         asort($options);
         
-        $form->addField(new HiddenField('', 'table_id'));
-        $form->addField(new MulticheckboxField('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
+        $form->addField(HiddenField::Field('', 'table_id'));
+        $form->addField(MulticheckboxField::Field('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
         return $form;
     }
     

@@ -212,25 +212,26 @@ Platform.Table = class extends Platform.Component {
     
     addEventListeners() {
         var component = this;
-        this.dom_node.on('columnResized', function() {
-            component.saveTableLayout(element.attr('id'));
+        
+        this.tabulator.on('columnResized', function() {
+            component.saveTableLayout();
         });
 
-        this.dom_node.on('columnMoved', function() {
-            component.saveTableLayout(element.attr('id'));
+        this.tabulator.on('columnMoved', function() {
+            component.saveTableLayout();
         });
 
-        this.dom_node.on('dataSorted', function(sorters) {
+        this.tabulator.on('dataSorted', function(sorters) {
             if (sorters.length && ! this.dont_save_next_sort) {
                 component.saveTableSort(sorters[0].field, sorters[0].dir);
             }
         });
 
-        this.dom_node.on('rowSelectionChanged', function() {
+        this.tabulator.on('rowSelectionChanged', function() {
             component.updateMultiButtons();
         });
         
-        this.dom_node.on('reloadData', function() {
+        this.tabulator.on('reloadData', function() {
             component.loadData();
         });
         
