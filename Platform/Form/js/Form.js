@@ -57,7 +57,7 @@ Platform.Form = class extends Platform.Component {
             field_component.clear();
             field_component.setValue(value);
         })
-        this.dom_node.trigger('values_changed');
+        component.dom_node.find('form').trigger('values_changed');
     }
     
     clear() {
