@@ -2461,8 +2461,11 @@ class Datarecord implements DatarecordReferable {
                 if ($definition['store_in_metadata']) continue;
                 $fielddefinitions[] = self::getAssignmentForDatabase($field, $this->values[$field]);
             }
-            $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
-            self::query($sql);
+            // In rare cases where you force save and to it twice within the same second, then there is nothing to update
+            if (count($fielddefinitions)) {
+                $sql = 'UPDATE '.static::$database_table.' SET '.implode(',',$fielddefinitions).' WHERE '.static::getKeyField().' = '.$this->values[static::getKeyField()];
+                self::query($sql);
+            }
             if (! $keep_open_for_write) $this->unlock();
         } else {
             $this->setValue('create_date', new Time('now'));
