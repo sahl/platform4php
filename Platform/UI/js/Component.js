@@ -279,7 +279,7 @@ Platform.Component = class {
                     var payload = {};
                     if (! url) url = element.component.data('io_url')
                     payload.componentclass = element.componentclass;
-                    payload.componentproperties = element.componentproperties;
+                    payload.componentproperties = JSON.stringify(element.componentproperties);
                     payload.componentid = element.componentid;
                     payload.values = (typeof element.values == 'function') ? element.values() : element.values;
                     run_payload.push(payload);
