@@ -168,6 +168,7 @@ class Component {
      * @param Component $component
      */
     public function addSubcomponent(Component $component) {
+        $component->prepareData();
         $this->subcomponents[] = $component;
     }
     
