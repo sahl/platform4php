@@ -1,7 +1,7 @@
 <?php
 namespace Platform;
 
-class Collection implements \Iterator {
+class Collection implements \Iterator,\Countable {
 
     /**
      * Type of data in this collection
@@ -272,5 +272,7 @@ class Collection implements \Iterator {
     public function next() {$this->pointer++;}
     public function rewind() {$this->pointer = 0;}
     public function valid() {return $this->pointer < $this->getCount();}
+    // Countable interface
+    public function count() {return $this->getCount();}
     
 }
