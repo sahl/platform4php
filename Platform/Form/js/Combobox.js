@@ -43,10 +43,12 @@ Platform.Form.ComboboxField = class extends Platform.Form.Field {
             this.backendIO({event: 'resolve', id: value}, function(data) {
                 element.prev().val(value);
                 element.val(data.visual);
+                element.data('validated_value', data.visual);
             })
         } else {
             element.val(value.visual);
             element.prev().val(value.id);
+            element.data('validated_value', value.visual);
         }
     }
     
