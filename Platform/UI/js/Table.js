@@ -242,6 +242,19 @@ Platform.Table = class extends Platform.Component {
         
     }
     
+    /**
+     * Set which rows are selected
+     * @param array List of row IDs
+     */
+    setSelectedRows(ids) {
+        if (!(ids instanceof Array))   return;
+        this.tabulator.selectRow(ids);
+    }
+    
+    /**
+     * Get the IDs of the selected rows
+     * @returns array
+     */
     getSelectedRows() {
         var ids = [];
         $.each(this.tabulator.getSelectedRows(), function(i, elements) {
