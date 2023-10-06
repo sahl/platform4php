@@ -3,6 +3,7 @@ namespace Platform;
 
 use Platform\Form\CheckboxField;
 use Platform\Form\CurrencyField;
+use Platform\Form\AddressField;
 use Platform\Form\DatarecordcomboboxField;
 use Platform\Form\DateField;
 use Platform\Form\DatetimeField;
@@ -216,6 +217,11 @@ class Datarecord implements DatarecordReferable {
     private static $foreign_reference_buffer = array();
     
     /**
+     * Which subfields are included in an address field
+     */
+    const ADDRESS_FIELDS = ['address', 'address2', 'city', 'zip', 'countrycode'];
+    
+    /**
      * Constructs the object and ensures that the structure is in place.
      */
     public function __construct(array $initialvalues = array()) {
@@ -274,6 +280,18 @@ class Datarecord implements DatarecordReferable {
                             'store_in_metadata' => $data['store_in_metadata']
                         )
                     ));
+                break;
+                case self::FIELDTYPE_ADDRESS:
+                    $data['store_in_database'] = false;
+                    $addressfields = [];
+                    foreach (self::ADDRESS_FIELDS as $subfield)
+                        $addressfields[$field.'_'.$subfield] = [
+                            'invisible' => true,
+                            'subfield' => true,
+                            'fieldtype' => self::FIELDTYPE_TEXT,
+                            'store_in_metadata' => $data['store_in_metadata']
+                        ];
+                    static::addStructure($addressfields);
                 break;
                 case self::FIELDTYPE_REFERENCE_HYPER:
                     $data['store_in_database'] = false;
@@ -1290,6 +1308,8 @@ class Datarecord implements DatarecordReferable {
                 return FileField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_CURRENCY:
                 return CurrencyField::Field($definition['label'], $name, $options);
+            case self::FIELDTYPE_ADDRESS:
+                return AddressField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_REPETITION:
                 return RepetitionField::Field($definition['label'], $name, $options);
             case self::FIELDTYPE_REFERENCE_SINGLE:
@@ -1374,6 +1394,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_HTMLTEXT:
             case self::FIELDTYPE_CURRENCY:
+            case self::FIELDTYPE_ADDRESS:
                 return $value;
             case self::FIELDTYPE_REPETITION:
                 return $value === null ? null : $value->getAsArray();
@@ -1404,7 +1425,7 @@ class Datarecord implements DatarecordReferable {
     /**
      * Get a fully formatted value from this object
      * @param string $field Field name
-     * @return string Formatted string
+     * @return string Formatted string, this may be HTML
      */
     public function getFullValue(string $field) {
         if (! isset(static::$structure[$field])) return null;
@@ -1423,6 +1444,8 @@ class Datarecord implements DatarecordReferable {
                 return $this->getRawValue($field) ? '<a href="mailto:'.$this->getRawValue($field).'">'.$this->getRawValue($field).'</a>' : '';
             case self::FIELDTYPE_ENUMERATION:
                 return $this->getRawValue($field) ? static::$structure[$field]['enumeration'][$this->getRawValue($field)] : '';
+            case self::FIELDTYPE_ADDRESS:
+                return AddressField::formatAddress($this, $field);
             case self::FIELDTYPE_CURRENCY:
                 return $this->getRawValue($field.'_currency') ? $this->getRawValue($field.'_foreignvalue').' '.$this->getRawValue($field.'_currency') : $this->getRawValue($field.'_localvalue');
             case self::FIELDTYPE_REPETITION:
@@ -1772,6 +1795,11 @@ class Datarecord implements DatarecordReferable {
                 return array('foreign_class' => $this->values[$field.'_foreign_class'], 'reference' => $this->values[$field.'_reference']);
             case self::FIELDTYPE_ENUMERATION:
                 return $this->values[$field] ?: null;
+            case self::FIELDTYPE_ADDRESS:
+                $result = [];
+                foreach (self::ADDRESS_FIELDS as $subfield)
+                    $result[$subfield] = $this->values[$field.'_'.$subfield];
+                return $result;
             case self::FIELDTYPE_CURRENCY:
                 return [
                     'localvalue' => $this->values[$field.'_localvalue'],
@@ -2612,6 +2640,12 @@ class Datarecord implements DatarecordReferable {
                 if (is_string($value) && ! is_numeric($value)) $this->values[$field] = Time::parseFromDisplayTime($value);
                 else $this->values[$field] = new Time($value);
                 break;
+            case self::FIELDTYPE_ADDRESS:
+                if (is_array($value)) {
+                    foreach (self::ADDRESS_FIELDS as $subfield)
+                        $this->values[$field.'_'.$subfield] = $value[$subfield];
+                }
+                break;
             case self::FIELDTYPE_CURRENCY:
                 if (is_array($value)) {
                     if (! array_key_exists('localvalue', $value)) trigger_error('Invalid value passed to currency field. Missing localvalue from array.', E_USER_ERROR);
@@ -2753,6 +2787,7 @@ class Datarecord implements DatarecordReferable {
     const FIELDTYPE_REPETITION = 13;
     
     const FIELDTYPE_EMAIL = 20;
+    const FIELDTYPE_ADDRESS = 30;
     
     const FIELDTYPE_ARRAY = 100;
     const FIELDTYPE_OBJECT = 103;
