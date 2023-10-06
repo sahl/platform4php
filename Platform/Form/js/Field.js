@@ -43,10 +43,35 @@ Platform.Form.Field = class extends Platform.Component {
         })
     }
     
-    setRequired(value) {
+    /**
+     * Set if this field is required or not
+     * @param bool is_required
+     */
+    setRequired(is_required) {
+        var span = this.dom_node.find('.platform_field_label_container label span');
         
+        if (span.length == 0) { // create the span for the *
+            this.dom_node.find('.platform_field_label_container label').append(' <span style="color: red; font-size: 0.8em;"></span>');
+            span = this.dom_node.find('.platform_field_label_container label span');
+        }
+        
+        if (is_required) {
+            this.dom_node.addClass('form_required_field');
+            span.text('*');
+        } else {
+            this.dom_node.removeClass('form_required_field');
+            span.text('');
+        }
     }
     
+    /**
+     * Check if a field is required
+     * @returns bool
+     */
+    isRequired() {
+        return this.dom_node.is('.form_required_field');
+    }
+        
     setValue(value) {
         this.dom_node.find('input').val(value);
     }
@@ -57,6 +82,40 @@ Platform.Form.Field = class extends Platform.Component {
             return false;
         }
         return true;
+    }
+    
+    /**
+     * Show the field + container
+     */
+    show() {
+        this.toggle(true);
+    }
+    
+    /**
+     * Hide the field + container
+     */
+    hide() {
+        this.toggle(false);
+    }
+    
+    /**
+     * Show/hide the field + container
+     * @param bool show
+     */
+    toggle(show) {
+        this.dom_node.toggle(show);
+    }
+    
+    /**
+     * Set the label of the field
+     * @param string text
+     */
+    setLabel(text) {
+        var label = this.dom_node.find('.platform_field_label_container label');
+        // make sure we keep the <span> for the required-ness
+        var is_required = this.isRequired();
+        label.text(text);
+        this.setRequired(is_required);
     }
 }
 

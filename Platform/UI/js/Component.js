@@ -53,6 +53,11 @@ Platform.Component = class {
         dom_node.data('platform_component', this);
     }
     
+    /**
+     * Register a javascript class to handle a given DOM class name
+     * @param string dom_class E.g. "SearchComplex"
+     * @param class javascript_class A class that extends Platform.Component
+     */
     static bindClass(dom_class, javascript_class) {
         // Ensure we only add everything once.
         if (Platform.Component.dom_classes.includes(dom_class)) return;
@@ -303,6 +308,34 @@ Platform.Component = class {
         }
     }
 
+    /**
+     * Get a list of the child components for the component
+     * @param bool include_grandchildren
+     * @return array<Component>
+     */
+    getChildren(include_grandchildren) {
+        var children = [];
+        var _this = this;
+        this.dom_node.find('[data-componentclass]').each(function() {
+            if (!include_grandchildren && !$(this).parent().closest('[data-componentclass]').is(_this.dom_node))
+                return;
+            
+            children.push($(this).platformComponent());
+        })
+        return children;
+    }
+    
+    /**
+     * Get the parent component, if any
+     * @return Component|null
+     */
+    getParent() {
+        var parent = this.dom_node.parent().closest('[data-componentclass]');
+        if (parent.length == 0)    return null;
+        parent = parent.platformComponent();
+        if (!(parent instanceof Platform.Component))   return null;
+        return parent;
+    }
 }
 
 Platform.addCustomFunction(Platform.Component.addComponentClasses);
