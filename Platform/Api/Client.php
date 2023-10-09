@@ -41,9 +41,9 @@ class Client {
                 continue;
             }
             if ($parsingheader) {
-                if (preg_match('/^HTTP\\/\\S* (\\d+) (.*)$/', $line, $match)) {
+                if (preg_match('/^HTTP\\/\\S* (\\d+)(.*)$/', $line, $match)) {
                     $result['code'] = $match[1];
-                    $result['message'] = $match[2];
+                    $result['message'] = trim($match[2]);
                     continue;
                 }
                 if (strpos($line, ':') !== false) {
