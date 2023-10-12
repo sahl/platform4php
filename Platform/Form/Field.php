@@ -156,8 +156,6 @@ class Field extends Component {
         $field->label = $label;
         $field->name = $name;
         
-        $field->setLabelAlignment(self::getDefaultLabelAlignment());
-        
         if (array_key_exists('required', $options)) {
             $field->is_required = true;
             unset($options['required']);
