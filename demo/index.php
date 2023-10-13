@@ -1,8 +1,8 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-\Platform\Page::queueJSFile('buttonlink.js');
-\Platform\Page::renderPagestart('Platform demo');
+\Platform\Page\Page::queueJSFile('buttonlink.js');
+\Platform\Page\Page::renderPagestart('Platform demo');
 
 echo '<h1>Platform demo</h1>';
 
@@ -18,4 +18,4 @@ echo '<div style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
 
-\Platform\Page::renderPageend();
+\Platform\Page\Page::renderPageend();

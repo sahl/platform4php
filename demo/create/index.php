@@ -1,9 +1,9 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-\Platform\Page::renderPagestart('Create new instance');
+\Platform\Page\Page::renderPagestart('Create new instance');
 
-$new_instance_form = \Platform\Form::Form('new_instance_form', 'new_instance.frm');
+$new_instance_form = \Platform\Form\Form::Form('new_instance_form', 'new_instance.frm');
 
 $new_instance_form->addValidationFunction(function($new_instance_form) {
     // Check if instance if taken
@@ -35,4 +35,4 @@ echo '<div style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
 
-\Platform\Page::renderPageend();
+\Platform\Page\Page::renderPageend();

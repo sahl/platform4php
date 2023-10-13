@@ -1,9 +1,9 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
-\Platform\Page::renderPagestart('Log into instance');
+\Platform\Page\Page::renderPagestart('Log into instance');
 
-$loginform = \Platform\Form::Form('loginform', 'login.frm');
+$loginform = \Platform\Form\Form::Form('loginform', 'login.frm');
 
 $loginform->addValidationFunction(function($form) {
     // First check if instance exists
@@ -33,4 +33,4 @@ echo '<div style="font-style: italic; font-size: 0.8em;">';
 echo 'Platform';
 echo '</div>';
 
-\Platform\Page::renderPageend();
+\Platform\Page\Page::renderPageend();

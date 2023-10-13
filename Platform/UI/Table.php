@@ -402,7 +402,7 @@ class Table extends Component {
         $this->tabulator_options['columns'] = $new_columns;
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         if ($this->id) $this->setID($this->id);
         $this->table_style = implode(';', $this->styles);
         $this->styles = [];

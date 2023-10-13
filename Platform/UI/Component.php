@@ -57,7 +57,7 @@ class Component {
     
     /**
      * Indicate if this is a container component
-     * @var boolean
+     * @var bool
      */
     protected static $is_container_component = false;
     
@@ -168,7 +168,7 @@ class Component {
      * @param Component $component
      */
     public function addSubcomponent(Component $component) {
-        $component->prepareData();
+        $component->prepareComponent();
         $this->subcomponents[] = $component;
     }
     
@@ -319,11 +319,20 @@ class Component {
     }    
     
     /**
+     * Run this to prepare component data. Can only run once.
+     * @return type
+     */
+    public function prepareComponent() {
+        if ($this->is_ready) return;
+        $this->prepareData();
+        if (static::$is_container_component) $this->addClass('platform_container_component');
+        $this->is_ready = true;
+    }
+    
+    /**
      * Override to prepare internal data in this component (if any)
      */
-    public function prepareData() {
-        $this->is_ready = true;
-        if (static::$is_container_component) $this->addClass('platform_container_component');
+    protected function prepareData() {
     }
     
     /**
@@ -346,7 +355,7 @@ class Component {
      * Renders the component
      */
     public function render() {
-        if (! $this->is_ready) $this->prepareData();
+        if (! $this->is_ready) $this->prepareComponent();
         if (! $this->canRender()) return;
         
         $classes = $this->classes;

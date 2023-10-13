@@ -54,7 +54,7 @@ class TableColumnSelector extends Component {
         return ['changed' => 0];
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         $this->addData('table_id', $this->table_id);
     }
     

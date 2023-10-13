@@ -5,8 +5,8 @@ include $_SERVER['DOCUMENT_ROOT'].'App/include.php';
 
 $pagetitle = 'BizzCompazz - Microbizz integration';
 
-\Platform\Page::renderPagestart($pagetitle);
+\Platform\Page\Page::renderPagestart($pagetitle);
 
 \Platform\Server::renderEditComplex();
 
-\Platform\Page::renderPageend();
+\Platform\Page\Page::renderPageend();

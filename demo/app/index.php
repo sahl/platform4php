@@ -1,10 +1,10 @@
 <?php
 include $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 
+use Platform\Page\Page;
 use Platform\Security\Accesstoken;
-use Platform\User;
 use Platform\Server\Instance;
-use Platform\Page;
+use Platform\Security\User;
 
 Accesstoken::validateSession('/demo/login/', true);
 

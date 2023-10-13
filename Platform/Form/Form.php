@@ -540,7 +540,7 @@ class Form extends Component {
     }
     
     
-    public function prepareData() {
+    protected function prepareData() {
         parent::prepareData();
         if ($this->save_on_submit != self::SAVE_NO) $this->addData('save_on_submit', $this->save_on_submit);
     }

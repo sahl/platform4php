@@ -21,7 +21,7 @@ class Chart extends Component {
         $this->data[] = $row;
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         parent::prepareData();
         $this->addData('data', json_encode($this->data));
         $this->addData('options', json_encode($this->chart_options));

@@ -189,7 +189,7 @@ class EditComplex extends Component {
         return parent::handleIO();
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         parent::prepareData();
         
         if ($this->new_item_values) $this->addData('new_item_values', $this->new_item_values);

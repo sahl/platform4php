@@ -46,7 +46,7 @@ class PopupMenu extends Menu {
         $this->addData('attach_to', $selector);
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         parent::prepareData();
         if ($this->attached_component) $this->addData ('attach_to', '#'.$this->attached_component->getID());
         $this->addData('location', $this->location);

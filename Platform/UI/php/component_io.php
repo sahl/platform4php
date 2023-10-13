@@ -13,7 +13,7 @@ if ($_POST['event'] == '__timedio') {
         $component = new $class();
         if ($payload['componentproperties']) $component->decodeProperties($payload['componentproperties']);
         $component->setID($payload['componentid']);
-        $component->prepareData();
+        $component->prepareComponent();
         $_POST = $payload['values'];
         $single_result = $component->handleIO();
         $result[] = $single_result;
@@ -32,7 +32,7 @@ if (! $component instanceof \Platform\UI\Component) die('Not a component');
 
 if ($_POST['componentproperties']) $component->decodeProperties($_POST['componentproperties']);
 $component->setID($_POST['componentid']);
-$component->prepareData();
+$component->prepareComponent();
 
 if ($class::$is_secure && !\Platform\Security\Accesstoken::validateSession()) die('Must be logged in');
 

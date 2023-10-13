@@ -66,7 +66,7 @@ class EditDialog extends Dialog {
         }
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         if ($this->class == null) trigger_error('Cannot use without attaching a class', E_USER_ERROR);
         parent::prepareData();
     }

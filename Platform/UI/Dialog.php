@@ -56,7 +56,7 @@ class Dialog extends Component {
         $this->components[] = $component;
     }
     
-    public function prepareData() {
+    protected function prepareData() {
         parent::prepareData();
         if ($this->title) $this->setDialogOption('title', $this->title);
         if (count($this->buttons)) $this->addData('buttons', $this->buttons);
