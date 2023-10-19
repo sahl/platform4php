@@ -269,7 +269,7 @@ class File extends Datarecord {
      */
     public function getURL() : string {
         if (! $this->isInDatabase()) return '';
-        return '/Platform/File/php/file.php/'.\Platform\Server\Instance::getActiveInstanceID().'/'.$this->file_id.'/'.$this->filename;
+        return '/Platform/File/php/file.php/'.\Platform\Server\Instance::getActiveInstanceID().'/'.$this->file_id.'/'.urlencode($this->filename);
     }
 
     /**
