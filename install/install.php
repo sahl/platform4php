@@ -1,11 +1,12 @@
 <?php
 
 use PHPMailer\PHPMailer\PHPMailer;
-use Platform\Form;
-use Platform\Page;
+use Platform\Form\Form;
+use Platform\Page\Page;
 use Platform\Platform;
 use Platform\Security\Administrator;
-use Platform\Server;
+use Platform\Server\Instance;
+use Platform\Server\Server;
 use Platform\Utilities\Database;
 use Platform\Utilities\Mail;
 
@@ -17,7 +18,7 @@ $include_file = $_SERVER['DOCUMENT_ROOT'].'Platform/include.php';
 if (! file_exists($include_file)) die('Couldn\'t locate Platform4PHP in '.$_SERVER['DOCUMENT_ROOT'].'Platform/ (Are you missing a / on DOCUMENT_ROOT?)');
 
 // Direct test
-$perform_test = array_key_exists('dotest', $_GET) && $_GET['dotest'] == 1;
+$perform_test = $_GET['dotest'] == 1;
 
 // Check for configuration file
 $configuration_file = install_get_config_file_name();
@@ -35,7 +36,7 @@ include $include_file;
 if (Platform::getConfiguration('administrator_password')) Administrator::checkLogin ();
 
 // Destroy any present instance
-if (Server\Instance::getActiveInstanceID()) {
+if (Instance::getActiveInstanceID()) {
     \Platform\Security\Accesstoken::destroySession();
 }
 
@@ -63,7 +64,7 @@ $errors = array();
 
 if ($install_form->isSubmitted() && $install_form->validate()) {
     $perform_test = true;
-    Platform::setConfigurationFromArray($install_form->getValues(), true);
+    Platform::setConfigurationFromArray($install_form->getValues(), false);
 }
 
 if ($perform_test) {
@@ -105,7 +106,15 @@ Page::renderPageend();
 
 
 function install_get_config_file_name() {
-    return __DIR__.'/../../platform_config.php';
+    return install_get_parent_dir().'/platform_config.php';
+}
+
+function install_get_parent_dir() {
+    $root = $_SERVER['DOCUMENT_ROOT'];
+    // Strip trailing slash (if any)
+    if (substr($root,-1) == '/') $root = substr($root,0,-1);
+    // Go one dir up
+    return substr($root, 0, strrpos($root,'/'));
 }
 
 function install_test_all(array &$errors) {
@@ -137,6 +146,7 @@ function install_test_all(array &$errors) {
                     $errors[] = 'Could not use newly created database. Error: '.Database::getLastLocalError();
                 }
                 $result = Database::localQuery("DROP DATABASE ".$temp_database_name, false);
+                Database::clearUsedInstance();
                 if (! $result) $errors[] = 'Could not drop newly created database. Please remove database '.$temp_database_name.' manually. Error: '.Database::getLastLocalError();
             } else {
                 $errors[] = 'Could not create a new database on the local connection. Does it have the correct permissions? Error: '.Database::getLastLocalError();

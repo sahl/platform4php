@@ -21,8 +21,8 @@ class Administrator {
         if (! Platform::getConfiguration('administrator_password')) trigger_error('Please set the <i>administrator_password</i> configuration variable.', E_USER_ERROR);
         if (! self::isLoggedIn()) {
             $form = Form::Form('administrator_login_form');
-            $form->addField(new PasswordField('Password', 'administrator_password', array('required' => true)));
-            $form->addField(new SubmitButton('Continue', 'save'));
+            $form->addField(PasswordField::Field('Password', 'administrator_password', array('required' => true)));
+            $form->addField(SubmitButton::Field('Continue', 'save'));
             
             if ($form->isSubmitted() && $form->validate()) {
                 $values = $form->getValues();

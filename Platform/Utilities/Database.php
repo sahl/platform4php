@@ -315,4 +315,10 @@ class Database {
         self::$connected_instance = $instance;
     }
     
+    /**
+     * Clear the used instance, so the database needs to use it again.
+     */
+    public static function clearUsedInstance() {
+        self::$connected_instance = false;
+    }
 }

@@ -63,7 +63,13 @@ class Platform {
         if (! $fh) return false;
         fwrite($fh, "<?php\n\$platform_configuration = array(\n");
         foreach ($platform_configuration as $key => $value) {
-            fwrite($fh, "\t'$key' => '".str_replace("'", "\\'", $value)."',\n");
+            if (is_array($value)) {
+                $final_value = [];
+                foreach ($value as $v) $final_value[] = "'".str_replace("'", "\\'", $v)."'";
+                fwrite($fh, "\t'$key' => [".implode(',', $final_value)."],\n");
+            } else {
+                fwrite($fh, "\t'$key' => '".str_replace("'", "\\'", $value)."',\n");
+            }
         }
         fwrite($fh, ");\n");
         fflush($fh);
