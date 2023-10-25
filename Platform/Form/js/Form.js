@@ -84,7 +84,7 @@ Platform.Form = class extends Platform.Component {
         var allowsubmit = true;
         var form_node = this.dom_node.find('form');
         
-        this.dom_node.find('form').children('.platform_form_field').each(function() {
+        this.dom_node.find('form').children('.platform_form_field_component').each(function() {
             var field_component = $(this).platformComponent();
             if (! field_component.validate()) {
                 allowsubmit = false;
