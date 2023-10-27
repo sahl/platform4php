@@ -130,4 +130,20 @@ class MenuItem {
     public function render() {
         echo $this->getHTML();
     }
+    
+    /**
+     * Render a menuitem directly to the page
+     * @param string $text Text on menu item
+     * @param string $url URL to point to
+     * @param string $id ID on menu item html
+     * @param string $classes Class on menu item html
+     * @param string $icon FA icon name or image file
+     * @param array $data Data on html tag with values hashed by keys
+     * @param array $submenu_items An array with MenuItem's intended as submenu to this item
+     */
+    public static function renderDirectly (string $text, string $url = '', string $id = '', string $classes = '', string $icon = '', array $data = array(), array $submenu_items = array()) {
+        $menu_item = new MenuItem($text, $url, $id, $classes, $icon, $data, $submenu_items);
+        $menu_item->render();
+    }
+    
 }
