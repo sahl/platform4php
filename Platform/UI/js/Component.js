@@ -82,7 +82,17 @@ Platform.Component = class {
         return result;
     }
     
+    on(event, callback) {
+        this.dom_node.on(event, callback);
+    }
     
+    trigger(event, payload) {
+        this.dom_node.trigger(event, payload);
+    }
+    
+    find(dom_selector) {
+        return this.dom_node.find(dom_selector).platformComponent();
+    }
     
     gatherDialogs() {
         var component = this;
@@ -158,7 +168,7 @@ Platform.Component = class {
     addIOForm(form, func, failfunc) {
         var component = this;
         form.off('submit.ioform').on('submit.ioform', function() {
-            component.backendIO(form.serialize(), function(data) {
+            component.backendIO($(this).serialize(), function(data) {
                 if (! data.status) {
                     form.closest('.platform_component_form').platformComponent().attachErrors(data.form_errors);
                     if (typeof failfunc == 'function') failfunc(data);
@@ -306,6 +316,27 @@ Platform.Component = class {
             if (Platform.Component.timed_IO_stack.length) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
 
         }
+    }
+    
+    /**
+     * Get a property from this Component
+     * @param {string} property Property to read
+     * @returns The property value
+     */
+    getProperty(property) {
+        var properties = this.dom_node.data('componentproperties');
+        return properties[property];
+    }
+    
+    /**
+     * Set a property of this Component
+     * @param {string} property Property to set
+     * @param value Value to assign
+     */
+    setProperty(property, value) {
+        var properties = this.dom_node.data('componentproperties');
+        properties[property] = value;
+        this.dom_node.data('componentproperties', properties);
     }
 
     /**
