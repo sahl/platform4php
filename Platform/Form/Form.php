@@ -139,6 +139,14 @@ class Form extends Component {
         }
         $this->fields = $newfields;
     }
+    
+    /**
+     * Add all fields from another form
+     * @param Form $form
+     */
+    public function addFieldsFromForm(Form $form) {
+        $this->addField($form->getAllFields());
+    }
 
     /**
      * Add a namespace to search for form fields when parsing fields from html files
@@ -638,7 +646,7 @@ class Form extends Component {
             foreach ($fields as $field) {
                 if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
                 $field->attachToForm($this);
-                $newfields[] = $formfield;
+                $newfields[] = $field;
             }
         }
         $this->fields = $newfields;
