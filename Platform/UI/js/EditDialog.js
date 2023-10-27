@@ -23,6 +23,10 @@ Platform.EditDialog = class extends Platform.Dialog {
             component.form.submit();
             return false;
         })
+        
+        this.dom_node.on('close', function() {
+            component.close();
+        })
     }
     
     openDialog(id, values) {
