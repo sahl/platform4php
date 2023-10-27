@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI\Menu;
+/**
+ * Menu class for drawing a popup menu which appear on top of other items.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=menu_class
+ */
 
 use Platform\Page\Page;
 use Platform\UI\Component;

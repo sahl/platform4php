@@ -1,6 +1,10 @@
 <?php
 namespace Platform\Form;
-
+/**
+ * Used for providing simple layout to forms
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=layout_class
+ */
 
 class Layout {
     

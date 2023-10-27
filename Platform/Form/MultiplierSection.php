@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for adding a section to a form containing other fields which will repeat itself.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 use Platform\Form\Form;
 

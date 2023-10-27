@@ -1,10 +1,9 @@
 <?php
 namespace Platform\Utilities;
 /**
- * Description
+ * Class for handling application upgrades which isn't database structure rebuilding
  * 
- * @author Michael Sahl
- * @see <a href=""></a>
+ * @link https://wiki.platform4php.dk/doku.php?id=upgrades_class
  */
 
 

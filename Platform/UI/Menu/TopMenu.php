@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI\Menu;
+/**
+ * Menu class for drawing a top navigational menu.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=menu_class
+ */
 
 class TopMenu extends Menu {
     

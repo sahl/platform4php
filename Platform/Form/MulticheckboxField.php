@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for selecting several of many checkboxes
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 class MulticheckboxField extends Field {
     

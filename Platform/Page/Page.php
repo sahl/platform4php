@@ -1,5 +1,13 @@
 <?php
 namespace Platform\Page;
+/**
+ * Class for rendering a basic HTML page structure.
+ * 
+ * Also responsible for including javascript and css
+ * Responsible for drawing everything except the <body> content
+  * 
+ * @link https://wiki.platform4php.dk/doku.php?id=menuitem_class
+ */
 
 use Platform\Utilities\Translation;
 

@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for providing database connectivity
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=database_class
+ */
 
 use Platform\Platform;
 

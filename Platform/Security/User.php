@@ -1,5 +1,12 @@
 <?php
 namespace Platform\Security;
+/**
+ * Datarecord class for handling users and passwords
+ * 
+ * Responsible for handling login.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=user_class
+ */
 
 Use Platform\Security\Accesstoken;
 

@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for logging
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=log_class
+ */
 
 use Platform\Platform;
 use Platform\File;

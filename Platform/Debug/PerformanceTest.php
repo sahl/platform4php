@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Debug;
+/**
+ * Class that can be used to make a performance test on a given Datarecord object
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=performancetest_class
+ */
 
 use Platform\ConditionGreaterEqual;
 use Platform\Datarecord;

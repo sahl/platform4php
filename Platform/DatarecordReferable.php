@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * An interface to make other objects referable like Datarecord objects.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=datarecordreferable_interface
+ */
 
 interface DatarecordReferable {
     

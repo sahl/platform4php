@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Base class for implementing conditions to Filter.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=condition_class
+ */
 
 use Platform\Utilities\Time;
 

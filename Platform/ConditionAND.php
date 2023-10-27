@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Condition class for implementing a AND condition.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=condition_class
+ */
 
 class ConditionAND extends Condition {
     

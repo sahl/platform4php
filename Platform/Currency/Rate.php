@@ -1,7 +1,18 @@
 <?php
 namespace Platform\Currency;
+/**
+ * Datarecord class that stores currency rates, which can be used by the currency system
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=rate_class
+ */
 
-class Rate extends \Platform\Datarecord {
+use Platform\ConditionLesserEqual;
+use Platform\ConditionMatch;
+use Platform\Datarecord;
+use Platform\Filter;
+use Platform\Utilities\Time;
+
+class Rate extends Datarecord {
     
     protected static $database_table = 'platform_currency_rates';
     protected static $delete_strategy = self::DELETE_STRATEGY_BLOCK;
@@ -41,10 +52,10 @@ class Rate extends \Platform\Datarecord {
     /**
      * Get the exchange rate on a given date
      * @param string $currency Currency to get exchange rate for
-     * @param \Platform\Utilities\Time $date Date to check
+     * @param Time $date Date to check
      * @return float The numeric exchange rate as it was on this date
      */
-    public static function getRate(string $currency, \Platform\Utilities\Time $date) : float {
+    public static function getRate(string $currency, Time $date) : float {
         $rate = self::getRateObject($currency, $date);
         return $rate->isInDatabase() ? $rate->rate : 100;
     }
@@ -52,24 +63,24 @@ class Rate extends \Platform\Datarecord {
     /**
      * Get the reverse exchange rate on a given date
      * @param string $currency Currency to get exchange rate for
-     * @param \Platform\Utilities\Time $date Date to check
+     * @param Time $date Date to check
      * @return float The numeric exchange rate as it was on this date
      */
-    public static function getReverseRate(string $currency, \Platform\Utilities\Time $date) : float {
+    public static function getReverseRate(string $currency, Time $date) : float {
         return 10000.0/static::getRate($currency, $date);
     }
     
     /**
      * Get the closest rate object on this date or before for the given currency
      * @param string $currency
-     * @param \Platform\Utilities\Time $date
+     * @param Time $date
      * @return Rate
      */
-    public static function getRateObject(string $currency, \Platform\Utilities\Time $date) : Rate {
+    public static function getRateObject(string $currency, Time $date) : Rate {
         if (!Currency::isValidCurrency($currency)) trigger_error('Invalid currency '.$currency, E_USER_ERROR);
-        $filter = new \Platform\Filter(get_called_class());
-        $filter->addCondition(new \Platform\ConditionMatch('currency', $currency));
-        $filter->addCondition(new \Platform\ConditionLesserEqual('date', $date->endOfDay()));
+        $filter = new Filter(get_called_class());
+        $filter->addCondition(new ConditionMatch('currency', $currency));
+        $filter->addCondition(new ConditionLesserEqual('date', $date->endOfDay()));
         $filter->setOrderColumn('date', false);
         $filter->setResultLimit(1);
         $rate = $filter->executeAndGetFirst();
@@ -80,14 +91,14 @@ class Rate extends \Platform\Datarecord {
      * Set the rate for a given currency. The time is considered as the date, so any other rate from the
      * same date will be overwritten
      * @param string $currency
-     * @param \Platform\Utilities\Time $date
+     * @param Time $date
      * @param float $rate_value
      */
-    public static function setRate(string $currency, \Platform\Utilities\Time $date, float $rate_value) {
+    public static function setRate(string $currency, Time $date, float $rate_value) {
         if (!Currency::isValidCurrency($currency)) trigger_error('Invalid currency '.$currency, E_USER_ERROR);
-        $filter = new \Platform\Filter(get_called_class());
-        $filter->addCondition(new \Platform\ConditionMatch('currency', $currency));
-        $filter->addCondition(new \Platform\ConditionMatch('date', $date->startOfDay()));
+        $filter = new Filter(get_called_class());
+        $filter->addCondition(new ConditionMatch('currency', $currency));
+        $filter->addCondition(new ConditionMatch('date', $date->startOfDay()));
         $filter->setOrderColumn('date', false);
         $filter->setResultLimit(1);
         $rate = $filter->executeAndGetFirst();

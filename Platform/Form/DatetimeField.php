@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for inputting dates and times
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 use Platform\Utilities\Time;
 // Todo: Better handling of I/O 

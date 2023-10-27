@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * A Datarecord class describing extensible fields for other Datarecord objects
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=extensiblefield_class
+ */
 
 use Platform\Form\Form;
 use Platform\Form\HiddenField;

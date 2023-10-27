@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Condition class for implementing a NOT condition.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=condition_class
+ */
 
 class ConditionNOT extends Condition {
     

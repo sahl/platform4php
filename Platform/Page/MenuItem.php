@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Page;
+/**
+ * Class for descriping a link/menuitem which can also contain a submenu (sub-links)
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=menuitem_class
+ */
 
 class MenuItem {
     

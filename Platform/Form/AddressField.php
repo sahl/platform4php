@@ -1,6 +1,12 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for inputting addresses
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
+use Platform\Datarecord;
 use Platform\Utilities\Translation;
 
 class AddressField extends Field {
@@ -35,11 +41,11 @@ class AddressField extends Field {
     
     /**
      * Format an address, typical it will look like "<div><div>Someroad 3</div><div>2100 Copenhagen, DK</div></div>"
-     * @param \Platform\Datarecord $object
+     * @param Datarecord $object
      * @param string $field
      * @return string
      */
-    public static function formatAddress(\Platform\Datarecord $object, string $field) : string {
+    public static function formatAddress(Datarecord $object, string $field) : string {
         $lines = [];
         if ($object->getRawValue($field.'_address'))
             $lines[] = '<div>'.$object->getRawValue($field.'_address').'</div>';

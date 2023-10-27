@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for handling time and easy handling of time zones
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=time_class
+ */
 
 class Time implements \Platform\UI\Serializable {
     

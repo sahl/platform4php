@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI\Chart;
+/**
+ * Chart class for drawing area charts
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=chart_class
+ */
 
 use Platform\Utilities\Utilities;
 

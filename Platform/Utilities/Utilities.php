@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Misc collection of utility functions
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=database_class
+ */
 
 class Utilities {
 

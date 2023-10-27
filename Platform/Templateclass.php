@@ -1,5 +1,10 @@
 <?php
 // namespace NAMESPACE;
+/**
+ * Write class description here.
+ * 
+ * @link LINK_TO_CLASS_DOCUMENTATION
+ */
 
 class Templateclass extends Datarecord {
     

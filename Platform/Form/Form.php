@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Base class for having a form. Field objects are inserted in the form
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=form_class
+ */
 
 use Platform\Currency\Currency;
 use Platform\Currency\Rate;

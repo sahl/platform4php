@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for inputting HTML in a visual editor
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 class TexteditorField extends TextField {
     

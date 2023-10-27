@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Condition class for implementing an is-set condition.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=condition_class
+ */
 
 use Platform\Utilities\Time;
 

@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI;
+/**
+ * Base class for drawing components in Platform.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=component_class
+ */
 
 use Platform\Page\Page;
 use Platform\Form\Form;

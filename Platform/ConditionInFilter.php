@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Condition class for checking if this is part of another filter
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=condition_class
+ */
 
 class ConditionInFilter extends Condition {
     

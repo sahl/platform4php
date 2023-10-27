@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for currency
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 use Platform\Currency\Currency;
 use Platform\Currency\Rate;

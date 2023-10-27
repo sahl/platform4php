@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Connector;
+/**
+ * A helper class for connecting to Microbizz legacy API and making queryes against it.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=microbizz_class
+ */
 
 use Platform\Platform;
 use Platform\File;

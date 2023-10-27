@@ -1,15 +1,32 @@
 <?php
 namespace Platform\Api;
+/**
+ * Provides an API Client against another REST API also exposed by Platform
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=client_class
+ */
 
 use Platform\Condition;
 
 class Client {
     
+    /**
+     * The endpoint URL
+     * @var boolean|string
+     */
     protected $endpoint = false;
     
+    /**
+     * The token code to use for validation
+     * @var string
+     */
     protected $token_code = '';
     
-    public function __construct($endpoint) {
+    /**
+     * Constructs a new API Client
+     * @param string $endpoint The endpoint to connect to
+     */
+    public function __construct(string $endpoint) {
         $this->endpoint = $endpoint;
     }
     
@@ -111,5 +128,4 @@ class Client {
     public function setAccessToken(string $token_code) {
         $this->token_code = $token_code;
     }
-    
 }

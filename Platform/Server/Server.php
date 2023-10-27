@@ -1,5 +1,14 @@
 <?php
 namespace Platform\Server;
+/**
+ * Datarecord class for registering servers.
+ * 
+ * Also responsible for building appropriate structures on server.
+ * 
+ * Also responsible for inter-server communication
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=server_class
+ */
 
 use Platform\ConditionMatch;
 use Platform\Datarecord;

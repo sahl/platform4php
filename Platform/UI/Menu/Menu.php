@@ -1,5 +1,12 @@
 <?php
 namespace Platform\UI\Menu;
+/**
+ * Component class for drawing menus. Should be extended.
+ * 
+ * Also responsible for determining current menu item based on page URL
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=menu_class
+ */
 
 use Platform\Page\MenuItem;
 use Platform\UI\Component;

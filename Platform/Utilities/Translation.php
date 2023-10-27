@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for handling multi-language applications
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=translation_class
+ */
 
 use Platform\Server\Instance;
 

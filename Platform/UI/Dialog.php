@@ -1,5 +1,12 @@
 <?php
 namespace Platform\UI;
+/**
+ * Component class for drawing dialogs.
+ * 
+ * Also responsible for providing generic dialogs in Platform
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=dialog_class
+ */
 
 class Dialog extends Component {
     

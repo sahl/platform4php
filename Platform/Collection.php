@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Class for gathering several Datarecord objects together.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=collection_class
+ */
 
 class Collection implements \Iterator,\Countable {
 

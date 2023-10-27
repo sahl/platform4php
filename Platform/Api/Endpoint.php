@@ -1,5 +1,11 @@
 <?php
 namespace Platform\Api;
+/**
+ * Exposes a REST API and makes it easy to interact with Datarecord objects using REST.
+ * Can also be extended to provide other rest services
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=endpoint_class
+ */
 
 use Platform\Condition;
 use Platform\Datarecord;

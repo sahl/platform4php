@@ -1,5 +1,11 @@
 <?php
 namespace Platform\UI;
+/**
+ * Component class for easily constructing an interface for creating / editing / deleting
+ * Datarecord objects
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=editcomplex_class
+ */
 
 use Platform\Filter;
 use Platform\Page\MenuItem;

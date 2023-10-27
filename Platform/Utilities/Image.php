@@ -1,5 +1,12 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for manipulating images
+ * 
+ * Also responsible for inter-operating with the File class
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=image_class
+ */
 
 use Platform\File;
 use Platform\Platform;

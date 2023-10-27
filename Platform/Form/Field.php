@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Base class for other fields. Extend this class to create new form fields
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 use Platform\Form\Form;
 use Platform\UI\Component;

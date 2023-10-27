@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Security;
+/**
+ * Handles administrator login for the Platform installation pages.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=administrator_class
+ */
 
 use Platform\Platform;
 use Platform\Form\Form;

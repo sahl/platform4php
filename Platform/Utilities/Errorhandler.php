@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for error handling and debugging
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=database_class
+ */
 
 class Errorhandler {
     /**

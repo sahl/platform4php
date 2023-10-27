@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI\Chart;
+/**
+ * Component class for drawing charts using Google Charts
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=chart_class
+ */
 
 use Platform\UI\Component;
 use Platform\Utilities\Utilities;

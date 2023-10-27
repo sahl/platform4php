@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Class for reading and setting Platform configuration options
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=platform_class
+ */
 
 class Platform {
     

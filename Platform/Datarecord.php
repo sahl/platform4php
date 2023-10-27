@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * Class for having objects which are saved in a database and can easily be manipulated.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=datarecord_class
+ */
 
 use Platform\Form\CheckboxField;
 use Platform\Form\CurrencyField;

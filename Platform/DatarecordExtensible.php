@@ -1,5 +1,10 @@
 <?php
 namespace Platform;
+/**
+ * An extension to Datarecord allowing for user configurable fields
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=datarecordextensible_class
+ */
 
 class DatarecordExtensible extends Datarecord {
     

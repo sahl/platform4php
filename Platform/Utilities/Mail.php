@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Datarecord class for storing queueing and sending mails using the PHPMailer library
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=mail_class
+ */
 
 use PHPMailer\PHPMailer\PHPMailer;
 use Platform\ConditionLesserEqual;

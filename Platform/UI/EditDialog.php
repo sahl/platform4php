@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI;
+/**
+ * Component class for creating a dialog where Datarecord objects can be created or edited
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=editdialog_class
+ */
 
 use Platform\Utilities\Translation;
 use Platform\Utilities\Utilities;

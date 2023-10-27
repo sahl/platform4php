@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for inputting email addresses
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 class EmailField extends Field {
     

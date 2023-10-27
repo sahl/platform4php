@@ -1,5 +1,14 @@
 <?php
 namespace Platform\Server;
+/**
+ * Datarecord class for managing instances.
+ * 
+ * Also responsible for building and destroying instances.
+ * 
+ * Also responsible for providing database and file store information to the instance.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=instance_class
+ */
 
 use Platform\Filter;
 use Platform\Platform;

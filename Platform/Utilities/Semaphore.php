@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for using filebased semaphores
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=semaphore_class
+ */
 
 use Platform\Platform;
 

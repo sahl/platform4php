@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for showing a dropdown menu
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 class SelectField extends Field {
     

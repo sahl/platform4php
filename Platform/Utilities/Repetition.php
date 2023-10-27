@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Utilities;
+/**
+ * Class for handling a date repetition
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=repetition_class
+ */
 
 class Repetition {
     

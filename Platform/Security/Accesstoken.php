@@ -1,5 +1,12 @@
 <?php
 namespace Platform\Security;
+/**
+ * Datarecord class that contains access tokens to be used for user validation.
+ * 
+ * Also responsible for validating user sessions.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=accesstoken_class
+ */
 
 use Platform\ConditionLesser;
 use Platform\ConditionMatch;

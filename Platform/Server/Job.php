@@ -1,5 +1,12 @@
 <?php
 namespace Platform\Server;
+/**
+ * Datarecord class for managing background jobs.
+ * 
+ * Also responsible for scheduling and running jobs.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=job_class
+ */
 
 use Platform\ConditionGreater;
 use Platform\ConditionLesserEqual;

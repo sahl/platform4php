@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI\Menu;
+/**
+ * Menu class for drawing a menu which appear when clicking a button
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=menu_class
+ */
 
 class ButtonMenu extends Menu {
     

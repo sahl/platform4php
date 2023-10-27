@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for a combobox which is linked to a Datarecord object and can only select items of that type.
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 class DatarecordcomboboxField extends IndexedComboboxField {
     

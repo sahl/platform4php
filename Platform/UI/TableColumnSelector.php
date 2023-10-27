@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI;
+/**
+ * Component class for providing a dialog for selecting columns in a Table component
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=tablecolumnselector_class
+ */
 
 use Platform\Property;
 use Platform\Security\Accesstoken;

@@ -1,7 +1,8 @@
 <?php
 /**
- * A component which can refer a specific Datarecord Object
+ * Component class that allows easy attaching of a Datarecord object.
  * 
+ * @link https://wiki.platform4php.dk/doku.php?id=contextcomponent_class
  */
 namespace Platform\UI;
 

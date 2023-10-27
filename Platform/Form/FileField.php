@@ -1,5 +1,10 @@
 <?php
 namespace Platform\Form;
+/**
+ * Field for uploading files
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=field_class
+ */
 
 use \Platform\File;
 

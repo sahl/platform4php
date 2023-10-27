@@ -1,5 +1,10 @@
 <?php
 namespace Platform\UI;
+/**
+ * Component class for drawing tables using the Tabulator library
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=table_class
+ */
 
 use Platform\Collection;
 use Platform\ConditionOneOf;

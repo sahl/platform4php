@@ -1,5 +1,12 @@
 <?php
 namespace Platform\Currency;
+/**
+ * Handles currencies
+ * 
+ * @link https://wiki.platform4php.dk/doku.php?id=currency_class
+ */
+
+use Platform\Property;
 
 class Currency {
     
@@ -8,7 +15,7 @@ class Currency {
      * @return string Base currency
      */
     public static function getBaseCurrency() : string {
-        $currency = \Platform\Property::getForAll('platform', 'base_currency');
+        $currency = Property::getForAll('platform', 'base_currency');
         return $currency ?: 'EUR';
     }
     
@@ -17,7 +24,7 @@ class Currency {
      * @return array
      */
     public static function getEnabledCurrencies() : array {
-        $enabled_currencies = \Platform\Property::getForAll('platform', 'enabled_currencies');
+        $enabled_currencies = Property::getForAll('platform', 'enabled_currencies');
         if ($enabled_currencies == null) return array_keys(self::$currency_map);
         return $enabled_currencies;
     }
@@ -37,7 +44,7 @@ class Currency {
      */
     public static function setBaseCurrency(string $currency) {
         if (! static::isValidCurrency($currency)) trigger_error('Tried to set invalid currency code '.$currency, E_USER_ERROR);
-        \Platform\Property::setForAll('platform', 'base_currency', $currency);
+        Property::setForAll('platform', 'base_currency', $currency);
     }
     
     /**
@@ -49,7 +56,7 @@ class Currency {
             if (! static::isValidCurrency($currency)) trigger_error('Tried to set invalid currency code '.$currency, E_USER_ERROR);
         }
         if (count($currencies) == 0) $currencies = null;
-        \Platform\Property::setForAll('platform', 'enabled_currencies', $currencies);
+        Property::setForAll('platform', 'enabled_currencies', $currencies);
     }
     
     
