@@ -38,7 +38,7 @@ Platform.Table = class extends Platform.Component {
         // The configuration array for Tabulator
         var table_configuration = {
             pagination: false,
-            paginationElement: $('.pagination')[0],
+            paginationElement: dom_node.find('.pagination')[0],
         }
         
         // Extend the configuration with configuration data
