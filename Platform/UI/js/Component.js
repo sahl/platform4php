@@ -55,8 +55,8 @@ Platform.Component = class {
     
     /**
      * Register a javascript class to handle a given DOM class name
-     * @param string dom_class E.g. "SearchComplex"
-     * @param class javascript_class A class that extends Platform.Component
+     * @param {string} dom_class E.g. "SearchComplex"
+     * @param {class} javascript_class A class that extends Platform.Component
      */
     static bindClass(dom_class, javascript_class) {
         // Ensure we only add everything once.
@@ -70,6 +70,21 @@ Platform.Component = class {
         Platform.Component.dom_classes.push(dom_class);
         Platform.Component.class_library.push(library_element);
     }
+    
+    /**
+     * Convenience for making a quick component where only the initialize function is relevant
+     * @param {string} dom_class dom_class for element to bind to
+     * @param {function} initialize_function The initialize function
+     */
+    static quickComponent(dom_class, initialize_function) {
+        var quick_component = class extends Platform.Component {
+            initialize() {
+                initialize_function(this);
+            }
+        }
+        Platform.Component.bindClass(dom_class, quick_component);
+    }
+    
     
     static getClassBinding(dom_class) {
         var result = null;
