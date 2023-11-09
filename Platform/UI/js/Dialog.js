@@ -88,6 +88,9 @@ Platform.Dialog = class extends Platform.Component {
 
     static formDialog(title, text, form_id, ok_text, callback_ok, callback_open, callback_cancel) {
         $('#platform_allpurpose_text').html(text);
+        
+        // We want the form component
+        form_id = form_id + '_component';
 
         // Ensure that the form is moved into place and shown
         var form_original_parent = $(form_id).parent();
@@ -99,7 +102,7 @@ Platform.Dialog = class extends Platform.Component {
         $(form_id).on('submit.allpurpose_dialog', function(data) {
             if (typeof(callback_ok) == 'function') {
                 var return_values = {};
-                $.each($(form_id).serializeArray(), function(key, value) {
+                $.each($(form_id).find('form').serializeArray(), function(key, value) {
                     return_values[value.name] = value.value;
                 })
                 callback_ok(return_values, function() {
