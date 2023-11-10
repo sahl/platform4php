@@ -2489,7 +2489,10 @@ class Datarecord implements DatarecordReferable {
         if ($this->isInDatabase()) {
             // Prepare update.
             $fielddefinitions = array();
-            foreach ($this->getChangedFields() as $field) {
+            $fieldsToSave = $this->getChangedFields();
+            if ($force_save)
+                $fieldsToSave = array_keys(static::$structure);
+            foreach ($fieldsToSave as $field) {
                 $definition = $this->getFieldDefinition($field);
                 if ($definition['store_in_metadata']) continue;
                 $fielddefinitions[] = self::getAssignmentForDatabase($field, $this->values[$field]);

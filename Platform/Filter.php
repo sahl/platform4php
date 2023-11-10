@@ -3,7 +3,7 @@ namespace Platform;
 /**
  * Class for filtering Datarecord objects. Uses SQL queryes where possible.
  * 
- * @link https://wiki.platform4php.dk/doku.php?id=condition_class
+ * @link https://wiki.platform4php.dk/doku.php?id=filter_class
  */
 
 class Filter {
