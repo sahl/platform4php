@@ -36,7 +36,7 @@ class DateType extends DateTimeType {
         return [];
     }
     
-    public function parseValue($value) {
+    public function parseValue($value, $existing_value = null) {
         if (! $value) return new \Platform\Utilities\Time();
         $time = new \Platform\Utilities\Time($value);
         return $time->startOfDay();

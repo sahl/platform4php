@@ -255,10 +255,11 @@ class AddressType extends Type {
     
     /**
      * Parse a value of this type
-     * @param type $value
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
      * @return type
      */
-    public function parseValue($value) {
+    public function parseValue($value, $existing_value = null) {
         if (is_array($value)) return['address' => $value['address'], 'address2' => $value['address2'], 'zip' => $value['zip'], 'city' => $value['city'], 'countrycode' => $value['countrycode']];
         return null;
     }

@@ -275,10 +275,11 @@ class HyperReferenceType extends Type {
     
     /**
      * Parse a value of this type
-     * @param type $value
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
      * @return type
      */
-    public function parseValue($value) {
+    public function parseValue($value, $existing_value = null) {
         if (is_array($value)) {
             if (! class_exists($value['foreign_class'])) trigger_error('Invalid class '.$value['foreign_class'].' passed to HYPER_REFERENCE');
             return ['foreign_class' => $value['foreign_class'], 'reference' => (int)$value['reference']];

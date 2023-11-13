@@ -257,10 +257,11 @@ class EnumerationType extends IntegerType {
     
     /**
      * Parse a value of this type
-     * @param type $value
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
      * @return type
      */
-    public function parseValue($value) {
+    public function parseValue($value, $existing_value = null) {
         if (! $value || !array_key_exists($value, $this->enumeration)) return null;
         return (int)$value;
     }

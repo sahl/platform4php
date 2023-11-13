@@ -1,7 +1,7 @@
 <?php
 namespace Platform\Datarecord;
 /**
- * Type class for reference to multiple object
+ * Type class for reference to multiple enumerations
  * 
  * @link https://wiki.platform4php.dk/doku.php?id=type_class
  */
@@ -9,44 +9,6 @@ namespace Platform\Datarecord;
 
 class MultiEnumerationType extends EnumerationType {
 
-    /**
-     * Filter if a value is greater or equal than another value in regards to this type
-     * @param mixed $value Value of this
-     * @param mixed $other_value Value of other
-     * @return bool
-     */
-    public function filterGreaterEqual($value, $other_value) {
-        return false;
-    }
-    
-    /**
-     * Get SQL to determine if a field of this type is greater or equal than another value
-     * @param mixed $value The other value
-     * @return bool
-     */
-    public function filterGreaterEqualSQL($value) {
-        return false;
-    }
-    
-    /**
-     * Filter if a value is greater than another value in regards to this type
-     * @param mixed $value Value of this
-     * @param mixed $other_value Value of other
-     * @return bool
-     */
-    public function filterGreater($value, $other_value) {
-        return false;
-    }
-    
-    /**
-     * Get SQL to determine if a field of this type is greater than another value
-     * @param mixed $value The other value
-     * @return bool
-     */
-    public function filterGreaterSQL($value) {
-        return false;
-    }
-    
     /**
      * Filter if a value is set in regards to this type
      * @param mixed $value Value of this
@@ -62,63 +24,6 @@ class MultiEnumerationType extends EnumerationType {
      */
     public function filterIsSetSQL() {
         return $this->name.' IS NOT NULL';
-    }
-    
-    /**
-     * Filter if a value is like another value in regards to this type
-     * @param mixed $value Value of this
-     * @param mixed $other_value Value of other
-     * @return bool
-     */
-    public function filterLike($value, $other_value) {
-        return $this->filterMatch($value, $other_value);
-    }
-    
-    /**
-     * Get SQL to determine if a field of this type is like another value
-     * @param mixed $value The other value
-     * @return bool
-     */
-    public function filterLikeSQL($value) {
-        return $this->filterMatchSQL($value);
-    }
-    
-    /**
-     * Filter if a value is lesser or equal than another value in regards to this type
-     * @param mixed $value Value of this
-     * @param mixed $other_value Value of other
-     * @return bool
-     */
-    public function filterLesserEqual($value, $other_value) {
-        return false;
-    }
-    
-    /**
-     * Get SQL to determine if a field of this type is lesser or equal than another value
-     * @param mixed $value The other value
-     * @return bool
-     */
-    public function filterLesserEqualSQL($value) {
-        return false;
-    }
-    
-    /**
-     * Filter if a value is lesser than another value in regards to this type
-     * @param mixed $value Value of this
-     * @param mixed $other_value Value of other
-     * @return bool
-     */
-    public function filterLesser($value, $other_value) {
-        return false;
-    }
-    
-    /**
-     * Get SQL to determine if a field of this type is lesser than another value
-     * @param mixed $value The other value
-     * @return bool
-     */
-    public function filterLesserSQL($value) {
-        return false;
     }
     
     /**
@@ -156,7 +61,7 @@ class MultiEnumerationType extends EnumerationType {
         foreach ($other_values as $other_value) {
             $final_values = array_merge($final_values, $this->parseValue($other_value));
         }
-        return in_array($value, array_unique($final_values));
+        return count(array_intersect($value,array_unique($final_values))) > 0;
     }
     
     /**
@@ -170,7 +75,7 @@ class MultiEnumerationType extends EnumerationType {
         foreach ($values as $value) {
             $final_values = array_merge($final_values, $this->parseValue($value));
         }
-        return $this->name.' IN ('.implode(',',$final_values).')';
+        return '('.implode(' OR ', array_map(function($v) { return $this->filterMatchSQL($v);}, $final_values)).')';
     }    
     
     /**
@@ -193,7 +98,7 @@ class MultiEnumerationType extends EnumerationType {
      * @return \Platform\Form\Field
      */
     public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\MultidatarecordcomboboxField::Field::Field($this->title, $this->name, ['datarecord_class' => $this->foreign_class]);
+        return \Platform\Form\MulticheckboxField::Field($this->title, $this->name, ['datarecord_class' => $this->foreign_class]);
     }
     
     /**
@@ -202,38 +107,12 @@ class MultiEnumerationType extends EnumerationType {
      * @return string
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        $result = []; $sorter = [];
+        $result = [];
         foreach ($value as $v) {
-            $element = TitleBuffer::getBufferedTitle($this->foreign_class, $v);
-            if ($element === false) {
-                // We need to add more data to the buffer
-                if ($collection !== null) {
-                    $all_ids = [];
-                    foreach ($collection->getAllRawValues($this->name) as $more_ids) {
-                        $all_ids = array_unique(array_merge($all_ids, $this->parseValue($more_ids)));
-                    }
-                    $request = [$this->foreign_class => $all_ids];
-                } else {
-                    $request = [$this->foreign_class => $this->parseValue($more_ids)];
-                }
-                TitleBuffer::populateBuffer($request);
-                $element = TitleBuffer::getBufferedTitle($this->foreign_class, $v);
-            }
-            $result[] = $element;
-            $sorter[] = strip_tags($element);
+            $result[] = $this->enumeration[$v];
         }
-        array_multisort($sorter, SORT_NATURAL, $result);
-        return implode(', ',$result);
-    }
-    
-    /**
-     * Get the foreign object pointed to by this field (if any)
-     * @return \Platform\Datarecord|null
-     */
-    public function getForeignObject($value) : ?\Platform\Datarecord {
-        $class = new $this->foreign_class();
-        if (count($value)) $class->loadForRead($value[0], false);
-        return $class;
+        sort($result, SORT_NATURAL);
+        return implode(', ', $result);
     }
     
     /**
@@ -242,26 +121,11 @@ class MultiEnumerationType extends EnumerationType {
      * @return string
      */
     public function getLogValue($value) : string {
-        if (! count($value)) return 'NONE';
-        return $this->foreign_class.'(#'.implode(',',$value).')';
+        $result = [];
+        foreach ($value as $v) $result[] = $v.'('.$this->enumeration[$v].')';
+        return implode('/', $result);
     }
     
-    /**
-     * Get the raw value for fields of this type
-     * @param type $value
-     * @return type
-     */
-    public function getRawValue($value) {
-        return $value;
-    }
-    
-    /**
-     * Check if fields of this type contains references to the given foreign class
-     * @return bool
-     */
-    public function matchesForeignClass($foreign_class) : string {
-        return $foreign_class == $this->foreign_class;
-    }
     
     /**
      * Get the SQL field type for fields of this type
@@ -303,28 +167,17 @@ class MultiEnumerationType extends EnumerationType {
     
     /**
      * Parse a value of this type
-     * @param mixed $value
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
      * @return array
      */
-    public function parseValue($value) {
+    public function parseValue($value, $existing_value = null) {
         if (is_array($value)) {
             $result = []; 
             foreach ($value as $v) $result = array_merge($result, $this->parseValue($v));
             return array_unique($result);
         }
-        if ($value instanceof Datarecord) return [(int)$value->getKeyValue()];
         return [(int)$value];
-    }
-    
-    /**
-     * Remove a reference to the given object from the value (if present)
-     * @param mixed $value
-     * @param Datarecord $object
-     * @return mixed
-     */
-    public function removeReferenceToObject($value, Datarecord $object) {
-        if ($object instanceof $this->foreign_class) \Platform\Utilities\Utilities::arrayRemove($value, $object->getKeyValue());
-        return $value;
     }
     
     /**
@@ -342,7 +195,8 @@ class MultiEnumerationType extends EnumerationType {
      * @return bool
      */
     public function validateValue($value) {
-        return true;
+        if ($value === null) return true;
+        return array_key_exists($value, $this->enumeration);
     }
     
 }

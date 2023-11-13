@@ -236,10 +236,11 @@ class CurrencyType extends Type {
     
     /**
      * Parse a value of this type
-     * @param type $value
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
      * @return type
      */
-    public function parseValue($value) {
+    public function parseValue($value, $existing_value = null) {
         if (is_array($value)) return ['localvalue' => $value['localvalue'], 'currency' => (string)$value['currency'], 'foreignvalue' => $value['foreignvalue']];
         else return ['localvalue' => (double)$value, 'currency' => '', 'foreignvalue' => null];
     }

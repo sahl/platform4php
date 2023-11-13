@@ -1,25 +1,15 @@
 <?php
 namespace Platform\Datarecord;
 /**
- * Type class for reference to multiple object
+ * Type class for describing an array. A substructure can be attached.
  * 
  * @link https://wiki.platform4php.dk/doku.php?id=type_class
  */
 
 
-class MultiReferenceType extends Type {
-
-    /**
-     * Indicate if this field is a reference to other objects
-     * @var bool
-     */
-    protected static $is_reference = true;
-
-    /**
-     * Name of foreign class pointed to by this field
-     * @var string
-     */
-    protected $foreign_class = null;
+class ArrayType extends Type {
+    
+    protected $substructure = [];
     
     /**
      * Construct a field of this type
@@ -28,15 +18,22 @@ class MultiReferenceType extends Type {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        $valid_options = ['foreign_class'];
-        foreach ($valid_options as $valid_option) {
-            if ($options[$valid_option]) {
-                $this->$valid_option = $options[$valid_option];
-                unset($options[$valid_option]);
-            }
+        if ($options['substructure']) {
+            $this->addSubstructure($options['substructure']);
+            unset($options['substructure']);
         }
-        if (! $this->foreign_class) trigger_error('You must specify a foreign class to the SingleReferenceType field', E_USER_ERROR);
         parent::__construct($name, $title, $options);
+    }
+    
+    /**
+     * Add one or more substructure Types to this Type
+     * @param array $substructure
+     */
+    public function addSubstructure(array $substructure) {
+        foreach ($substructure as $element) {
+            if (! $element instanceof Type) trigger_error('Only Type can be added as substructure to '.get_called_class(), E_USER_ERROR);
+            $this->substructure[] = $element;
+        }
     }
     
     /**
@@ -83,7 +80,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterIsSet($value) {
-        return count($value) > 0;
+        return $value !== null;
     }
     
     /**
@@ -101,7 +98,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterLike($value, $other_value) {
-        return $this->filterMatch($value, $other_value);
+        return false;
     }
     
     /**
@@ -110,7 +107,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        return $this->filterMatchSQL($value);
+        return false;
     }
     
     /**
@@ -158,8 +155,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterMatch($value, $other_value) {
-        $other_value = $this->parseValue($other_value);
-        return count(array_intersect($value,$other_value)) > 0;
+        return false;
     }
     
     /**
@@ -168,11 +164,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        $final_values = [];
-        foreach ($this->parseValue($value) as $v) {
-            $final_values[] = $this->name.' LIKE \'%"'.((int)$v).'"%\'';
-        }
-        return '('.implode(' OR ', $final_values).')';
+        return false;
     }
     
     /**
@@ -182,11 +174,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterOneOf($value, array $other_values) {
-        $final_values = [];
-        foreach ($other_values as $other_value) {
-            $final_values = array_merge($final_values, $this->parseValue($other_value));
-        }
-        return in_array($value, array_unique($final_values));
+        return false;
     }
     
     /**
@@ -195,14 +183,17 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterOneOfSQL(array $values) {
-        if (! count($values)) return 'FALSE';
-        $final_values = [];
-        foreach ($values as $value) {
-            $final_values = array_merge($final_values, $this->parseValue($value));
-        }
-        return $this->name.' IN ('.implode(',',$final_values).')';
+        return false;
     }    
     
+    /**
+     * Check if we can sort by SQL
+     * @return bool
+     */
+    public function getCanSQLSort() : bool {
+        return false;
+    }
+
     /**
      * Format a value for the database in accordance to this type
      * @param mixed $value
@@ -210,12 +201,7 @@ class MultiReferenceType extends Type {
      */
     public function getFieldForDatabase($value) : string {
         if (! count($value)) return 'NULL';
-        $final_value = [];
-        foreach ($value as $v) {
-            // We code them as strings to make sure they are encapsulated.
-            $final_value[] = (string)$v;
-        }
-        return "'".json_encode($final_value)."'";
+        return '\''. \Platform\Utilities\Database::escape(json_encode($value)).'\'';
     }
     
     /**
@@ -223,74 +209,53 @@ class MultiReferenceType extends Type {
      * @return \Platform\Form\Field
      */
     public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\MultidatarecordcomboboxField::Field($this->title, $this->name, ['datarecord_class' => $this->foreign_class]);
+        if (count($this->substructure)) {
+            $multiplier_section = \Platform\Form\MultiplierSection::Field($this->title, $this->name);
+            foreach ($this->substructure as $type) {
+                $multiplier_section->addFields($type->getFormField());
+            }
+            return $multiplier_section;
+        } else {
+            $multi_field = MultiField::MultiField(TextField::Field($this->title, $this->name));
+            return $multi_field;
+        }
+    }
+    
+    /**
+     * Format a value for a form in accordance to this type
+     * @param mixed $value
+     * @return mixed
+     */
+    public function getFormValue($value) {
+        if (count($this->substructure)) {
+            $result = [];
+            foreach ($value as $v) {
+                $subresult = [];
+                foreach ($this->substructure as $type) {
+                    $subresult[$type->name] = $type->getFormValue($v[$type->name]);
+                }
+                $result[] = $subresult;
+            }
+            return $result;
+            
+        } else {
+            return $value;
+        }
     }
     
     /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
+     * @param Collection An optional collection which can contain further records
      * @return string
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        $result = []; $sorter = [];
-        foreach ($value as $v) {
-            $element = TitleBuffer::getBufferedTitle($this->foreign_class, $v);
-            if ($element === false) {
-                // We need to add more data to the buffer
-                if ($collection !== null) {
-                    $all_ids = [];
-                    foreach ($collection->getAllRawValues($this->name) as $more_ids) {
-                        $all_ids = array_unique(array_merge($all_ids, $this->parseValue($more_ids)));
-                    }
-                    $request = [$this->foreign_class => $all_ids];
-                } else {
-                    $request = [$this->foreign_class => $this->parseValue($more_ids)];
-                }
-                TitleBuffer::populateBuffer($request);
-                $element = TitleBuffer::getBufferedTitle($this->foreign_class, $v);
-            }
-            $result[] = $element;
-            $sorter[] = strip_tags($element);
+        if ($value === null) return '';
+        if (count($this->substructure)) {
+            return \Platform\Utilities\Translation::translateForUser('Complex value');
+        } else {
+            return implode(',', $value);
         }
-        array_multisort($sorter, SORT_NATURAL, $result);
-        return implode(', ',$result);
-    }
-    
-    /**
-     * Get the foreign object pointed to by this field (if any)
-     * @return \Platform\Datarecord|null
-     */
-    public function getForeignObject($value) : ?\Platform\Datarecord {
-        $class = new $this->foreign_class();
-        if (count($value)) $class->loadForRead($value[0], false);
-        return $class;
-    }
-    
-    /**
-     * Get the value for logging fields of this type
-     * @param mixed $value
-     * @return string
-     */
-    public function getLogValue($value) : string {
-        if (! count($value)) return 'NONE';
-        return $this->foreign_class.'(#'.implode(',',$value).')';
-    }
-    
-    /**
-     * Get the raw value for fields of this type
-     * @param type $value
-     * @return type
-     */
-    public function getRawValue($value) {
-        return $value;
-    }
-    
-    /**
-     * Check if fields of this type contains references to the given foreign class
-     * @return bool
-     */
-    public function matchesForeignClass($foreign_class) : string {
-        return $foreign_class == $this->foreign_class;
     }
     
     /**
@@ -298,18 +263,39 @@ class MultiReferenceType extends Type {
      * @return string
      */
     public function getSQLFieldType() : string {
-        return 'VARCHAR(4096)';
+        return 'MEDIUMTEXT';
     }
     
     /**
      * Get the textual value for fields of this type
      * @param mixed $value
+     * @param Collection An optional collection which can contain further records
      * @return string
      */
     public function getTextValue($value, Collection &$collection = null) : string {
-        // TODO: This is slow as hell and should be fixed
-        return strip_tags($this->getFullValue($value, $collection));
+        return strip_tags($this->getFullValue($value));
     }
+    
+    /**
+     * Parse a value of this type from the database
+     * @param mixed $value
+     * @return mixed
+     */
+    public function parseDatabaseValue($value) {
+        if ($value === null) return null;
+        return json_decode($value, true);
+    }
+    
+    /**
+     * Parse a value of this type
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
+     * @return type
+     */
+    public function parseValue($value, $existing_value = null) {
+        if (is_array($value)) return $value;
+        return null;
+    }    
     
     /**
      * Do an integrity check of this field
@@ -320,45 +306,6 @@ class MultiReferenceType extends Type {
     }
     
     /**
-     * Parse a value of this type from the database
-     * @param mixed $value
-     * @return mixed
-     */
-    public function parseDatabaseValue($value) {
-        if ($value === null) return [];
-        $result = [];
-        foreach (json_decode($value, true) as $v) $result[] = (int)$v;
-        return $result;
-    }
-    
-    /**
-     * Parse a value of this type
-     * @param $value The new value to set
-     * @param $existing_value The existing value of this field (if any)
-     * @return array
-     */
-    public function parseValue($value, $existing_value = null) {
-        if (is_array($value)) {
-            $result = []; 
-            foreach ($value as $v) $result = array_merge($result, $this->parseValue($v));
-            return array_unique($result);
-        }
-        if ($value instanceof Datarecord) return [(int)$value->getKeyValue()];
-        return [(int)$value];
-    }
-    
-    /**
-     * Remove a reference to the given object from the value (if present)
-     * @param mixed $value
-     * @param Datarecord $object
-     * @return mixed
-     */
-    public function removeReferenceToObject($value, Datarecord $object) {
-        if ($object instanceof $this->foreign_class) \Platform\Utilities\Utilities::arrayRemove($value, $object->getKeyValue());
-        return $value;
-    }
-    
-    /**
      * Get SQL sort or return false if we can't sort by SQL
      * @param bool $descending True if we need descending sort
      * @return string|bool Sort string or false if we can't sort.
@@ -366,14 +313,5 @@ class MultiReferenceType extends Type {
     public function getSQLSort(bool $descending = false) {
         return false;
     }
-    
-    /**
-     * Validate if this is a valid value for fields of this type
-     * @param mixed $value
-     * @return bool
-     */
-    public function validateValue($value) {
-        return true;
-    }
-    
 }
+

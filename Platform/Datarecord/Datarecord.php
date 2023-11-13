@@ -1128,6 +1128,7 @@ class Datarecord implements DatarecordReferable {
      * @return string Title
      */
     public static function getTitleById(int $id) : string {
+        if (! $id) return '';
         return TitleBuffer::getTitleByClassAndId(get_called_class(), $id);
     }
     
@@ -1720,7 +1721,7 @@ class Datarecord implements DatarecordReferable {
                 $this->setValue($field.'_'.$subfield_name, $value);
             }
         } else {
-            $this->values[$field] = $type->parseValue($value);
+            $this->values[$field] = $type->parseValue($value, $this->values[$field]);
         }
     }
 
