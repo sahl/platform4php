@@ -31,7 +31,7 @@ class ConditionLike extends Condition {
     
     public function validate() {
         if (! $this->type) return ['No type attached to condition'];
-        if (! $this->type->validateValue($this->value)) return ['Value is not valid for type'];
+        if (! $this->type->validateValue($this->value)) return ['Value is not valid for type. Field: '.$this->type->name.' Value: '.$this->value];
         return true;
     }
     

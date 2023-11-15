@@ -8,21 +8,21 @@ namespace Platform\Server;
  * @link https://wiki.platform4php.dk/doku.php?id=job_class
  */
 
-use Platform\ConditionGreater;
-use Platform\ConditionLesserEqual;
-use Platform\ConditionMatch;
-use Platform\ConditionNOT;
-use Platform\ConditionOneOf;
-use Platform\ConditionOR;
-use Platform\Filter;
+use Platform\Filter\ConditionGreater;
+use Platform\Filter\ConditionLesserEqual;
+use Platform\Filter\ConditionMatch;
+use Platform\Filter\ConditionNOT;
+use Platform\Filter\ConditionOneOf;
+use Platform\Filter\ConditionOR;
+use Platform\Filter\Filter;
 use Platform\Platform;
 use Platform\Utilities\Database;
 use Platform\Utilities\Log;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
-// TODO: Handle daemons
+use Platform\Utilities\Translation;
 
-class Job extends \Platform\Datarecord {
+class Job extends \Platform\Datarecord\Datarecord {
     
     protected static $database_table = 'platform_jobs';
     protected static $delete_strategy = self::DELETE_STRATEGY_PURGE_REFERERS;
@@ -48,84 +48,26 @@ class Job extends \Platform\Datarecord {
     const SLOT_CAPACITY = 100;
     
     protected static function buildStructure() {
-        $structure = array(
-            'job_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'instance_ref' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => 'Platform\\Server\\Instance'
-            ),
-            'server_ref' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => 'Platform\\Server\\Server'
-            ),
-            'class' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'function' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'frequency' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'max_runtime' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'slot_size' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),            
-            'frequency_offset_from_end' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_BOOLEAN
-            ),
-            'last_start' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_DATETIME
-            ),
-            'next_start' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_DATETIME
-            ),
-            'process_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'error_count' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'last_error_message' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_BIGTEXT
-            ),
-            'run_count' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'kill_count' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'last_run_time' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'average_run_time' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_FLOAT
-            ),
-        );
-        self::addStructure($structure);
-        // Remember to call parent
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('job_id'),
+            new \Platform\Datarecord\SingleReferenceType('instance_ref', Translation::translateForUser('Instance'), ['is_required' => true, 'is_readonly' => true, 'foreign_class' => 'Platform\Server\Instance']),
+            new \Platform\Datarecord\SingleReferenceType('server_ref', Translation::translateForUser('Server'), ['is_required' => true, 'is_readonly' => true, 'foreign_class' => 'Platform\Server\Server']),
+            new \Platform\Datarecord\TextType('class', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\TextType('function', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('frequency', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\BoolType('frequency_offset_from_end', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('slot_size', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('max_runtime', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\DateTimeType('last_start', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\DateTimeType('next_start', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('process_id', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('error_count', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\TextType('last_error_message', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('run_count', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\IntegerType('kill_count', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\FloatType('last_run_time', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\FloatType('average_run_time', '', ['is_invisible' => true]),
+        ]);
         parent::buildStructure();
     }
     

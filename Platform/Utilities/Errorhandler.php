@@ -266,7 +266,5 @@ class Errorhandler {
         if (class_exists('Platform\\Utilities\\Semaphore')) {
             Semaphore::releaseAll();
         }
-        // Check if we should add to the recalculation file
-        \Platform\Datarecord::saveRequestedCalculations();
     }
 }

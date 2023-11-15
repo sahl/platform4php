@@ -13,5 +13,14 @@ class KeyType extends IntegerType {
         parent::__construct($name, $title, $options);
         $this->setPrimaryKey();
     }
+    
+    /**
+     * Get a form field for editing fields of this type
+     * @return \Platform\Form\Field
+     */
+    public function getFormField() : ?\Platform\Form\Field {
+        return \Platform\Form\HiddenField::Field($this->title, $this->name, $this->getFormFieldOptions());
+    }
+    
 }
 

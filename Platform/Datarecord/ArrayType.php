@@ -200,7 +200,7 @@ class ArrayType extends Type {
      * @return string
      */
     public function getFieldForDatabase($value) : string {
-        if (! count($value)) return 'NULL';
+        if (! count($value)) return '\'[]\'';
         return '\''. \Platform\Utilities\Database::escape(json_encode($value)).'\'';
     }
     
@@ -208,15 +208,16 @@ class ArrayType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : \Platform\Form\Field {
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
         if (count($this->substructure)) {
-            $multiplier_section = \Platform\Form\MultiplierSection::Field($this->title, $this->name);
+            $multiplier_section = \Platform\Form\MultiplierSection::Field($this->title, $this->name, $this->getFormFieldOptions());
             foreach ($this->substructure as $type) {
                 $multiplier_section->addFields($type->getFormField());
             }
             return $multiplier_section;
         } else {
-            $multi_field = MultiField::MultiField(TextField::Field($this->title, $this->name));
+            $multi_field = \Platform\Form\MultiField::MultiField(\Platform\Form\TextField::Field($this->title, $this->name, $this->getFormFieldOptions()));
             return $multi_field;
         }
     }

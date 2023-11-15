@@ -8,11 +8,12 @@ namespace Platform\File;
  * @link https://wiki.platform4php.dk/doku.php?id=file_class
  */
 
-use Platform\Datarecord;
+use Platform\Datarecord\Datarecord;
 use Platform\Platform;
 use Platform\Server\Instance;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
+use Platform\Utilities\Translation;
 
 class File extends Datarecord {
     
@@ -25,26 +26,12 @@ class File extends Datarecord {
     protected $content = false;
     
     protected static function buildStructure() {
-        self::addStructure(array(
-            'file_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'filename' => array(
-                'label' => 'File name',
-                'required' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'folder' => array(
-                'label' => 'Folder',
-                'fieldtype' => self::FIELDTYPE_TEXT,
-                'key' => true
-            ),
-            'mimetype' => array(
-                'label' => 'Mimetype',
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-        ));
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('file_id'),
+            new \Platform\Datarecord\TextType('filename', Translation::translateForUser('File name'), ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\TextType('folder', Translation::translateForUser('Folder'), []),
+            new \Platform\Datarecord\TextType('mimetype', Translation::translateForUser('Mimetype'), []),
+        ]);
         parent::buildStructure();
     }
     

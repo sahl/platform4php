@@ -7,10 +7,10 @@ namespace Platform\Utilities;
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
-use Platform\ConditionLesserEqual;
-use Platform\ConditionMatch;
-use Platform\Datarecord;
-use Platform\Filter;
+use Platform\Filter\ConditionLesserEqual;
+use Platform\Filter\ConditionMatch;
+use Platform\Datarecord\Datarecord;
+use Platform\Filter\Filter;
 use Platform\Platform;
 use Platform\Server\Job;
 use Platform\Utilities\Database;
@@ -52,78 +52,24 @@ class Mail extends Datarecord {
     protected static $key_field = false;
     
     protected static function buildStructure() {
-        $structure = array(
-            'mail_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'from_name' => array(
-                'label' => 'From (name)',
-                'required' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'from_email' => array(
-                'label' => 'From (email)',
-                'fieldtype' => self::FIELDTYPE_EMAIL
-            ),
-            'to_name' => array(
-                'label' => 'To (name)',
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'to_email' => array(
-                'label' => 'To (email)',
-                'fieldtype' => self::FIELDTYPE_EMAIL
-            ),
-            'reply_to_name' => array(
-                'label' => 'Reply-to (name)',
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'reply_to_email' => array(
-                'label' => 'Reply-to (email)',
-                'fieldtype' => self::FIELDTYPE_EMAIL
-            ),
-            'subject' => array(
-                'label' => 'Subject',
-                'is_title' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'body' => array(
-                'label' => 'Mail text',
-                'columnvisibility' => self::COLUMN_INVISIBLE,
-                'fieldtype' => self::FIELDTYPE_BIGTEXT
-            ),
-            'attachment_data' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_OBJECT,
-            ),
-            'format' => array(
-                'label' => 'Mail format',
-                'fieldtype' => self::FIELDTYPE_ENUMERATION,
-                'enumeration' => array(self::FORMAT_TEXT => 'Text', self::FORMAT_HTML => 'Html'),
-                'default_value' => self::FORMAT_HTML
-            ),
-            'is_sent' => array(
-                'label' => 'Is sent?',
-                'fieldtype' => self::FIELDTYPE_BOOLEAN
-            ),
-            'last_error' => array(
-                'label' => 'Last error',
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'error_count' => array(
-                'label' => 'Error count',
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'scheduled_for' => array(
-                'label' => 'Scheduled for',
-                'fieldtype' => self::FIELDTYPE_DATETIME
-            ),
-            'sent_date' => array(
-                'label' => 'Sent',
-                'fieldtype' => self::FIELDTYPE_DATETIME
-            )
-        );
-        self::addStructure($structure);
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('mail_id'),
+            new \Platform\Datarecord\TextType('from_name', Translation::translateForUser('From (name)'), ['is_required' => true]),
+            new \Platform\Datarecord\EmailType('from_email', Translation::translateForUser('From (email)'), ['is_required' => true]),
+            new \Platform\Datarecord\TextType('to_name', Translation::translateForUser('To (name)'), ['is_required' => true]),
+            new \Platform\Datarecord\EmailType('to_email', Translation::translateForUser('To (email)'), ['is_required' => true]),
+            new \Platform\Datarecord\TextType('reply_to_name', Translation::translateForUser('Reply to (name)'), []),
+            new \Platform\Datarecord\EmailType('reply_to_email', Translation::translateForUser('Reply to (email)'), []),
+            new \Platform\Datarecord\TextType('subject', Translation::translateForUser('Subject'), ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\BigTextType('body', Translation::translateForUser('Body'), ['is_required' => true]),
+            new \Platform\Datarecord\ObjectType('attachment_data', '', ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\EnumerationType('format', Translation::translateForUser('Format'), ['is_required' => true, 'enumeration' => static::getFormatOptions(), 'default_value' => static::FORMAT_HTML]),
+            new \Platform\Datarecord\BoolType('is_sent', Translation::translateForUser('Is sent'), []),
+            new \Platform\Datarecord\TextType('last_error', Translation::translateForUser('Last error'), []),
+            new \Platform\Datarecord\IntegerType('error_count', Translation::translateForUser('Error count'), ['default_value' => 0]),
+            new \Platform\Datarecord\DateTimeType('scheduled_for', Translation::translateForUser('Scheduled for'), []),
+            new \Platform\Datarecord\DateTimeType('sent_date', Translation::translateForUser('Sent date'), []),
+        ]);
         // Remember to call parent
         parent::buildStructure();
     }
@@ -137,6 +83,17 @@ class Mail extends Datarecord {
         require_once __DIR__.'/src/PHPMailer.php';
         
     }    
+    
+    /**
+     * Get all options for email formats
+     * @return array
+     */
+    public static function getFormatOptions() : array {
+        return [
+            static::FORMAT_TEXT => Translation::translateForInstance('Text'),
+            static::FORMAT_HTML => Translation::translateForInstance('HTML'),
+        ];
+    }
     
     /**
      * Process the outgoing mail queue

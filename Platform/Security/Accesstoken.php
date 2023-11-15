@@ -8,16 +8,17 @@ namespace Platform\Security;
  * @link https://wiki.platform4php.dk/doku.php?id=accesstoken_class
  */
 
-use Platform\ConditionLesser;
-use Platform\ConditionMatch;
-use Platform\Datarecord;
-use Platform\Filter;
+use Platform\Filter\ConditionLesser;
+use Platform\Filter\ConditionMatch;
+use Platform\Datarecord\Datarecord;
+use Platform\Filter\Filter;
 use Platform\Page\Page;
 use Platform\Server\Instance;
 use Platform\Security\User;
 use Platform\Utilities\Database;
 use Platform\Utilities\Semaphore;
 use Platform\Utilities\Time;
+use Platform\Utilities\Translation;
 
 class Accesstoken extends Datarecord {
     
@@ -29,30 +30,13 @@ class Accesstoken extends Datarecord {
     protected static $current_user_id = false;
     
     protected static function buildStructure() {
-        self::addStructure(array(
-            'token_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'token_code' => array(
-                'label' => 'Token code',
-                'fieldtype' => self::FIELDTYPE_TEXT,
-                'key' => true,
-            ),
-            'user_ref' => array(
-                'label' => 'User',
-                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => 'Platform\Security\User'
-            ),
-            'seconds_to_live' => array(
-                'label' => 'Seconds to live',
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'expire_date' => array(
-                'label' => 'Token expire',
-                'fieldtype' => self::FIELDTYPE_DATETIME
-            )
-        ));
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('token_id'),
+            new \Platform\Datarecord\TextType('token_code', Translation::translateForUser('Token code'), ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\SingleReferenceType('user_ref', Translation::translateForUser('User'), ['foreign_class' => 'Platform\Security\User']),
+            new \Platform\Datarecord\IntegerType('seconds_to_live', '', ['is_required' => true, 'is_invisible' => true]),
+            new \Platform\Datarecord\DateTimeType('expire_date', Translation::translateForUser('Token expire'), ['is_required' => true]),
+        ]);
         parent::buildStructure();
     }
 
@@ -202,7 +186,7 @@ class Accesstoken extends Datarecord {
         $timestamp = new Time('now');
         $this->expire_date = $timestamp->add($seconds_to_live);
         // Make a dirty write primary for speed reasons
-        if ($this->isInDatabase()) Database::instanceQuery("UPDATE ".static::$database_table.' SET expire_date = '.$this->getFieldForDatabase('expire_date', $this->expire_date)." WHERE token_id = ".$this->token_id);
+        if ($this->isInDatabase()) Database::instanceQuery("UPDATE ".static::$database_table.' SET expire_date = \''.$this->expire_date->get()."' WHERE token_id = ".$this->token_id);
     }
     
     /**

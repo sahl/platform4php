@@ -11,7 +11,7 @@ use Platform\Currency\Rate;
 use Platform\Form\Field;
 use Platform\Form\HTML;
 use Platform\Page\Page;
-use Platform\Property;
+use Platform\Security\Property;
 use Platform\UI\Component;
 use Platform\UI\FieldComponent;
 use Platform\Utilities\Errorhandler;

@@ -10,7 +10,8 @@ namespace Platform\Datarecord;
 class HTMLTextType extends BigTextType {
     
     public function getFormField(): \Platform\Form\Field {
-        return \Platform\Form\TexteditorField::Field($this->title, $this->name);
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\TexteditorField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
 
     public function getSQLFieldType() : string {

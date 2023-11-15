@@ -2,7 +2,7 @@
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 use Platform\Page\Page;
-use Platform\File;
+use Platform\File\File;
 
 Page::renderPagestart('File upload', ['/Platform/Form/js/file.js'], [], ['no_history' => true]);
 

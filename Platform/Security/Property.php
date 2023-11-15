@@ -6,10 +6,11 @@ namespace Platform\Security;
  * @link https://wiki.platform4php.dk/doku.php?id=property_class
  */
 
-use Platform\Datarecord;
+use Platform\Datarecord\Datarecord;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
 use Platform\Utilities\Database;
+use Platform\Utilities\Translation;
 
 class Property extends Datarecord {
     
@@ -20,31 +21,13 @@ class Property extends Datarecord {
     protected static $location = self::LOCATION_INSTANCE;
     
     protected static function buildStructure() {
-        self::addStructure(array(
-            'property_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'user_ref' => array(
-                'label' => 'User',
-                'required' => true,
-                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => '\\Platform\\Security\\User',
-                'key' => 'property,subproperty'
-            ),
-            'property' => array(
-                'label' => 'Property',
-                'fieldtype' => self::FIELDTYPE_TEXT,
-            ),
-            'subproperty' => array(
-                'label' => 'Subproperty',
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'value' => array(
-                'label' => 'Value',
-                'fieldtype' => self::FIELDTYPE_OBJECT
-            ),
-        ));
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('property_id'),
+            new \Platform\Datarecord\TextType('user_ref', Translation::translateForUser('Server name'), ['is_required' => true, 'is_title' => true, 'index' => 'property,subproperty']),
+            new \Platform\Datarecord\TextType('property', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\TextType('subproperty', '', ['is_invisible' => true]),
+            new \Platform\Datarecord\ObjectType('value', '', ['is_invisible' => true]),
+        ]);
         parent::buildStructure();
     }
     

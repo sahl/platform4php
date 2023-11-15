@@ -18,7 +18,7 @@ class TextType extends Type {
     }
 
     public function getSQLFieldType() : string {
-        return 'VARCHAR(1000) NOT NULL';
+        return 'VARCHAR(255) NOT NULL';
     }
     
 }

@@ -221,7 +221,7 @@ class HyperReferenceType extends Type {
      * Get the foreign object pointed to by this field (if any)
      * @return \Platform\Datarecord|null
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord {
+    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
         if ($value['foreign_class'] == '') return false;
         $class = new $value['foreign_class']();
         $class->loadForRead($value['reference'], false);

@@ -1,15 +1,15 @@
 <?php
 namespace Platform\Filter;
 
-use Platform\ConditionAND;
-use Platform\ConditionGreater;
-use Platform\ConditionGreaterEqual;
-use Platform\ConditionLesserEqual;
-use Platform\ConditionLike;
-use Platform\ConditionMatch;
-use Platform\ConditionNOT;
-use Platform\ConditionOneOf;
-use Platform\ConditionOR;
+use Platform\Filter\ConditionAND;
+use Platform\Filter\ConditionGreater;
+use Platform\Filter\ConditionGreaterEqual;
+use Platform\Filter\ConditionLesserEqual;
+use Platform\Filter\ConditionLike;
+use Platform\Filter\ConditionMatch;
+use Platform\Filter\ConditionNOT;
+use Platform\Filter\ConditionOneOf;
+use Platform\Filter\ConditionOR;
 use Platform\Datarecord\Datarecord;
 use Platform\Datarecord\Type;
 /**

@@ -10,14 +10,15 @@ namespace Platform\Server;
  * @link https://wiki.platform4php.dk/doku.php?id=instance_class
  */
 
-use Platform\Filter;
+use Platform\Filter\Filter;
 use Platform\Platform;
-use Platform\Server\Server;
 use Platform\Security\User;
-use Platform\Utilities\Semaphore;
+use Platform\Server\Server;
 use Platform\Utilities\Database;
+use Platform\Utilities\Semaphore;
+use Platform\Utilities\Translation;
 
-class Instance extends \Platform\Datarecord {
+class Instance extends \Platform\Datarecord\Datarecord {
     
     protected static $database_table = 'platform_instances';
     protected static $structure = false;
@@ -32,31 +33,12 @@ class Instance extends \Platform\Datarecord {
     );
 
     protected static function buildStructure() {
-        static::addStructure(array(
-            'instance_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'title' => array(
-                'label' => 'Instance title',
-                'required' => true,
-                'is_title' => true,
-                'store_in_metadata' => false,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'server_ref' => array(
-                'label' => 'Server',
-                'required' => true,
-                'readonly' => true,
-                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => '\\Platform\\Server\\Server'
-            ),
-            'is_initiated' => array(
-                'label' => 'Is initiated',
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_BOOLEAN
-            )
-        ));
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('instance_id'),
+            new \Platform\Datarecord\TextType('title', Translation::translateForUser('Instance title'), ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\SingleReferenceType('server_ref', Translation::translateForUser('Server'), ['is_required' => true, 'is_readonly' => true, 'foreign_class' => 'Platform\Server\Server']),
+            new \Platform\Datarecord\BoolType('is_initiated', Translation::translateForUser('Is initiated'), ['is_invisible' => true])
+        ]);
         parent::buildStructure();
     }
     
@@ -133,13 +115,13 @@ class Instance extends \Platform\Datarecord {
     
     public function ensureJobs() {
         // Delete token every 6th hour
-        $job = Job::getJob('\\Platform\\Security\\Accesstoken', 'deleteExpiredTokens', 6*60);
+        $job = Job::getJob('Platform\Security\Accesstoken', 'deleteExpiredTokens', 6*60);
         $job->save();
         // Delete temp files every 6th hour
-        $job = Job::getJob('\\Platform\\File', 'deleteTempFiles', 6*60);
+        $job = Job::getJob('Platform\File\File', 'deleteTempFiles', 6*60);
         $job->save();
         // Clean log files every day
-        $job = Job::getJob('\\Platform\\Utilities\\Log', 'jobCleanPlatformLogFilesFromInstance', Job::FREQUENCY_SETTIME);
+        $job = Job::getJob('Platform\Utilities\Log', 'jobCleanPlatformLogFilesFromInstance', Job::FREQUENCY_SETTIME);
         if (! $job->isInDatabase()) {
             $job->next_start = \Platform\Utilities\Time::today()->add(0,30);
             $job->save();
@@ -169,7 +151,7 @@ class Instance extends \Platform\Datarecord {
      */
     public static function getByTitle(string $title) {
         $filter = new Filter(get_called_class());
-        $filter->addCondition(new \Platform\ConditionMatch('title', $title));
+        $filter->addCondition(new \Platform\Filter\ConditionMatch('title', $title));
         return $filter->executeAndGetFirst();
     }
 
@@ -294,11 +276,11 @@ class Instance extends \Platform\Datarecord {
     public function initializeDatabase() {
         static::purgeUnsusedTables();
         \Platform\Security\Accesstoken::ensureInDatabase();
-        \Platform\File::ensureInDatabase();
+        \Platform\File\File::ensureInDatabase();
         \Platform\Utilities\Mail::ensureInDatabase();
-        \Platform\ExtensibleField::ensureInDatabase();
+        //\Platform\Datarecord\ExtensibleField::ensureInDatabase();
         \Platform\Security\User::ensureInDatabase();
-        \Platform\Property::ensureInDatabase();
+        \Platform\Security\Property::ensureInDatabase();
         \Platform\Currency\Rate::ensureInDatabase();
     }
     

@@ -30,10 +30,10 @@ class TitleBuffer {
     /**
      * Get several classes by name and ids
      * @param string $class_name
-     * @param int $ids
+     * @param array $ids
      * @return array Titles hashed by IDs
      */
-    public static function getTitlesByClassAndIds(string $class_name, int $ids) : array {
+    public static function getTitlesByClassAndIds(string $class_name, array $ids) : array {
         static::populateBuffer([$class_name => $ids]);
         $result = []; $sort_array = [];
         foreach ($ids as $id) {

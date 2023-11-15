@@ -6,7 +6,7 @@
  */
 namespace Platform\UI;
 
-use Platform\Datarecord;
+use Platform\Datarecord\Datarecord;
 
 class ContextComponent extends Component {
     

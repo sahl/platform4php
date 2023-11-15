@@ -10,13 +10,6 @@ namespace Platform\Datarecord;
 class RepetitionType extends Type {
     
     /**
-     * Get additional structure for this field.
-     * @return array
-     */
-    public function addAdditionalStructure() : array {
-    }
-    
-    /**
      * Filter if a value is greater or equal than another value in regards to this type
      * @param mixed $value Value of this
      * @param mixed $other_value Value of other
@@ -180,8 +173,9 @@ class RepetitionType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\RepetitionField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\RepetitionField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     /**

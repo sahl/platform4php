@@ -11,8 +11,9 @@ namespace Platform\Datarecord;
 
 class DateType extends DateTimeType {
 
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\DateField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\DateField::Field($this->title, $this->name, $this->getFormFieldOptions());
         
     }
     
@@ -26,6 +27,22 @@ class DateType extends DateTimeType {
     
     public function getFormValue($value) {
         return $value->getReadable('Y-m-d');
+    }
+    
+    /**
+     * Return a formatter for the Table component
+     * @return array
+     */
+    public function getTableFormatter() : array {
+        return ['formatter' => 'datetime', 'formatterParams' => ['outputFormat' => 'dd-MM-yyyy']];
+    }
+    
+    /**
+     * Get a sorter for the Table component
+     * @return array
+     */
+    public function getTableSorter() : array {
+        return ['sorter' => 'datetime', 'sorterParams' => ['format' => 'dd-MM-yyyy']];
     }
     
     public function getTextValue($value, Collection &$collection = null): string {

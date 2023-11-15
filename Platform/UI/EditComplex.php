@@ -7,7 +7,7 @@ namespace Platform\UI;
  * @link https://wiki.platform4php.dk/doku.php?id=editcomplex_class
  */
 
-use Platform\Filter;
+use Platform\Filter\Filter;
 use Platform\Page\MenuItem;
 use Platform\UI\Menu\ButtonMenu;
 
@@ -80,7 +80,7 @@ class EditComplex extends Component {
         $editcomplex->class = $class;
         $editcomplex->table_parameters = $table_parameters;
         
-        $editcomplex->setID($class::getClassName().'_editcomplex');
+        $editcomplex->setID($class::getBaseClassName().'_editcomplex');
         
         $editcomplex->constructEditDialog();
         $editcomplex->constructTable();
@@ -109,7 +109,7 @@ class EditComplex extends Component {
     protected function constructItempopupMenu() {
         $menu = array();
         $name = $this->class::getObjectName();
-        $short_class = $this->class::getClassName();
+        $short_class = $this->class::getBaseClassName();
         $menu[] = new MenuItem('Edit '.$name, '#TRIGGER=edit_object');
         if ($this->class::isCopyAllowed()) $menu[] = new MenuItem('Copy '.$name, '#TRIGGER=copy_object');
         $menu[] = new MenuItem('Delete '.$name, '#TRIGGER=delete_object');
@@ -124,7 +124,7 @@ class EditComplex extends Component {
     protected function constructMultipopupMenu() {
         $menu = array();
         $name = $this->class::getObjectName();
-        $short_class = $this->class::getClassName();
+        $short_class = $this->class::getBaseClassName();
         if ($this->class::canCreate()) $menu[] = new MenuItem('Create new '.$name, '#TRIGGER=create_object', '', '');
         if ($this->class::isCopyAllowed()) $menu[] = new MenuItem('Copy selected '.$name, '#TRIGGER=copy_objects', '', 'one_or_more');
         $menu[] = new MenuItem('Edit selected '.$name, '#TRIGGER=edit_objects', '', 'exactly_one');
@@ -201,7 +201,7 @@ class EditComplex extends Component {
         if ($this->new_item_values) $this->addData('new_item_values', $this->new_item_values);
 
         $this->addData('name', $this->class::getObjectName());
-        $this->addData('shortclass', $this->class::getClassName());
+        $this->addData('shortclass', $this->class::getBaseClassName());
         $this->addData('class', $this->class);
         
     }

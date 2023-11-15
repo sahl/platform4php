@@ -70,7 +70,7 @@ class Filter {
     /**
      * Add a condition to the filter. Several conditions can be added, and will
      * be AND'ed together
-     * @param \Platform\Condition\Condition $condition Condition to add
+     * @param \Platform\Filter\Condition\Condition $condition Condition to add
      */
     public function addCondition(Condition $condition) {
         $condition->attachFilter($this);

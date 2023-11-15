@@ -6,7 +6,7 @@ namespace Platform\UI;
  * @link https://wiki.platform4php.dk/doku.php?id=tablecolumnselector_class
  */
 
-use Platform\Property;
+use Platform\Security\Property;
 use Platform\Security\Accesstoken;
 
 class TableColumnSelector extends Component {

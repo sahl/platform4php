@@ -45,7 +45,7 @@ class Datarecord implements DatarecordReferable {
      * Reference to a collection, that this is a part of
      * @var Collection 
      */
-    public $collection = false;
+    public $collection = null;
 
     /**
      * Indicate what mode this object is in
@@ -241,14 +241,14 @@ class Datarecord implements DatarecordReferable {
      */
     protected static function buildStructure() {
         static::addStructure(array(
-            new Type('metadata', '', ['is_invisible' => true]), // ARRAY
+            new ArrayType('metadata', '', ['is_invisible' => true]), // ARRAY
             new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true]),
             new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true]),
         ));
         
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
             static::addStructure(array(
-                new Type('is_deleted', '', false, true), // BOOLEAN
+                new BoolType('is_deleted', '', ['is_invisible' => true, 'default_value' => false]), // BOOLEAN
             ));
         }
     }
@@ -706,14 +706,15 @@ class Datarecord implements DatarecordReferable {
         foreach ($parsed_keywords as $keyword) {
             $previouscondition = false;
             foreach ($search_fields as $fieldname) {
-                $condition = new \Platform\Filter\Like($fieldname, $keyword);
-                if ($previouscondition) $condition = new \Platform\Filter\COR($condition, $previouscondition);
+                $condition = new \Platform\Filter\ConditionLike($fieldname, $keyword);
+                if ($previouscondition) $condition = new \Platform\Filter\ConditionOR($condition, $previouscondition);
                 $previouscondition = $condition;
             }
             $filter->addCondition($condition);
         }
         $filter->setPerformAccessCheck(true);
         $results = $filter->execute();
+        if ($results === false) return $results = new Collection(get_called_class());
         if ($output == 'autocomplete') {
             $final_results = array(); $sort_array = array();
             foreach ($results->getAll() as $result) {
@@ -764,13 +765,13 @@ class Datarecord implements DatarecordReferable {
      */
     public static function getAllAsTitleArray(bool $perform_access_check = false) : array {
         $result = []; $sort_area = []; $ids = [];
-        $filter = new \Platform\Filter(get_called_class());
+        $filter = new \Platform\Filter\Filter(get_called_class());
         $filter->setPerformAccessCheck($perform_access_check);
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->equal('is_deleted', 0);
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());
-            $result[$id] = $element;
+            $result[$id] = $element->getTitle();
             $sort_area[] = strip_tags($element->getTitle());
             $ids[] = $id;
         }
@@ -881,14 +882,6 @@ class Datarecord implements DatarecordReferable {
     }
 
     /**
-     * Get the script to use with the edit form from this object
-     * @return string
-     */
-    public static function getEditScript() : string {
-        return static::$edit_script;
-    }
-    
-    /**
      * Get the full definition array of this Datarecord
      * @return array
      */
@@ -939,8 +932,6 @@ class Datarecord implements DatarecordReferable {
         // Build form
         $form = Form::Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
-        $script = self::getEditScript();
-        if ($script) $form->setScript($script);
         foreach (static::$structure as $name => $type) {
             if ($type->isReadonly() || $name == 'metadata' || $type->isSubfield()) continue;
             $field = $type->getFormField();
@@ -1069,7 +1060,7 @@ class Datarecord implements DatarecordReferable {
      * @return string
      */
     public static function getObjectName() : string {
-        return static::$object_name ?: static::getClassName();
+        return static::$object_name ?: static::getBaseClassName();
     }
     
     /**

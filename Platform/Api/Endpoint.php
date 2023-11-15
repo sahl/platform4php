@@ -7,8 +7,8 @@ namespace Platform\Api;
  * @link https://wiki.platform4php.dk/doku.php?id=endpoint_class
  */
 
-use Platform\Condition;
-use Platform\Datarecord;
+use Platform\Filter\Condition;
+use Platform\Datarecord\Datarecord;
 use Platform\File;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
@@ -48,7 +48,7 @@ class Endpoint {
     public function __construct(array $classnames = []) {
         foreach ($classnames as $classname) {
             if (!class_exists($classname)) trigger_warning('No such class '.$classname, E_USER_ERROR);
-            $shortname = $classname::getClassName();
+            $shortname = $classname::getBaseClassName();
             $this->classes[$shortname] = $classname;
         }
     }
@@ -115,7 +115,7 @@ class Endpoint {
                     $remote_object = $object->getRawValue($key.'_foreign_class');
                     if (!class_exists($remote_object)) $result[$key] = null;
                     else {
-                        $short_class = $remote_object::getClassName();
+                        $short_class = $remote_object::getBaseClassName();
                         $result[$key] = array(
                             'object' => $short_class,
                             'id' => $object->getRawValue($key.'_reference')

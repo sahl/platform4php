@@ -21,12 +21,13 @@ class BoolType extends IntegerType {
         return $value ? 'true' : 'false';
     }
     
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\CheckboxField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\CheckboxField::Field($this->title, $this->name, $this->getFormFieldOptions());
         
     }
     
-    public function getFullValue($value, Collection &$collection) : string {
+    public function getFullValue($value, Collection &$collection = null) : string {
         return static::getTextValue($value);
     }
     
@@ -52,10 +53,14 @@ class BoolType extends IntegerType {
     
     public function parseDatabaseValue($value) {
         return (bool)$value;
-    }    
+    }
+    
+    public function parseValue($value, $existing_value = null) {
+        return (bool)$value;
+    }
     
     public function validateValue($value) {
-        return $value === false || $value === true;
+        return true;
     }
     
 }

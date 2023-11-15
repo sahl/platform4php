@@ -135,15 +135,21 @@ class Type {
         $this->name = $name;
         $this->title = $title;
         
-        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'is_required', 'list_location', 'layout_group', 'is_invisible'];
-        foreach ($valid_options as $valid_option) {
-            if ($options[$valid_option]) {
-                $this->$valid_option = $options[$valid_option];
-                unset($options[$valid_option]);
+        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_location', 'layout_group', 'is_invisible'];
+        foreach ($options as $key => $option) {
+            if (! in_array($key, $valid_options)) trigger_error('Invalid options passed to '.get_called_class().': '.$key, E_USER_ERROR);
+            switch ($key) {
+                case 'index':
+                    if ($option === true) $this->setIndex();
+                    else {
+                        if (! is_array($option)) $option = explode(',',$option);
+                        $this->setIndexes($option);
+                    }
+                    break;
+                default:
+                    $this->$key = $option;
+                    break;
             }
-        }
-        if (count($options)) {
-            trigger_error('Invalid options passed to '.get_called_class().': '.implode(', ',array_keys($options)), E_USER_ERROR);
         }
     }
     
@@ -327,12 +333,21 @@ class Type {
         return '\''. \Platform\Utilities\Database::escape((string)$value).'\'';
     }
     
+    public function getFormFieldOptions() : array {
+        $result = [];
+        if ($this->getLayoutGroup()) $result['group'] = $this->getLayoutGroup();
+        if ($this->getLayoutPriority()) $result['priority'] = $this->getLayoutPriority();
+        if ($this->isRequired()) $result['required'] = true;
+        return $result;
+    }
+    
     /**
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\TextField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\TextField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     /**
@@ -359,7 +374,7 @@ class Type {
      * @param mixed $value
      * @return \Platform\Datarecord|null
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord {
+    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
         return null;
     }
     
@@ -403,6 +418,22 @@ class Type {
      */
     public function getRawValue($value) {
         return $value;
+    }
+    
+    /**
+     * Return a formatter for the Table component
+     * @return array
+     */
+    public function getTableFormatter() : array {
+        return ['formatter' => 'html'];
+    }
+    
+    /**
+     * Get a sorter for the Table component
+     * @return array
+     */
+    public function getTableSorter() : array {
+        return ['sorter' => 'alphanum'];
     }
     
     /**
@@ -643,6 +674,7 @@ class Type {
      * @param array $indexes Field name of other fields
      */
     public function setIndexes(array $indexes) {
+        if (! in_array($this->name, $indexes)) array_unshift ($indexes, $this->name);
         $this->indexes = $indexes;
     }
     

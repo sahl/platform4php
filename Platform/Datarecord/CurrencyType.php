@@ -195,8 +195,9 @@ class CurrencyType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\CurrencyField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\CurrencyField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     /**
@@ -223,6 +224,14 @@ class CurrencyType extends Type {
      */
     public function getSQLFieldType() : string {
         return '';
+    }
+    
+    /**
+     * Get a sorter for the Table component
+     * @return array
+     */
+    public function getTableSorter() : array {
+        return ['sorter' => 'number'];
     }
     
     /**

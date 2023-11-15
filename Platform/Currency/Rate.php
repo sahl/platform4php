@@ -6,10 +6,10 @@ namespace Platform\Currency;
  * @link https://wiki.platform4php.dk/doku.php?id=rate_class
  */
 
-use Platform\ConditionLesserEqual;
-use Platform\ConditionMatch;
-use Platform\Datarecord;
-use Platform\Filter;
+use Platform\Filter\ConditionLesserEqual;
+use Platform\Filter\ConditionMatch;
+use Platform\Datarecord\Datarecord;
+use Platform\Filter\Filter;
 use Platform\Utilities\Time;
 
 class Rate extends Datarecord {
@@ -26,26 +26,12 @@ class Rate extends Datarecord {
     protected static $title_field = false;
     
     protected static function buildStructure() {
-        $structure = array(
-            'currency_rate_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'currency' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT,
-                'key' => 'date'
-            ),
-            'date' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_DATE,
-            ),
-            'rate' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_FLOAT,
-            )
-        );
-        self::addStructure($structure);
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('currency_rate_id'),
+            new \Platform\Datarecord\TextType('currency', '', ['is_required' => true, 'is_invisible' => true]),
+            new \Platform\Datarecord\DateType('date', '', ['is_required' => true, 'is_invisible' => true]),
+            new \Platform\Datarecord\FloatType('rate', '', ['is_required' => true, 'is_invisible' => true]),
+        ]);
         parent::buildStructure();
     }
     

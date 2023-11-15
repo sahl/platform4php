@@ -7,6 +7,7 @@ namespace Platform\Utilities;
  */
 
 use Platform\Server\Instance;
+use Platform\Security\Property;
 
 $platform_language = array();
 
@@ -317,7 +318,7 @@ class Translation {
         if (! \Platform\Server\Instance::getActiveInstanceID()) return self::getConfiguration('default_language') ?: 'en';
         if (! $_SESSION['platform']['instance_language'] || \Platform\Server\Instance::getActiveInstanceID() != $_SESSION['platform']['instance_language_id']) {
             $_SESSION['platform']['instance_language_id'] = \Platform\Server\Instance::getActiveInstanceID();
-            $_SESSION['platform']['instance_language'] = \Platform\Property::getForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
+            $_SESSION['platform']['instance_language'] = Property::getForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
         }
         return $_SESSION['platform']['instance_language'] ?: 'en';
     }

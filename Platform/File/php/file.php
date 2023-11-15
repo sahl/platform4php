@@ -2,7 +2,7 @@
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 use Platform\Server\Instance;
-use Platform\File;
+use Platform\File\File;
 
 $code = 404;
 $error = 'File not found (invalid URL)';

@@ -222,8 +222,11 @@ class MultiReferenceType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\MultidatarecordcomboboxField::Field($this->title, $this->name, ['datarecord_class' => $this->foreign_class]);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        $options = $this->getFormFieldOptions();
+        $options['datarecord_class'] = $this->foreign_class;
+        return \Platform\Form\MultidatarecordcomboboxField::Field($this->title, $this->name, $options);
     }
     
     /**
@@ -260,7 +263,7 @@ class MultiReferenceType extends Type {
      * Get the foreign object pointed to by this field (if any)
      * @return \Platform\Datarecord|null
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord {
+    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
         $class = new $this->foreign_class();
         if (count($value)) $class->loadForRead($value[0], false);
         return $class;

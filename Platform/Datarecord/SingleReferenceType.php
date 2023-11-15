@@ -36,6 +36,7 @@ class SingleReferenceType extends IntegerType {
             }
         }
         if (! $this->foreign_class) trigger_error('You must specify a foreign class to the field '.$name, E_USER_ERROR);
+        if (! class_exists($this->foreign_class)) trigger_error('The class '.$this->foreign_class.' does not exists in '.get_called_class(), E_USER_ERROR);
         parent::__construct($name, $title, $options);
     }
     
@@ -213,8 +214,22 @@ class SingleReferenceType extends IntegerType {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\DatarecordcomboboxField::Field($this->title, $this->name, ['datarecord_class' => $this->foreign_class]);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        $options = $this->getFormFieldOptions();
+        $options['datarecord_class'] = $this->foreign_class;
+        return \Platform\Form\DatarecordcomboboxField::Field($this->title, $this->name, $options);
+    }
+    
+    public function getFormValue($value): mixed {
+        $visual = '';
+        if ($value) {
+           // Resolve foreign class 
+           $object = new $this->foreign_class();
+           $object->loadForRead($value, false);
+           $visual = $object->getTitle();
+        }
+        return array('id' => (int)$value, 'visual' => strip_tags($visual));
     }
     
     /**
@@ -242,7 +257,7 @@ class SingleReferenceType extends IntegerType {
      * Get the foreign object pointed to by this field (if any)
      * @return \Platform\Datarecord|null
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord {
+    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
         $class = new $this->foreign_class();
         $class->loadForRead($value, false);
         return $class;

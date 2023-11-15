@@ -14,7 +14,8 @@ class BigTextType extends TextType {
     }
     
     public function getFormField(): \Platform\Form\Field {
-        return \Platform\Form\TextareaField::Field($this->title, $this->name);
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\TextareaField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
 
     public function getSQLFieldType() : string {

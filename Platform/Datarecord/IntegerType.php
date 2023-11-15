@@ -83,8 +83,9 @@ class IntegerType extends Type {
         return (int)$value;
     }
     
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\NumberField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
         
     }
 
@@ -94,6 +95,14 @@ class IntegerType extends Type {
     
     public function getRawValue($value) {
         return $value;
+    }
+    
+    /**
+     * Get a sorter for the Table component
+     * @return array
+     */
+    public function getTableSorter() : array {
+        return ['sorter' => 'number'];
     }
     
     public function getSQLFieldType() : string {

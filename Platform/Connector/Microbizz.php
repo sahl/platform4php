@@ -12,7 +12,7 @@ use Platform\Form\Form;
 use Platform\Form\HiddenField;
 use Platform\Form\SubmitButton;
 use Platform\Page\Page;
-use Platform\Property;
+use Platform\Security\Property;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
 

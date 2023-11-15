@@ -12,9 +12,9 @@ if (! isset($platform_configuration) || ! is_array($platform_configuration)) $pl
 $preload_list = array(
     '/Platform.php',
     '/Utilities/Errorhandler.php',
-    '/DatarecordReferable.php',
+    '/Datarecord/DatarecordReferable.php',
     '/UI/Serializable.php',
-    '/Datarecord.php',
+    '/Datarecord/Datarecord.php',
     '/Server/Instance.php',
     '/Utilities/Translation.php',
 );

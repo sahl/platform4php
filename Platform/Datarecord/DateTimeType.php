@@ -11,7 +11,7 @@ namespace Platform\Datarecord;
 
 class DateTimeType extends Type {
 
-    public function isSet($value) {
+    public function filterIsSet($value) {
         return ! $value->isNull();
     }
     
@@ -75,6 +75,10 @@ class DateTimeType extends Type {
         return $value->isBeforeEqual($other_value);
     }
     
+    public function parseValue($value, $existing_value = null) {
+        return new \Platform\Utilities\Time($value);
+    }
+    
     public function parseDatabaseValue($value) {
         return new \Platform\Utilities\Time($value);
     }
@@ -84,8 +88,9 @@ class DateTimeType extends Type {
         return "'". \Platform\Utilities\Database::escape($value->get())."'";
     }
     
-    public function getFormField() : \Platform\Form\Field {
-        return \Platform\Form\DatetimeField::Field($this->title, $this->name);
+    public function getFormField() : ?\Platform\Form\Field {
+        if ($this->isReadonly() || $this->isInvisible()) return null;
+        return \Platform\Form\DatetimeField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     public function getFormValue($value) {
@@ -102,6 +107,22 @@ class DateTimeType extends Type {
     
     public function getRawValue($value) {
         return $value;
+    }
+    
+    /**
+     * Return a formatter for the Table component
+     * @return array
+     */
+    public function getTableFormatter() : array {
+        return ['formatter' => 'datetime', 'formatterParams' => ['outputFormat' => 'dd-MM-yyyy HH:mm:ss']];
+    }
+    
+    /**
+     * Get a sorter for the Table component
+     * @return array
+     */
+    public function getTableSorter() : array {
+        return ['sorter' => 'datetime', 'sorterParams' => ['format' => 'dd-MM-yyyy HH:mm:ss']];
     }
     
     public function getTextValue($value, Collection &$collection = null): string {

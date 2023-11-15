@@ -6,15 +6,15 @@ namespace Platform\UI;
  * @link https://wiki.platform4php.dk/doku.php?id=table_class
  */
 
-use Platform\Collection;
-use Platform\ConditionOneOf;
-use Platform\Datarecord;
-use Platform\Filter;
+use Platform\Datarecord\Collection;
+use Platform\Filter\ConditionOneOf;
+use Platform\Datarecord\Datarecord;
+use Platform\Filter\Filter;
 use Platform\Form\Form;
 use Platform\Form\HiddenField;
 use Platform\Form\MulticheckboxField;
 use Platform\Page\MenuItem;
-use Platform\Property;
+use Platform\Security\Property;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
 use Platform\UI\Menu\PopupMenu;
@@ -127,18 +127,17 @@ class Table extends Component {
      */
     public static function getColumnDefinitionsFromDatarecord(string $classname, string $prefix = '') : array {
         $columndef = array();
-        $structure = $classname::getStructure();
         
         // Get special configuration
         $fields = $classname::getTableFields(false);
         foreach ($fields as $field) {
+            $type = $classname::getFieldDefinition($field);
             $column = array(
-                'title' => $structure[$field]['label'],
-                'field' => $prefix.$field,
-                'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
+                'title' => $type->label,
+                'field' => $prefix.$type->name,
+                'visible' => $type->getListLocation == \Platform\Datarecord\Type::LIST_SHOWN,
             );
-            self::buildSorter($column, (int)$structure[$field]['fieldtype']);
-            self::buildFormatter($column, (int)$structure[$field]['fieldtype']);
+            $column = array_merge($column, $type->getTableSorter(), $type->getTableFormatter());
             if ($structure[$field]['width']) $columndef['width'] = $structure[$field]['width'];
             $columndef[] = $column;
         }
@@ -150,12 +149,12 @@ class Table extends Component {
      * @param string $classname Class to build table from
      */
     public function addColumnsFromDatarecord(string $classname) {
-        foreach (self::getColumnDefinitionsFromDatarecord($classname, $classname::getClassName().'-') as $definition) {
+        foreach (self::getColumnDefinitionsFromDatarecord($classname, $classname::getBaseClassName().'-') as $definition) {
             $this->tabulator_options['columns'][] = $definition;
         }
         $groupfields = array();
         foreach ($classname::getStructure() as $key => $definition) {
-            if ($definition['tablegroup']) $groupfields[] = $classname::getClassName().'-'.$key;
+            if ($definition['tablegroup']) $groupfields[] = $classname::getBaseClassName().'-'.$key;
         }
         if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
         
@@ -258,7 +257,7 @@ class Table extends Component {
         if ($resolve_relation_field) {
             if (! in_array($classname::getStructure()[$resolve_relation_field]['fieldtype'], array(Datarecord::FIELDTYPE_REFERENCE_SINGLE))) trigger_error('getDataFromDatarecordCollection can only resolve single reference fields and '.$resolve_relation_field.' is not of this type.', E_USER_ERROR);
             $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreign_class'];
-            $simple_foreign_class = $foreign_class::getClassName();
+            $simple_foreign_class = $foreign_class::getBaseClassName();
             $filter = new Filter($foreign_class);
             $filter->addCondition(new ConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
             $supplemental_datarecord = $filter->execute();
@@ -505,8 +504,8 @@ class Table extends Component {
         $this->tabulator_options['columns'] = self::getColumnDefinitionsFromDatarecord($classname);
         
         $groupfields = array();
-        foreach ($classname::getStructure() as $key => $definition) {
-            if ($definition['tablegroup']) $groupfields[] = $key;
+        foreach ($classname::getStructure() as $name => $type) {
+            //if ($type['tablegroup']) $groupfields[] = $name;
         }
         if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
         
