@@ -47,7 +47,7 @@ class Endpoint {
      */
     public function __construct(array $classnames = []) {
         foreach ($classnames as $classname) {
-            if (!class_exists($classname)) trigger_warning('No such class '.$classname, E_USER_ERROR);
+            if (!class_exists($classname)) trigger_error('No such class '.$classname, E_USER_ERROR);
             $shortname = $classname::getClassName();
             $this->classes[$shortname] = $classname;
         }
