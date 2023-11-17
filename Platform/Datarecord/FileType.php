@@ -13,7 +13,13 @@ class FileType extends SingleReferenceType {
      * Indicate if we should keep the file when the reference is deleted
      * @var bool
      */
-    protected static $keep_file_on_delete = false;
+    protected $keep_file_on_delete = false;
+    
+    /**
+     * Folder where to keep file
+     * @var string
+     */
+    protected $folder = '';
 
     /**
      * Name of foreign class pointed to by this field
@@ -28,7 +34,8 @@ class FileType extends SingleReferenceType {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        $valid_options = ['keep_file_on_delete'];
+        $valid_options = ['keep_file_on_delete', 'folder'];
+        
         foreach ($valid_options as $valid_option) {
             if ($options[$valid_option]) {
                 $this->$valid_option = $options[$valid_option];
@@ -76,7 +83,29 @@ class FileType extends SingleReferenceType {
      * @return type
      */
     public function parseValue($value, $existing_value = null) {
-        if ($value instanceof \Platform\File\File) $value = $value->getKeyValue();
+        if ($value instanceof \Platform\File\File) return $value->file_id;
+        elseif (is_array($value)) {
+            if (! $value['status']) return $existing_value;
+            if ($value['status'] == 'removed') {
+                // The file was removed
+                if (! $this->keep_file_on_delete) {
+                    $file = new \Platform\File\File();
+                    $file->loadForWrite((int)$existing_value, false);
+                    if ($file->isInDatabase()) $file->delete();
+                }
+                return null;
+            }
+            // Check if we have an attached file object
+            $file = new \Platform\File\File();
+            if ($existing_value) $file->loadForWrite($existing_value, false);
+            $file->filename = $value['original_file'];
+            $file->folder = $this->folder;
+            $this->mimetype = $value['mimetype'];
+            $folder = \Platform\File\File::getFullFolderPath('temp');
+            $file->attachFile($folder.$value['temp_file']);
+            $file->save(false, true);
+            return $file->file_id;
+        }
         return $value;
     }
     
