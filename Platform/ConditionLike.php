@@ -12,6 +12,7 @@ class ConditionLike extends Condition {
         Datarecord::FIELDTYPE_TEXT, 
         Datarecord::FIELDTYPE_BIGTEXT,
         Datarecord::FIELDTYPE_HTMLTEXT,
+        Datarecord::FIELDTYPE_ADDRESS,
     ];
     
     public function __construct(string $fieldname, $value) {
@@ -37,6 +38,13 @@ class ConditionLike extends Condition {
         if ($this->manual_match) return 'TRUE';
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
         switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_ADDRESS:
+                $parts = [];
+                $like = ' LIKE \'%'.substr($this->getSQLFieldValue($this->value),1,-1).'%\'';
+                foreach (Datarecord::ADDRESS_FIELDS as $addressfieldname) {
+                     $parts[] = $this->fieldname . '_' . $addressfieldname . $like;
+                }
+                return '('.implode(' OR ', $parts).')';
             case Datarecord::FIELDTYPE_TEXT:
             case Datarecord::FIELDTYPE_BIGTEXT:
                 return $this->fieldname.' LIKE \'%'.substr($this->getSQLFieldValue($this->value),1,-1).'%\'';
@@ -48,9 +56,16 @@ class ConditionLike extends Condition {
     public function match(Datarecord $object, bool $force_manual = false) : bool {
         if (! $force_manual && ! $this->manual_match) return true;
         $fieldtype = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname)['fieldtype'];
-        $value_to_check = $object->getRawValue($this->fieldname);
         switch ($fieldtype) {
+            case Datarecord::FIELDTYPE_ADDRESS:
+                foreach (Datarecord::ADDRESS_FIELDS as $addressfieldname) {
+                    $value_to_check = $object->getRawValue($this->fieldname . '_' . $addressfieldname);
+                    if (mb_stripos($value_to_check, $this->value) !== false)
+                        return true;
+                }
+                break;
             default:
+		        $value_to_check = $object->getRawValue($this->fieldname);
                 return mb_strpos($value_to_check, $this->value) !== false;
         }
     }
@@ -59,7 +74,7 @@ class ConditionLike extends Condition {
         // Validation
         $definition = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
         if (! $definition) return array('Invalid field '.$this->fieldname.' for like condition');
-        if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for like condition');
+      //  if ($definition['store_in_database'] === false) return array('Field '.$this->fieldname.' is not stored in database for like condition');
         if (! in_array($definition['fieldtype'], static::$valid_field_types)) return array('Field '.$this->field.' does not work with like condition');
         
         // Determine SQL use
