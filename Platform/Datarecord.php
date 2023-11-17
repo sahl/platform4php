@@ -545,7 +545,7 @@ class Datarecord implements DatarecordReferable {
             unset($this->values[static::getKeyField()]);
         } else {
             if (static::$delete_mode == self::DELETE_MODE_EMPTY) $this->reset();
-            if ($this->isInDatabase() && $this->is_deleted = 0) $number_of_items_deleted = 1;
+            if ($this->isInDatabase() && $this->is_deleted == 0) $number_of_items_deleted = 1;
             $this->is_deleted = 1;
             $this->save();
         }
