@@ -35,7 +35,7 @@ class DateField extends Field {
     
     public function parse($value) : bool {
         if (! parent::parse($value)) return false;
-        $this->value = Time::parseFromDisplayTime($value);
+        $this->value = new Time($value);
         return true;
     }
     

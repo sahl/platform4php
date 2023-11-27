@@ -60,6 +60,7 @@ class Condition {
         if ($this->fieldname) {
             $this->type = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
             $this->no_sql = $this->type->getStoreLocation() != Type::STORE_DATABASE;
+            $this->value = $this->type->parseValue($this->value);
         }
         if ($this->no_sql) $filter->setFilterAfterSQL();
     }

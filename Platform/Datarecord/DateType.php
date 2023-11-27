@@ -14,19 +14,28 @@ class DateType extends DateTimeType {
     public function getFormField() : ?\Platform\Form\Field {
         if ($this->isReadonly() || $this->isInvisible()) return null;
         return \Platform\Form\DateField::Field($this->title, $this->name, $this->getFormFieldOptions());
-        
+    }
+    
+    public function getFormValue($value) {
+        return $value->getReadable('Y-m-d');
     }
     
     public function getFullValue($value, Collection &$collection = null): string {
         return $value->getReadableDate();
     }
+    
+    /**
+     * Get the json store value for fields of this type
+     * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
+     * @return mixed
+     */
+    public function getJSONValue($value, $include_binary_data = false) {
+        return $value->get('Y-m-d');
+    }    
 
     public function getLogValue($value) : string {
         return $value->get('Y-m-d');
-    }
-    
-    public function getFormValue($value) {
-        return $value->getReadable('Y-m-d');
     }
     
     /**
@@ -35,14 +44,6 @@ class DateType extends DateTimeType {
      */
     public function getTableFormatter() : array {
         return ['formatter' => 'datetime', 'formatterParams' => ['outputFormat' => 'dd-MM-yyyy']];
-    }
-    
-    /**
-     * Get a sorter for the Table component
-     * @return array
-     */
-    public function getTableSorter() : array {
-        return ['sorter' => 'datetime', 'sorterParams' => ['format' => 'dd-MM-yyyy']];
     }
     
     public function getTextValue($value, Collection &$collection = null): string {
@@ -65,8 +66,9 @@ class DateType extends DateTimeType {
     }
     
     public function validateValue($value) {
-        if ($value !== null && ! $value instanceof \Platform\Utilities\Time) return false;
-        return true;
+        if ($value === null || $value instanceof \Platform\Utilities\Time) return true; 
+        $time = new \Platform\Utilities\Time($value);
+        return ! $time->isNull();
     }
     
 }

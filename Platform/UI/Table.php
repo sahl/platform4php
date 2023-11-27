@@ -133,12 +133,11 @@ class Table extends Component {
         foreach ($fields as $field) {
             $type = $classname::getFieldDefinition($field);
             $column = array(
-                'title' => $type->label,
+                'title' => $type->title,
                 'field' => $prefix.$type->name,
-                'visible' => $type->getListLocation == \Platform\Datarecord\Type::LIST_SHOWN,
+                'visible' => $type->getListLocation() == \Platform\Datarecord\Type::LIST_SHOWN,
             );
             $column = array_merge($column, $type->getTableSorter(), $type->getTableFormatter());
-            if ($structure[$field]['width']) $columndef['width'] = $structure[$field]['width'];
             $columndef[] = $column;
         }
         return $columndef;
@@ -263,32 +262,14 @@ class Table extends Component {
             $supplemental_datarecord = $filter->execute();
             $supplemental_data = $supplemental_datarecord->getAllWithKeys();
         }
-        $structure = $classname::getStructure();
         foreach ($collection->getAll() as $object) {
             $columns = array();
-            foreach ($object->getAsArray(array(), Datarecord::RENDER_FULL) as $field => $value) {
-                switch ($structure[$field]['fieldtype']) {
-                    case Datarecord::FIELDTYPE_KEY:
-                        $columns['id'] = $value;
-                        if (! $structure[$field]['invisible']) $columns[$field] = $value;
-                        break;
-                    case Datarecord::FIELDTYPE_TEXT:
-                        $columns[$field] = '<!--'.$object->getTextValue($field).'-->'.$value;
-                        break;
-                    case Datarecord::FIELDTYPE_BIGTEXT:
-                        $text = substr($object->getTextValue($field),0,250);
-                        $columns[$field] = $text;
-                        break;
-                    case Datarecord::FIELDTYPE_DATE:
-                    case Datarecord::FIELDTYPE_DATETIME:
-                        $columns[$field] = $object->getRawValue($field)->getReadable('Y-m-d H:i:s');
-                        break;
-                    default:
-                        $columns[$field] = $value;
-                }
+            foreach ($object->getStructure() as $name => $type) {
+                if ($type->isPrimaryKey()) $columns['id'] = $object->getRawValue($name);
+                else $columns[$name] = $type->getTableValue($object->getRawValue($name));
             }
             // Add relation data (if any)
-            if ($supplemental_data[$object->getRawValue($resolve_relation_field)]) {
+            if ($resolve_relation_field && $supplemental_data[$object->getRawValue($resolve_relation_field)]) {
                 foreach ($supplemental_data[$object->getRawValue($resolve_relation_field)]->getAsArray(array(), Datarecord::RENDER_TEXT) as $field => $value) {
                     $columns[$simple_foreign_class.'-'.$field] = $value;
                 }

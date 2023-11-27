@@ -253,6 +253,7 @@ class EnumerationType extends IntegerType {
      * @return array
      */
     public function integrityCheck() : array {
+        if (! $this->enumeration) return ['Missing enumeration'];
         return [];
     }
     

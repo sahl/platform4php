@@ -242,8 +242,8 @@ class Datarecord implements DatarecordReferable {
     protected static function buildStructure() {
         static::addStructure(array(
             new ArrayType('metadata', '', ['is_invisible' => true]), // ARRAY
-            new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true]),
-            new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true]),
+            new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true, 'is_readonly' => true]),
+            new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true, 'is_readonly' => true]),
         ));
         
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
@@ -417,7 +417,7 @@ class Datarecord implements DatarecordReferable {
             $this->unlock();
         } else {
             if (static::$delete_mode == self::DELETE_MODE_EMPTY) $this->reset();
-            if ($this->isInDatabase() && $this->is_deleted = 0) $number_of_items_deleted = 1;
+            if ($this->isInDatabase() && $this->is_deleted == 0) $number_of_items_deleted = 1;
             $this->is_deleted = 1;
             $this->save();
         }
@@ -1504,57 +1504,21 @@ class Datarecord implements DatarecordReferable {
     public static function renderIntegrityCheck() {
         echo '<h3 style="margin-bottom: 2px;">'.get_called_class().'</h3>';
         $errors = array();
-        $warnings = array();
         // Ensure newest version and test that we don't upgrade the database in excess.
         static::ensureInDatabase();
         $changed = static::ensureInDatabase();
         if ($changed) $errors[] = 'Database was changed even though there should be no changes. This is probably a problem with Platform.';
         
-        // Check definitions
-        $valid_definitions = array('enumeration', 'folder', 'foreign_class', 'layout_group', 'calculations', 'default_value', 'invisible',
-            'fieldtype', 'label', 'columnvisibility', 'default', 'subfield',
-            'is_title', 'key', 'required', 'readonly', 'searchable', 'store_in_database', 'store_in_metadata', 'table', 'tablegroup', 'substructure');
-        
-        foreach (static::getStructure() as $field => $definition) {
-            foreach ($definition as $key => $value) {
-                if (! in_array($key, $valid_definitions)) $errors[] = $field.': Property '.$key.' is not a valid Platform property.';
-            }
-            // Do some specific integrity
-            if (in_array($definition['fieldtype'], [self::FIELDTYPE_ENUMERATION, self::FIELDTYPE_ENUMERATION_MULTI]) && ! is_array($definition['enumeration'])) $errors[] = $field.': Enumeration type without enumeration table.';
-            if (! in_array($definition['fieldtype'], [self::FIELDTYPE_ENUMERATION, self::FIELDTYPE_ENUMERATION_MULTI]) && is_array($definition['enumeration'])) $errors[] = $field.': Enumeration table assigned to non-enumeration field.';
-            if ($definition['foreign_class'] && ! in_array($definition['fieldtype'], array(self::FIELDTYPE_REFERENCE_SINGLE, self::FIELDTYPE_REFERENCE_MULTIPLE, self::FIELDTYPE_REFERENCE_HYPER))) $errors[] = $field.': A foreign class was provided but field is not relation type.';
-        }
-        
-        // Check references
-        foreach (static::getStructure() as $field => $definition) {
-            switch ($definition['fieldtype']) {
-                case self::FIELDTYPE_REFERENCE_SINGLE:
-                case self::FIELDTYPE_REFERENCE_MULTIPLE:
-                    if (! $definition['foreign_class']) $errors[] = $field.': Reference without foreign class';
-                    elseif (!class_exists($definition['foreign_class'])) $errors[] = $field.': Reference to class which doesn\'t exists.';
-                    else {
-                        $match = false;
-                        // Get array of all classes listed in the foreign class
-                        $total_class_array = array_merge($definition['foreign_class']::$referring_classes, $definition['foreign_class']::$depending_classes);
-                        // Loop and check if this class (or a parent class) is mentioned at least once.
-                        foreach ($total_class_array as $class) {
-                            if (is_subclass_of(get_called_class(), $class) || get_called_class() == $class) {
-                                $match = true;
-                                break;
-                            }
-                        }
-                        if (! $match) $errors[] = 'Remote class '.$definition['foreign_class'].' doesn\'t list this as a referer or dependent class, even though we refer in field: <i>'.$field.'</i>.';
-                    }
-                    break;
-            }
+        foreach (static::getStructure() as $name => $type) {
+            $errors = array_merge($errors, $type->integrityCheck());
         }
         // Check referring classes
         foreach (static::$referring_classes as $foreign_class) {
             if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a referring class, but the class doesn\'t exist.';
             else {
                 $hit = false;
-                foreach ($foreign_class::getStructure() as $field => $definition) {
-                    if ($definition['foreign_class'] == get_called_class() || is_subclass_of(get_called_class(), $definition['foreign_class'])) {
+                foreach ($foreign_class::getStructure() as $name => $type) {
+                    if ($type->isReference() && $type->matchesForeignClass(get_called_class())) {
                         $hit = true;
                         break;
                     }
@@ -1567,8 +1531,8 @@ class Datarecord implements DatarecordReferable {
             if (! class_exists($foreign_class)) $errors[] = 'Have <i>'.$foreign_class.'</i> as a depending class, but the class doesn\'t exist.';
             else {
                 $hit = false;
-                foreach ($foreign_class::getStructure() as $field => $definition) {
-                    if ($definition['foreign_class'] == get_called_class() || is_subclass_of(get_called_class(), $definition['foreign_class'])) {
+                foreach ($foreign_class::getStructure() as $name => $type) {
+                    if ($type->isReference() && $type->matchesForeignClass(get_called_class())) {
                         $hit = true;
                         break;
                     }
@@ -1577,9 +1541,8 @@ class Datarecord implements DatarecordReferable {
             }
         }        
         echo '<ul style="margin-top: 3px; margin-bottom: 5px; font-size: 0.8em;">';
-        if (! count($errors) && ! count($warnings)) echo '<li><span style="color: green;">All OK</span>';
+        if (! count($errors) ) echo '<li><span style="color: green;">All OK</span>';
         foreach ($errors as $error) echo '<li><span style="color: red;">'.$error.'</span>';
-        foreach ($warnings as $warning) echo '<li><span style="color: orange;">'.$warning.'</span>';
         echo '</ul>';
     }
 

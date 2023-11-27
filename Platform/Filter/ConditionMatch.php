@@ -15,7 +15,7 @@ class ConditionMatch extends Condition {
     }
     
     public function getSQLFragment(): string {
-        $sql = $this->type->filterMatchSQL($this->value);
+        $sql = $this->type->filterMatchSQL($this->type->parseValue($this->value));
         if ($sql === false) {
             $this->setNoSQL();
             return 'TRUE';

@@ -309,9 +309,10 @@ class SingleReferenceType extends IntegerType {
     /**
      * Get the json store value for fields of this type
      * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
      * @return mixed
      */
-    public function getJSONValue($value) {
+    public function getJSONValue($value, $include_binary_data = false) {
         return $value;
     }
     
@@ -320,7 +321,10 @@ class SingleReferenceType extends IntegerType {
      * @return array
      */
     public function integrityCheck() : array {
-        return [];
+        $result = [];
+        if (! $this->foreign_class) $result[] = 'Missing foreign class';
+        if (! class_exists($this->foreign_class)) $result[] = 'No such foreign class: '.$this->foreign_class;
+        return $result;
     }
     
     /**
@@ -360,8 +364,15 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function validateValue($value) {
+        if ($value === null) return true;
+        if ($value instanceof Datarecord) {
+            if (! $value instanceof $this->foreign_class) return \Platform\Utilities\Translation::translateForUser('Incompatible object passed');
+            return $value->isInDatabase();
+        }
+        $object = new $this->foreign_class();
+        $object->loadForRead($value, false);
+        if (! $object->isInDatabase()) return \Platform\Utilities\Translation::translateForUser('Invalid reference id %1', $value);
         return true;
     }
-    
 }
 

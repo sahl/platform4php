@@ -3,6 +3,7 @@ Platform.Dialog = class extends Platform.Component {
     
     constructor(dom_node, buttons, options) {
         super(dom_node);
+        var component = this;
         
         var dialog_buttons = [];
         if (dom_node.data('buttons')) {
@@ -41,6 +42,10 @@ Platform.Dialog = class extends Platform.Component {
                 options[key] = element;
             })
         }
+        
+        dom_node.on('close', function() {
+            component.close();
+        })
         
     
         this.dialog_options = $.extend(standard_options, options);
@@ -90,32 +95,32 @@ Platform.Dialog = class extends Platform.Component {
         $('#platform_allpurpose_text').html(text);
         
         // We want the form component
-        form_id = form_id + '_component';
+        var form_component_id = form_id + '_component';
 
         // Ensure that the form is moved into place and shown
         var form_original_parent = $(form_id).parent();
 
-        $(form_id).appendTo('#platform_allpurpose_form').show();
-
+        $(form_component_id).appendTo('#platform_allpurpose_form').show();
+        
         // (Re)bind submitter
         $(form_id).off('submit.allpurpose_dialog');
         $(form_id).on('submit.allpurpose_dialog', function(data) {
             if (typeof(callback_ok) == 'function') {
                 var return_values = {};
-                $.each($(form_id).find('form').serializeArray(), function(key, value) {
+                $.each($(form_component_id).find('form').serializeArray(), function(key, value) {
                     return_values[value.name] = value.value;
                 })
                 callback_ok(return_values, function() {
                     $('#platform_allpurpose_dialog').dialog('close');
                     // Move form back in place
-                    $(form_id).appendTo(form_original_parent);
+                    $(form_component_id).appendTo(form_original_parent);
                     // Be sure to clean form area
                     $('#platform_allpurpose_form').html('');
                 });
             } else {
                 $('#platform_allpurpose_dialog').dialog('close');
                 // Move form back in place
-                $(form_id).appendTo(form_original_parent);
+                $(form_component_id).appendTo(form_original_parent);
                 // Be sure to clean form area
                 $('#platform_allpurpose_form').html('');
             }

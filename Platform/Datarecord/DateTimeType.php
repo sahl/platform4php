@@ -100,6 +100,21 @@ class DateTimeType extends Type {
     public function getFullValue($value, Collection &$collection = null): string {
         return $value->getReadable();
     }
+    
+    public function getTableValue($value) {
+        return $value->getReadable('Y-m-d H:i:s');
+    }
+    
+    
+    /**
+     * Get the json store value for fields of this type
+     * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
+     * @return mixed
+     */
+    public function getJSONValue($value, $include_binary_data = false) {
+        return $value->get('Y-m-d H:i:s');
+    }
 
     public function getLogValue($value) : string {
         return $value->get();
@@ -122,7 +137,7 @@ class DateTimeType extends Type {
      * @return array
      */
     public function getTableSorter() : array {
-        return ['sorter' => 'datetime', 'sorterParams' => ['format' => 'dd-MM-yyyy HH:mm:ss']];
+        return ['sorter' => 'datetime', 'sorterParams' => ['format' => 'yyyy-MM-dd HH:mm:ss']];
     }
     
     public function getTextValue($value, Collection &$collection = null): string {
@@ -138,9 +153,9 @@ class DateTimeType extends Type {
     }
     
     public function validateValue($value) {
-        if ($value !== null && ! $value instanceof \Platform\Utilities\Time) return false;
-        return true;
+        if ($value === null || $value instanceof \Platform\Utilities\Time) return true; 
+        $time = new \Platform\Utilities\Time($value);
+        return ! $time->isNull();
     }
-    
 }
 

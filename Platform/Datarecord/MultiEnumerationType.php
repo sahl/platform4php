@@ -151,6 +151,7 @@ class MultiEnumerationType extends EnumerationType {
      * @return array
      */
     public function integrityCheck() : array {
+        if (! $this->enumeration) return ['Missing enumeration'];
         return [];
     }
     
@@ -197,7 +198,8 @@ class MultiEnumerationType extends EnumerationType {
      */
     public function validateValue($value) {
         if ($value === null) return true;
-        return array_key_exists($value, $this->enumeration);
+        if (! is_array($value)) $value = [$value];
+        foreach ($value as $v) if (!array_key_exists($v, $this->enumeration)) return \Platform\Utilities\Translation::translateForUser('Invalid value %1 for enumeration', $v);
+        return true;
     }
-    
 }

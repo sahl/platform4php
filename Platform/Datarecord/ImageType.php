@@ -20,4 +20,14 @@ class ImageType extends FileType {
         return \Platform\Form\FileField::Field($this->title, $this->name, $options);
     }
     
+    /**
+     * Validate if this is a valid value for fields of this type
+     * @param mixed $value
+     * @return mixed True if no problem or otherwise a string explaining the problem
+     */
+    public function validateValue($value) {
+        $result = parent::validateValue($value);
+        return $result;
+    }
+    
 }

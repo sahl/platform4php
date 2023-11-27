@@ -21,6 +21,5 @@ class EmailType extends TextType {
         if ($this->isReadonly() || $this->isInvisible()) return null;
         return \Platform\Form\EmailField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
-    
 }
 

@@ -162,6 +162,24 @@ class Type {
     }
     
     /**
+     * Check an array for containing certain hashes
+     * @param type $array_to_check Array to check
+     * @param type $required_fields Required hash names
+     * @param type $optional_fields Optional hash names
+     */
+    protected static function arrayCheck($array_to_check, array $required_fields, array $optional_fields = []) {
+        if (! is_array($array_to_check)) return \Platform\Utilities\Translation::translateForUser('Must be a property set');
+        $all_fields = array_unique(array_merge($required_fields, $optional_fields));
+        foreach ($array_to_check as $key => $value) {
+            if (! in_array($key, $all_fields)) return \Platform\Utilities\Translation::translateForUser('%1 is an invalid property for this field', $key);
+        }
+        foreach ($required_fields as $required_field) {
+            if (! isset($array_to_check[$required_field])) return \Platform\Utilities\Translation::translateForUser('%1 is a required property for this field', $required_field);
+        }
+        return true;
+    }
+    
+    /**
      * Filter if a value is greater or equal than another value in regards to this type
      * @param mixed $value Value of this
      * @param mixed $other_value Value of other
@@ -437,6 +455,15 @@ class Type {
     }
     
     /**
+     * Get a value for presenting in a table
+     * @param $value
+     * @return type
+     */
+    public function getTableValue($value) {
+        return $this->getFullValue($value);
+    }
+    
+    /**
      * Check if fields of this type contains references to the given foreign class
      * @return bool
      */
@@ -465,15 +492,16 @@ class Type {
     /**
      * Get the json store value for fields of this type
      * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
      * @return mixed
      */
-    public function getJSONValue($value) {
+    public function getJSONValue($value, $include_binary_data = false) {
         return $value;
     }
     
     /**
      * Do an integrity check of this field
-     * @return array
+     * @return array Array of problems
      */
     public function integrityCheck() : array {
         return [];
@@ -757,11 +785,10 @@ class Type {
     /**
      * Validate if this is a valid value for fields of this type
      * @param mixed $value
-     * @return bool
+     * @return mixed True if no problem or otherwise a string explaining the problem
      */
     public function validateValue($value) {
         return true;
     }
-    
 }
 

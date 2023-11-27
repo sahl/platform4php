@@ -319,7 +319,10 @@ class MultiReferenceType extends Type {
      * @return array
      */
     public function integrityCheck() : array {
-        return [];
+        $result = [];
+        if (! $this->foreign_class) $result[] = 'Missing foreign class';
+        if (! class_exists($this->foreign_class)) $result[] = 'No such foreign class: '.$this->foreign_class;
+        return $result;
     }
     
     /**
@@ -376,6 +379,18 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function validateValue($value) {
+        if ($value === null) return true;
+        if (! is_array($value)) $value = [$value];
+        foreach ($value as $v) {
+            if ($v instanceof Datarecord) {
+                if (! $v instanceof $this->foreign_class) return \Platform\Utilities\Translation::translateForUser('Incompatible object passed');
+                if (! $v->isInDatabase()) return \Platform\Utilities\Translation::translateForUser('Unsaved object passed');
+                continue;
+            }
+            $object = new $this->foreign_class();
+            $object->loadForRead($v, false);
+            if (! $object->isInDatabase()) return \Platform\Utilities\Translation::translateForUser('Invalid reference id %1', $value);
+        }
         return true;
     }
     

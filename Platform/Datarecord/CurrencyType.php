@@ -250,6 +250,7 @@ class CurrencyType extends Type {
      * @return type
      */
     public function parseValue($value, $existing_value = null) {
+        if ($value === null) return ['localvalue' => null, 'currency' => '', 'foreignvalue' => null];
         if (is_array($value)) return ['localvalue' => $value['localvalue'], 'currency' => (string)$value['currency'], 'foreignvalue' => $value['foreignvalue']];
         else return ['localvalue' => (double)$value, 'currency' => '', 'foreignvalue' => null];
     }
@@ -268,11 +269,16 @@ class CurrencyType extends Type {
     /**
      * Validate if this is a valid value for fields of this type
      * @param mixed $value
-     * @return bool
+     * @return mixed True if no problem or otherwise a string explaining the problem
      */
     public function validateValue($value) {
-        return true;
+        if ($value === null) return true;
+        if (is_float($value)) return true;
+        $result = static::arrayCheck($value, [], ['localvalue', 'currency', 'foreignvalue']);
+        if ($result === true) {
+            if (!\Platform\Currency\Currency::isValidCurrency($value['currency'])) return \Platform\Utilities\Translation::translateForUser('Invalid currency code %1', $value['currency']);
+        }
+        return $result;
     }
-    
 }
 

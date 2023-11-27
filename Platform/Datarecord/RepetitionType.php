@@ -244,8 +244,7 @@ class RepetitionType extends Type {
      * @return bool
      */
     public function validateValue($value) {
-        return true;
+        if ($value === null) return true;
+        return self::arrayCheck($value, ['type', 'interval', 'metadata']);
     }
-    
 }
-

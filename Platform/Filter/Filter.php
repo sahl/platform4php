@@ -287,7 +287,7 @@ class Filter {
         // Check if field exists
         $type = $this->getBaseObject()->getFieldDefinition($order_column);
         if (! $type ) trigger_error('No field '.$order_column.' in object.', E_USER_ERROR);
-        $sort = $type->getSQLSort();
+        $sort = $type->getSQLSort(! $ascending);
         if ($sort === false) trigger_error('You cannot sort by '.$order_column, E_USER_ERROR);
         $this->sql_sort = $sort;
     }

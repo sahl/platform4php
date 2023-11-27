@@ -60,6 +60,22 @@ class FileType extends SingleReferenceType {
     }
     
     /**
+     * Get the json store value for fields of this type
+     * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
+     * @return mixed
+     */
+    public function getJSONValue($value, $include_binary_data = false) {
+        if ($value === null) return null;
+        $file = new \Platform\File\File();
+        $file->loadForRead($value, false);
+        if (! $file->isInDatabase()) return null;
+        $result = ['filename' => $file->filename, 'mimetype' => $file->mimetype];
+        if ($include_binary_data) $result['binary'] = base64_encode($file->getFileContent());
+        return $result;
+    }    
+    
+    /**
      * Get the value for logging fields of this type
      * @param mixed $value
      * @return string
@@ -85,8 +101,8 @@ class FileType extends SingleReferenceType {
     public function parseValue($value, $existing_value = null) {
         if ($value instanceof \Platform\File\File) return $value->file_id;
         elseif (is_array($value)) {
-            if (! $value['status']) return $existing_value;
-            if ($value['status'] == 'removed') {
+            if (! $value['action']) return $existing_value;
+            if ($value['action'] == 'remove') {
                 // The file was removed
                 if (! $this->keep_file_on_delete) {
                     $file = new \Platform\File\File();
@@ -98,15 +114,19 @@ class FileType extends SingleReferenceType {
             // Check if we have an attached file object
             $file = new \Platform\File\File();
             if ($existing_value) $file->loadForWrite($existing_value, false);
-            $file->filename = $value['original_file'];
+            $file->filename = $value['filename'];
             $file->folder = $this->folder;
             $this->mimetype = $value['mimetype'];
             $folder = \Platform\File\File::getFullFolderPath('temp');
-            $file->attachFile($folder.$value['temp_file']);
+            if ($value['temp_file']) $file->attachFile($folder.$value['temp_file']);
+            if ($value['binary']) {
+                $binary = base64_decode($value['binary']);
+                if ($binary !== false) $file->attachBinaryData($binary);
+            }
             $file->save(false, true);
             return $file->file_id;
         }
-        return $value;
+        return null;
     }
     
     /**
@@ -127,6 +147,21 @@ class FileType extends SingleReferenceType {
      */
     public function getSQLSort(bool $descending = false) {
         return false;
+    }
+    
+    /**
+     * Validate if this is a valid value for fields of this type
+     * @param mixed $value
+     * @return mixed True if no problem or otherwise a string explaining the problem
+     */
+    public function validateValue($value) {
+        if ($value === null || $value instanceof \Platform\File\File) return true;
+        $result = static::arrayCheck($value, ['action'], ['filename', 'mimetype', 'binary', 'temp_file']);
+        if ($result !== true) return $result;
+        if (! in_array($value['action'], ['add', 'remove'])) return \Platform\Utilities\Translation::translateForUser('action property must be add or remove.');
+        if (! $value['temp_file'] && ! $value['binary']) return \Platform\Utilities\Translation::translateForUser('No file data provided.');
+        if ($value['binary'] && base64_decode($value['binary']) === false) return \Platform\Utilities\Translation::translateForUser('Binary data must be base64 encoded.');
+        return true;
     }
 }
 

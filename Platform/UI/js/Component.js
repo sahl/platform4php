@@ -101,6 +101,10 @@ Platform.Component = class {
         this.dom_node.on(event, callback);
     }
     
+    off(event) {
+        this.dom_node.off(event);
+    }
+    
     trigger(event, payload) {
         this.dom_node.trigger(event, payload);
     }
@@ -175,7 +179,7 @@ Platform.Component = class {
         // Pass selected forms to backend
         if (this.dom_node.data('registered_form_ids')) {
             $.each(this.dom_node.data('registered_form_ids').split(','), function(index, value) {
-                component.addIOForm($('#'+value, component.dom_node));
+                component.addIOForm($('#'+value));
             })
         }
     }

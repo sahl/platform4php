@@ -259,9 +259,10 @@ class HyperReferenceType extends Type {
     /**
      * Get the json store value for fields of this type
      * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
      * @return mixed
      */
-    public function getJSONValue($value) {
+    public function getJSONValue($value, $include_binary_data = false) {
         return $value;
     }
     
@@ -314,8 +315,14 @@ class HyperReferenceType extends Type {
      * @return bool
      */
     public function validateValue($value) {
+        if ($value === null || $value instanceof Datarecord) return true;
+        $result = static::arrayCheck($value, ['foreign_class', 'reference']);
+        if ($result !== true) return $result;
+        if (!class_exists($result['foreign_class'])) return \Platform\Utilities\Translation::translateForUser('Invalid foreign class %1', $result['foreign_class']);
+        $object = new $result['foreign_class']();
+        $object->loadForRead($result['reference'], false);
+        if (! $object->isInDatabase()) return \Platform\Utilities\Translation::translateForUser('Invalid reference id %1', $result['reference']);
         return true;
     }
-    
 }
 

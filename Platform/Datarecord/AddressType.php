@@ -277,5 +277,15 @@ class AddressType extends Type {
         }
         return implode(',',$sort_sql);
     }
+    
+    /**
+     * Validate if this is a valid value for fields of this type
+     * @param mixed $value
+     * @return mixed True if no problem or otherwise a string explaining the problem
+     */
+    public function validateValue($value) {
+        if ($value === null) return true;
+        return static::arrayCheck($value, [], ['address', 'address2', 'zip', 'city', 'countrycode']);
+    }
 }
 
