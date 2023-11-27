@@ -1,5 +1,27 @@
 Platform.addCustomFunction(function(item) {
-     $('.platform_menuitem',item).click(function(e) {
+    /**
+     * Update a menuitem
+     * @param object data May contain any of the following:
+     *                    html   text           HTML encoded text
+     *                    bool   iconvisible    true to show, false to hide
+     *                    string icon           a Font Awesome icon name, eg. 'fa-edit'
+     */
+    $('.platform_menuitem', item).on('updatemenuitem', function(event, data) {
+        if (typeof data != 'object')    return;
+        
+        var menuitem = $(this);
+        if (data.text !== undefined) {
+            var text = data.text;
+            if (menuitem.find('span.fa').length > 0 || menuitem.find('img').length > 0)
+                text = '&nbsp;'+text;
+            menuitem.find('span').html(text);
+        }
+        if (data.iconvisible !== undefined)
+            menuitem.find('span.fa').toggle(data.iconvisible);
+        if (data.icon !== undefined)
+            menuitem.find('span.fa').attr('class', 'fa '+data.icon);
+    });
+    $('.platform_menuitem',item).click(function(e) {
         if (Platform.PopupMenu) Platform.PopupMenu.hideAll();
         // Handle special urls
         var url = new String($(this).attr('href'));

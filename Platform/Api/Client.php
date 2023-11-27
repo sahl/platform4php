@@ -86,7 +86,8 @@ class Client {
      * @return array Hashed by code=http code  message=http message  headers=array of all headers
      * body=body output  json=json decoded body output
      */
-    public function query(string $object, string $method = 'GET', int $id = 0, array $parameters = []) : array {
+    public function query(string $object, string $method = '', int $id = 0, array $parameters = []) : array {
+        if ($method == '') $method = 'GET';
         $endpoint = $this->endpoint;
         if (substr($endpoint,-1,1) != '/') $endpoint .= '/';
         $endpoint .= $object;

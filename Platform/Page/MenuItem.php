@@ -88,19 +88,28 @@ class MenuItem {
      */
     public function getHTML() : string {
         $result = '<a';
-        if ($this->target) $result .= ' target="'.$this->target.'"';
-        if ($this->url) $result .= ' href="'.$this->url.'"';
-        if ($this->id) $result .= ' id="'.$this->id.'"';
+        if ($this->target)
+            $result .= ' target="'.$this->target.'"';
+        if ($this->url)
+            $result .= ' href="'.$this->url.'"';
+        if ($this->id)
+            $result .= ' id="'.$this->id.'"';
         $result .= ' class="platform_menuitem';
-        if ($this->classes) $result .= ' '.$this->classes;
+        if ($this->classes)
+            $result .= ' '.$this->classes;
         $result .= '"';
         if (count($this->data))
-            foreach ($this->data as $key => $value) $result .= ' data-'.$key.'="'.$value.'"';
+            foreach ($this->data as $key => $value)
+                $result .= ' data-'.$key.'="'.$value.'"';
         $result .= '>';
-        if ($this->icon) $result .= '<i class="fa '.$this->icon.'" aria-hidden="true"></i>';
-        if ($this->image) $result .= '<img src="'.$this->image.'" style="height: 1em; border: none;">';
-        if (($this->icon || $this->image) && $this->text) $result .= '&nbsp;';
-        $result .= $this->text.'</a>';
+        
+        $iconstyle = ($this->icon) ? '' : 'display: none;';
+        $result .= '<span class="fa '.$this->icon.'" aria-hidden="true" style="'.$iconstyle.'"></span>';
+        if ($this->image)
+            $result .= '<img src="'.$this->image.'" style="height: 1em; border: none;">';
+        if (($this->icon || $this->image) && $this->text)
+            $result .= '&nbsp;';
+        $result .= '<span>'.$this->text.'</span></a>';
         return $result;
     }
     
