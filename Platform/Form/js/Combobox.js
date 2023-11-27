@@ -28,7 +28,14 @@ Platform.Form.ComboboxField = class extends Platform.Form.Field {
                 var zindex = Platform.Form.ComboboxField.zIndex(element);
                 $(element).autocomplete('widget').css('z-index', zindex+1);
             }
-        });
+        }).data( "ui-autocomplete" )._renderItem = function(ul, item) {
+            ul.addClass('platform_component_combobox_searchresult');
+            return $("<div id='list_autocomplete'></div>")
+                .data("item.autocomplete", item)
+                .append(item.label)
+                .appendTo(ul);
+        }
+
         return true;
     }
     
