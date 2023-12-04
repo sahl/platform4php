@@ -105,11 +105,15 @@ class Collection implements Iterator,Countable {
     }
 
     /**
-     * Return all Datarecord's from this collection
+     * Return all Datarecord's from this collection hashed by their IDs
      * @return array
      */
     public function getAll() : array {
-        return $this->datarecords;
+        $result = [];
+        foreach ($this->datarecords as $datarecord) {
+            $result[$datarecord->getKeyValue()] = $datarecord;
+        }
+        return $result;
     }
     
     /**

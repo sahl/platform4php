@@ -141,6 +141,16 @@ class Accesstoken extends Datarecord {
     }
     
     /**
+     * Get current user as user object
+     * @return User
+     */
+    public static function getCurrentUser() : User {
+        $user = new User();
+        $user->loadForRead(static::getCurrentUserID(), false);
+        return $user;
+    }
+    
+    /**
      * Get the current user, based on an active token
      * @return int User ID
      */

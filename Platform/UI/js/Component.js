@@ -72,6 +72,13 @@ Platform.Component = class {
     }
     
     /**
+     * Destroy this component
+     */
+    destroy() {
+        this.dom_node.remove();        
+    }
+    
+    /**
      * Convenience for making a quick component where only the initialize function is relevant
      * @param {string} dom_class dom_class for element to bind to
      * @param {function} initialize_function The initialize function
@@ -224,7 +231,7 @@ Platform.Component = class {
 
         // Post
         $.post(this.dom_node.data('io_url'), values, function(data) {
-            if (data.destroy) component.dom_node.remove();
+            if (data.destroy) component.destroy();
             if (data.script) eval(data.script);
             if (data.redirect) {
                 if (data.target) 

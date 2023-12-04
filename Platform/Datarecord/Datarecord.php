@@ -377,7 +377,7 @@ class Datarecord implements DatarecordReferable {
         return $copy;
     }*/
     
-    public function copyFrom(Record $otherobject) {
+    public function copyFrom(Datarecord $otherobject) {
         if (! is_a($this, get_class($otherobject))) trigger_error('Incompatible objects', E_USER_ERROR);
         $values = $otherobject->getAsArray();
         $this->setFromArray($values);

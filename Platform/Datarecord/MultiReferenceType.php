@@ -230,6 +230,20 @@ class MultiReferenceType extends Type {
     }
     
     /**
+     * Format a value for a form in accordance to this type
+     * @param mixed $value
+     * @return mixed
+     */
+    public function getFormValue($value) {
+        $result = [];
+        foreach ($value as $id) {
+            $title = TitleBuffer::getTitleByClassAndId($this->foreign_class, $id);
+            if ($title !== null) $result[] = ['id' => $id, 'visual' => strip_tags($title)];
+        }
+        return $result;
+    }
+    
+    /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
      * @return string
@@ -247,13 +261,15 @@ class MultiReferenceType extends Type {
                     }
                     $request = [$this->foreign_class => $all_ids];
                 } else {
-                    $request = [$this->foreign_class => $this->parseValue($more_ids)];
+                    $request = [$this->foreign_class => $this->parseValue($value)];
                 }
                 TitleBuffer::populateBuffer($request);
                 $element = TitleBuffer::getBufferedTitle($this->foreign_class, $v);
             }
-            $result[] = $element;
-            $sorter[] = strip_tags($element);
+            if ($element !== false) {
+                $result[] = $element;
+                $sorter[] = strip_tags($element);
+            }
         }
         array_multisort($sorter, SORT_NATURAL, $result);
         return implode(', ',$result);

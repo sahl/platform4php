@@ -179,6 +179,16 @@ class RepetitionType extends Type {
     }
     
     /**
+     * Format a value for a form in accordance to this type
+     * @param mixed $value
+     * @return mixed
+     */
+    public function getFormValue($value) {
+        return $value->getAsArray();
+    }
+    
+    
+    /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
      * @return string
@@ -195,6 +205,17 @@ class RepetitionType extends Type {
     public function getLogValue($value) : string {
         return print_r($value,true);
     }
+    
+    /**
+     * Get the json store value for fields of this type
+     * @param mixed $value
+     * @param bool $include_binary_data If true, then include any binary data if available
+     * @return mixed
+     */
+    public function getJSONValue($value, $include_binary_data = false) {
+        return $value->getAsArray();
+    }
+    
     
     /**
      * Get the SQL field type for fields of this type

@@ -238,6 +238,7 @@ class SingleReferenceType extends IntegerType {
      * @return string
      */
     public function getFullValue($value, Collection &$collection = null) : string {
+        if ($value === null) return '';
         $result = TitleBuffer::getBufferedTitle($this->foreign_class, $value);
         if ($result === false) {
             // We need to add more data to the buffer
@@ -258,6 +259,7 @@ class SingleReferenceType extends IntegerType {
      * @return \Platform\Datarecord|null
      */
     public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
+        if ($value === null) return null;
         $class = new $this->foreign_class();
         $class->loadForRead($value, false);
         return $class;
