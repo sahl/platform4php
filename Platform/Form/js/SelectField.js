@@ -22,6 +22,11 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
         else this.dom_node.find('option:first-child').prop('selected', true);
     }
     
+    getValue() {
+        return this.dom_node.find('select').val();
+    }
+    
+    
 }
 
 Platform.Component.bindClass('platform_component_select_field', Platform.Form.SelectField);
