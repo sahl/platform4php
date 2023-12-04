@@ -154,6 +154,7 @@ class Endpoint {
      * Handles API requests
      */
     public function handle() {
+        header('Content-Type: text/json');
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
         if ($this->preset_instanceid) {
