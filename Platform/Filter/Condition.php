@@ -113,6 +113,8 @@ class Condition {
                 return new ConditionOneOf($array['fieldname'], $array['value']);
             case 'Refers':
                 return new ConditionRefers($array['fieldname'], $array['value']);
+            case 'Custom':
+                return new ConditionCustom($array['custom_condition'], $array['fieldname'], $array['value']);
             default:
                 trigger_error('Invalid condition type '.$array['type'].' in array', E_USER_ERROR);
         }

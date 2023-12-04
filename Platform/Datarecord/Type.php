@@ -114,6 +114,12 @@ class Type {
     protected $list_location = self::LIST_HIDDEN;
     
     /**
+     * Misc properties
+     * @var type array
+     */
+    protected $misc_properties = [];
+    
+    /**
      * Name of subfields on this type
      * @var mixed
      */
@@ -135,7 +141,7 @@ class Type {
         $this->name = $name;
         $this->title = $title;
         
-        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_location', 'layout_group', 'is_invisible'];
+        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_location', 'layout_group', 'is_invisible', 'properties'];
         foreach ($options as $key => $option) {
             if (! in_array($key, $valid_options)) trigger_error('Invalid options passed to '.get_called_class().': '.$key, E_USER_ERROR);
             switch ($key) {
@@ -145,6 +151,10 @@ class Type {
                         if (! is_array($option)) $option = explode(',',$option);
                         $this->setIndexes($option);
                     }
+                    break;
+                case 'properties':
+                    if (! is_array($option)) trigger_error('Properties must be an array', E_USER_ERROR);
+                    foreach ($option as $property => $value) $this->setProperty($property, $value);
                     break;
                 default:
                     $this->$key = $option;
@@ -270,6 +280,27 @@ class Type {
      */
     public function filterLesserEqualSQL($value) {
         return $this->name.' <= \''.\Platform\Utilities\Database::escape($value).'\'';
+    }
+    
+    /**
+     * Perform custom filtering
+     * @param $custom_filter The type of custom filtering to do
+     * @param $value Value of this
+     * @param $other_value Value of other
+     * @return bool
+     */
+    public function filterCustom($custom_filter, $value, $other_value) {
+        return false;
+    }
+    
+    /**
+     * Get SQL to do custom filtering
+     * @param $custom_filter The type of custom filtering to do
+     * @param $value Value of this
+     * @return bool
+     */
+    public function filterCustomSQL($custom_filter, $value) {
+        return false;
     }
     
     /**
@@ -588,6 +619,16 @@ class Type {
     }
     
     /**
+     * Get a misc property from this type
+     * @param string $property Property name
+     * @return type Value of property
+     */
+    public function getProperty(string $property) {
+        if (array_key_exists($property, $this->misc_properties)) return $this->misc_properties[$property];
+        return null;
+    }
+    
+    /**
      * Get the store location of fields of this type
      * @return int
      */
@@ -720,6 +761,16 @@ class Type {
      */
     public function setPrimaryKey(bool $is_primary_key = true) {
         $this->is_primary_key = $is_primary_key;
+    }
+    
+    /**
+     * Set a misc property on this type
+     * @param string $property Property name
+     * @param type $value Property value
+     */
+    public function setProperty(string $property, $value) {
+        if ($value === null) unset($this->misc_properties[$property]);
+        else $this->misc_properties[$property] = $value;
     }
     
     /**
