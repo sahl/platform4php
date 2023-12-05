@@ -429,6 +429,11 @@ class Field extends Component {
         return true;
     }
     
+    protected function prepareData() {
+        parent::prepareData();
+        $this->addData('field_name', $this->name);
+    }
+    
     /**
      * Render the field
      */
