@@ -101,16 +101,23 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterLike($value, $other_value) {
-        return $this->filterMatch($value, $other_value);
+        if (SingleReferenceType::$like_search_in_progress) return false;
+        SingleReferenceType::$like_search_in_progress = true;
+        $result = $this->filterOneOf($value, $this->foreign_class::findByKeywords($other_value)->getAllIds());
+        SingleReferenceType::$like_search_in_progress = false;
+        return $result;
     }
     
     /**
      * Get SQL to determine if a field of this type is like another value
      * @param mixed $value The other value
-     * @return bool
      */
     public function filterLikeSQL($value) {
-        return $this->filterMatchSQL($value);
+        if (SingleReferenceType::$like_search_in_progress) return 'FALSE';
+        SingleReferenceType::$like_search_in_progress = true;
+        $result = $this->filterOneOfSQL($this->foreign_class::findByKeywords($value)->getAllIds());
+        SingleReferenceType::$like_search_in_progress = false;
+        return $result;
     }
     
     /**
@@ -196,11 +203,11 @@ class MultiReferenceType extends Type {
      */
     public function filterOneOfSQL(array $values) {
         if (! count($values)) return 'FALSE';
-        $final_values = [];
+        $sql_segments = [];
         foreach ($values as $value) {
-            $final_values = array_merge($final_values, $this->parseValue($value));
+            $sql_segments[] = $this->filterMatchSQL($value);
         }
-        return $this->name.' IN ('.implode(',',$final_values).')';
+        return '('.implode(' OR ', $sql_segments).')';
     }    
     
     /**

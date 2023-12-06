@@ -31,7 +31,6 @@ class ConditionLesser extends Condition {
     
     public function validate() {
         if (! $this->type) return ['No type attached to condition'];
-        if (! $this->type->validateValue($this->value)) return ['Value is not valid for type'];
         return true;
     }
 }

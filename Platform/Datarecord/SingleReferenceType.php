@@ -22,6 +22,12 @@ class SingleReferenceType extends IntegerType {
     protected $foreign_class = null;
     
     /**
+     * Indicate if we are performing a like search, so we don't nest deeper than one level.
+     * @var bool
+     */
+    public static $like_search_in_progress = false;
+    
+    /**
      * Construct a field of this type
      * @param string $name Field name
      * @param string $title Field title
@@ -102,16 +108,23 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function filterLike($value, $other_value) {
-        return $this->filterMatch($value, $other_value);
+        if (static::$like_search_in_progress) return false;
+        static::$like_search_in_progress = true;
+        $result = $this->filterOneOf($value, $this->foreign_class::findByKeywords($other_value)->getAllIds());
+        static::$like_search_in_progress = false;
+        return $result;
     }
     
     /**
      * Get SQL to determine if a field of this type is like another value
      * @param mixed $value The other value
-     * @return bool
      */
     public function filterLikeSQL($value) {
-        return $this->filterMatchSQL($value);
+        if (static::$like_search_in_progress) return 'FALSE';
+        static::$like_search_in_progress = true;
+        $result = $this->filterOneOfSQL($this->foreign_class::findByKeywords($value)->getAllIds());
+        static::$like_search_in_progress = false;
+        return $result;
     }
     
     /**
