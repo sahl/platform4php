@@ -934,7 +934,8 @@ class Datarecord implements DatarecordReferable {
         $search_fields = array();
         $numeric_fields = [];
         // Locate search fields
-        foreach (static::getStructure() as $field => $definition) {
+        $structure = static::getStructure();
+        foreach ($structure as $field => $definition) {
             if ($definition['searchable'] || $definition['is_title']) {
                 $search_fields[] = $field;
             }
@@ -950,10 +951,19 @@ class Datarecord implements DatarecordReferable {
         foreach ($parsed_keywords as $keyword) {
             $previouscondition = false;
             foreach ($search_fields as $fieldname) {
-                if (in_array($fieldname, $numeric_fields)) $condition = new ConditionMatch($fieldname, $keyword);
-                else $condition = new ConditionLike($fieldname, $keyword);
-                if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
-                $previouscondition = $condition;
+                if (in_array($structure[$fieldname]['fieldtype'], [static::FIELDTYPE_REFERENCE_SINGLE, static::FIELDTYPE_REFERENCE_MULTIPLE])) {
+                    // Reference-search
+                    $foreign_class = $structure[$fieldname]['foreign_class'];
+                    $foreign_matches = $foreign_class::findByKeywords($keywords);
+                    $condition = new ConditionOneOf($fieldname, $foreign_matches->getAllIDs());
+                    if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
+                    else $previouscondition = $condition;
+                } else {
+                    if (in_array($fieldname, $numeric_fields)) $condition = new ConditionMatch($fieldname, $keyword);
+                    else $condition = new ConditionLike($fieldname, $keyword);
+                    if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
+                    $previouscondition = $condition;
+                }
             }
             $filter->addCondition($condition);
         }
