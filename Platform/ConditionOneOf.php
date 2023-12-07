@@ -21,6 +21,7 @@ class ConditionOneOf extends Condition {
         Datarecord::FIELDTYPE_KEY,
         Datarecord::FIELDTYPE_REFERENCE_SINGLE,
         Datarecord::FIELDTYPE_REFERENCE_MULTIPLE,
+        Datarecord::FIELDTYPE_ENUMERATION,
         Datarecord::FIELDTYPE_ARRAY,
     ];
     
