@@ -222,6 +222,12 @@ class Datarecord implements DatarecordReferable {
     private static $foreign_reference_buffer = array();
     
     /**
+     * Used to indicate if a find by keyword search is in progress, to prevent going to deep in reference fields
+     * @var bool
+     */
+    private static $find_by_keyword_in_progress = false;
+    
+    /**
      * Which subfields are included in an address field
      */
     const ADDRESS_FIELDS = ['address', 'address2', 'city', 'zip', 'countrycode'];
@@ -952,12 +958,16 @@ class Datarecord implements DatarecordReferable {
             $previouscondition = false;
             foreach ($search_fields as $fieldname) {
                 if (in_array($structure[$fieldname]['fieldtype'], [static::FIELDTYPE_REFERENCE_SINGLE, static::FIELDTYPE_REFERENCE_MULTIPLE])) {
-                    // Reference-search
-                    $foreign_class = $structure[$fieldname]['foreign_class'];
-                    $foreign_matches = $foreign_class::findByKeywords($keywords);
-                    $condition = new ConditionOneOf($fieldname, $foreign_matches->getAllIDs());
-                    if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
-                    else $previouscondition = $condition;
+                    if (! self::$find_by_keyword_in_progress) {
+                        self::$find_by_keyword_in_progress = true;
+                        // Reference-search
+                        $foreign_class = $structure[$fieldname]['foreign_class'];
+                        $foreign_matches = $foreign_class::findByKeywords($keywords);
+                        $condition = new ConditionOneOf($fieldname, $foreign_matches->getAllIDs());
+                        if ($previouscondition) $condition = new ConditionOR($condition, $previouscondition);
+                        else $previouscondition = $condition;
+                        self::$find_by_keyword_in_progress = false;
+                    }
                 } else {
                     if (in_array($fieldname, $numeric_fields)) $condition = new ConditionMatch($fieldname, $keyword);
                     else $condition = new ConditionLike($fieldname, $keyword);
