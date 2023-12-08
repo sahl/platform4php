@@ -30,7 +30,23 @@ class Page {
      */
     private static $page_started = false;
 
-
+    /**
+     * Add a timestamp to the end of the filename for when the physical file
+     * was last modified
+     * @param string $filename Filename as URL path
+     * @return string Modified filename or original filename if modification couldn't be made
+     */
+    protected static function addTimeStamp(string $filename) {
+        // Discard files on other servers
+        if (mb_substr(mb_strtolower($filename),0,4) == 'http') return $filename;
+        // Discard relative filer
+        if (mb_substr($filename,0,1) != '/') return $filename;
+        // Get full path
+        $path_filename = \Platform\Platform::getServerRoot().$filename;
+        if (! file_exists($path_filename)) return $filename;
+        return mb_strpos($filename, '?') !== false ? $filename .= '&'.filemtime($path_filename) : $filename .= '?'.filemtime($path_filename);
+    }    
+    
     /**
      * Shortcut for including CSS directly on the page. Will queue the css
      * if page isn't started.
@@ -41,7 +57,7 @@ class Page {
         else {
             // Check if we already have this
             if (in_array($css_file, self::$css_files)) return;
-            echo '<div class="platform_invisible platform_css_postload">'.$css_file.'</div>';
+            echo '<div class="platform_invisible platform_css_postload">'.static::addTimeStamp($css_file).'</div>';
             self::$css_files[] = $css_file;
         }
     }
@@ -83,7 +99,7 @@ class Page {
             if (in_array($js_file, self::$js_files)) return;
             
             Translation::renderJSFilesForFile($js_file);
-            echo '<div class="platform_post_load_javascript" data-src="'.$js_file.'"></div>';
+            echo '<div class="platform_post_load_javascript" data-src="'.static::addTimeStamp($js_file).'"></div>';
             
             self::$js_files[] = $js_file;            
         }
@@ -140,7 +156,7 @@ class Page {
             
         ), self::$css_files, $css_files);
         foreach ($css_files as $css_file) {
-            echo '<link rel="stylesheet" href="'.$css_file.'" type="text/css">';
+            echo '<link rel="stylesheet" href="'.static::addTimeStamp($css_file).'" type="text/css">';
         }
         
         Translation::renderHeadSection();
@@ -148,7 +164,7 @@ class Page {
         if (! is_array($js_files)) $js_files = array($js_files);
         $js_files = array_merge(self::$js_files, $js_files);
         foreach ($js_files as $js_file) {
-            echo '<script src="'.$js_file.'" type="text/javascript"></script>';
+            echo '<script src="'.static::addTimeStamp($js_file).'" type="text/javascript"></script>';
         }
         if ($options['custom_head_html']) echo $options['custom_head_html'];
         echo '</head><body>';

@@ -29,6 +29,14 @@ class Platform {
     }
     
     /**
+     * Get the server root
+     * @return string
+     */
+    public static function getServerRoot() : string {
+        return $_SERVER['DOCUMENT_ROOT'];
+    }
+    
+    /**
      * Set a parameter in the global configuration (in memory)
      * @global array $platform_configuration Global configuration storage
      * @param string $key Key
