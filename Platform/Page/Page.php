@@ -37,6 +37,7 @@ class Page {
      * @return string Modified filename or original filename if modification couldn't be made
      */
     protected static function addTimeStamp(string $filename) {
+        if (! \Platform\Platform::getConfiguration('timestamp_scripts')) return $filename;
         // Discard files on other servers
         if (mb_substr(mb_strtolower($filename),0,4) == 'http') return $filename;
         // Discard relative filer
