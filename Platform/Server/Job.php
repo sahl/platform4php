@@ -477,7 +477,7 @@ class Job extends \Platform\Datarecord {
         $this->last_start = Time::now();
         if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
         if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Time::now()->add(0, $this->frequency);
-        $result = (int)shell_exec('php '.static::getRunScript().' '.$this->job_id.' &> '.$this->getOutputFile().' & echo $!');
+        $result = (int)shell_exec('php '.static::getRunScript().' '.$this->job_id.' > '.$this->getOutputFile().' 2> /dev/null & echo $!');
         if ($result) {
             self::log('started', 'Running with PID: '.$result, $this);
             $this->process_id = $result;
