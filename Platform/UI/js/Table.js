@@ -113,6 +113,16 @@ Platform.Table = class extends Platform.Component {
         // If we have not provided data from the backend, we send an empty array
         if (! table_configuration.data)
             table_configuration.data = [];
+        
+        // Inject tags stripper in all columns when using download functions
+        for (var i in table_configuration.columns) {
+            var column = table_configuration.columns[i];
+            column.accessorDownload = function(value, data, type, params, column) {
+                if (typeof value != 'string')  return '';
+                return value.replace(/<\/?[^>]+(>|$)/g, "").replace(/<!--[\s\S]*?-->/g, "");
+            };
+        }
+        
 
         // And now we can initialize the table
         this.tabulator = new Tabulator('#'+dom_node.attr('id')+'_table', table_configuration);

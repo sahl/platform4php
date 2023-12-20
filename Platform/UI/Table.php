@@ -133,7 +133,7 @@ class Table extends Component {
         $fields = $classname::getTableFields(false);
         foreach ($fields as $field) {
             $column = array(
-                'title' => $structure[$field]['label'],
+                'title' => strip_tags($structure[$field]['label']),
                 'field' => $prefix.$field,
                 'visible' => $structure[$field]['columnvisibility'] == Datarecord::COLUMN_VISIBLE,
             );
