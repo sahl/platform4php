@@ -47,7 +47,7 @@ class Endpoint {
      */
     public function __construct(array $classnames = []) {
         foreach ($classnames as $classname) {
-            if (!class_exists($classname)) trigger_warning('No such class '.$classname, E_USER_ERROR);
+            if (!class_exists($classname)) trigger_error('No such class '.$classname, E_USER_ERROR);
             $shortname = $classname::getBaseClassName();
             $this->classes[$shortname] = $classname;
         }
@@ -112,6 +112,7 @@ class Endpoint {
      * Handles API requests
      */
     public function handle() {
+        header('Content-Type: application/json');
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
         if ($this->preset_instanceid) {

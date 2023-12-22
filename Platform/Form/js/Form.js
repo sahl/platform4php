@@ -81,37 +81,36 @@ Platform.Form = class extends Platform.Component {
     }
     
     validate() {
-        var allowsubmit = true;
+        var allow_submit = true;
         var form_node = this.dom_node.find('form');
         
+        // Gather hidden fields
+        var hidden_fields = [];
+    
+        // Validate form by validating all fields not considered hidden
         this.dom_node.find('form').children('.platform_form_field_component').each(function() {
             var field_component = $(this).platformComponent();
-            if (! field_component.validate()) {
-                allowsubmit = false;
+            if (field_component.isHidden()) {
+                var name = field_component.getName();
+                name = name.replace('[]', '');
+                hidden_fields.push(name);
+                return true;
             }
+            if (! field_component.validate()) {
+                allow_submit = false;
+            }
+            return true;
         });
 
-        // Gather hidden fields
-        var hiddenfields = [];
+        if (hidden_fields.length) form_node.find('[name="form_hiddenfields"]').val(hidden_fields.join(' '));
 
-        $('input,select,textarea', form_node).filter(':hidden,:disabled').each(function() {
-            // We accept hidden fields
-            if ($(this).is('[type="hidden"]')) return true;
-            // We accept hidden texteditors
-            if ($(this).is('.texteditor')) return true;
-            var name = $(this).prop('name');
-            name = name.replace('[]', '');
-            hiddenfields.push(name);
-        });
-        if (hiddenfields.length) form_node.find('[name="form_hiddenfields"]').val(hiddenfields.join(' '));
-
-        if (allowsubmit) {
+        if (allow_submit) {
             // Check if we should save form values
             if (this.dom_node.data('save_on_submit')) {
                 $.post('/Platform/Form/php/save_form_values.php', {destination: this.dom_node.data('save_on_submit'), formid: form_node.prop('id'), formdata: form_node.serialize()});
             }
         }
-        return allowsubmit;
+        return allow_submit;
     }
 }
 

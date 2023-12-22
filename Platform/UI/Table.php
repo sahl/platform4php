@@ -133,7 +133,7 @@ class Table extends Component {
         foreach ($fields as $field) {
             $type = $classname::getFieldDefinition($field);
             $column = array(
-                'title' => $type->title,
+                'title' => strip_tags($type->title),
                 'field' => $prefix.$type->name,
                 'visible' => $type->getListLocation() == \Platform\Datarecord\Type::LIST_SHOWN,
             );
