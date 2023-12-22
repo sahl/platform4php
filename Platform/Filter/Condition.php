@@ -60,6 +60,8 @@ class Condition {
         if ($this->fieldname) {
             $this->type = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
             $this->no_sql = $this->type->getStoreLocation() != Type::STORE_DATABASE;
+            // The good thing of parsing the value is we are sure that we have a normalized value further on.
+            // The bad thing of parsing the value is that we sometimes doesn't want the value to be normalized.
             //$this->value = $this->type->parseValue($this->value); // We really don't want this
         }
         if ($this->no_sql) $filter->setFilterAfterSQL();

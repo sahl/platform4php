@@ -111,7 +111,7 @@ class Filter {
      */
     public function addFilter(Filter $filter) {
         if ($filter->getBaseClassName() != $this->getBaseClassName()) trigger_error('Tried to add incompatible filter', E_USER_ERROR);
-        $this->addCondition($filter->getBaseCondition());
+        if ($filter->getBaseCondition()) $this->addCondition($filter->getBaseCondition());
     }
     
     /**

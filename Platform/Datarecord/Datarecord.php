@@ -754,7 +754,7 @@ class Datarecord implements DatarecordReferable {
     public static function getAll(bool $perform_access_check = false) : Collection {
         $filter = new Filter(get_called_class());
         $filter->setPerformAccessCheck($perform_access_check);
-        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->equal('is_deleted', 0);
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->conditionMatch('is_deleted', 0);
         return $filter->execute();
     }
 
