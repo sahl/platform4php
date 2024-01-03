@@ -301,6 +301,23 @@ class HyperReferenceType extends Type {
     }
     
     /**
+     * Replaces a reference to the given object with a reference to a new object.
+     * If the old object isn't referenced nothing is changed
+     * @param type $value The existing value
+     * @param Datarecord $old_object Old reference object
+     * @param Datarecord $new_object New reference object
+     * @return type The updated value
+     */
+    public function replaceReferenceToObject($value, Datarecord $old_object, Datarecord $new_object) {
+        if ($this->filterMatch($value, $old_object)) {
+            $value = $this->parseValue($new_object);
+            return $value;
+        }
+        return $value;
+    }    
+    
+    
+    /**
      * Get SQL sort or return false if we can't sort by SQL
      * @param bool $descending True if we need descending sort
      * @return string|bool Sort string or false if we can't sort.

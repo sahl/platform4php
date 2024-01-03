@@ -314,19 +314,17 @@ class Datarecord implements DatarecordReferable {
      * Make a copy of this object
      * @return Datarecord New copied and saved object (in read mode)
      */
-    /*public function copy(array $related_objects_to_copy = array()) : Datarecord {
+    public function copy(array $related_classes_to_copy = array()) : Datarecord {
         $copy = $this->getCopy(true);
         // Rename object
         $copy->save(false, true);
         // Check if there also are related objects to copy
-        if (count($related_objects_to_copy)) {
-            $remap = array(); $new_objects = array();
-            // Add a remapping from the old ID to the new ID
-            $remap[get_called_class()][$this->getValue($this->getKeyField())] = $copy->getValue($this->getKeyField());
-            $new_objects[get_called_class()][] = $copy;
+        if (count($related_classes_to_copy)) {
+            $remap = array();
+            // Add a remapping from the old object to the new object
+            $remap[get_called_class()][] = ['old_object' => $this, 'new_object' => $copy];
             // Loop all objects
-            foreach ($related_objects_to_copy as $class) {
-                if (substr($class,0,1) == '\\') $class = substr($class,1);
+            foreach ($related_classes_to_copy as $class) {
                 if (! class_exists($class)) trigger_error('Class '.$class.' does not exist.', E_USER_ERROR);
                 // Find all fields in remote object pointing to this object type
                 $referring_fields = $class::getFieldsRelatingTo(get_called_class());
@@ -336,46 +334,37 @@ class Datarecord implements DatarecordReferable {
                 foreach ($referring_fields as $referring_field)
                     $filter->addConditionOR(new ConditionMatch($referring_field, $this));
                 // Now get all relevant objects and copy them
-                $relevant_objects = $filter->execute()->getAll();
-                foreach ($relevant_objects as $relevant_object) {
+                $objects_to_copy = $filter->execute()->getAll();
+                foreach ($objects_to_copy as $relevant_object) {
                     $new_object = $relevant_object->getCopy();
                     $new_object->save(false, true);
-                    $new_objects[$class][] = $new_object;
                     // Add a remapping from the old ID to the new ID
-                    $remap[$class][$relevant_object->getValue($relevant_object->getKeyField())] = $new_object->getValue($relevant_object->getKeyField());
+                    $remap[$class][] = ['old_object' => $relevant_object, 'new_object' => $new_object];
                 }
             }
             // Now we need to loop again to fix relations
-            foreach ($new_objects as $class => $objects) {
-                foreach ($objects as $object) {
+            foreach ($remap as $class => $new_object_structure) {
+                foreach ($new_object_structure as $new_object_reference) {
+                    $new_object = $new_object_reference['new_object'];
                     // Loop to find all relevant fields
-                    foreach ($class::$structure as $fieldname => $definition) {
-                        // If this is a single reference pointing to a remapped object...
-                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_SINGLE && isset($remap[$definition['foreign_class']])) {
-                            // If we have a remap from an old to a new id, use it.
-                            if (isset($remap[$definition['foreign_class']][$object->getValue($fieldname)]))
-                                $object->setValue($fieldname, $remap[$definition['foreign_class']][$object->getValue($fieldname)]);
-                        }
-                        // If this is a multi reference pointing to a remapped object...
-                        if ($definition['fieldtype'] == self::FIELDTYPE_REFERENCE_MULTIPLE && isset($remap[$definition['foreign_class']])) {
-                            $new_values = array();
-                            // Loop all values...
-                            foreach ($object->getValue($fieldname) as $value) {
-                                // If we have a remap from an old id to a new id, use it. Otherwise keep the existing value.
-                                $new_values[] = $remap[$definition['foreign_class']][$value] ?: $value;
+                    foreach ($class::getStructure() as $fieldname => $type) {
+                        if ($type->isReference()) {
+                            // Loop all replacement objects
+                            foreach ($remap as $foreign_class => $copies) {
+                                if ($type->matchesForeignClass($foreign_class)) {
+                                    $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getValue($fieldname), $copies['old_object'], $copies['new_object']));
+                                }
                             }
-                            // Write back values.
-                            $object->setValue($fieldname, $new_values);
                         }
                     }
                     // Save the finalized object.
-                    $object->save();
+                    $new_object->save();
                 }
             }
         }
         $copy->unlock();
         return $copy;
-    }*/
+    }
     
     public function copyFrom(Datarecord $otherobject) {
         if (! is_a($this, get_class($otherobject))) trigger_error('Incompatible objects', E_USER_ERROR);

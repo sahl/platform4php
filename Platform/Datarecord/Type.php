@@ -145,6 +145,10 @@ class Type {
         foreach ($options as $key => $option) {
             if (! in_array($key, $valid_options)) trigger_error('Invalid options passed to '.get_called_class().': '.$key, E_USER_ERROR);
             switch ($key) {
+                case 'is_title':
+                    if (!array_key_exists('list_location', $options)) $this->list_location = self::LIST_SHOWN;
+                    $this->$key = $option;
+                    break;
                 case 'index':
                     if ($option === true) $this->setIndex();
                     else {
@@ -692,6 +696,18 @@ class Type {
      * @return mixed
      */
     public function removeReferenceToObject($value, Datarecord $object) {
+        return $value;
+    }
+    
+    /**
+     * Replaces a reference to the given object with a reference to a new object.
+     * If the old object isn't referenced nothing is changed
+     * @param type $value The existing value
+     * @param Datarecord $old_object Old reference object
+     * @param Datarecord $new_object New reference object
+     * @return type The updated value
+     */
+    public function replaceReferenceToObject($value, Datarecord $old_object, Datarecord $new_object) {
         return $value;
     }
     
