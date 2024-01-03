@@ -296,7 +296,7 @@ class ArrayType extends Type {
     public function parseValue($value, $existing_value = null) {
         if (is_array($value)) return $value;
         return null;
-    }    
+    }
     
     /**
      * Do an integrity check of this field

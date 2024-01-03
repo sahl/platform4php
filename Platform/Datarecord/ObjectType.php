@@ -15,7 +15,7 @@ class ObjectType extends ArrayType {
      * @return string
      */
     public function getFieldForDatabase($value) : string {
-        if (! count($value)) return 'NULL';
+        if ($value === null || is_array($value) && ! count($value)) return 'NULL';
         return '\''. \Platform\Utilities\Database::escape(serialize($value)).'\'';
     }
     
@@ -47,6 +47,16 @@ class ObjectType extends ArrayType {
     public function parseDatabaseValue($value) {
         return unserialize($value);
     }
+    
+    /**
+     * Parse a value of this type
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
+     * @return type
+     */
+    public function parseValue($value, $existing_value = null) {
+        return $value;
+    }    
     
     /**
      * Do an integrity check of this field
