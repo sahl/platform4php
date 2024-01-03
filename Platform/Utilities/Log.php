@@ -7,7 +7,7 @@ namespace Platform\Utilities;
  */
 
 use Platform\Platform;
-use Platform\File;
+use Platform\File\File;
 use Platform\Server\Instance;
 
 class Log {

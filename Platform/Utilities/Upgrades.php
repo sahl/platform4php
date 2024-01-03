@@ -52,7 +52,7 @@ class Upgrades {
      * @return Time
      */
     public static function getLastUpgradeDate() : Time {
-        $last_upgrade_date_string = \Platform\Property::getForAll('platform', 'last_upgrade_date');
+        $last_upgrade_date_string = \Platform\Security\Property::getForAll('platform', 'last_upgrade_date');
         return new Time($last_upgrade_date_string);
     }
     
@@ -61,7 +61,7 @@ class Upgrades {
      * @param Time $last_upgrade_date
      */
     public static function setLastUpgradeDate(Time $last_upgrade_date) {
-        \Platform\Property::setForAll('platform', 'last_upgrade_date', $last_upgrade_date->get());
+        \Platform\Security\Property::setForAll('platform', 'last_upgrade_date', $last_upgrade_date->get());
     }
     
 }

@@ -512,7 +512,7 @@ class Translation {
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
         // Check if this language is something which isn't loaded yet
         $new_language = ! in_array($language_key, self::getLanguagesToLoad());
-        \Platform\Property::setForUser(0, 'instance_language', '', $language_key);
+        \Platform\Security\Property::setForUser(0, 'instance_language', '', $language_key);
         unset($_SESSION['platform']['instance_language']);
         if ($new_language) self::reloadAllTranslations();
     }

@@ -41,8 +41,8 @@ class User extends Datarecord {
     }
 
     protected static function buildStructure() {
-        $username_field = static::$username_is_email ? new EmailType('username', Translation::translateForInstance('Email'), ['is_required' => true]) :
-            new TextType('username', Translation::translateForInstance('User name'), ['is_required' => true]);
+        $username_field = static::$username_is_email ? new EmailType('username', Translation::translateForInstance('Email'), ['is_title' => true, 'is_required' => true]) :
+            new TextType('username', Translation::translateForInstance('User name'), ['is_title' => true,'is_required' => true]);
 
         static::addStructure([
             new KeyType('user_id'),
