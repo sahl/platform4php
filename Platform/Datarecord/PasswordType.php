@@ -171,10 +171,24 @@ class PasswordType extends TextType {
         return $value ? '********' : '';
     }
     
+    public function getFormValue($value): mixed {
+        return $value ? 'XXXXXX' : '';
+    }
+    
     public function getFormField(): \Platform\Form\Field {
         if ($this->isReadonly() || $this->isInvisible()) return null;
         return \Platform\Form\PasswordField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
+    /**
+     * Parse a value of this type
+     * @param $value The new value to set
+     * @param $existing_value The existing value of this field (if any)
+     * @return type
+     */
+    public function parseValue($value, $existing_value = null) {
+        if (! $value) return '';
+        return password_hash($value, PASSWORD_DEFAULT);
+    }    
 }
 
