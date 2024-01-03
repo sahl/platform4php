@@ -7,7 +7,7 @@ namespace Platform\Connector;
  */
 
 use Platform\Platform;
-use Platform\File;
+use Platform\File\File;
 use Platform\Form\Form;
 use Platform\Form\HiddenField;
 use Platform\Form\SubmitButton;
@@ -110,8 +110,8 @@ class Microbizz {
         $request_form = Form::Form('microbizz_connect_form');
         $action = $connect_testserver ? 'https://rc1.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
         $request_form->setAction($action);
-        $request_form->addField(new HiddenField('', 'request', array('value' => json_encode($request))));
-        if ($button_text) $request_form->addField(new SubmitButton($button_text, 'performlink'));
+        $request_form->addField(HiddenField::Field('', 'request', array('value' => json_encode($request))));
+        if ($button_text) $request_form->addField(SubmitButton::Field($button_text, 'performlink'));
         return $request_form;
     }
     
