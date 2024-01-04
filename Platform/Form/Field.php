@@ -161,7 +161,7 @@ class Field extends Component {
         $field->label = $label;
         $field->name = $name;
         
-        if (array_key_exists('required', $options)) {
+        if (array_key_exists('required', $options) && $options['required']) {
             $field->is_required = true;
             unset($options['required']);
         }
