@@ -1,5 +1,6 @@
 <?php
-namespace Platform;
+use Platform\Server\Server;
+
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 $input = file_get_contents("php://input");
