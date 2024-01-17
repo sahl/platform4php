@@ -367,7 +367,21 @@ class Type {
             $array[] = '\''.\Platform\Utilities\Database::escape($value).'\'';
         }
         return $this->name.' IN ('.implode(',',$array).')';
-    }    
+    }
+    
+    /**
+     * Get this field as an extensible field
+     * @return ExtensibleField
+     */
+    public function getAsExtensibleField() : ExtensibleField {
+        $extensible_field = new ExtensibleField([
+            'title' => $this->title,
+            'field_name' => $this->name,
+            'type_class' => get_called_class(),
+            'properties' => $this->getOptionsAsArray()
+        ]);
+        return $extensible_field;
+    }
     
     /**
      * Check if we can sort by SQL
@@ -462,6 +476,20 @@ class Type {
      */
     public function getLogValue($value) : string {
         return (string)$value;
+    }
+    
+    /**
+     * Get all the options of this type as an array.
+     * @return array
+     */
+    public function getOptionsAsArray() : array {
+        $result = [];
+        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_location', 'layout_group', 'is_invisible', 'properties'];
+        
+        foreach ($valid_options as $option) {
+            if ($this->$option != null) $result[$option] = $this->$option;
+        }
+        return $result;
     }
     
     /**

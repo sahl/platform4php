@@ -20,38 +20,14 @@ class Templateclass extends Datarecord {
     protected static $title_field = false;
     
     protected static function buildStructure() {
-        $structure = array(
-            'object_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'property1' => array(
-                'label' => 'Required property',
-                'required' => true,
-                'is_title' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'property2' => array(
-                'label' => 'Optional property',
-                'fieldtype' => self::FIELDTYPE_INTEGER
-            ),
-            'property3' => array(
-                'label' => 'Linked property',
-                'fieldtype' => self::FIELDTYPE_REFERENCE_SINGLE,
-                'foreign_class' => 'foreignClass'
-            ),
-            'property4' => array(
-                'label' => 'File property',
-                'fieldtype' => self::FIELDTYPE_FILE,
-                'folder' => 'file_property_folder'
-            ),
-            'property5' => array(
-                'label' => 'Property in metadata',
-                'fieldtype' => self::FIELDTYPE_DATE,
-                'store_in_metadata' => true
-            )
-        );
-        self::addStructure($structure);
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('object_id'),
+            new \Platform\Datarecord\TextType('property1', 'Required property', ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\IntegerType('property2', 'Optional property'),
+            new \Platform\Datarecord\SingleReferenceType('property3', 'Linked property', ['foreign_class' => 'Namespace\Class']),
+            new \Platform\Datarecord\FileType('property4', 'File property', ['folder' => 'folder_to_save_files']),
+            new \Platform\Datarecord\DateTimeType('property5', 'Property in metadata', ['store_location' => \Platform\Datarecord\Type::STORE_METADATA]),
+        ]);
         parent::buildStructure();
     }
     

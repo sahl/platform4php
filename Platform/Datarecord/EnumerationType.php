@@ -232,6 +232,20 @@ class EnumerationType extends IntegerType {
     }
     
     /**
+     * Get all the options of this type as an array.
+     * @return array
+     */
+    public function getOptionsAsArray() : array {
+        $result = parent::getOptionsAsArray();
+        $valid_options = ['enumeration'];
+        
+        foreach ($valid_options as $option) {
+            if ($this->$option != null) $result[$option] = $this->$option;
+        }
+        return $result;
+    }
+    
+    /**
      * Get the SQL field type for fields of this type
      * @return string
      */

@@ -59,6 +59,7 @@ class Condition {
         
         if ($this->fieldname) {
             $this->type = $this->filter->getBaseObject()->getFieldDefinition($this->fieldname);
+            if ($this->type === null) trigger_error('No type. Did you use the correct field name "'.$this->fieldname.'"?', E_USER_ERROR);
             $this->no_sql = $this->type->getStoreLocation() != Type::STORE_DATABASE;
             // The good thing of parsing the value is we are sure that we have a normalized value further on.
             // The bad thing of parsing the value is that we sometimes doesn't want the value to be normalized.

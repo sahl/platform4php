@@ -224,6 +224,20 @@ class SingleReferenceType extends IntegerType {
     }
     
     /**
+     * Get all the options of this type as an array.
+     * @return array
+     */
+    public function getOptionsAsArray() : array {
+        $result = parent::getOptionsAsArray();
+        $valid_options = ['foreign_class'];
+        
+        foreach ($valid_options as $option) {
+            if ($this->$option != null) $result[$option] = $this->$option;
+        }
+        return $result;
+    }
+    
+    /**
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */

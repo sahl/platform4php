@@ -86,6 +86,20 @@ class FileType extends SingleReferenceType {
     }
     
     /**
+     * Get all the options of this type as an array.
+     * @return array
+     */
+    public function getOptionsAsArray() : array {
+        $result = parent::getOptionsAsArray();
+        $valid_options = ['keep_file_on_delete', 'folder'];
+        
+        foreach ($valid_options as $option) {
+            if ($this->$option != null) $result[$option] = $this->$option;
+        }
+        return $result;
+    }
+    
+    /**
      * Do an integrity check of this field
      * @return array
      */

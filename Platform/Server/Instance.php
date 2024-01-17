@@ -278,7 +278,7 @@ class Instance extends \Platform\Datarecord\Datarecord {
         \Platform\Security\Accesstoken::ensureInDatabase();
         \Platform\File\File::ensureInDatabase();
         \Platform\Utilities\Mail::ensureInDatabase();
-        //\Platform\Datarecord\ExtensibleField::ensureInDatabase();
+        \Platform\Datarecord\ExtensibleField::ensureInDatabase();
         \Platform\Security\User::ensureInDatabase();
         \Platform\Security\Property::ensureInDatabase();
         \Platform\Currency\Rate::ensureInDatabase();

@@ -303,6 +303,20 @@ class MultiReferenceType extends Type {
     }
     
     /**
+     * Get all the options of this type as an array.
+     * @return array
+     */
+    public function getOptionsAsArray() : array {
+        $result = parent::getOptionsAsArray();
+        $valid_options = ['foreign_class'];
+        
+        foreach ($valid_options as $option) {
+            if ($this->$option != null) $result[$option] = $this->$option;
+        }
+        return $result;
+    }
+    
+    /**
      * Get the raw value for fields of this type
      * @param type $value
      * @return type

@@ -260,6 +260,16 @@ class ArrayType extends Type {
     }
     
     /**
+     * Get all the options of this type as an array.
+     * @return array
+     */
+    public function getOptionsAsArray() : array {
+        if (count($this->substructure)) trigger_error('The array substructure cannot be expressed as an array', E_USER_ERROR);
+        return parent::getOptionsAsArray();
+    }
+    
+    
+    /**
      * Get the SQL field type for fields of this type
      * @return string
      */
