@@ -1,5 +1,4 @@
 <?php
-namespace Platform;
 // Check if we can decide a root
 if (! $_SERVER['DOCUMENT_ROOT']) die('Couldn\'t read $_SERVER[\'DOCUMENT_ROOT\']');
 

@@ -35,6 +35,7 @@
 
 <h2>Security</h2>
 <text name="password_salt" label="Password salt" required>
+<text name="preshared_server_key" label="Server talk pre-shared key" required>
 <password name="administrator_password" label="Password for admin interface" required>
 
 <h2>Misc</h2>

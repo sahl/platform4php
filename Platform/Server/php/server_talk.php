@@ -8,6 +8,12 @@ $json = json_decode($input, true);
 
 if ($json === null) exit;
 
+// Sleep to prevent brute-force
+usleep(100000);
+
+// Only accept command if preshared server key matches
+if ($json['preshared_server_key'] != \Platform\Platform::getConfiguration('preshared_server_key')) exit;
+
 $result = array(
     'status' => false,
     'error' => 'No command'

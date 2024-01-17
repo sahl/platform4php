@@ -134,6 +134,8 @@ class Server extends Datarecord {
      * @return mixed Key/value pair as result
      */
     public function talk(array $message = array()) {
+        // Inject the preshared key in the message
+        $message['preshared_server_key'] = Platform::getConfiguration('preshared_server_key');
         $string = json_encode($message);
 
         $ch = curl_init();

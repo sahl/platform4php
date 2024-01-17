@@ -51,7 +51,8 @@ $install_form->setValues(array(
     'dir_store' => install_get_parent_dir().'/store/',
     'dir_temp' => '/var/tmp/',
     'dir_log' => '/var/log/platform/',
-    'password_salt' => md5(rand())
+    'password_salt' => sha1(rand()),
+    'preshared_server_key' => sha1(rand())
 ));
 
 $install_form->setLabelWidth(275);
