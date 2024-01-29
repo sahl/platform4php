@@ -31,6 +31,8 @@ class Administrator {
             
             if ($form->isSubmitted() && $form->validate()) {
                 $values = $form->getValues();
+                // Sleep to prevent brute-force
+                usleep(100000);
                 if ($values['administrator_password'] == Platform::getConfiguration('administrator_password')) {
                     $_SESSION['platform']['administrator_password'] = $values['administrator_password'];
                     return true;

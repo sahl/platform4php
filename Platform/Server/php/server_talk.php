@@ -1,11 +1,18 @@
 <?php
-namespace Platform;
+use Platform\Server\Server;
+
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 $input = file_get_contents("php://input");
 $json = json_decode($input, true);
 
 if ($json === null) exit;
+
+// Sleep to prevent brute-force
+usleep(100000);
+
+// Only accept command if preshared server key matches
+if ($json['preshared_server_key'] != \Platform\Platform::getConfiguration('preshared_server_key')) exit;
 
 $result = array(
     'status' => false,
@@ -37,7 +44,7 @@ switch ($json['event']) {
             $class = $json['class'];
             $instance = new $class();
             $instance->loadForWrite($json['instance_id']);
-            $result = $instance->delete();
+            $result = $instance->delete(true);
             if (! $result) $result['error'] = 'Could not delete instance on remote server.';
             else $result = array(
                 'status' => true
