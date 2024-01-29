@@ -245,9 +245,19 @@ class Field extends Component {
         if ($field->is_required) $field->addClass('form_required_field');
         
         foreach ($options as $key => $val) {
-            $field->additional_attributes .= ' '.$key.'="'.$val.'"';
+            $field->addAttribute($key, $val);
         }
         return $field;
+    }
+    
+    /**
+     * Add an attribute to this form field
+     * @param string $attribute Name of attribute to add
+     * @param type $value Value of attribute (if any).
+     */
+    public function addAttribute(string $attribute, $value = false) {
+        if ($value === false) $this->additional_attributes .= ' '.$attribute;
+        else $this->additional_attributes .= ' '.$attribute.'="'.$value.'"';
     }
     
     /**
