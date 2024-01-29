@@ -36,26 +36,31 @@ class DateTimeType extends Type {
     }
     
     public function filterOneOfSQL(mixed $values) {
-        return parent::filterOneOfSQL(array_map(function($v){return $v->get();}, $values));
+        return parent::filterOneOfSQL(array_map(function($v){return $this->parseValue($v)->get();}, $values));
     }
     
     public function filterGreaterSQL($value) {
+        $value = $this->parseValue($value);
         return parent::filterGreaterSQL($value->get());
     }
     
     public function filterGreaterEqualSQL($value) {
+        $value = $this->parseValue($value);
         return parent::filterGreaterEqualSQL($value->get());
     }
     
     public function filterLesserSQL($value) {
+        $value = $this->parseValue($value);
         return parent::filterLesserSQL($value->get());
     }
     
     public function filterLesserEqualSQL($value) {
+        $value = $this->parseValue($value);
         return parent::filterLesserEqualSQL($value->get());
     }
     
     public function filterMatchSQL($value) {
+        $value = $this->parseValue($value);
         return parent::filterMatchSQL($value->get());
     }
     

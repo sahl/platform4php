@@ -184,6 +184,7 @@ class RepetitionType extends Type {
      * @return mixed
      */
     public function getFormValue($value) {
+        if ($value === null) $value = new \Platform\Utilities\Repetition();
         return $value->getAsArray();
     }
     
@@ -213,6 +214,7 @@ class RepetitionType extends Type {
      * @return mixed
      */
     public function getJSONValue($value, $include_binary_data = false) {
+        if ($value === null) $value = new \Platform\Utilities\Repetition();
         return $value->getAsArray();
     }
     
