@@ -1078,6 +1078,17 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get a value from this object to use in a table
+     * @param string $field Field name
+     * @return string Formatted string, this may be HTML
+     */
+    public function getTableValue(string $field) {
+        $type = static::getFieldDefinition($field);
+        if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
+        return $type->getTableValue($this->getRawValue($field), $this->collection);
+    }
+
+    /**
      * Override to return a full formatted title of this object
      * @return string
      */

@@ -266,7 +266,7 @@ class Table extends Component {
             $columns = array();
             foreach ($object->getStructure() as $name => $type) {
                 if ($type->isPrimaryKey()) $columns['id'] = $object->getRawValue($name);
-                else $columns[$name] = $type->getTableValue($object->getRawValue($name));
+                else $columns[$name] = $object->getTableValue($name);
             }
             // Add relation data (if any)
             if ($resolve_relation_field && $supplemental_data[$object->getRawValue($resolve_relation_field)]) {
