@@ -555,6 +555,8 @@ class Datarecord implements DatarecordReferable {
                         if (! static::$manual_key) $fielddefinition .= ' AUTO_INCREMENT';
                     }
                     $default = $type->getDefaultValue() ? ' DEFAULT '.$type->getFieldForDatabase($type->getDefaultValue()) : '';
+                    // Some SQL field types doesn't allow default values
+                    if (in_array(strtolower($sql_type, ['blob', 'text', 'mediumtext', 'geometry', 'json']))) $default = '';
                     self::query('ALTER TABLE '.static::$database_table.' ADD `'.$name.'` '.$sql_type.$default);
                     $changed = true;
                     
