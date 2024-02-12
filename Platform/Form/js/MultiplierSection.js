@@ -20,7 +20,7 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         row.find('input[type="checkbox"]').click(function() {
             component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
         });
-        row.find('select').change(function() {
+        row.find('select,input[type!="checkbox"]').change(function() {
             component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
         });
     }
