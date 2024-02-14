@@ -89,6 +89,18 @@ class Dialog extends Component {
     }
     
     /**
+     * Render a component as invisible to be used later with the javascript componentDialog
+     * @param Component $component Component to render
+     * @param string $component_id Optional ID to give to component
+     */
+    public static function renderComponentForComponentDialog(Component $component, string $component_id = '') {
+        if ($component_id) $component->setID($component_id);
+        echo '<div class="platform_invisible">';
+        $component->render();
+        echo '</div>';
+    }
+    
+    /**
      * Set an option for the Jquery dialog
      * @param string $option Option to set
      * @param type $value Value to use

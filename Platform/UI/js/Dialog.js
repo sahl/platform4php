@@ -54,6 +54,9 @@ Platform.Dialog = class extends Platform.Component {
     initializeLast() {
         var component = this;
         this.dom_node.dialog(this.dialog_options);
+        this.dom_node.on('dialog_close', function() {
+            component.close();
+        })
     }
     
     static warningDialog(title, text, callback) {
@@ -156,12 +159,54 @@ Platform.Dialog = class extends Platform.Component {
         }
     }
     
+    static componentDialog(title, text, component_id, ok_text, callback_ok, callback_open, callback_cancel) {
+        $('#platform_allpurpose_text').html(text);
+        
+        // Ensure that the component is moved into place and shown
+        var component_original_parent = $(component_id).parent();
+        
+        $(component_id).appendTo('#platform_allpurpose_form').show();
+        
+        if (ok_text == null) ok_text = 'Save';
+
+        var open_dialog = true;
+        if (callback_open) {
+            if (! callback_open()) open_dialog = false;
+        }
+
+        if (open_dialog) {
+            $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
+                {
+                    text: ok_text,
+                    click: function() {
+                        callback_ok();
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    click:  function() {
+                        $(this).dialog('close');
+                    }
+                }        
+            ]).dialog('option', 'close', function() {  
+                if (typeof(callback_cancel) == 'function') callback_cancel();
+                // Move component back in place
+                $(component_id).appendTo(component_original_parent);
+            }).dialog('open');
+        }
+    }
+    
+    
     open() {
         this.dom_node.dialog('open');
     }
     
     close() {
         this.dom_node.dialog('close');
+    }
+    
+    static closeGeneral() {
+        $('#platform_allpurpose_dialog').dialog('close');
     }
 }
 
