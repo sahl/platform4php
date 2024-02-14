@@ -91,7 +91,7 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**
@@ -177,7 +177,7 @@ class MultiReferenceType extends Type {
     public function filterMatchSQL($value) {
         $final_values = [];
         foreach ($this->parseValue($value) as $v) {
-            $final_values[] = $this->name.' LIKE \'%"'.((int)$v).'"%\'';
+            $final_values[] = '`'.$this->name.'` LIKE \'%"'.((int)$v).'"%\'';
         }
         return '('.implode(' OR ', $final_values).')';
     }
@@ -283,13 +283,17 @@ class MultiReferenceType extends Type {
     }
     
     /**
-     * Get the foreign object pointed to by this field (if any)
-     * @return \Platform\Datarecord|null
+     * Get the foreign objects pointed to by this field (if any)
+     * @param mixed $value
+     * @return array An array of ForeignObject
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
-        $class = new $this->foreign_class();
-        if (count($value)) $class->loadForRead($value[0], false);
-        return $class;
+    public function getForeignObjectPointers($value) : array {
+        if ($value === null) return [];
+        $result = [];
+        foreach ($value as $v) {
+            $result[] = new ForeignObjectPointer($this->foreign_class, $v);
+        }
+        return $result;
     }
     
     /**
@@ -338,7 +342,7 @@ class MultiReferenceType extends Type {
      * @return string
      */
     public function getSQLFieldType() : string {
-        return 'VARCHAR(4096)';
+        return 'MEDIUMTEXT';
     }
     
     /**

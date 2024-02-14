@@ -77,7 +77,7 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterIsSet($value) {
-        return $value > 0;
+        return $value !== null;
     }
     
     /**
@@ -85,7 +85,7 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**
@@ -162,7 +162,7 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        return $this->name.' = '.((int)$value);
+        return '`'.$this->name.'` = '.((int)$value);
     }
     
     /**
@@ -190,7 +190,7 @@ class EnumerationType extends IntegerType {
         foreach ($values as $value) {
             $final_values[] = $this->parseValue($value);
         }
-        return $this->name.' IN ('.implode(',',$final_values).')';
+        return '`'.$this->name.'` IN ('.implode(',',$final_values).')';
     }    
     
     /**
@@ -199,9 +199,20 @@ class EnumerationType extends IntegerType {
      * @return string
      */
     public function getFieldForDatabase($value) : string {
-        if (! $value) return 'NULL';
+        if ($value === null) return 'NULL';
         return ((int)$value);
     }
+    
+    /**
+     * Get options for the associated form fields
+     * @return array
+     */
+    public function getFormFieldOptions() : array {
+        $result = parent::getFormFieldOptions();
+        if ($this->enumeration) $result['options'] = $this->enumeration;
+        return $result;
+    }
+    
     
     /**
      * Get a form field for editing fields of this type
@@ -209,7 +220,7 @@ class EnumerationType extends IntegerType {
      */
     public function getFormField() : ?\Platform\Form\Field {
         if ($this->isReadonly() || $this->isInvisible()) return null;
-        return \Platform\Form\SelectField::Field($this->title, $this->name, ['options' => $this->enumeration]);
+        return \Platform\Form\SelectField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     /**
@@ -278,7 +289,7 @@ class EnumerationType extends IntegerType {
      * @return type
      */
     public function parseValue($value, $existing_value = null) {
-        if (! $value || !array_key_exists($value, $this->enumeration)) return null;
+        if ($value === null || !array_key_exists($value, $this->enumeration)) return null;
         return (int)$value;
     }
     

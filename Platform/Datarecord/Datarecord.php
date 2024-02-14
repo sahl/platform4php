@@ -597,7 +597,7 @@ class Datarecord implements DatarecordReferable {
                 $type = static::getFieldDefinition($field_in_database['Field']);
                 if ($field_in_database['Type'] != mb_substr(mb_strtolower($type->getSQLFieldType()),0, mb_strlen($field_in_database['Type']))) {
                     if (static::$database_change_strategy == self::DATABASE_CHANGE_ALTER) {
-                        self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN '.$field_in_database['Field'].' '.$field_in_database['Field'].' '.$type->getSQLFieldType());
+                        self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN `'.$field_in_database['Field'].'` `'.$field_in_database['Field'].'` '.$type->getSQLFieldType());
                     } else {
                         self::query('ALTER TABLE '.static::$database_table.' DROP `'.$field_in_database['Field'].'`');
                         $default = $type->getDefaultValue() ? ' DEFAULT '.$type->getFieldForDatabase($type->getDefaultValue()) : '';
@@ -834,7 +834,7 @@ class Datarecord implements DatarecordReferable {
     public function getChangedFields() : array {
         $result = array();
         foreach (static::$structure as $name => $type) {
-            if ($type->getStoreLocation() == Type::STORE_DATABASE && $this->values[$name] != $this->values_on_load[$name]) {
+            if ($type->getStoreLocation() == Type::STORE_DATABASE && $this->values[$name] !== $this->values_on_load[$name]) {
                 $result[] = $name;
             }
         }
@@ -961,14 +961,17 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
-     * Return the object pointed to by this field
+     * Return the object pointed to by this field. If it points to several objects
+     * only the first is returned
      * @param string $field Field name
-     * @return Object referenced
+     * @return Datarecord Referenced object or null
      */
-    public function getForeignObject(string $field) {
+    public function getForeignObject(string $field) : ?Datarecord {
         $type = static::getFieldDefinition($field);
         if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
-        return $type->getForeignObject($this->getRawValue($field));
+        $objects = $type->getForeignObjectPointers($this->getRawValue($field));
+        if (count($objects) == 0) return null;
+        return $objects[0]->getForeignObject();
     }
     
     /**
@@ -1636,6 +1639,10 @@ class Datarecord implements DatarecordReferable {
                 $this->forceWritemode();
             }
         }
+        
+        if ($is_new_object) $this->onAfterCreate();
+        $this->onAfterSave($changed_fields);
+        
         if (static::$log_changes) $this->logChange();
         $this->values_on_load = $this->values;
         
@@ -1647,9 +1654,6 @@ class Datarecord implements DatarecordReferable {
         
         // Unlock a manual key semaphore (if any)
         Semaphore::release($manual_key_semaphore);
-        
-        if ($is_new_object) $this->onAfterCreate();
-        $this->onAfterSave($changed_fields);
         
         return true;
     }

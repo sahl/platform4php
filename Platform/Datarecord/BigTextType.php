@@ -13,6 +13,10 @@ class BigTextType extends TextType {
         return \Platform\Utilities\Utilities::condenseLongText($value);
     }
     
+    public function getFullValue($value, Collection &$collection = null): string {
+        return str_replace("\n", "<br>", parent::getFullValue($value, $collection));
+    }
+    
     public function getFormField(): \Platform\Form\Field {
         if ($this->isReadonly() || $this->isInvisible()) return null;
         return \Platform\Form\TextareaField::Field($this->title, $this->name, $this->getFormFieldOptions());

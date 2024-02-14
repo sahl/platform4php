@@ -61,7 +61,7 @@ class PasswordType extends TextType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**

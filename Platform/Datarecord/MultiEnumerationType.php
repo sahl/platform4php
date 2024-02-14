@@ -23,7 +23,7 @@ class MultiEnumerationType extends EnumerationType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**
@@ -45,7 +45,7 @@ class MultiEnumerationType extends EnumerationType {
     public function filterMatchSQL($value) {
         $final_values = [];
         foreach ($this->parseValue($value) as $v) {
-            $final_values[] = $this->name.' LIKE \'%"'.((int)$v).'"%\'';
+            $final_values[] = '`'.$this->name.'` LIKE \'%"'.((int)$v).'"%\'';
         }
         return '('.implode(' OR ', $final_values).')';
     }

@@ -202,25 +202,28 @@ class Collection implements Iterator,Countable {
 
     /**
      * Get all associated objects which are object pointed to, by a relation field
-     * in this collection
+     * in this collection. Only works if all objects are of the same type.
      * @param string $field Field name to consider
      * @return Collection All associated objects
      */
     public function getAssociatedObjects(string $field) : Collection {
-        $foreign_ids = array();
+        // Get field type
+        $type = $this->collectiontype::getFieldDefinition($field);
+        // Harvest all foreign reference pointers
+        $result = [];
         foreach ($this->getAllRawValues($field) as $value) {
-            if (is_array($value)) {
-                foreach ($value as $v) if (! in_array($v, $foreign_ids) && $v) $foreign_ids[] = $v;
-            } else {
-                if (! in_array($value, $foreign_ids) && $value) $foreign_ids[] = $value;
-            }
+            $result = array_merge($result, $type->getForeignObjectPointers($value));
         }
-        if (! count($foreign_ids)) return new Collection();
-        $structure = $this->collectiontype::getStructure();
-        $foreign_class = $structure[$field]['foreign_class'];
-        if (!class_exists($foreign_class)) return new Collection();
+        if (count($result) == 0) return new Collection();
+        $foreign_class = null; $foreign_ids = [];
+        foreach ($result as $foreign_object_pointer) {
+            if ($foreign_class === null) $foreign_class = $foreign_object_pointer->getForeignClass();
+            if ($foreign_class != $foreign_object_pointer->getForeignClass()) trigger_error('Field '.$field.' pointed to several classes when trying to fetch associated objects.', E_USER_ERROR);
+            $foreign_id = $foreign_object_pointer->getForeignId();
+            if (! in_array($foreign_id, $foreign_ids)) $foreign_ids[] = $foreign_id;
+        }
         $filter = new Filter($foreign_class);
-        $filter->addCondition(new ConditionOneOf($foreign_class::getKeyfield(), $foreign_ids));
+        $filter->conditionOneOf($foreign_class::getKeyField(), $foreign_ids);
         return $filter->execute();
     }
     

@@ -88,7 +88,7 @@ class ArrayType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**

@@ -39,7 +39,7 @@ class CurrencyType extends Type {
      */
     public function filterGreaterEqualSQL($value) {
         $value = $this->parseValue($value);
-        return $this->name.'_localvalue >= '.((double)$value['localvalue']);
+        return '`'.$this->name.'_localvalue` >= '.((double)$value['localvalue']);
     }
     
     /**
@@ -60,7 +60,7 @@ class CurrencyType extends Type {
      */
     public function filterGreaterSQL($value) {
         $value = $this->parseValue($value);
-        return $this->name.'_localvalue >= '.((double)$value['localvalue']);
+        return '`'.$this->name.'_localvalue` >= '.((double)$value['localvalue']);
     }
     
     /**
@@ -78,7 +78,7 @@ class CurrencyType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.'_localvalue IS NOT NULL';
+        return '`'.$this->name.'_localvalue` IS NOT NULL';
     }
     
     /**
@@ -118,7 +118,7 @@ class CurrencyType extends Type {
      */
     public function filterLesserEqualSQL($value) {
         $value = $this->parseValue($value);
-        return $this->name.'_localvalue <= '.((double)$value['localvalue']);
+        return '`'.$this->name.'_localvalue` <= '.((double)$value['localvalue']);
     }
     
     /**
@@ -139,7 +139,7 @@ class CurrencyType extends Type {
      */
     public function filterLesserSQL($value) {
         $value = $this->parseValue($value);
-        return $this->name.'_localvalue < '.((double)$value['localvalue']);
+        return '`'.$this->name.'_localvalue` < '.((double)$value['localvalue']);
     }
     
     /**
@@ -160,7 +160,7 @@ class CurrencyType extends Type {
      */
     public function filterMatchSQL($value) {
         $value = $this->parseValue($value);
-        return $this->name.'_localvalue = '.(double)$value['localvalue'];
+        return '`'.$this->name.'_localvalue` = '.(double)$value['localvalue'];
     }
     
     /**
@@ -188,7 +188,7 @@ class CurrencyType extends Type {
         foreach ($values as $value) {
             $array[] = (double)(is_array($value) ? $value['localvalue'] : $value);
         }
-        return $this->name.'_localvalue IN ('.implode(',',$array).')';
+        return '`'.$this->name.'_localvalue` IN ('.implode(',',$array).')';
     }    
     
     /**

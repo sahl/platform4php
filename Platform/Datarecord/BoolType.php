@@ -15,7 +15,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterGreaterEqualSQL($value) {
-        return $this->name.' >= '.((int)$value);
+        return '`'.$this->name.'` >= '.((int)$value);
     }
     
     /**
@@ -34,7 +34,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterGreaterSQL($value) {
-        return $this->name.' > '.((int)$value);
+        return '`'.$this->name.'` > '.((int)$value);
     }
     
     /**
@@ -62,7 +62,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterLesserEqualSQL($value) {
-        return $this->name.' <= '.((int)$value);
+        return '`'.$this->name.'` <= '.((int)$value);
     }
     
     /**
@@ -71,7 +71,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterLesserSQL($value) {
-        return $this->name.' < '.((int)$value);
+        return '`'.$this->name.'` < '.((int)$value);
     }
     
     /**
@@ -90,7 +90,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        return $this->name.' = '.((int)$value);
+        return '`'.$this->name.'` = '.((int)$value);
     }
     
     /**
@@ -114,7 +114,7 @@ class BoolType extends IntegerType {
         foreach ($values as $value) {
             $array[] = '\''.\Platform\Utilities\Database::escape($value).'\'';
         }
-        return $this->name.' IN ('.implode(',',$array).')';
+        return '`'.$this->name.'` IN ('.implode(',',$array).')';
     }    
     
 
@@ -123,7 +123,7 @@ class BoolType extends IntegerType {
     }
     
     public function filterIsSetSQL() {
-        return $this->name.' = TRUE';
+        return '`'.$this->name.'` = TRUE';
     }
     
     public function getFieldForDatabase($value) : string {

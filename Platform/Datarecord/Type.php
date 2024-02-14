@@ -209,7 +209,7 @@ class Type {
      * @return bool
      */
     public function filterGreaterEqualSQL($value) {
-        return $this->name.' >= \''.\Platform\Utilities\Database::escape($value).'\'';
+        return '`'.$this->name.'` >= \''.\Platform\Utilities\Database::escape($value).'\'';
     }
     
     /**
@@ -228,7 +228,7 @@ class Type {
      * @return bool
      */
     public function filterGreaterSQL($value) {
-        return $this->name.' > \''.\Platform\Utilities\Database::escape($value).'\'';
+        return '`'.$this->name.'` > \''.\Platform\Utilities\Database::escape($value).'\'';
     }
     
     /**
@@ -245,7 +245,7 @@ class Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' <> \'\'';
+        return '`'.$this->name.'` <> \'\'';
     }
     
     /**
@@ -264,7 +264,7 @@ class Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        return $this->name.' LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\'';
+        return '`'.$this->name.'` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\'';
     }
     
     /**
@@ -283,7 +283,7 @@ class Type {
      * @return bool
      */
     public function filterLesserEqualSQL($value) {
-        return $this->name.' <= \''.\Platform\Utilities\Database::escape($value).'\'';
+        return '`'.$this->name.'` <= \''.\Platform\Utilities\Database::escape($value).'\'';
     }
     
     /**
@@ -323,7 +323,7 @@ class Type {
      * @return bool
      */
     public function filterLesserSQL($value) {
-        return $this->name.' < \''.\Platform\Utilities\Database::escape($value).'\'';
+        return '`'.$this->name.'` < \''.\Platform\Utilities\Database::escape($value).'\'';
     }
     
     /**
@@ -342,7 +342,7 @@ class Type {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        return $this->name.' = \''.\Platform\Utilities\Database::escape($value).'\'';
+        return '`'.$this->name.'` = \''.\Platform\Utilities\Database::escape($value).'\'';
     }
     
     /**
@@ -366,7 +366,7 @@ class Type {
         foreach ($values as $value) {
             $array[] = '\''.\Platform\Utilities\Database::escape($value).'\'';
         }
-        return $this->name.' IN ('.implode(',',$array).')';
+        return '`'.$this->name.'` IN ('.implode(',',$array).')';
     }
     
     /**
@@ -399,7 +399,11 @@ class Type {
     public function getFieldForDatabase($value) : string {
         return '\''. \Platform\Utilities\Database::escape((string)$value).'\'';
     }
-    
+
+    /**
+     * Get options for the associated form fields
+     * @return array
+     */
     public function getFormFieldOptions() : array {
         $result = [];
         if ($this->getLayoutGroup()) $result['group'] = $this->getLayoutGroup();
@@ -437,12 +441,12 @@ class Type {
     }
     
     /**
-     * Get the foreign object pointed to by this field (if any)
+     * Get the foreign objects pointed to by this field (if any)
      * @param mixed $value
-     * @return \Platform\Datarecord|null
+     * @return array An array of ForeignObjectPointer
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
-        return null;
+    public function getForeignObjectPointers($value) : array {
+        return [];
     }
     
     /**

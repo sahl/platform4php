@@ -98,7 +98,7 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**
@@ -182,7 +182,7 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        return $this->name.' = '.((int)$value);
+        return '`'.$this->name.'` = '.((int)$value);
     }
     
     /**
@@ -210,7 +210,7 @@ class SingleReferenceType extends IntegerType {
         foreach ($values as $value) {
             $final_values[] = $this->parseValue($value);
         }
-        return $this->name.' IN ('.implode(',',$final_values).')';
+        return '`'.$this->name.'` IN ('.implode(',',$final_values).')';
     }    
     
     /**
@@ -282,14 +282,13 @@ class SingleReferenceType extends IntegerType {
     }
     
     /**
-     * Get the foreign object pointed to by this field (if any)
-     * @return \Platform\Datarecord|null
+     * Get the foreign objects pointed to by this field (if any)
+     * @param mixed $value
+     * @return array An array of ForeignObject
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
-        if ($value === null) return null;
-        $class = new $this->foreign_class();
-        $class->loadForRead($value, false);
-        return $class;
+    public function getForeignObjectPointers($value) : array {
+        if ($value === null) return [];
+        return [new ForeignObjectPointer($this->foreign_class, $value)];
     }
     
     /**

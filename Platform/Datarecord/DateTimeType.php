@@ -16,7 +16,7 @@ class DateTimeType extends Type {
     }
     
     public function filterIsSetSQL() {
-        return $this->name.' IS NOT NULL';
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     public function filterLike($value, $other_value) {

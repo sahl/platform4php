@@ -75,7 +75,7 @@ class AddressType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.'_address IS NOT NULL';
+        return '`'.$this->name.'_address` IS NOT NULL';
     }
     
     /**
@@ -98,11 +98,11 @@ class AddressType extends Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        return '('.$this->name.'_address LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
-                $this->name.'_address2 LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
-                $this->name.'_city LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
-                $this->name.'_zip LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
-                $this->name.'_countrycode LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\')';
+        return '(`'.$this->name.'_address` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_address2` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_city` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_zip` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_countrycode` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\')';
     }
     
     /**
@@ -162,11 +162,11 @@ class AddressType extends Type {
     public function filterMatchSQL($value) {
         $value = $this->parseValue($value);
         if ($value === null) return 'FALSE';
-        return '('.$this->name.'_address = \''.\Platform\Utilities\Database::escape($value['address']).'\' AND '.
-                $this->name.'_address2 = \''.\Platform\Utilities\Database::escape($value['address2']).'\' AND '.
-                $this->name.'_city = \''.\Platform\Utilities\Database::escape($value['city']).'\' AND '.
-                $this->name.'_zip = \''.\Platform\Utilities\Database::escape($value['zip']).'\' AND '.
-                $this->name.'_countrycode = \''.\Platform\Utilities\Database::escape($value['countrycode']).'\')';
+        return '(`'.$this->name.'_address` = \''.\Platform\Utilities\Database::escape($value['address']).'\' AND '.
+                '`'.$this->name.'_address2` = \''.\Platform\Utilities\Database::escape($value['address2']).'\' AND '.
+                '`'.$this->name.'_city` = \''.\Platform\Utilities\Database::escape($value['city']).'\' AND '.
+                '`'.$this->name.'_zip` = \''.\Platform\Utilities\Database::escape($value['zip']).'\' AND '.
+                '`'.$this->name.'_countrycode` = \''.\Platform\Utilities\Database::escape($value['countrycode']).'\')';
     }
     
     /**

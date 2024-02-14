@@ -78,7 +78,7 @@ class HyperReferenceType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return $this->name.'_foreign_class IS NOT NULL';
+        return '`'.$this->name.'_foreign_class` IS NOT NULL';
     }
     
     /**
@@ -157,7 +157,7 @@ class HyperReferenceType extends Type {
      */
     public function filterMatchSQL($value) {
         $value = $this->parseValue($value);
-        return $this->name.'_foreign_class = \''.\Platform\Utilities\Database::escape($value['foreign_class']).'\' AND '.$this->name.'_reference = '.((int)$value['reference']);
+        return '`'.$this->name.'_foreign_class` = \''.\Platform\Utilities\Database::escape($value['foreign_class']).'\' AND `'.$this->name.'_reference` = '.((int)$value['reference']);
     }
     
     /**
@@ -218,14 +218,13 @@ class HyperReferenceType extends Type {
     }
     
     /**
-     * Get the foreign object pointed to by this field (if any)
-     * @return \Platform\Datarecord|null
+     * Get the foreign objects pointed to by this field (if any)
+     * @param mixed $value
+     * @return array An array of ForeignObject
      */
-    public function getForeignObject($value) : ?\Platform\Datarecord\Datarecord {
-        if ($value['foreign_class'] == '') return false;
-        $class = new $value['foreign_class']();
-        $class->loadForRead($value['reference'], false);
-        return $class;
+    public function getForeignObjectPointers($value) : array {
+        if ($value['foreign_class'] == '') return [];
+        return [new ForeignObjectPointer($value['foreign_class'], $value['reference'])];
     }
     
     /**
