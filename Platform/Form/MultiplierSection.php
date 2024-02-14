@@ -47,7 +47,7 @@ class MultiplierSection extends Field {
                 // Generate new field name
                 $field->setName($this->getName().'['.$i.']['.$old_field_name.']');
                 if (isset($this->error_cache[$i][$old_field_name])) {
-                    $error_array[$field->getName()] = $this->error_cache[$i][$old_field_name];
+                    $error_array[$field->getFieldIdForHTML ()] = $this->error_cache[$i][$old_field_name];
                 }
                 $field->setName($old_field_name);
             }

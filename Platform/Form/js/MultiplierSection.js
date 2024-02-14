@@ -16,12 +16,19 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         var component = this;
         row.find('input[type!="checkbox"],textarea').keyup(function() {
             component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
+            return true;
         });
-        row.find('input[type="checkbox"]').click(function() {
+        row.find('input[type="checkbox"]').change(function() {
+            // Check if checked
+            var is_checked = $(this).is(':checked');
             component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
+            // Recheck as something is lost in translation
+            $(this).prop('checked', is_checked);
+            return true;
         });
-        row.find('select,input[type!="checkbox"]').change(function() {
+        row.find('select').change(function() {
             component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
+            return true;
         });
     }
     
@@ -43,7 +50,7 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
             new_row.insertAfter(row);
             this.adjustNames();
             Platform.apply(new_row); // Reapply platform
-            new_row.find('.platform_form_field').each(function() {
+            new_row.find('.platform_form_field_component').each(function() {
                 var field = $(this).platformComponent();
                 field.clear();
             });
@@ -116,7 +123,7 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     
     gotValues(row) {
         var result = false;
-        row.find('.platform_form_field').each(function() {
+        row.find('.platform_form_field_component').each(function() {
             var field_component = $(this).platformComponent();
             if (! field_component.isEmpty() && $(this).data('componentclass') != 'Platform\\Form\\HiddenField') {
                 result = true;
