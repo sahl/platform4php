@@ -62,7 +62,7 @@ Platform.Form.Field = class extends Platform.Component {
     
     /**
      * Get the value of this field
-     * @returns The value 
+     * @returns The value
      */
     getValue() {
         return this.dom_node.find('input').val();
@@ -166,6 +166,36 @@ Platform.Form.Field = class extends Platform.Component {
      */
     toggle(show) {
         this.dom_node.toggle(show);
+    }
+    
+    /**
+     * Disable/enable the field
+     * @param bool disabled
+     * @return bool Return false if the field doesn't support disable
+     */
+    setDisabled(disabled) {
+        if (disabled !== false)   disabled = true;
+        this.dom_node.find('input').prop('disabled', disabled);
+        return true;
+    }
+    
+    /**
+     * Check if the field is disabled
+     * @return bool
+     */
+    isDisabled() {
+        return this.dom_node.find('input').is(':disabled');
+    }
+    
+    /**
+     * Make the field readonly or readable; notice that readonly and disabled are different things!
+     * @param bool readonly
+     * @return bool Return false if the field doesn't support readonly
+     */
+    setReadonly(readonly) {
+        if (readonly !== false)   readonly = true;
+        this.dom_node.find('input').prop('readonly', readonly);
+        return true;
     }
     
     /**
