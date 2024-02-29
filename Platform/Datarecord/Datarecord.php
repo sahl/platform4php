@@ -180,7 +180,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function __construct(array $initialvalues = array()) {
         static::ensureStructure();
-        $this->fillDefaultValues();
+        $this->buildDefaultValues();
         $this->setFromArray($initialvalues);
     }
     
@@ -374,6 +374,17 @@ class Datarecord implements DatarecordReferable {
         $this->values[$this->getKeyField()] = $otherobject->getKeyValue();
         $this->values_on_load = $values;
         $this->is_in_database = $otherobject->isInDatabase();
+    }
+    
+    /**
+     * Decode metadata
+     */
+    private function decodeMetadata() {
+        if (is_array($this->values['metadata'])) {
+            foreach ($this->values['metadata'] as $key => $value) {
+                $this->setValue($key, $value);
+            }
+        }
     }
     
     /**
@@ -664,7 +675,7 @@ class Datarecord implements DatarecordReferable {
     /**
      * Fill this object with the default values
      */
-    public function fillDefaultValues() {
+    public function buildDefaultValues() {
         foreach ($this->getStructure() as $name => $type) {
             $this->setValue($name, $type->getDefaultValue());
         }
@@ -1301,7 +1312,7 @@ class Datarecord implements DatarecordReferable {
         $row = Database::getRow($result);
         if ($row) {
             $this->parseFromDatabaseRow($row);
-            $this->unpackMetadata();
+            $this->decodeMetadata();
             $this->values_on_load = $this->values;
             $this->is_in_database = true;
             return true;
@@ -1325,7 +1336,7 @@ class Datarecord implements DatarecordReferable {
         }
         $this->access_mode = self::MODE_READ;
         $this->parseFromDatabaseRow($databaserow);
-        $this->unpackMetadata();
+        $this->decodeMetadata();
         $this->values_on_load = $this->values;
         $this->is_in_database = true;
     }    
@@ -1410,7 +1421,7 @@ class Datarecord implements DatarecordReferable {
     /**
      * Pack metadata according to structure definition
      */
-    private function packMetadata() {
+    private function encodeMetadata() {
         $metadata = array();
         foreach (static::$structure as $field => $type) {
             if ($type->getStoreLocation() != Type::STORE_METADATA) continue;
@@ -1604,7 +1615,7 @@ class Datarecord implements DatarecordReferable {
             }
         }
         
-        $this->packMetadata();
+        $this->encodeMetadata();
         $this->setValue('change_date', new Time('now'));
         if ($this->isInDatabase()) {
             // Prepare update.
@@ -1691,17 +1702,6 @@ class Datarecord implements DatarecordReferable {
     public function unlock() {
         Semaphore::release($this->getLockFileName());
         $this->access_mode = $this->isInDatabase() ? self::MODE_READ : self::MODE_WRITE;
-    }
-    
-    /**
-     * Unpack metadata
-     */
-    private function unpackMetadata() {
-        if (is_array($this->values['metadata'])) {
-            foreach ($this->values['metadata'] as $key => $value) {
-                $this->setValue($key, $value);
-            }
-        }
     }
     
     /**
