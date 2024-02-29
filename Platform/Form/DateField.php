@@ -35,7 +35,10 @@ class DateField extends Field {
     
     public function parse($value) : bool {
         if (! parent::parse($value)) return false;
-        $this->value = new Time($value);
+        if ($value) {
+            $value = new Time($value);
+            $this->value = $value->startOfDay();
+        }
         return true;
     }
     

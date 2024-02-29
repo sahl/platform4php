@@ -21,6 +21,22 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
         if (value !== null) this.dom_node.find('select').val(value);
         else this.dom_node.find('option:first-child').prop('selected', true);
     }
+
+    setDisabled(disabled) {
+        if (disabled !== false)   disabled = true;
+        this.dom_node.find('select').prop('disabled', disabled);
+        return true;
+    }
+    
+    isDisabled() {
+        return this.dom_node.find('select').is(':disabled');
+    }
+    
+    setReadonly(readonly) {
+        if (readonly !== false)   readonly = true;
+        this.dom_node.find('select').prop('readonly', readonly);
+        return true;
+    }
     
     getValue() {
         return this.dom_node.find('select').val();

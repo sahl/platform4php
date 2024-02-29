@@ -66,7 +66,7 @@ class Layout {
         foreach ($full_definition as $key => $definition) {
             // Add fields that doesn't belong in a group
             if (! $definition['layout_hide'] && ! $definition['invisible'] && ($definition['layout_group'] == 0 || $definition['layout_group'] > count($this->groups)) && (! $skip_empty || $datarecord->getFullValue($key))) {
-                $fragments[] = '<div class="row"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
+                $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
                 $sorter[] = $definition['layout_priority'] ?: 1000;
             }
         }
@@ -94,7 +94,7 @@ class Layout {
             $fragments = []; $sorter = [];
             foreach ($full_definition as $key => $definition) {
                 if (! $definition['layout_hide'] && ! $definition['invisible'] && $definition['layout_group'] == $group_id && (! $skip_empty || $datarecord->getFullValue($key))) {
-                    $fragments[] = '<div class="row"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
+                    $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
                     $sorter[] = $definition['layout_priority'] ?: 1000;
                 }
             }

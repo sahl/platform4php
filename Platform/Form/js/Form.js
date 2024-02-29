@@ -49,6 +49,10 @@ Platform.Form = class extends Platform.Component {
         })
     }
     
+    /**
+     * Set values a bunch of fields in the form
+     * @param object values Field values hashed by the field names
+     */
     attachValues(values) {
         var component = this;
         $.each(values, function(fieldname, value) {
@@ -60,6 +64,9 @@ Platform.Form = class extends Platform.Component {
         component.dom_node.find('form').trigger('values_changed');
     }
     
+    /**
+     * Clear all fields in the form, and clear all errors
+     */
     clear() {
         this.dom_node.find('.platform_form_global_error_container').html('').hide();
         this.dom_node.find('.platform_form_field').each(function() {
@@ -89,10 +96,56 @@ Platform.Form = class extends Platform.Component {
         this.dom_node.find('form').submit();
     }
     
+    /**
+     * Lookup a field by its name
+     * @param string name
+     * @returns Component Returns null if not found
+     */
     getFieldByName(name) {
         return this.dom_node.find('#'+this.dom_node.children('form').prop('id')+'_'+Platform.escapeSelector(name)+'_component').platformComponent();
     }
     
+    /**
+     * Get the values of all fields in the form that validate, hidden fields are not returned
+     * @returns object Values hashed by their field names
+     */
+    getValues() {
+        var values = {};
+        this.dom_node.find('.platform_form_field').each(function() {
+            var component = $(this).platformComponent();
+            if (!component)   return;
+            if (!component.isHidden() && component.validate() && !component.isDisabled()) {
+                var name = component.getName();
+                var value = component.getValue();
+                values[name] = value;
+            }
+        });
+        return values;
+    }
+    
+    /**
+     * Get all form fields in part of the page, if multiple fields have the same name then only the last will be returned
+     * @param jQuery selector Specifies which part of the page to scan
+     * @returns object Components hashed by their field names
+     */
+    static getFields(selector) {
+        var fields = {};
+        
+        $(selector).find('.platform_form_field').each(function() {
+            var component = $(this).platformComponent();
+            if (component) {
+                var name = component.getName();
+                fields[name] = component;
+            }
+        });
+        return fields;
+    }
+    
+    /**
+     * Check if all fields have valid values; hidden fields and disabled fields are not checked
+     * If no errors are encountered, and the form is set to "save on submit" then the form values are sent to the server 
+     * @returns bool
+     */
     validate() {
         var allow_submit = true;
         var form_node = this.dom_node.find('form');
@@ -109,7 +162,7 @@ Platform.Form = class extends Platform.Component {
                 hidden_fields.push(name);
                 return true;
             }
-            if (! field_component.validate()) {
+            if (!field_component.isDisabled() && ! field_component.validate()) {
                 allow_submit = false;
             }
             return true;
