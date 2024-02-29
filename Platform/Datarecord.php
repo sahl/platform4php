@@ -1414,7 +1414,7 @@ class Datarecord implements DatarecordReferable {
             case self::FIELDTYPE_DATETIME:
                 return $for_json ? str_replace(' ', 'T', $value->getReadable('Y-m-d H:i')) : $value;
             case self::FIELDTYPE_DATE:
-                return $for_json ? $value->getReadable('Y-m-d') : $value;
+                return $for_json ? $value->get('Y-m-d') : $value;
             case self::FIELDTYPE_ENUMERATION:
             case self::FIELDTYPE_ENUMERATION_MULTI:
             case self::FIELDTYPE_HTMLTEXT:
