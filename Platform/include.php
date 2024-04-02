@@ -31,6 +31,9 @@ session_start();
 Platform\Utilities\Time::setDisplayTimeZoneFromSession();
 Platform\Utilities\Time::setDateAndTimeFormatFromSession();
 
+// Set number format from session
+\Platform\Utilities\NumberFormat::setFormatFromSession();
+
 // Load languages
 if (Translation::isEnabled()) {
     Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);

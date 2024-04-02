@@ -8,6 +8,7 @@ namespace Platform\Form;
 
 use Platform\Datarecord\Datarecord;
 use Platform\Utilities\Translation;
+use Platform\Utilities\Utilities;
 
 class AddressField extends Field {
     
@@ -24,6 +25,7 @@ class AddressField extends Field {
     
     public function __construct() {
         parent::__construct();
+        static::JSFile(Utilities::directoryToURL(__DIR__).'/js/AddressField.js'); 
     
         if (!self::$sorted) {
             $sort = [];
