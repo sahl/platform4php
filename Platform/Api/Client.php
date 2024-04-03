@@ -103,23 +103,20 @@ class Client {
             'Content-Type: application/json',
             'Accept: application/json'
         );
-        if ($this->token_code) {
-            $options[] = 'Authorization: Bearer '.$this->token_code;
-        }
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, $options);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($curl, CURLOPT_HEADER, 1);
+        if ($this->token_code) {
+            curl_setopt($curl, CURLOPT_COOKIE, 'access_token='.$this->token_code.'; path:/;');
+        }
 
         if ($method == 'POST' || $method == 'PUT') {
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($parameters));
         }
 
         $curlResponse = curl_exec($curl);
-        if ($curlResponse === false) {
-            return ['code' => '000', 'error' => true, 'message' => curl_error($curl)];
-        }
         curl_close($curl);
         
         return $this->parseResponse($curlResponse);
