@@ -24,12 +24,12 @@ class EnumerationType extends IntegerType {
     public function __construct(string $name, string $title = '', array $options = []) {
         $valid_options = ['enumeration'];
         foreach ($valid_options as $valid_option) {
-            if ($options[$valid_option]) {
+            if (isset($options[$valid_option])) {
                 $this->$valid_option = $options[$valid_option];
                 unset($options[$valid_option]);
             }
         }
-        if (! $this->enumeration) trigger_error('You must add an enumeration to the field '.$name, E_USER_ERROR);
+        if (! is_array($this->enumeration)) trigger_error('You must add an enumeration to the field '.$name, E_USER_ERROR);
         parent::__construct($name, $title, $options);
     }
     

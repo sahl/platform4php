@@ -18,7 +18,7 @@ class ArrayType extends Type {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        if ($options['substructure']) {
+        if (isset($options['substructure'])) {
             $this->addSubstructure($options['substructure']);
             unset($options['substructure']);
         }

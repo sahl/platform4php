@@ -567,7 +567,7 @@ class Datarecord implements DatarecordReferable {
                     }
                     $default = $type->getDefaultValue() ? ' DEFAULT '.$type->getFieldForDatabase($type->getDefaultValue()) : '';
                     // Some SQL field types doesn't allow default values
-                    if (in_array(strtolower($sql_type, ['blob', 'text', 'mediumtext', 'geometry', 'json']))) $default = '';
+                    if (in_array(strtolower($sql_type), ['blob', 'text', 'mediumtext', 'geometry', 'json'])) $default = '';
                     self::query('ALTER TABLE '.static::$database_table.' ADD `'.$name.'` '.$sql_type.$default);
                     $changed = true;
                     
@@ -769,7 +769,7 @@ class Datarecord implements DatarecordReferable {
         $result = []; $sort_area = []; $ids = [];
         $filter = new \Platform\Filter\Filter(get_called_class());
         $filter->setPerformAccessCheck($perform_access_check);
-        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->equal('is_deleted', 0);
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) $filter->conditionMatch('is_deleted', 0);
         $datacollection = $filter->execute();
         foreach ($datacollection->getAll() as $element) {
             $id = $element->getRawValue(static::getKeyField());

@@ -16,6 +16,8 @@ class Type {
     const LIST_NEVER = 0;
     const LIST_HIDDEN = 1;
     const LIST_SHOWN = 2;
+    
+    const LAYOUTGROUP_NONE = -1;
 
     /**
      * Title / label of field

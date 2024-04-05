@@ -46,10 +46,10 @@ class Layout {
     
     /**
      * Get HTML representing a given datarecord in the given layout
-     * @param \Platform\Datarecord $datarecord
+     * @param \Platform\Datarecord\Datarecord $datarecord
      * @return string
      */
-    public function getHTMLFromDatarecord(\Platform\Datarecord $datarecord, $skip_empty = true) : string {
+    public function getHTMLFromDatarecord(\Platform\Datarecord\Datarecord $datarecord, $skip_empty = true) : string {
         $full_definition = $datarecord->getFullDefinition();
         $html = '<div class="form_layout_container">';
         $group_id = 0;
@@ -63,11 +63,12 @@ class Layout {
         // Generate a section with fields not belonging to the Layout to find out if it exists
         $additional_html = '';
         $fragments = []; $sorter = [];
-        foreach ($full_definition as $key => $definition) {
+        foreach ($full_definition as $key => $type) {
             // Add fields that doesn't belong in a group
-            if (! $definition['layout_hide'] && ! $definition['invisible'] && ($definition['layout_group'] == 0 || $definition['layout_group'] > count($this->groups)) && (! $skip_empty || $datarecord->getFullValue($key))) {
-                $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
-                $sorter[] = $definition['layout_priority'] ?: 1000;
+            $layout_group = $type->getLayoutGroup();
+            if ($layout_group != \Platform\Datarecord\Type::LAYOUTGROUP_NONE && ! $type->isInvisible() && ($layout_group == 0 || $layout_group > count($this->groups)) && (! $skip_empty || $datarecord->getFullValue($key))) {
+                $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$type->title.'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
+                $sorter[] = $type->getLayoutPriority() ?: 1000;
             }
         }
         array_multisort($sorter, SORT_ASC, $fragments);
@@ -92,10 +93,11 @@ class Layout {
             $html .= '<div class="form_layout_group '.$group['class'].$wrap_class.'" style="width: '.$group['width'].'%;">';
             // Add relevant fields
             $fragments = []; $sorter = [];
-            foreach ($full_definition as $key => $definition) {
-                if (! $definition['layout_hide'] && ! $definition['invisible'] && $definition['layout_group'] == $group_id && (! $skip_empty || $datarecord->getFullValue($key))) {
-                    $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$definition['label'].'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
-                    $sorter[] = $definition['layout_priority'] ?: 1000;
+            foreach ($full_definition as $key => $type) {
+                $layout_group = $type->getLayoutGroup();
+                if ($layout_group != \Platform\Datarecord\Type::LAYOUTGROUP_NONE && ! $type->isInvisible() && $layout_group == $group_id && (! $skip_empty || $datarecord->getFullValue($key))) {
+                    $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$type->title.'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
+                    $sorter[] = $type->getLayoutPriority() ?: 1000;
                 }
             }
             array_multisort($sorter, SORT_ASC, $fragments);
