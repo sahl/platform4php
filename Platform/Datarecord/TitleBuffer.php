@@ -62,12 +62,24 @@ class TitleBuffer {
                 $fetch_ids = array_unique($ids);
             }
             if (! count($fetch_ids)) return;
-            $filter = new \Platform\Filter\Filter($class_name);
-            $filter->conditionOneOf($class_name::getKeyField(), $fetch_ids);
-            $objects = $filter->execute();
-            foreach ($objects as $object) {
-                // Fill the buffer
-                static::$buffer[$class_name][$object->getKeyValue()] = $object->getTitle();
+            // Check if we are refering Datarecord classes
+            $object = new $class_name();
+            if ($object instanceof Datarecord) {
+                $filter = new \Platform\Filter\Filter($class_name);
+                $filter->conditionOneOf($class_name::getKeyField(), $fetch_ids);
+                $objects = $filter->execute();
+                foreach ($objects as $object) {
+                    // Fill the buffer
+                    static::$buffer[$class_name][$object->getKeyValue()] = $object->getTitle();
+                }
+            } elseif ($object instanceof DatarecordReferable) {
+                foreach ($fetch_ids as $fetch_id) {
+                    $object = new $class_name();
+                    $object->loadForRead($fetch_id);
+                    static::$buffer[$class_name][$object->getKeyValue()] = $object->getTitle();
+                }
+            } else {
+                trigger_error('Class '.$class_name.' must be Datarecord or DatarecordReferable', E_USER_ERROR);
             }
         }
     }
