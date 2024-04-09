@@ -54,11 +54,14 @@ class Endpoint {
     }
     
     /**
-     * Check if an valid accesstoken is provided either as a cookie or a GET parameter
+     * Check if an valid accesstoken is provided either as a bearer token, a cookie or a GET parameter
      * @return boolean True if a valid token was supplied, otherwise the function halts.
      */
     protected function checkSecurity() : bool {
-        $token_code = $_COOKIE['access_token'];
+        $authentication_header = static::getHeader('Authorization');
+        $token_code = false;
+        if ($authentication_header !== false && substr($authentication_header,0,7) == 'Bearer ') $token_code = trim(substr($authentication_header,7));
+        if (! $token_code) $token_code = $_COOKIE['access_token'];
         if (! $token_code) $token_code = $_GET['access_token'];
         if (! $token_code) static::respondErrorAndDie (401, 'No access token provided');
         if (!Accesstoken::validateTokenCode($token_code)) static::respondErrorAndDie (401, 'Invalid or expired access token');
@@ -108,6 +111,19 @@ class Endpoint {
         ksort($result);
         $result['__api_generated'] = Time::now()->get();
         return $result;
+    }
+    
+    /**
+     * Retrieve the given HTTP header from the incoming request
+     * @param string $header Header to retrieve
+     * @param bool $case_insensitive Indicate if the match should be case-insensitive for increased compatibility. (Default=false)
+     * @return mixed
+     */
+    public static function getHeader($header, $case_insensitive = true) {
+        foreach (apache_request_headers() as $header_title => $header_value) {
+            if (!$case_insensitive && $header == $header_title || $case_insensitive && strtolower($header_title) == strtolower($header)) return $header_value;
+        }
+        return false;
     }
     
     /**
