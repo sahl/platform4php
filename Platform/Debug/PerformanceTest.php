@@ -6,9 +6,9 @@ namespace Platform\Debug;
  * @link https://wiki.platform4php.dk/doku.php?id=performancetest_class
  */
 
-use Platform\ConditionGreaterEqual;
-use Platform\Datarecord;
-use Platform\Filter;
+use Platform\Filter\ConditionGreaterEqual;
+use Platform\Datarecord\Datarecord;
+use Platform\Filter\Filter;
 use Platform\Utilities\Errorhandler;
 use Platform\Utilities\Time;
 

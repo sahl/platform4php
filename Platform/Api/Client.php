@@ -6,7 +6,7 @@ namespace Platform\Api;
  * @link https://wiki.platform4php.dk/doku.php?id=client_class
  */
 
-use Platform\Condition;
+use Platform\Filter\Condition;
 
 class Client {
     

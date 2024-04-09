@@ -10,13 +10,14 @@ namespace Platform\Server;
  * @link https://wiki.platform4php.dk/doku.php?id=server_class
  */
 
-use Platform\ConditionMatch;
-use Platform\Datarecord;
-use Platform\Filter;
+use Platform\Filter\ConditionMatch;
+use Platform\Datarecord\Datarecord;
+use Platform\Filter\Filter;
 use Platform\Platform;
 use Platform\Server\Instance;
 use Platform\Server\Job;
 use Platform\Utilities\Database;
+use Platform\Utilities\Translation;
 use Platform\Utilities\Time;
 
 class Server extends Datarecord {
@@ -35,21 +36,11 @@ class Server extends Datarecord {
     );
     
     protected static function buildStructure() {
-        static::addStructure(array(
-            'server_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'title' => array(
-                'label' => 'Server name',
-                'is_title' => true,
-                'fieldtype' => self::FIELDTYPE_TEXT
-            ),
-            'hostname' => array(
-                'label' => 'Hostname',
-                'fieldtype' => self::FIELDTYPE_TEXT
-            )
-        ));
+        static::addStructure([
+            new \Platform\Datarecord\KeyType('server_id'),
+            new \Platform\Datarecord\TextType('title', Translation::translateForUser('Server name'), ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\TextType('hostname', Translation::translateForUser('Host name'), ['is_required' => true]),
+        ]);
         parent::buildStructure();
     }
 

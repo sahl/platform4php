@@ -7,8 +7,8 @@ namespace Platform\Api;
  * @link https://wiki.platform4php.dk/doku.php?id=endpoint_class
  */
 
-use Platform\Condition;
-use Platform\Datarecord;
+use Platform\Filter\Condition;
+use Platform\Datarecord\Datarecord;
 use Platform\File;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
@@ -48,7 +48,7 @@ class Endpoint {
     public function __construct(array $classnames = []) {
         foreach ($classnames as $classname) {
             if (!class_exists($classname)) trigger_error('No such class '.$classname, E_USER_ERROR);
-            $shortname = $classname::getClassName();
+            $shortname = $classname::getBaseClassName();
             $this->classes[$shortname] = $classname;
         }
     }
@@ -99,51 +99,9 @@ class Endpoint {
      */
     protected static function getApiObject(string $class, Datarecord $object, bool $retrieve_binary_data = false) {
         $result = array();
-        foreach ($class::getStructure() as $key => $definition) {
-            if ($definition['invisible'] && $definition['fieldtype'] != Datarecord::FIELDTYPE_KEY) continue;
-            switch ($definition['fieldtype']) {
-                case Datarecord::FIELDTYPE_PASSWORD:
-                    continue;
-                case Datarecord::FIELDTYPE_KEY:
-                    $result[$key] = (int)$object->getRawValue($key);
-                    break;
-                case Datarecord::FIELDTYPE_DATE:
-                case Datarecord::FIELDTYPE_DATETIME:
-                    $result[$key] = $object->getRawValue($key)->get();
-                    break;
-                case Datarecord::FIELDTYPE_REFERENCE_HYPER:
-                    $remote_object = $object->getRawValue($key.'_foreign_class');
-                    if (!class_exists($remote_object)) $result[$key] = null;
-                    else {
-                        $short_class = $remote_object::getClassName();
-                        $result[$key] = array(
-                            'object' => $short_class,
-                            'id' => $object->getRawValue($key.'_reference')
-                        );
-                    }
-                    break;
-                case Datarecord::FIELDTYPE_IMAGE:
-                case Datarecord::FIELDTYPE_FILE:
-                    if ($retrieve_binary_data) {
-                        $file = new File();
-                        $id = $object->getRawValue($key);
-                        if ($id) $file->loadForRead($id);
-                        if ($file->isInDatabase() && $file->canAccess()) {
-                            $result[$key] = array(
-                                'filename' => $file->filename,
-                                'mimetype' => $file->mimetype,
-                                'binary' => base64_encode($file->getFileContent())
-                            );
-                        } else {
-                            $result[$key] = null;
-                        }
-                    } else {
-                        $result[$key] = $object->getRawValue($key);
-                    }
-                    break;
-                default:
-                    $result[$key] = $object->getRawValue($key);
-            }
+        foreach ($class::getStructure() as $name => $type) {
+            if ($type->isInvisible()) continue;
+            $result[$name] = $type->getJSONValue($object->getRawValue($name), $retrieve_binary_data);
         }
         ksort($result);
         $result['__api_generated'] = Time::now()->get();
@@ -319,165 +277,32 @@ class Endpoint {
      * Update a Datarecord object from an API object
      * @param string $class The name of the Datarecord class we are operating on
      * @param Datarecord $object The object of this class
-     * @param array $newdata An array containing the API object
+     * @param array $api_data An array containing the API object
      * @param bool $check_for_required_fields If true, then all required fields must be provided.
      * @return array|bool True or an array of error messages.
      */
-    protected static function updateObject(string $class, Datarecord $object, array $newdata, bool $check_for_required_fields = false) {
-        $structure = $class::getStructure();
+    protected static function updateObject(string $class, Datarecord $object, array $api_data, bool $check_for_required_fields = false) {
         $errors = array();
-        foreach ($newdata as $key => $value) {
-            if (! isset($structure[$key]) || $structure[$key]['invisible'] && $structure[$key]['fieldtype'] != Datarecord::FIELDTYPE_KEY) {
-                $errors[] = 'Tried to update non-existing field '.$key;
+        foreach ($api_data as $field_name => $value) {
+            $type = $class::getFieldDefinition($field_name);
+            if ($type === null || $type->isInvisible() ) {
+                $errors[] = \Platform\Utilities\Translation::translateForUser('Tried to update non-existing field %1', $field_name);
                 continue;
             }
-            if ($structure[$key]['readonly'] || $structure[$key]['fieldtype'] == Datarecord::FIELDTYPE_KEY) {
-                $errors[] = 'Tried to update read-only field '.$key;
+            if ($type->isReadonly() || $type->isPrimaryKey()) {
+                $errors[] = \Platform\Utilities\Translation::translateForUser('Tried to update read-only field %1', $field_name);
                 continue;
             }
-            switch ($structure[$key]['fieldtype']) {
-                case Datarecord::FIELDTYPE_INTEGER:
-                    if (! is_int($value)) {
-                        $errors[] = 'Tried to set integer field '.$key.' to non-integer value '.$value;
-                        continue;
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_FLOAT:
-                    if (!is_numeric($value)) {
-                        $errors[] = 'Tried to set float field '.$key.' to non-float value '.$value;
-                        continue;
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_BOOLEAN:
-                    if (!is_bool($value)) {
-                        $errors[] = 'Tried to set boolean field '.$key.' to non-boolean value '.$value;
-                        continue;
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_DATETIME:
-                    $stamp = new Time($value);
-                    if ($stamp->getTimestamp() <= 0) {
-                        $errors[] = 'Could not parse '.$value.' into field '.$key.' as a valid timestamp';
-                        continue;
-                    }
-                    $object->setValue($key, $stamp);
-                    break;
-                case Datarecord::FIELDTYPE_ARRAY:
-                    if (!is_array($value)) {
-                        $errors[] = 'The value for array field '.$key.' wasn\'t an array';
-                        continue;
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_ENUMERATION:
-                    if (! isset($structure[$key]['enumeration'][$value])) {
-                        $errors[] = $value.' isn\'t a valid value for field '.$key;
-                        continue;
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_IMAGE:
-                case Datarecord::FIELDTYPE_FILE:
-                    if (is_array($value)) {
-                        if ($value['action'] == 'remove') {
-                            // Build compatible input array
-                            $value = array(
-                                'status' => 'removed'
-                            );
-                        } else {
-                            // Check for all components
-                            $required = array('filename', 'mimetype', 'binary', 'action');
-                            foreach ($required as $r) {
-                                if (! isset($value[$r])) {
-                                    $errors[] = 'Required field '.$r.' missing when uploading file in field '.$key;
-                                    continue 2;
-                                }
-                            }
-                            
-                            // Check for valid action
-                            if ($value['action'] != 'add') {
-                                $errors[] = 'action should be either "add" or "remove" when uploading file in field '.$key;
-                                continue;
-                            }
-                            
-                            // Check for safe base64 decode
-                            $binary_data = base64_decode($value['binary'], true);
-                            if ($binary_data === false) {
-                                $errors[] = 'File content couldn\'t be BASE64-decoded in field '.$key;
-                                continue;
-                            }
-
-                            // Check for valid mime-type
-                            if ($structure[$key]['fieldtype'] == Datarecord::FIELDTYPE_IMAGE && strpos(strtolower($value['mimetype']),'image') === false) {
-                                $errors[] = 'Cannot add non-image mimetype to an image field in field '.$key;
-                                continue;
-                            }
-
-                            // Store binary content in temporary file
-                            $temp_file_name = File::getTempFilename();
-                            $fh = fopen($temp_file_name, 'w');
-                            if (! $fh) static::respondErrorAndDie(500, 'Error writing temporary file handling field '.$key);
-                            fwrite($fh, $binary_data);
-                            fclose($fh);
-                            // Build compatible input array
-                            $value = array(
-                                'original_file' => $value['filename'],
-                                'mimetype' => $value['mimetype'],
-                                'temp_file' => substr($temp_file_name,strrpos($temp_file_name,'/')+1),
-                                'status' => 'changed'
-                            );
-                        }
-                    } else {
-                        $file = new File();
-                        $file->loadForRead((int)$value);
-                        if (! $file->isInDatabase()) {
-                            $errors[] = $value.' isn\'t a valid reference in field '.$key;
-                            continue;
-                        }
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_REFERENCE_SINGLE:
-                    if ($value > 0) {
-                        $foreign_class = $structure[$key]['foreign_class'];
-                        $foreign_object = new $foreign_class();
-                        $foreign_object->loadForRead($value, false);
-                        if (! $foreign_object->isInDatabase()) {
-                            $errors[] = $value.' isn\'t a valid reference in field '.$key;
-                            continue;
-                        }
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_REFERENCE_MULTIPLE:
-                    if (! is_array($value)) $value = array($value);
-                    $foreign_class = $structure[$key]['foreign_class'];
-                    $foreign_object = new $foreign_class();
-                    $values = array();
-                    foreach ($value as $v) {
-                        if ($v == 0) continue;
-                        $foreign_object->loadForRead($v, false);
-                        if (! $foreign_object->isInDatabase()) {
-                            $errors[] = $v.' isn\'t a valid reference in field '.$key;
-                            continue;
-                        }
-                        $values[] = $v;
-                    }
-                    $object->setValue($key, $value);
-                    break;
-                case Datarecord::FIELDTYPE_REFERENCE_HYPER:
-                    $errors[] = 'Field '.$key.' is not supported for writing in the API (yet!)';
-                    continue;
-                default:
-                    $object->setValue($key, $value);
+            $validation = $type->validateValue($value);
+            if ($validation !== true) {
+                $errors[] = \Platform\Utilities\Translation::translateForUser('Error updating field %1: %2', $field_name, $validation);
+                continue;
             }
+            $object->setValue($field_name, $value);
         }
         if ($check_for_required_fields) {
-            foreach ($structure as $key => $definition) {
-                if ($definition['required'] && ! $definition['readonly'] && ! $definition['invisible'] && ! isset($newdata[$key])) $errors[] = 'Required field '.$key.' is missing.';
+            foreach ($class::getStructure() as $field_name => $type) {
+                if ($type->isRequired() && ! $type->isReadonly() && ! $type->isInvisible() && ! isset($api_data[$field_name])) $errors[] = \Platform\Utilities\Translation::translateForUser('Required field %1 is missing', $field_name);
             }
         }
         // Do further validation

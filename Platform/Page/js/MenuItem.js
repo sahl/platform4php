@@ -32,7 +32,12 @@ Platform.addCustomFunction(function(item) {
         }
         if (url.substr(0,9) == '#TRIGGER=') {
             var eventname = url.substr(9);
-            $(this).trigger(eventname);
+            var elements = eventname.split('@');
+            if (elements.length > 1) {
+                $(elements[1]).trigger(elements[0]);
+            } else {
+                $(this).trigger(eventname);
+            }
             return false;
         }
         if (url.substr(0,12) == '#DIALOGOPEN=') {

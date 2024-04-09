@@ -96,7 +96,11 @@ class Database {
      * @return bool True if database exists or was created.
      */
     public static function ensureGlobalDatabase() {
-        return self::globalQuery("CREATE DATABASE IF NOT EXISTS ".Platform::getConfiguration('global_database_name'), false) !== false;
+        if (self::$global_connection === false) {
+            $result = self::connectGlobal();
+            if (! $result) trigger_error('Could not connect to global database. Error: '.mysqli_error (self::$global_connection), E_USER_ERROR);
+        }
+        return mysqli_query(self::$global_connection, "CREATE DATABASE IF NOT EXISTS ".Platform::getConfiguration('global_database_name'), false) !== false;
     }
 
     /**

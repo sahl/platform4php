@@ -6,7 +6,7 @@ namespace Platform\Form;
  * @link https://wiki.platform4php.dk/doku.php?id=field_class
  */
 
-use Platform\Datarecord;
+use Platform\Datarecord\Datarecord;
 use Platform\Utilities\Translation;
 use Platform\Utilities\Utilities;
 

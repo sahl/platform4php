@@ -6,10 +6,11 @@ namespace Platform\Form;
  * @link https://wiki.platform4php.dk/doku.php?id=field_class
  */
 
+use Platform\Datarecord\Collection;
 use Platform\Form\Form;
 use Platform\UI\Component;
-use Platform\Utilities\Utilities;
 use Platform\Utilities\Errorhandler;
+use Platform\Utilities\Utilities;
 
 class Field extends Component {
     
@@ -161,7 +162,7 @@ class Field extends Component {
         $field->label = $label;
         $field->name = $name;
         
-        if (array_key_exists('required', $options) && $options['required']) {
+        if (array_key_exists('required', $options)) {
             $field->is_required = true;
             unset($options['required']);
         }
@@ -607,7 +608,8 @@ class Field extends Component {
      * Set the options of the field
      * @param array $options
      */
-    public function setOptions(array $options) {
+    public function setOptions(array|Collection $options) {
+        if ($options instanceof Collection) $options = $options->getAllAsArray();
         $this->options = $options;
     }
     

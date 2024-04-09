@@ -62,6 +62,15 @@ class Platform {
     }
     
     /**
+     * Normalize a class name removing leading \ and replacing \\ with \
+     * @param string $class
+     */
+    public static function normalizeClass(string &$class) {
+        if (substr($class,0,1) == "\\") $class = substr($class,1);
+        $class = str_replace("\\\\", "\\", $class);
+    }
+    
+    /**
      * Write the information in memory to the config file
      * @global array $platform_configuration Global configuration storage
      * @return bool True if success

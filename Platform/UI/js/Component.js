@@ -72,6 +72,13 @@ Platform.Component = class {
     }
     
     /**
+     * Destroy this component
+     */
+    destroy() {
+        this.dom_node.remove();        
+    }
+    
+    /**
      * Convenience for making a quick component where only the initialize function is relevant
      * @param {string} dom_class dom_class for element to bind to
      * @param {function} initialize_function The initialize function
@@ -99,6 +106,10 @@ Platform.Component = class {
     
     on(event, callback) {
         this.dom_node.on(event, callback);
+    }
+    
+    off(event) {
+        this.dom_node.off(event);
     }
     
     trigger(event, payload) {
@@ -175,7 +186,7 @@ Platform.Component = class {
         // Pass selected forms to backend
         if (this.dom_node.data('registered_form_ids')) {
             $.each(this.dom_node.data('registered_form_ids').split(','), function(index, value) {
-                component.addIOForm($('#'+value, component.dom_node));
+                component.addIOForm($('#'+value));
             })
         }
     }
@@ -220,7 +231,7 @@ Platform.Component = class {
 
         // Post
         $.post(this.dom_node.data('io_url'), values, function(data) {
-            if (data.destroy) component.dom_node.remove();
+            if (data.destroy) component.destroy();
             if (data.script) eval(data.script);
             if (data.redirect) {
                 if (data.target) 

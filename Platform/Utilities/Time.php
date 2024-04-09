@@ -593,6 +593,7 @@ class Time implements \Platform\UI\Serializable {
      * @return Time
      */
     public function startOfDay() : Time {
+        if ($this->timestamp === null) return new Time();
         // Ensure we are UTC when setting
         $stored_time_zone = date_default_timezone_get();
         date_default_timezone_set('UTC');

@@ -2,7 +2,7 @@
 include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 use Platform\Page\Page;
-use Platform\File;
+use Platform\File\File;
 
 Page::renderPagestart('File upload', ['/Platform/Form/js/file.js'], [], ['no_history' => true]);
 
@@ -17,9 +17,9 @@ if ($_POST['action'] == 'send_file') {
         // Copy vital information back to form
         echo '<script language="javascript" type="text/javascript">';
         echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[mimetype]"]\', window.parent.document).val(\''.$file['type'].'\');';
-        echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[original_file]"]\', window.parent.document).val(\''.$file['name'].'\');';
+        echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[filename]"]\', window.parent.document).val(\''.$file['name'].'\');';
         echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[temp_file]"]\', window.parent.document).val(\''.basename($temp_file).'\');';
-        echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[status]"]\', window.parent.document).val(\'changed\');';
+        echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[action]"]\', window.parent.document).val(\'add\');';
         echo '</script>';
         $current_file_name = $file['name'];
     }
@@ -32,14 +32,14 @@ if ($_POST['action'] == 'send_file') {
     $_POST['temp_file_name'] = '';
     // Copy vital information back to form
     echo '<script language="javascript" type="text/javascript">';
-    echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[status]"]\', window.parent.document).val(\'removed\');';
+    echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[action]"]\', window.parent.document).val(\'remove\');';
     echo '</script>';
 } elseif ($_GET['file_id']) {
     $file = new File();
     $file->loadForRead($_GET['file_id']);
     $current_file_name = $file->canAccess() ? $file->filename : '';
-} elseif ($_GET['original_file']) {
-    $current_file_name = $_GET['original_file'];
+} elseif ($_GET['filename']) {
+    $current_file_name = $_GET['filename'];
 }
 
 if ($current_file_name) {

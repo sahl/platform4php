@@ -91,9 +91,9 @@ class DatarecordcomboboxField extends IndexedComboboxField {
     
     /**
      * Attach a filter to this datarecordcombobox
-     * @param \Platform\Filter $filter
+     * @param \Platform\Filter\Filter $filter
      */
-    public function setFilter(\Platform\Filter $filter) {
+    public function setFilter(\Platform\Filter\Filter $filter) {
         $this->filter = $filter;
         $this->additional_attributes .= ' data-filter="'. htmlentities($filter->getAsJSON()).'"';
     }

@@ -25,7 +25,7 @@ class EditDialog extends Dialog {
     
     public static function EditDialog(string $class) : EditDialog {
         $edit_dialog = new EditDialog();
-        $edit_dialog->setID($class::getClassName().'_edit_dialog');
+        $edit_dialog->setID($class::getBaseClassName().'_edit_dialog');
         $edit_dialog->title = Translation::translateForUser('Edit %1', $class::getObjectName());
         $edit_dialog->addData('buttons', ['save' => Translation::translateForUser('Save'), 'close' => Translation::translateForUser('Cancel')]);
         $edit_dialog->class = $class;
@@ -65,7 +65,7 @@ class EditDialog extends Dialog {
                 }
                 if ($datarecord->canAccess()) {
                     $this->object_id = $_POST['id'];
-                    return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm(true)];
+                    return ['status' => true, 'properties' => $this->getEncodedProperties(), 'values' => $datarecord->getAsArrayForForm()];
                 }
                 return ['status' => false, 'error' => 'Unknown error'];
         }

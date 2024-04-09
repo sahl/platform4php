@@ -3,7 +3,7 @@ include $_SERVER['DOCUMENT_ROOT'].'/Platform/include.php';
 
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
-use Platform\File;
+use Platform\File\File;
 use Platform\Connector\Microbizz;
 
 // Switch to requested instance
@@ -15,7 +15,7 @@ $instance->activate();
 $token = Accesstoken::getByTokencode($_GET['token']);
 if (! $token->isValid()) die(0);
 
-File::ensureFolderInStore(File::getFullFolderPath('temp'));
+File::ensureFolderInStore('temp');
 $fh = fopen(File::getFullFolderPath('temp').'microbizz_credentials_user_'.$_GET['userid'], 'w');
 if ($fh !== false) {
     fwrite($fh, $_POST['endpoint']."\n");
@@ -23,6 +23,5 @@ if ($fh !== false) {
     fwrite($fh, $_POST['accesstoken']);
     fclose($fh);
 } else die(0);
-
 // Solve challenge
 echo Microbizz::solveChallenge($_POST['challenge']);

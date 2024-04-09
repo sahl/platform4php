@@ -6,7 +6,7 @@ namespace Platform\Currency;
  * @link https://wiki.platform4php.dk/doku.php?id=currency_class
  */
 
-use Platform\Property;
+use Platform\Security\Property;
 
 class Currency {
     

@@ -79,7 +79,20 @@ Platform.Form = class extends Platform.Component {
         });
     }
     
-    submit() {
+    /**
+     * Set an event for the form
+     * @param {string} event
+     */
+    setEvent(event) {
+        this.dom_node.find('input[name="form_event"]').val(event);
+    }
+    
+    /**
+     * Submit the form
+     * @param {string} event Optional event
+     */
+    submit(event) {
+        if (event) this.setEvent(event);
         this.dom_node.find('form').submit();
     }
     

@@ -141,3 +141,7 @@ $(function() {
     Platform.apply('body');
 });
 
+$.fn.applyPlatform = function() {
+    Platform.apply(this);
+    return this;
+};

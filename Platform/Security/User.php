@@ -8,9 +8,17 @@ namespace Platform\Security;
  * @link https://wiki.platform4php.dk/doku.php?id=user_class
  */
 
-Use Platform\Security\Accesstoken;
+use Platform\Datarecord\Datarecord;
+use Platform\Datarecord\EmailType;
+use Platform\Datarecord\KeyType;
+use Platform\Datarecord\PasswordType;
+use Platform\Datarecord\TextType;
+use Platform\Filter\ConditionMatch;
+use Platform\Filter\Filter;
+use Platform\Security\Accesstoken;
+use Platform\Utilities\Translation;
 
-class User extends \Platform\DatarecordExtensible {
+class User extends Datarecord {
     
     protected static $username_is_email = false;
     
@@ -33,23 +41,15 @@ class User extends \Platform\DatarecordExtensible {
     }
 
     protected static function buildStructure() {
-        self::addStructure(array(
-            'user_id' => array(
-                'invisible' => true,
-                'fieldtype' => self::FIELDTYPE_KEY
-            ),
-            'username' => array(
-                'label' => static::$username_is_email ? 'Email' : 'Username',
-                'required' => true,
-                'fieldtype' => static::$username_is_email ? self::FIELDTYPE_EMAIL : self::FIELDTYPE_TEXT,
-                'searchable' => true,
-            ),
-            'password' => array(
-                'label' => 'Password',
-                'required' => true,
-                'fieldtype' => self::FIELDTYPE_PASSWORD
-            )
-        ));
+        $username_field = static::$username_is_email ? new EmailType('username', Translation::translateForInstance('Email'), ['is_title' => true, 'is_required' => true]) :
+            new TextType('username', Translation::translateForInstance('User name'), ['is_title' => true,'is_required' => true]);
+
+        static::addStructure([
+            new KeyType('user_id'),
+            $username_field,
+            new PasswordType('password', Translation::translateForUser('Password'), ['is_required' => true]),
+        ]);
+        
         parent::buildStructure();
     }
     
@@ -85,9 +85,9 @@ class User extends \Platform\DatarecordExtensible {
      * @return mixed An accesstoken or false if no login.
      */
     public static function tryLogin(string $username, string $password, int $expire = 60*60*6) {
-        $filter = new \Platform\Filter(get_called_class());
-        $filter->addCondition(new \Platform\ConditionMatch('username', $username));
-        $filter->addCondition(new \Platform\ConditionMatch('password', $password));
+        $filter = new Filter(get_called_class());
+        $filter->addCondition(new ConditionMatch('username', $username));
+        $filter->addCondition(new ConditionMatch('password', $password));
         $result = $filter->execute();
         if ($result->getCount()) {
             $user = $result->get(0);

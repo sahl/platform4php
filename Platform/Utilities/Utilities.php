@@ -31,6 +31,18 @@ class Utilities {
     }
     
     /**
+     * Condense a long text from "A VERY LONG LONG LONG TEXT" to "A VERY...EXT"
+     * @param string $long_text Original text
+     * @param int $lead Number of leading characters to keep
+     * @param int $trail Number of trailing characters to keep
+     * @return string
+     */
+    public static function condenseLongText(string $long_text, int $lead = 100, int $trail = 20) : string {
+        if (mb_strlen($long_text) <= $lead+$trail) return $long_text;
+        return mb_substr($long_text,0,$lead).'...'.mb_substr($long_text,-$trail);
+    }
+    
+    /**
      * Translates a physical path to an URL. Only works when script is called from
      * web server
      * @param string $directory Directory to transform

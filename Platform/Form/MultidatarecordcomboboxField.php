@@ -53,9 +53,9 @@ class MultidatarecordcomboboxField extends MultiplierSection {
     
     /**
      * Attach a filter to this datarecordcombobox
-     * @param \Platform\Filter $filter
+     * @param \Platform\Filter\Filter $filter
      */
-    public function setFilter(\Platform\Filter $filter) {
+    public function setFilter(\Platform\Filter\Filter $filter) {
         $this->datarecord_combobox->setFilter($filter);
     }    
     

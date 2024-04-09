@@ -7,6 +7,7 @@ namespace Platform\Utilities;
  */
 
 use Platform\Server\Instance;
+use Platform\Security\Property;
 
 $platform_language = array();
 
@@ -84,7 +85,7 @@ class Translation {
                 if (file_exists($translation_file)) unlink($translation_file);
                 continue;
             }
-            \Platform\File::ensureFullPath($translation_file, true);
+            \Platform\File\File::ensureFullPath($translation_file, true);
             $existing_phrases = self::getPhrasesFromTranslationFile($translation_file);
             $new_phrases = array();
             foreach ($phrases as $phrase) {
@@ -164,7 +165,7 @@ class Translation {
                 $result = array_merge($result, self::getFileListFromDirectory ($directory.$filename, $extensions));
             else {
                 // Handle correct file types
-                $extension = \Platform\File::extractExtension($filename);
+                $extension = \Platform\File\File::extractExtension($filename);
                 if (in_array($extension, $extensions)) {
                     $result[] = $directory.$filename;
                 }
@@ -245,7 +246,7 @@ class Translation {
         $filename = substr($original_file,$final_slash_position+1);
         $dot_position = strrpos($filename, '.');
         if ($dot_position !== false) {
-            $extension = \Platform\File::extractExtension($filename);
+            $extension = \Platform\File\File::extractExtension($filename);
             $filename = substr($filename,0,$dot_position);
         } else {
             $extension = '';
@@ -270,7 +271,7 @@ class Translation {
      * @return array All phrases in file
      */
     public static function getPhrasesFromFile(string $original_file) : array {
-        $ext = \Platform\File::extractExtension($original_file);
+        $ext = \Platform\File\File::extractExtension($original_file);
         
         $function_names = self::getConfiguration('function_names');
 
@@ -317,7 +318,7 @@ class Translation {
         if (! \Platform\Server\Instance::getActiveInstanceID()) return self::getConfiguration('default_language') ?: 'en';
         if (! $_SESSION['platform']['instance_language'] || \Platform\Server\Instance::getActiveInstanceID() != $_SESSION['platform']['instance_language_id']) {
             $_SESSION['platform']['instance_language_id'] = \Platform\Server\Instance::getActiveInstanceID();
-            $_SESSION['platform']['instance_language'] = \Platform\Property::getForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
+            $_SESSION['platform']['instance_language'] = Property::getForUser(0, 'instance_language') ?: self::getConfiguration('default_language');
         }
         return $_SESSION['platform']['instance_language'] ?: 'en';
     }
@@ -495,7 +496,7 @@ class Translation {
      */
     public static function saveTranslationFile(string $translation_file, string $language_key, array $phrases) {
         $fh = fopen($translation_file, 'w');
-        $is_php_file = \Platform\File::extractExtension($translation_file) == 'php';
+        $is_php_file = \Platform\File\File::extractExtension($translation_file) == 'php';
         if ($is_php_file) fwrite($fh, "<?php\n");
         foreach ($phrases as $original_text => $translated_text) {
             fwrite($fh, '$platform_language[\''.$language_key.'\'][\''.self::getSaveString($original_text).'\'] = \''.self::getSaveString($translated_text).'\';'."\n");
@@ -511,7 +512,7 @@ class Translation {
         if (! in_array($language_key, self::getLanguageKeys())) trigger_error('Tried to set invalid language '.$language_key, E_USER_ERROR);
         // Check if this language is something which isn't loaded yet
         $new_language = ! in_array($language_key, self::getLanguagesToLoad());
-        \Platform\Property::setForUser(0, 'instance_language', '', $language_key);
+        \Platform\Security\Property::setForUser(0, 'instance_language', '', $language_key);
         unset($_SESSION['platform']['instance_language']);
         if ($new_language) self::reloadAllTranslations();
     }
