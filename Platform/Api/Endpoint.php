@@ -73,8 +73,9 @@ class Endpoint {
      * @param string $method Method for custom handler. GET POST or DELETE
      * @param string $get Get input for custom handler
      * @param string $body Body input for custom handler
+     * @param string $command The command to execute on the object
      */
-    public function customHandlerAfterSecurity(string $object_name, int $object_id, string $method, array $get, string $body) {
+    public function customHandlerAfterSecurity(string $object_name, int $object_id, string $method, array $get, string $body, string $command) {
         
     }
     
@@ -85,8 +86,9 @@ class Endpoint {
      * @param string $method Method for custom handler. GET POST or DELETE
      * @param string $get Get input for custom handler
      * @param string $body Body input for custom handler
+     * @param string $command The command to execute on the object
      */
-    public function customHandlerBeforeSecurity(string $object_name, int $object_id, string $method, array $get, string $body) {
+    public function customHandlerBeforeSecurity(string $object_name, int $object_id, string $method, array $get, string $body, string $command) {
         
     }
 
@@ -116,16 +118,18 @@ class Endpoint {
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
         if ($this->preset_instanceid) {
-            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
+            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?(\\/([^\\/]+?))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $this->preset_instanceid;
             $object_name = $m[1];
             $object_id = (int)$m[3];
+            $command = (string)$m[5];
         } else {
-            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
+            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?(\\/([^\\/]+?))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $m[2];
             if (! $instance_id) static::respondErrorAndDie (404, 'Invalid instance specified');
             $object_name = $m[3];
             $object_id = (int)$m[5];
+            $command = (string)$m[7];
         }
         
         // Check for valid instance and activate it
@@ -140,14 +144,14 @@ class Endpoint {
         $input = file_get_contents("php://input");
         $method = strtoupper($_SERVER['REQUEST_METHOD']);
         
-        $this->customHandlerBeforeSecurity($object_name, $object_id, $method, $_GET, $input);
+        $this->customHandlerBeforeSecurity($object_name, $object_id, $method, $_GET, $input, $command);
         
         // Check for valid access
         if ($this->is_protected) {
             $this->checkSecurity();
         }
         
-        $this->customHandlerAfterSecurity($object_name, $object_id, $method, $_GET, $input);
+        $this->customHandlerAfterSecurity($object_name, $object_id, $method, $_GET, $input, $command);
         
         // Check for valid object
         if (! isset($this->classes[$object_name])) static::respondErrorAndDie (404, 'No such object type: '.$object_name);
