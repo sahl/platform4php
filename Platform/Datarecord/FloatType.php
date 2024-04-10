@@ -34,7 +34,7 @@ class FloatType extends IntegerType {
     
     public function parseDatabaseValue($value) {
         if ($value === null) return null;
-        return (string)$value;
+        return (float)$value;
     }    
     
     public function validateValue($value) {
