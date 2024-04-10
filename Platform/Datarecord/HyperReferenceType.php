@@ -241,7 +241,7 @@ class HyperReferenceType extends Type {
      * Check if fields of this type contains references to the given foreign class
      * @return bool
      */
-    public function matchesForeignClass($foreign_class) : string {
+    public function matchesForeignClass($foreign_class) : bool {
         return true;
     }
     

@@ -226,6 +226,14 @@ class MultiReferenceType extends Type {
     }
     
     /**
+     * Return the foreign class of this type
+     * @return string
+     */
+    public function getForeignClass() : string {
+        return $this->foreign_class;
+    }
+    
+    /**
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
@@ -333,7 +341,7 @@ class MultiReferenceType extends Type {
      * Check if fields of this type contains references to the given foreign class
      * @return bool
      */
-    public function matchesForeignClass($foreign_class) : string {
+    public function matchesForeignClass($foreign_class) : bool {
         return $foreign_class == $this->foreign_class;
     }
     

@@ -536,8 +536,8 @@ class Type {
      * Check if fields of this type contains references to the given foreign class
      * @return bool
      */
-    public function matchesForeignClass($foreign_class) : string {
-        return '';
+    public function matchesForeignClass($foreign_class) : bool {
+        return false;
     }
     
     /**
