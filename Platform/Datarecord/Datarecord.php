@@ -1353,7 +1353,7 @@ class Datarecord implements DatarecordReferable {
     public function logChange() {
         $log = new Log('datarecord', ['6r']);
         $text = '';
-        if ($this->isInDatabase()) $text = 'CH '.$this->getClassName ().'('.$this->getKeyValue().') - ';
+        if ($this->isInDatabase()) $text = 'CH '.$this->getBaseClassName().'('.$this->getKeyValue().') - ';
         else $text = 'CR '.$this->getClassName().'('.$this->getKeyValue().') - ';
         $first = true;
         foreach ($this->getChangedFields() as $fieldname) {
