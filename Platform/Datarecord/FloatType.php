@@ -16,7 +16,7 @@ class FloatType extends IntegerType {
     }
     
     public function getFieldForDatabase($value) : string {
-        if ($value === null) return 'NULL';
+        if ($value === null || $value === '') return 'NULL';
         return (string)$value;
     }
     
