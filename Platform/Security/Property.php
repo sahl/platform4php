@@ -23,7 +23,7 @@ class Property extends Datarecord {
     protected static function buildStructure() {
         static::addStructure([
             new \Platform\Datarecord\KeyType('property_id'),
-            new \Platform\Datarecord\TextType('user_ref', Translation::translateForUser('Server name'), ['is_required' => true, 'is_title' => true, 'index' => 'property,subproperty']),
+            new \Platform\Datarecord\TextType('user_ref', '', ['is_invisible' => true, 'index' => 'property,subproperty']),
             new \Platform\Datarecord\TextType('property', '', ['is_invisible' => true]),
             new \Platform\Datarecord\TextType('subproperty', '', ['is_invisible' => true]),
             new \Platform\Datarecord\ObjectType('value', '', ['is_invisible' => true]),
