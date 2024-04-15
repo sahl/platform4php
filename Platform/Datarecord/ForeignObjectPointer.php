@@ -39,7 +39,7 @@ class ForeignObjectPointer {
      * Get the object pointed to by this pointer
      * @return Datarecord
      */
-    public function getForeignObject() : Datarecord {
+    public function getForeignObject() : DatarecordReferable {
         $object = new $this->foreign_class();
         $object->loadForRead($this->foreign_id);
         return $object;
