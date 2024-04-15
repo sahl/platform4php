@@ -153,7 +153,7 @@ class BoolType extends IntegerType {
     }
     
     public function getSQLFieldType() : string {
-        return 'TINYINT(1)';
+        return 'TINYINT(1) NOT NULL';
     }
     
     public function integrityCheck() : array {
