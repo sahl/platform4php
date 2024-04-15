@@ -94,36 +94,52 @@ Platform.Dialog = class extends Platform.Component {
         ]).dialog('open');
     }
 
+    /**
+     * Open a dialog displaying a form, the form DOM element will be moved to the dialog
+     * @param html title
+     * @param html text Text to display above the form
+     * @param string form_id ID of the form, must begin with '#'
+     * @param html ok_text Text to display in the "OK" button
+     * @param function callback_ok Will be called as callback_ok(values, close_function) 
+     * @param function callback_open Will be called to determine if the dialog should be opened, should return true/false
+     * @param function callback_cancel Will be called if the user clicks on "Cancel"
+     */
     static formDialog(title, text, form_id, ok_text, callback_ok, callback_open, callback_cancel) {
         $('#platform_allpurpose_text').html(text);
         
         // We want the form component
-        var form_component_id = form_id + '_component';
+        form_id = form_id + '_component';
+        var form = $(form_id).platformComponent();
 
         // Ensure that the form is moved into place and shown
         var form_original_parent = $(form_id).parent();
 
-        $(form_component_id).appendTo('#platform_allpurpose_form').show();
-        
+        $(form_id).appendTo('#platform_allpurpose_form').show();
+
         // (Re)bind submitter
         $(form_id).off('submit.allpurpose_dialog');
         $(form_id).on('submit.allpurpose_dialog', function(data) {
+            // validate the form, this will also fill in the 'form_hiddenfields' element
+            if (!form.validate())
+                return;
+
             if (typeof(callback_ok) == 'function') {
                 var return_values = {};
-                $.each($(form_component_id).find('form').serializeArray(), function(key, value) {
+                
+                $.each($(form_id).find('form').serializeArray(), function(key, value) {
                     return_values[value.name] = value.value;
                 })
                 callback_ok(return_values, function() {
                     $('#platform_allpurpose_dialog').dialog('close');
                     // Move form back in place
-                    $(form_component_id).appendTo(form_original_parent);
+                    $(form_id).appendTo(form_original_parent);
                     // Be sure to clean form area
                     $('#platform_allpurpose_form').html('');
                 });
             } else {
                 $('#platform_allpurpose_dialog').dialog('close');
                 // Move form back in place
-                $(form_component_id).appendTo(form_original_parent);
+                $(form_id).appendTo(form_original_parent);
                 // Be sure to clean form area
                 $('#platform_allpurpose_form').html('');
             }
