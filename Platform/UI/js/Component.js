@@ -129,10 +129,11 @@ Platform.Component = class {
     }
     
     redraw() {
+        var component = this;
         if (this.dom_node.is('.platform_container_component')) {
             // Redraw all subcomponents
             this.dom_node.find('.platform_component').each(function() {
-                if ($(this).parent().closest('.platform_component')[0] == this.dom_node[0]) {
+                if ($(this).parent().closest('.platform_component')[0] == component.dom_node[0]) {
                     // Redraw subcomponent.
                     $(this).platformComponent().redraw();
                 }
