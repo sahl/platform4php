@@ -641,12 +641,12 @@ class Datarecord implements DatarecordReferable {
                     if (count(array_diff($key_fields, $existing_keys[$key_name])) || count(array_diff($existing_keys[$key_name], $key_fields))) {
                         // Changed, so we drop the key and rebuild it
                         self::query('ALTER TABLE '.static::$database_table.' DROP KEY '.$key_name);
-                        self::query('ALTER TABLE '.static::$database_table.' ADD KEY '.$key_name.' ('.implode(',',$key_fields).')');
+                        self::query('ALTER TABLE '.static::$database_table.' ADD KEY '.$key_name.' (`'.implode('`,`',$key_fields).'`)');
                         $changed = true;
                     }
                 } else {
                     // We don't have it, so we build it.
-                    self::query('ALTER TABLE '.static::$database_table.' ADD KEY '.$key_name.' ('.implode(',',$key_fields).')');
+                    self::query('ALTER TABLE '.static::$database_table.' ADD KEY '.$key_name.' (`'.implode('`,`',$key_fields).'`)');
                     $changed = true;
                 }
             }
