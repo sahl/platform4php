@@ -90,6 +90,12 @@ class Datarecord implements DatarecordReferable {
     protected static $depending_classes = array();
     
     /**
+     * Use to indicate we want a dry run of ensure in database
+     * @var type
+     */
+    protected static $ensure_in_database_dryrun = false;
+    
+    /**
      * Used to indicate if this object is in the database.
      * @var type
      */
@@ -498,8 +504,12 @@ class Datarecord implements DatarecordReferable {
      * Ensure that the database can store this object
      * @return bool True if changes were made to the database
      */
-    public static function ensureInDatabase() : bool {
+    public static function ensureInDatabase(bool $dry_run = false) : bool {
         static::ensureStructure();
+        
+        if ($dry_run) static::$ensure_in_database_dryrun = true;
+        
+        if (static::$ensure_in_database_dryrun) echo '<p>Building '.get_called_class ().' in table '.static::$database_table.' - dry run.';
         
         $changed = false;
         
@@ -553,7 +563,9 @@ class Datarecord implements DatarecordReferable {
                 //echo 'Primary key change from '.$keyindatabase.' to '.static::getKeyField().' in '. get_called_class();
                 // When the primary key changes, we need to rebuild the table.
                 self::query('DROP TABLE '.static::$database_table);
-                return static::ensureInDatabase();
+                $result = static::ensureInDatabase($dry_run);
+                static::$ensure_in_database_dryrun = false;
+                return $result;
             }
 
             // Check for new fields
@@ -661,6 +673,7 @@ class Datarecord implements DatarecordReferable {
             }
         }
         
+        static::$ensure_in_database_dryrun = false;
         return $changed;
     }
 
@@ -1483,6 +1496,10 @@ class Datarecord implements DatarecordReferable {
      * @return array
      */
     public static function query(string $query, bool $failonerror = true) {
+        if (static::$ensure_in_database_dryrun) {
+            echo '<p>'.$query;
+            if (substr(strtolower($query),0,6) != 'select' && substr(strtolower($query),0,8) != 'describe' && substr(strtolower($query),0,4) != 'show') return;
+        }
         if (static::getLocation() == self::LOCATION_GLOBAL) return Database::globalQuery ($query, $failonerror);
         else return Database::instanceQuery ($query,$failonerror);
     }
