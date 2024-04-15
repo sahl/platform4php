@@ -111,6 +111,9 @@ class Client {
         curl_setopt($curl, CURLOPT_HTTPHEADER, $options);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($curl, CURLOPT_HEADER, 1);
+        if ($this->token_code) {
+            curl_setopt($curl, CURLOPT_COOKIE, 'access_token='.$this->token_code.'; path:/;');
+        }
 
         if ($method == 'POST' || $method == 'PUT') {
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($parameters));
