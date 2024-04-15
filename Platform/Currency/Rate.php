@@ -28,8 +28,8 @@ class Rate extends Datarecord {
     protected static function buildStructure() {
         static::addStructure([
             new \Platform\Datarecord\KeyType('currency_rate_id'),
-            new \Platform\Datarecord\TextType('currency', '', ['is_required' => true, 'is_invisible' => true]),
-            new \Platform\Datarecord\DateType('date', '', ['is_required' => true, 'is_invisible' => true]),
+            new \Platform\Datarecord\TextType('currency', '', ['is_required' => true, 'is_invisible' => true, 'index' => true]),
+            new \Platform\Datarecord\DateType('date', '', ['is_required' => true, 'is_invisible' => true, 'index' => true]),
             new \Platform\Datarecord\FloatType('rate', '', ['is_required' => true, 'is_invisible' => true]),
         ]);
         parent::buildStructure();
@@ -47,6 +47,15 @@ class Rate extends Datarecord {
     }
     
     /**
+     * Get todays rate for a given currency
+     * @param string $currency Currency to get exchange rate for
+     * @return float The numeric exchange rate for today
+     */
+    public static function getRateForToday(string $currency) : float {
+        return static::getRate($currency, Time::today());
+    }
+    
+    /**
      * Get the reverse exchange rate on a given date
      * @param string $currency Currency to get exchange rate for
      * @param Time $date Date to check
@@ -54,6 +63,15 @@ class Rate extends Datarecord {
      */
     public static function getReverseRate(string $currency, Time $date) : float {
         return 10000.0/static::getRate($currency, $date);
+    }
+    
+    /**
+     * Get the reverse exchange rate for today
+     * @param string $currency Currency to get exchange rate for
+     * @return float The numeric reverse exchange rate for today
+     */
+    public static function getReverseRateForToday(string $currency) : float {
+        return static::getReverseRate($currency, Time::today());
     }
     
     /**
