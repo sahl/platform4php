@@ -200,7 +200,7 @@ class ArrayType extends Type {
      * @return string
      */
     public function getFieldForDatabase($value) : string {
-        if (! count($value)) return '\'[]\'';
+        if (! is_array($value) || ! count($value)) return '\'[]\'';
         return '\''. \Platform\Utilities\Database::escape(json_encode($value)).'\'';
     }
     
