@@ -977,7 +977,7 @@ class Datarecord implements DatarecordReferable {
      * @param string $field Field name
      * @return Datarecord Referenced object or null
      */
-    public function getForeignObject(string $field) : ?Datarecord {
+    public function getForeignObject(string $field) : ?DatarecordReferable {
         $type = static::getFieldDefinition($field);
         if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
         $objects = $type->getForeignObjectPointers($this->getRawValue($field));
