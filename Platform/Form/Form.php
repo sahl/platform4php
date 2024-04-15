@@ -109,7 +109,8 @@ class Form extends Component {
         if (! $inserted) {
             foreach ($fields as $field) {
                 if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
-                $newfields[] = $formfield;
+                $newfields[] = $field;
+                $field->attachToForm($this);
             }
         }
         $this->fields = $newfields;
@@ -129,7 +130,7 @@ class Form extends Component {
             if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
-                    $newfields[] = $formfield;
+                    $newfields[] = $field;
                     $field->attachToForm($this);
                 }
                 $inserted = true;
@@ -140,6 +141,7 @@ class Form extends Component {
             foreach (array_reverse($fields) as $field) {
                 if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
                 array_unshift($newfields, $field);
+                $field->attachToForm($this);
             }
         }
         $this->fields = $newfields;
