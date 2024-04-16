@@ -14,7 +14,7 @@ class IntegerType extends Type {
     }
     
     public function filterGreaterEqualSQL($value) {
-        return '`'.$this->name.'` >= '.\Platform\Utilities\Database::escape($value);
+        return '`'.$this->name.'` >= '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterGreater($value, $other_value) {
@@ -22,7 +22,7 @@ class IntegerType extends Type {
     }
     
     public function filterGreaterSQL($value) {
-        return '`'.$this->name.'` > '.\Platform\Utilities\Database::escape($value);
+        return '`'.$this->name.'` > '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterIsSet($value) {
@@ -46,7 +46,7 @@ class IntegerType extends Type {
     }
     
     public function filterLesserEqualSQL($value) {
-        return '`'.$this->name.'` <= '.\Platform\Utilities\Database::escape($value);
+        return '`'.$this->name.'` <= '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterLesser($value, $other_value) {
@@ -54,7 +54,7 @@ class IntegerType extends Type {
     }
     
     public function filterLesserSQL($value) {
-        return '`'.$this->name.'` < '.\Platform\Utilities\Database::escape($value);
+        return '`'.$this->name.'` < '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterMatch($value, $other_value) {
@@ -62,7 +62,7 @@ class IntegerType extends Type {
     }
     
     public function filterMatchSQL($value) {
-        return '`'.$this->name.'` = '.\Platform\Utilities\Database::escape($value);
+        return '`'.$this->name.'` = '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterOneOf($value, array $other_values) {

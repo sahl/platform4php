@@ -188,6 +188,7 @@ class MultiplierSection extends Field {
     }
     
     public function setValue($value) {
+        if ($value === null) $value = [];
         if (! is_array($value)) trigger_error('Tried to pass non-array value to a multiplier', E_USER_ERROR);
         parent::setValue($value);
     }

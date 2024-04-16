@@ -45,7 +45,7 @@ class ObjectType extends ArrayType {
      * @return mixed
      */
     public function parseDatabaseValue($value) {
-        return unserialize($value);
+        return $value ? unserialize($value) : null;
     }
     
     /**
