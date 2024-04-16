@@ -10,7 +10,6 @@ use Platform\Datarecord\Datarecord;
 use Platform\Security\Accesstoken;
 use Platform\Server\Instance;
 use Platform\Utilities\Database;
-use Platform\Utilities\Translation;
 
 class Property extends Datarecord {
     
@@ -63,9 +62,9 @@ class Property extends Datarecord {
     public static function getForUser(int $userid, string $property, string $subproperty = '') {
         if (Instance::getActiveInstanceID() === false) return false;
         $qr = Database::instanceFastQuery("SELECT * FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
-        $userproperty = new Property();
-        $userproperty->loadFromDatabaseRow($qr);
-        return $userproperty->value;
+        // As we can need to get a property to construct the property object, we need to
+        // get it directly from the DB
+        return $qr ? unserialize($qr) : null;
     }
     
     /**
