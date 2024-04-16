@@ -194,6 +194,14 @@ class EnumerationType extends IntegerType {
     }    
     
     /**
+     * Check the enumeration of this field
+     * @return bool
+     */
+    public function getEnumeration() {
+        return $this->enumeration;
+    }    
+    
+    /**
      * Format a value for the database in accordance to this type
      * @param mixed $value
      * @return string
