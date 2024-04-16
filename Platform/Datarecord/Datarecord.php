@@ -570,13 +570,11 @@ class Datarecord implements DatarecordReferable {
 
             // Check for new fields
             foreach (static::$structure as $name => $type) {
+                // We don't touch the primary key
+                if ($type->isPrimaryKey()) continue;
                 if (! isset($fields_in_database[$name]) && $type->getStoreLocation() == Type::STORE_DATABASE) {
                     // Create it
                     $sql_type = $type->getSQLFieldType();
-                    if ($type->isPrimaryKey()) {
-                        $fielddefinition .= ' PRIMARY KEY';
-                        if (! static::$manual_key) $fielddefinition .= ' AUTO_INCREMENT';
-                    }
                     $default = $type->getDefaultValue() ? ' DEFAULT '.$type->getFieldForDatabase($type->getDefaultValue()) : '';
                     // Some SQL field types doesn't allow default values
                     if (in_array(strtolower($sql_type), ['blob', 'text', 'mediumtext', 'geometry', 'json'])) $default = '';
@@ -600,6 +598,7 @@ class Datarecord implements DatarecordReferable {
             }
             // Check for changed and removed fields
             foreach ($fields_in_database as $field_in_database) {
+                $field_in_database['Type'] = self::normalizeType($field_in_database['Type']);
                 $type = static::getFieldDefinition($field_in_database['Field']);
                 if (! $type || $type->getStoreLocation() != Type::STORE_DATABASE) {
                     if ($type && $type->getStoreLocation() == Type::STORE_METADATA) {
@@ -619,11 +618,13 @@ class Datarecord implements DatarecordReferable {
                 }
                 $type = static::getFieldDefinition($field_in_database['Field']);
                 if ($field_in_database['Type'] != mb_substr(mb_strtolower($type->getSQLFieldType()),0, mb_strlen($field_in_database['Type']))) {
+                    $default = $type->getDefaultValue() ? ' DEFAULT '.$type->getFieldForDatabase($type->getDefaultValue()) : '';
+                    // Some SQL field types doesn't allow default values
+                    if (in_array(strtolower($sql_type), ['blob', 'text', 'mediumtext', 'geometry', 'json'])) $default = '';
                     if (static::$database_change_strategy == self::DATABASE_CHANGE_ALTER) {
-                        self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN `'.$field_in_database['Field'].'` `'.$field_in_database['Field'].'` '.$type->getSQLFieldType());
+                        self::query('ALTER TABLE '.static::$database_table.' CHANGE COLUMN `'.$field_in_database['Field'].'` `'.$field_in_database['Field'].'` '.$type->getSQLFieldType().$default);
                     } else {
                         self::query('ALTER TABLE '.static::$database_table.' DROP `'.$field_in_database['Field'].'`');
-                        $default = $type->getDefaultValue() ? ' DEFAULT '.$type->getFieldForDatabase($type->getDefaultValue()) : '';
                         self::query('ALTER TABLE '.static::$database_table.' ADD `'.$field_in_database['Field'].'` '.$type->getSQLFieldType().$default);
                     }
                     $changed = true;
@@ -675,6 +676,17 @@ class Datarecord implements DatarecordReferable {
         
         static::$ensure_in_database_dryrun = false;
         return $changed;
+    }
+    
+    private static function normalizeType($type) {
+        $replace = [
+            'int(11)' => 'int',
+            'int(1)' => 'tinyint(1)'
+        ];
+        foreach ($replace as $search => $replace) {
+            if (mb_strtolower($type) == $search) return $replace;
+        }
+        return $type;
     }
 
     /**
