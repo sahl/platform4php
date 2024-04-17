@@ -1461,7 +1461,7 @@ class Datarecord implements DatarecordReferable {
         $metadata = array();
         foreach (static::$structure as $field => $type) {
             if ($type->getStoreLocation() != Type::STORE_METADATA) continue;
-            $metadata[$field] = $this->getJSONValue($this->getRawValue($field));
+            $metadata[$field] = $this->getJSONValue($field);
         }
         $this->setValue('metadata', $metadata);
     }
