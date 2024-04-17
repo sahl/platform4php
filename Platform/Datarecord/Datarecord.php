@@ -1009,6 +1009,17 @@ class Datarecord implements DatarecordReferable {
         if (count($objects) == 0) return null;
         return $objects[0]->getForeignObject();
     }
+
+    /**
+     * Get a value of this field suitable for inserting in a JSON structure
+     * @param string $field Field name
+     * @return mixed
+     */
+    public function getJSONValue(string $field) {
+        $type = static::getFieldDefinition($field);
+        if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
+        return $type->getJSONValue($this->getRawValue($field), true);
+    }
     
     /**
      * Get the key field of this datarecord.
