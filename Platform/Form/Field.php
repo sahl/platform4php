@@ -342,6 +342,14 @@ class Field extends Component {
     }
     
     /**
+     * Check if this field is required
+     * @return bool
+     */
+    public function getRequired() : bool {
+        return $this->is_required;
+    }
+    
+    /**
      * Get error text (if any)
      * @return string
      */
@@ -620,6 +628,14 @@ class Field extends Component {
     public function setPlaceholder(string $placeholder) {
         $this->placeholder = $placeholder;
     }
+    
+    /**
+     * Set if the field is requried.
+     * @param bool $required
+     */
+    public function setRequired(bool $required) {
+        $this->required = $required;
+    }    
     
     /**
      * Set the label of this field
