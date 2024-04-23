@@ -1608,7 +1608,7 @@ class Datarecord implements DatarecordReferable {
     public function reset() {
         $fields_to_keep = array('create_date', 'change_date');
         foreach (static::$structure as $field => $type) {
-            if (! $type->isPrimaryKey() && ! in_array($field, $fields_to_keep)) $this->setValue($field, null);
+            if (! $type->isPrimaryKey() && ! in_array($field, $fields_to_keep)) $this->setValue($field, $type->getDefaultValue());
         }
     }
     

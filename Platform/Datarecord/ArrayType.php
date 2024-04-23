@@ -12,6 +12,13 @@ class ArrayType extends Type {
     protected $substructure = [];
     
     /**
+     * Default value of field
+     * @var mixed
+     */
+    protected $default_value = [];
+    
+    
+    /**
      * Construct a field of this type
      * @param string $name Field name
      * @param string $title Field title

@@ -393,6 +393,7 @@ class MultiReferenceType extends Type {
      * @return array
      */
     public function parseValue($value, $existing_value = null) {
+        if ($value === null) return null;
         if (is_array($value)) {
             $result = []; 
             foreach ($value as $v) $result = array_merge($result, $this->parseValue($v));
