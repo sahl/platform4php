@@ -23,11 +23,25 @@ class Client {
     protected $token_code = '';
     
     /**
+     * Used for custom headers
+     * @var array
+     */
+    protected $custom_headers = [];
+    
+    /**
      * Constructs a new API Client
      * @param string $endpoint The endpoint to connect to
      */
     public function __construct(string $endpoint) {
         $this->endpoint = $endpoint;
+    }
+    
+    /**
+     * Add a custom header which will be appended to each API call
+     * @param string $custom_header
+     */
+    public function addCustomHeader(string $custom_header) {
+        $this->custom_headers[] = $custom_header;
     }
     
     /**
@@ -92,7 +106,12 @@ class Client {
         if (substr($endpoint,-1,1) != '/') $endpoint .= '/';
         $endpoint .= $object;
         if ($id) $endpoint .= '/'.$id;
-        if (strtolower($method) == 'get' && count($parameters)) {
+        
+        $parameters_as_body = in_array(strtolower($method), ['post', 'put', 'getwithbody']);
+        
+        if (strtolower($method) == 'getwithbody') $method = 'GET';
+        
+        if (! $parameters_as_body && count($parameters)) {
             // Build querystring
             $endpoint .= '?'.http_build_query($parameters);
         }
@@ -103,6 +122,9 @@ class Client {
             'Content-Type: application/json',
             'Accept: application/json'
         );
+        // Add custom headers
+        if (count($this->custom_headers)) $options = array_merge($options, $this->custom_headers);
+        
         if ($this->token_code) {
             $options[] = 'Authorization: Bearer '.$this->token_code;
         }
@@ -115,7 +137,7 @@ class Client {
             curl_setopt($curl, CURLOPT_COOKIE, 'access_token='.$this->token_code.'; path:/;');
         }
 
-        if ($method == 'POST' || $method == 'PUT') {
+        if ($parameters_as_body) {
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($parameters));
         }
 
