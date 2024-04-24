@@ -22,6 +22,12 @@ class MultiReferenceType extends Type {
     protected $foreign_class = null;
     
     /**
+     * Default value of field
+     * @var mixed
+     */
+    protected $default_value = [];
+    
+    /**
      * Construct a field of this type
      * @param string $name Field name
      * @param string $title Field title
