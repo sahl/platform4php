@@ -28,6 +28,7 @@ Platform.addCustomFunction(function(item) {
         if (url.substr(0,6) == '#POST=') {
             var formtopost = url.substr(6);
             $('#'+formtopost).submit();
+            e.stopImmediatePropagation();
             return false;
         }
         if (url.substr(0,9) == '#TRIGGER=') {
@@ -38,11 +39,13 @@ Platform.addCustomFunction(function(item) {
             } else {
                 $(this).trigger(eventname);
             }
+            e.stopImmediatePropagation();
             return false;
         }
         if (url.substr(0,12) == '#DIALOGOPEN=') {
             var dialog_to_open = url.substr(12);
             $('#'+dialog_to_open).dialog('open');
+            e.stopImmediatePropagation();
             return false;
         }
         return true;
