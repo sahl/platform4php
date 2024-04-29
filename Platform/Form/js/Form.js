@@ -141,6 +141,8 @@ Platform.Form = class extends Platform.Component {
     validate() {
         var allow_submit = true;
         
+        var form_node = this.dom_node.find('form');
+        
         // Gather hidden fields
         var hidden_fields = [];
     
