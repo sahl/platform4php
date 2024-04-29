@@ -175,8 +175,7 @@ class PasswordType extends TextType {
         return $value ? 'XXXXXX' : '';
     }
     
-    public function getFormField(): \Platform\Form\Field {
-        if ($this->isReadonly() || $this->isInvisible()) return null;
+    protected function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\PasswordField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     

@@ -38,6 +38,8 @@ class DateField extends Field {
         if ($value) {
             $value = new Time($value);
             $this->value = $value->startOfDay();
+        } else {
+            $this->value = new Time();
         }
         return true;
     }

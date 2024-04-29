@@ -13,8 +13,7 @@ class ImageType extends FileType {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : ?\Platform\Form\Field {
-        if ($this->isReadonly() || $this->isInvisible()) return null;
+    protected function getBaseFormField() : ?\Platform\Form\Field {
         $options = $this->getFormFieldOptions();
         $options['images_only'] = true;
         return \Platform\Form\FileField::Field($this->title, $this->name, $options);

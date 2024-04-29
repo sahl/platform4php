@@ -154,7 +154,7 @@ Platform.Form = class extends Platform.Component {
         var hidden_fields = [];
     
         // Validate form by validating all fields not considered hidden
-        this.dom_node.find('form').children('.platform_form_field_component').each(function() {
+        form_node.closestChildren('.platform_form_field_component').each(function() {
             var field_component = $(this).platformComponent();
             if (field_component.isHidden()) {
                 var name = field_component.getName();

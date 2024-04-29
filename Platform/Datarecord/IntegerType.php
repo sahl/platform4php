@@ -83,8 +83,7 @@ class IntegerType extends Type {
         return (int)$value;
     }
     
-    public function getFormField() : ?\Platform\Form\Field {
-        if ($this->isReadonly() || $this->isInvisible()) return null;
+    protected function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
         
     }

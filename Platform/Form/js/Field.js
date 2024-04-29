@@ -49,7 +49,7 @@ Platform.Form.Field = class extends Platform.Component {
      * @returns {bool}
      */
     isHidden() {
-        return ! this.dom_node.is(':visible');
+        return ! this.dom_node.is(':visible') && ! this.dom_node.is('.platform_include_in_post');
     }
     
     /**

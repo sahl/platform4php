@@ -17,6 +17,10 @@ class Type {
     const LIST_HIDDEN = 1;
     const LIST_SHOWN = 2;
     
+    const FORM_NEVER = 0;
+    const FORM_HIDDEN = 1;
+    const FORM_SHOWN = 2;
+    
     const LAYOUTGROUP_NONE = -1;
 
     /**
@@ -42,6 +46,12 @@ class Type {
      * @var mixed
      */
     protected $default_value = null;
+    
+    /**
+     * Set visibility in forms
+     * @var type
+     */
+    protected $form_visibility = self::FORM_SHOWN;
     
     /**
      * Indicate if this field is a reference to other objects
@@ -113,7 +123,7 @@ class Type {
      * How does this field appear in a list
      * @var int
      */
-    protected $list_location = self::LIST_HIDDEN;
+    protected $list_visibility = self::LIST_HIDDEN;
     
     /**
      * Misc properties
@@ -143,12 +153,12 @@ class Type {
         $this->name = $name;
         $this->title = $title;
         
-        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_location', 'layout_group', 'is_invisible', 'properties'];
+        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'form_visibility', 'properties'];
         foreach ($options as $key => $option) {
             if (! in_array($key, $valid_options)) trigger_error('Invalid options passed to '.get_called_class().': '.$key, E_USER_ERROR);
             switch ($key) {
                 case 'is_title':
-                    if (!array_key_exists('list_location', $options)) $this->list_location = self::LIST_SHOWN;
+                    if (!array_key_exists('list_visibility', $options)) $this->list_visibility = self::LIST_SHOWN;
                     $this->$key = $option;
                     break;
                 case 'index':
@@ -161,6 +171,16 @@ class Type {
                 case 'properties':
                     if (! is_array($option)) trigger_error('Properties must be an array', E_USER_ERROR);
                     foreach ($option as $property => $value) $this->setProperty($property, $value);
+                    break;
+                case 'form_visibility':
+                    if (! in_array($option, [self::FORM_NEVER, self::FORM_HIDDEN, self::FORM_SHOWN])) trigger_error('Invalid form_visibility', E_USER_ERROR);
+                    $this->form_visibility = $option;
+                    break;
+                case 'is_invisible':
+                    if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_NEVER;
+                    break;
+                case 'is_readonly':
+                    if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_HIDDEN;
                     break;
                 default:
                     $this->$key = $option;
@@ -419,7 +439,18 @@ class Type {
      * @return \Platform\Form\Field
      */
     public function getFormField() : ?\Platform\Form\Field {
-        if ($this->isReadonly() || $this->isInvisible()) return null;
+        if ($this->form_visibility == self::FORM_NEVER) return null;
+        $field = $this->getBaseFormField();
+        if ($this->form_visibility == self::FORM_HIDDEN) $field->addClass('platform_invisible platform_include_in_post');
+        return $field;
+    }
+    
+    /**
+     * Return the base form field for editing a field of this type. Should just
+     * return the field and not check if it is shown.
+     * @return \Platform\Form\Field|null
+     */
+    protected function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\TextField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
@@ -490,7 +521,7 @@ class Type {
      */
     public function getOptionsAsArray() : array {
         $result = [];
-        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_location', 'layout_group', 'is_invisible', 'properties'];
+        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'properties'];
         
         foreach ($valid_options as $option) {
             if ($this->$option != null) $result[$option] = $this->$option;
@@ -653,7 +684,7 @@ class Type {
      * @return int
      */
     public function getListLocation() : int {
-        return $this->list_location;
+        return $this->list_visibility;
     }
     
     /**
@@ -865,12 +896,12 @@ class Type {
     
     /**
      * Set the list location for fields of this type
-     * @param int $list_location
+     * @param int $list_visibility
      */
-    public function setListLocation(int $list_location) {
+    public function setListLocation(int $list_visibility) {
         $valids = [self::LIST_NEVER, self::LIST_HIDDEN, self::LIST_SHOWN];
-        if (! in_array($list_location, $valids)) trigger_error('Invalid list location', E_USER_ERROR);
-        $this->list_location = $list_location;
+        if (! in_array($list_visibility, $valids)) trigger_error('Invalid list location', E_USER_ERROR);
+        $this->list_visibility = $list_visibility;
     }
     
     /**

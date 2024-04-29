@@ -248,8 +248,8 @@ class Datarecord implements DatarecordReferable {
     protected static function buildStructure() {
         static::addStructure(array(
             new ArrayType('metadata', '', ['is_invisible' => true]), // ARRAY
-            new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true, 'is_readonly' => true]),
-            new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true, 'is_readonly' => true]),
+            new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true, 'is_readonly' => true, 'form_visibility' => Type::FORM_NEVER]),
+            new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true, 'is_readonly' => true, 'form_visibility' => Type::FORM_NEVER]),
         ));
         
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
@@ -960,7 +960,7 @@ class Datarecord implements DatarecordReferable {
         $form = Form::Form($baseclass.'_form');
         $form->setEvent('save_'.$baseclass);
         foreach (static::$structure as $name => $type) {
-            if ($type->isReadonly() || $name == 'metadata' || $type->isSubfield()) continue;
+            if ($name == 'metadata' || $type->isSubfield()) continue;
             $field = $type->getFormField();
             if ($field === null) continue;
             $form->addField($field);

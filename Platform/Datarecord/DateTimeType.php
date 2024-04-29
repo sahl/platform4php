@@ -93,8 +93,7 @@ class DateTimeType extends Type {
         return "'". \Platform\Utilities\Database::escape($value->get())."'";
     }
     
-    public function getFormField() : ?\Platform\Form\Field {
-        if ($this->isReadonly() || $this->isInvisible()) return null;
+    protected function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\DatetimeField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     

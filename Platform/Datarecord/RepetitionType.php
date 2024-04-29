@@ -173,8 +173,7 @@ class RepetitionType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    public function getFormField() : ?\Platform\Form\Field {
-        if ($this->isReadonly() || $this->isInvisible()) return null;
+    protected function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\RepetitionField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     

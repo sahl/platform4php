@@ -319,20 +319,22 @@ class Form extends Component {
         return explode(',', str_replace(['[',']'], [',',''], $form_name));
     }
     
-    
     /**
      * Get all values from the form
      * @return array
      */
     public function getValues() : array {
-       $result = array();
-       foreach ($this->fields as $field) {
+        // Determine hidden fields
+        $hidden_fields = $_POST['form_hiddenfields'] ? explode(' ', $_POST['form_hiddenfields']) : array();
+
+        $result = array();
+        foreach ($this->fields as $field) {
             /* @var $field Field */
-            if ($field instanceof HTML) continue;
+            if ($field instanceof HTML || in_array($field->getName(), $hidden_fields)) continue;
             $value = $field->getValue();
             if ($value !== null) self::injectValue($field->getName(), $result, $value);
-       }
-       return $result;
+        }
+        return $result;
     }
     
     /**

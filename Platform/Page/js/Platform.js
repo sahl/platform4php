@@ -145,3 +145,12 @@ $.fn.applyPlatform = function() {
     Platform.apply(this);
     return this;
 };
+
+$.fn.closestChildren = function(selector) {
+    if ($(this).is(selector)) return $(this);
+    var result = $();
+    $(this).children().each(function() {
+        result = result.add($(this).closestChildren(selector));
+    });
+    return result;
+}
