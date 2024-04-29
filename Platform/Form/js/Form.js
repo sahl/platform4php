@@ -18,17 +18,6 @@ Platform.Form = class extends Platform.Component {
             return false;
         })
 
-        /*
-        
-        // Submit on enter for some fields
-        $('.platform_form_field', this.dom_node).not('textarea').keypress(function(e) {
-            if (e.keyCode == 13) {
-                e.stopImmediatePropagation();
-                $(this).closest('form').submit();
-                return false;
-            }
-        });
-        */
         // Autosubmit
         $(this.dom_node).on('component_ready', function() {
             // We cannot submit table control forms before the table is ready, so those submit is handled by the table
@@ -36,13 +25,17 @@ Platform.Form = class extends Platform.Component {
         });
     }
     
+    /**
+     * Attach one or more errors to this form
+     * @param {object} errors Error texts hashed by the field names
+     */
     attachErrors(errors) {
         var component = this;
         $.each(errors, function(fieldname, error_text) {
             if (fieldname == '__global') {
                 component.dom_node.find('.platform_form_global_error_container').html('<ul><li>'+error_text.join('<li>')+'</ul>').show();
             } else {
-                var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+Platform.escapeSelector(fieldname)+'_component').platformComponent();
+                var field_component = component.getFieldByName(fieldname);
                 if (! field_component) return true;
                 field_component.setError(error_text);
             }
@@ -51,16 +44,17 @@ Platform.Form = class extends Platform.Component {
     
     /**
      * Set values a bunch of fields in the form
-     * @param object values Field values hashed by the field names
+     * @param {object} values Field values hashed by the field names
      */
     attachValues(values) {
         var component = this;
         $.each(values, function(fieldname, value) {
-            var field_component = component.dom_node.find('#'+component.dom_node.data('componentproperties')['form_id']+'_'+Platform.escapeSelector(fieldname)+'_component').platformComponent();
+            var field_component = component.getFieldByName(fieldname);
             if (! field_component) return true;
             field_component.clear();
+            field_component.clearError();
             field_component.setValue(value);
-        })
+        });
         component.dom_node.find('form').trigger('values_changed');
     }
     
@@ -69,13 +63,9 @@ Platform.Form = class extends Platform.Component {
      */
     clear() {
         this.dom_node.find('.platform_form_global_error_container').html('').hide();
-        this.dom_node.find('.platform_form_field').each(function() {
-            var component = $(this).platformComponent();
-            // Some components can be cleared after they were gathered
-            if (component) {
-                component.clear();
-                component.clearError();
-            }
+        $.each(this.getFields(), function(idx, component) {
+            component.clear();
+            component.clearError();
         });
     }
     
@@ -102,7 +92,7 @@ Platform.Form = class extends Platform.Component {
      * @returns Component Returns null if not found
      */
     getFieldByName(name) {
-        return this.dom_node.find('#'+this.dom_node.children('form').prop('id')+'_'+Platform.escapeSelector(name)+'_component').platformComponent();
+        return this.dom_node.find('#'+this.dom_node.data('componentproperties')['form_id']+'_'+Platform.escapeSelector(name)+'_component').platformComponent();
     }
     
     /**
@@ -111,9 +101,7 @@ Platform.Form = class extends Platform.Component {
      */
     getValues() {
         var values = {};
-        this.dom_node.find('.platform_form_field').each(function() {
-            var component = $(this).platformComponent();
-            if (!component)   return;
+        $.each(this.getFields(), function(idx, component) {
             if (!component.isHidden() && component.validate() && !component.isDisabled()) {
                 var name = component.getName();
                 var value = component.getValue();
@@ -123,15 +111,19 @@ Platform.Form = class extends Platform.Component {
         return values;
     }
     
+    getFields() {
+        return Platform.Form.getFieldsFromNode(this.dom_node);
+    }
+    
     /**
      * Get all form fields in part of the page, if multiple fields have the same name then only the last will be returned
-     * @param jQuery selector Specifies which part of the page to scan
-     * @returns object Components hashed by their field names
+     * @param {jQuery} selector Specifies which part of the page to scan
+     * @returns {object} Components hashed by their field names
      */
-    static getFields(selector) {
+    static getFieldsFromNode(selector) {
         var fields = {};
         
-        $(selector).find('.platform_form_field').each(function() {
+        $(selector).closestChildren('.platform_form_field_component').each(function() {
             var component = $(this).platformComponent();
             if (component) {
                 var name = component.getName();
@@ -148,14 +140,12 @@ Platform.Form = class extends Platform.Component {
      */
     validate() {
         var allow_submit = true;
-        var form_node = this.dom_node.find('form');
         
         // Gather hidden fields
         var hidden_fields = [];
     
         // Validate form by validating all fields not considered hidden
-        form_node.closestChildren('.platform_form_field_component').each(function() {
-            var field_component = $(this).platformComponent();
+        $.each(this.getFields(), function(idx, field_component) {
             if (field_component.isHidden()) {
                 var name = field_component.getName();
                 name = name.replace('[]', '');
