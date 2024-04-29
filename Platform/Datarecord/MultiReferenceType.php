@@ -216,7 +216,7 @@ class MultiReferenceType extends Type {
      * @return string
      */
     public function getFieldForDatabase($value) : string {
-        if (! count($value)) return 'NULL';
+        if (! is_array($value) || ! count($value)) return 'NULL';
         $final_value = [];
         foreach ($value as $v) {
             // We code them as strings to make sure they are encapsulated.

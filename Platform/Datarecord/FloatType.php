@@ -36,6 +36,11 @@ class FloatType extends IntegerType {
         return (float)$value;
     }    
     
+    public function parseValue($value, $existing_value = null) {
+        if ($value === null) return null;
+        return (float)$value;
+    }    
+
     public function validateValue($value) {
         if ($value !== null && !is_numeric($value)) return false;
         return true;

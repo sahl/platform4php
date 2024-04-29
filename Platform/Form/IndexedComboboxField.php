@@ -17,7 +17,7 @@ class IndexedComboboxField extends ComboboxField {
     }
     
     public function getValue() {
-        if (is_array($this->value)) return $this->value['id'];
+        if (is_array($this->value)) return (int)$this->value['id'];
         return 0;
     }
     

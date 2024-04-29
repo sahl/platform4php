@@ -11,6 +11,12 @@ namespace Platform\Datarecord;
 
 class DateTimeType extends Type {
 
+    public function compare($value1, $value2): bool {
+        if ($value1 === null && $value2 === null) return true;
+        if ($value1 === null || $value2 === null) return false;
+        return parent::compare($value1->getTimeStamp(), $value2->getTimeStamp());
+    }
+    
     public function filterIsSet($value) {
         return ! $value->isNull();
     }

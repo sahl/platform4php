@@ -216,6 +216,16 @@ class Type {
     }
     
     /**
+     * Compare if two values of this type is equal
+     * @param mixed $value1
+     * @param mixed $value2
+     * @return bool
+     */
+    public function compare($value1, $value2) : bool {
+        return $value1 === $value2;
+    }
+    
+    /**
      * Filter if a value is greater or equal than another value in regards to this type
      * @param mixed $value Value of this
      * @param mixed $other_value Value of other

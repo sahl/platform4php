@@ -115,6 +115,11 @@ class IntegerType extends Type {
     public function parseDatabaseValue($value) {
         if ($value === null) return null;
         return (int)$value;
+    }
+    
+    public function parseValue($value, $existing_value = null) {
+        if ($value === null) return null;
+        return (int)$value;
     }    
     
     public function validateValue($value) {
