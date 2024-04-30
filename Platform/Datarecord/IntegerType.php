@@ -10,18 +10,22 @@ namespace Platform\Datarecord;
 class IntegerType extends Type {
 
     public function filterGreaterEqual($value, $other_value) {
+        if ($value === null) return false;
         return $value >= $other_value;
     }
     
     public function filterGreaterEqualSQL($value) {
+        if ($value === null) return 'FALSE';
         return '`'.$this->name.'` >= '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterGreater($value, $other_value) {
+        if ($value === null) return false;
         return $value > $other_value;
     }
     
     public function filterGreaterSQL($value) {
+        if ($value === null) return 'FALSE';
         return '`'.$this->name.'` > '.(double)\Platform\Utilities\Database::escape($value);
     }
     
@@ -42,18 +46,22 @@ class IntegerType extends Type {
     }
     
     public function filterLesserEqual($value, $other_value) {
+        if ($value === null) return false;
         return $value <= $other_value;
     }
     
     public function filterLesserEqualSQL($value) {
+        if ($value === null) return false;
         return '`'.$this->name.'` <= '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterLesser($value, $other_value) {
+        if ($value === null) return false;
         return $value < $other_value;
     }
     
     public function filterLesserSQL($value) {
+        if ($value === null) return 'FALSE';
         return '`'.$this->name.'` < '.(double)\Platform\Utilities\Database::escape($value);
     }
     
@@ -62,6 +70,7 @@ class IntegerType extends Type {
     }
     
     public function filterMatchSQL($value) {
+        if ($value === null) return '`'.$this->name.'` IS NULL';
         return '`'.$this->name.'` = '.(double)\Platform\Utilities\Database::escape($value);
     }
     
