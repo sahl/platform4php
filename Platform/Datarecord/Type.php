@@ -178,6 +178,7 @@ class Type {
                     break;
                 case 'is_invisible':
                     if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_NEVER;
+                    if (! array_key_exists('list_visibility', $options) && $option) $this->list_visibility = self::LIST_NEVER;
                     break;
                 case 'is_readonly':
                     if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_HIDDEN;
@@ -693,7 +694,7 @@ class Type {
      * Get the list location of fields of this type
      * @return int
      */
-    public function getListLocation() : int {
+    public function getListVisibility() : int {
         return $this->list_visibility;
     }
     
@@ -908,7 +909,7 @@ class Type {
      * Set the list location for fields of this type
      * @param int $list_visibility
      */
-    public function setListLocation(int $list_visibility) {
+    public function setListVisibility(int $list_visibility) {
         $valids = [self::LIST_NEVER, self::LIST_HIDDEN, self::LIST_SHOWN];
         if (! in_array($list_visibility, $valids)) trigger_error('Invalid list location', E_USER_ERROR);
         $this->list_visibility = $list_visibility;

@@ -135,7 +135,7 @@ class Table extends Component {
             $column = array(
                 'title' => strip_tags($type->title),
                 'field' => $prefix.$type->name,
-                'visible' => $type->getListLocation() == \Platform\Datarecord\Type::LIST_SHOWN,
+                'visible' => $type->getListVisibility() == \Platform\Datarecord\Type::LIST_SHOWN,
             );
             $column = array_merge($column, $type->getTableSorter(), $type->getTableFormatter());
             $columndef[] = $column;

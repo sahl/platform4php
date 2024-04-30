@@ -1252,7 +1252,7 @@ class Datarecord implements DatarecordReferable {
         static::ensureStructure();
         $result = array();
         foreach (static::$structure as $name => $type) {
-            if ($type->isInvisible() || $type->getListLocation() == Type::LIST_NEVER) continue;
+            if ($type->isInvisible() || $type->getListVisibility() == Type::LIST_NEVER) continue;
             $result[] = $name;
         }
         return $result;
