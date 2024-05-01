@@ -173,8 +173,7 @@ class Type {
                     foreach ($option as $property => $value) $this->setProperty($property, $value);
                     break;
                 case 'form_visibility':
-                    if (! in_array($option, [self::FORM_NEVER, self::FORM_HIDDEN, self::FORM_SHOWN])) trigger_error('Invalid form_visibility', E_USER_ERROR);
-                    $this->form_visibility = $option;
+                    $this->setFormVisibility($option);
                     break;
                 case 'is_invisible':
                     if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_NEVER;
@@ -691,7 +690,15 @@ class Type {
     }
     
     /**
-     * Get the list location of fields of this type
+     * Get the form visibility of fields of this type
+     * @return int
+     */
+    public function getFormVisibility() : int {
+        return $this->form_visibility;
+    }
+    
+    /**
+     * Get the list visibility of fields of this type
      * @return int
      */
     public function getListVisibility() : int {
@@ -904,14 +911,25 @@ class Type {
     public function setSubfield(bool $is_subfield = true) {
         $this->is_subfield = $is_subfield;
     }
+
+    /**
+     * Set the form visibility for fields of this type
+     * @param int $form_visibility
+     */
+    public function setFormVisibility(int $form_visibility) {
+        $valids = [self::FORM_NEVER, self::FORM_HIDDEN, self::FORM_SHOWN];
+        if (! in_array($form_visibility, $valids)) trigger_error('Invalid form visibility', E_USER_ERROR);
+        $this->form_visibility = $form_visibility;
+    }
+
     
     /**
-     * Set the list location for fields of this type
+     * Set the list visibility for fields of this type
      * @param int $list_visibility
      */
     public function setListVisibility(int $list_visibility) {
         $valids = [self::LIST_NEVER, self::LIST_HIDDEN, self::LIST_SHOWN];
-        if (! in_array($list_visibility, $valids)) trigger_error('Invalid list location', E_USER_ERROR);
+        if (! in_array($list_visibility, $valids)) trigger_error('Invalid list visibility', E_USER_ERROR);
         $this->list_visibility = $list_visibility;
     }
     
