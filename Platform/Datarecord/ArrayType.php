@@ -299,7 +299,7 @@ class ArrayType extends Type {
      * @return mixed
      */
     public function parseDatabaseValue($value) {
-        if ($value === null) return null;
+        if ($value === null) return [];
         return json_decode($value, true);
     }
     
