@@ -66,7 +66,7 @@ class Layout {
         foreach ($full_definition as $key => $type) {
             // Add fields that doesn't belong in a group
             $layout_group = $type->getLayoutGroup();
-            if ($layout_group != \Platform\Datarecord\Type::LAYOUTGROUP_NONE && $type->getFormVisibility() == \Platform\Datarecord\Type::FORM_SHOWN && ($layout_group == 0 || $layout_group > count($this->groups)) && (! $skip_empty || $datarecord->getFullValue($key))) {
+            if ($layout_group != \Platform\Datarecord\Type::LAYOUTGROUP_NONE && $type->getListVisibility() != \Platform\Datarecord\Type::LIST_NEVER && ($layout_group == 0 || $layout_group > count($this->groups)) && (! $skip_empty || $datarecord->getFullValue($key))) {
                 $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$type->title.'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
                 $sorter[] = $type->getLayoutPriority() ?: 1000;
             }
@@ -95,7 +95,7 @@ class Layout {
             $fragments = []; $sorter = [];
             foreach ($full_definition as $key => $type) {
                 $layout_group = $type->getLayoutGroup();
-                if ($layout_group != \Platform\Datarecord\Type::LAYOUTGROUP_NONE && $type->getFormVisibility() == \Platform\Datarecord\Type::FORM_SHOWN && $layout_group == $group_id && (! $skip_empty || $datarecord->getFullValue($key))) {
+                if ($layout_group != \Platform\Datarecord\Type::LAYOUTGROUP_NONE && $type->getListVisibility() != \Platform\Datarecord\Type::LIST_NEVER && $layout_group == $group_id && (! $skip_empty || $datarecord->getFullValue($key))) {
                     $fragments[] = '<div class="row" data-fieldname="'.$key.'"><div class="label">'.$type->title.'</div><div class="content">'.$datarecord->getFullValue($key).'</div></div>';
                     $sorter[] = $type->getLayoutPriority() ?: 1000;
                 }
