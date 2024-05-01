@@ -44,6 +44,7 @@ switch ($json['event']) {
             $class = $json['class'];
             $instance = new $class();
             $instance->loadForWrite($json['instance_id']);
+            $instance->activate();
             $result = $instance->delete(true);
             if (! $result) $result['error'] = 'Could not delete instance on remote server.';
             else $result = array(
