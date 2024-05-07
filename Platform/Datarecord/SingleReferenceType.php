@@ -182,6 +182,7 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
+        if ($value === null) return '`'.$this->name.'` IS NULL';
         return '`'.$this->name.'` = '.((int)$value);
     }
     
