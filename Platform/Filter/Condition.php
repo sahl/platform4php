@@ -114,8 +114,8 @@ class Condition {
                 return new ConditionMatch($array['fieldname'], $array['value']);
             case 'OneOf':
                 return new ConditionOneOf($array['fieldname'], $array['value']);
-            case 'Refers':
-                return new ConditionRefers($array['fieldname'], $array['value']);
+            case 'InFilter':
+                return new ConditionInFilter($array['fieldname'], $array['filter']);
             case 'Custom':
                 return new ConditionCustom($array['custom_condition'], $array['fieldname'], $array['value']);
             default:

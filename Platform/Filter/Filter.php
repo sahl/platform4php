@@ -363,7 +363,7 @@ class Filter {
      * @param string $field Field to check
      * @param mixed $value Value to check
      */
-    public function conditionGreater($field, $value) {
+    public function conditionGreater(string $field, $value) {
         $this->addCondition(new ConditionGreater($field, $value));
     }
     
@@ -372,7 +372,7 @@ class Filter {
      * @param string $field Field to check
      * @param mixed $value Value to check
      */
-    public function conditionGreaterEqual($field, $value) {
+    public function conditionGreaterEqual(string $field, $value) {
         $this->addCondition(new ConditionGreaterEqual($field, $value));
     }
     
@@ -388,8 +388,8 @@ class Filter {
      * Convenience for adding a InFilter condition
      * @param Filter $filter
      */
-    public function conditionInFilter(Filter $filter) {
-        $this->addCondition(new ConditionInFilter($filter));
+    public function conditionInFilter(string $field, Filter $filter) {
+        $this->addCondition(new ConditionInFilter($field, $filter));
     }
     
     /**

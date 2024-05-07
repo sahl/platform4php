@@ -217,6 +217,38 @@ class MultiReferenceType extends Type {
     }    
     
     /**
+     * Filter if a value is represented in a foreign filter
+     * @param mixed $value
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return bool
+     */
+    public function filterInFilter($value, \Platform\Filter\Filter $filter) {
+        // Null never matches
+        if ($value === null) return false;
+        if (! is_array($value)) $value = [$value];
+        // We can only match if we refers the same object as the filter
+        $foreign_class = $filter->getBaseClassName();
+        if ($foreign_class != $this->foreign_class) return false;
+        // We match if there is an overlap between the values and the result of the filter
+        return count(array_intersect($value, $filter->execute()->getAllRawValues($foreign_class::getKeyField()))) > 0;
+    }
+    
+    /**
+     * Get SQL to determine if a field of this type is matched by a foreign filter
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return string SQL to use
+     */
+    public function filterInFilterSQL(\Platform\Filter\Filter $filter) {
+        // We can only match if we refers the same object as the filter
+        $foreign_class = $filter->getBaseClassName();
+        if ($foreign_class != $this->foreign_class) return 'FALSE';
+        // We need to execute the filter to do this.
+        $values = $filter->execute()->getAllRawValues($foreign_class::getKeyField());
+        return $this->filterOneOfSQL($values);
+    }
+    
+    
+    /**
      * Format a value for the database in accordance to this type
      * @param mixed $value
      * @return string

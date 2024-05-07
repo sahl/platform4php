@@ -190,7 +190,34 @@ class HyperReferenceType extends Type {
             $sql[] = $this->filterMatchSQL($value);
         }
         return '('.implode(' OR ', $sql).')';
-    }    
+    }
+    
+            /**
+     * Filter if a value is represented in a foreign filter
+     * @param mixed $value
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return bool
+     */
+    public function filterInFilter($value, \Platform\Filter\Filter $filter) {
+        $value = $this->parseValue($value);
+        // We can only match if the value refers the same object as the filter
+        $foreign_class = $filter->getBaseClassName();
+        if ($foreign_class != $value['foreign_class']) return false;
+        // We match if the ID is in the filter
+        return in_array($value['reference'], $filter->execute()->getAllRawValues($foreign_class::getKeyField()));
+    }
+    
+    /**
+     * Get SQL to determine if a field of this type is matched by a foreign filter
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return string SQL to use
+     */
+    public function filterInFilterSQL(\Platform\Filter\Filter $filter) {
+        $value = $this->parseValue($value);
+        $foreign_class = $filter->getBaseClassName();
+        return '(`'.$this->name.'_foreign_class` = \''.\Platform\Utilities\Database::escape($foreign_class).'\' AND `'.$this->name.'_reference` IN (SELECT '.$foreign_class::getKeyField().' FROM '.$foreign_class::getDatabaseTable().' '.$filter->getSQLWhere().'))'; 
+    }
+    
     
     /**
      * Format a value for final display in accordance to this type

@@ -211,7 +211,35 @@ class SingleReferenceType extends IntegerType {
             $final_values[] = $this->parseValue($value);
         }
         return '`'.$this->name.'` IN ('.implode(',',$final_values).')';
-    }    
+    }
+    
+    /**
+     * Filter if a value is represented in a foreign filter
+     * @param mixed $value
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return bool
+     */
+    public function filterInFilter($value, \Platform\Filter\Filter $filter) {
+        // Null never matches
+        if ($value === null) return false;
+        // We can only match if we refers the same object as the filter
+        $foreign_class = $filter->getBaseClassName();
+        if ($foreign_class != $this->foreign_class) return false;
+        // We match if the ID is in the filter
+        return in_array($value, $filter->execute()->getAllRawValues($foreign_class::getKeyField()));
+    }
+    
+    /**
+     * Get SQL to determine if a field of this type is matched by a foreign filter
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return string SQL to use
+     */
+    public function filterInFilterSQL(\Platform\Filter\Filter $filter) {
+        // We can only match if we refers the same object as the filter
+        $foreign_class = $filter->getBaseClassName();
+        if ($foreign_class != $this->foreign_class) return 'FALSE';
+        return '`'.$this->name.'` IN (SELECT '.$foreign_class::getKeyField().' FROM '.$foreign_class::getDatabaseTable().' '.$filter->getSQLWhere().')'; 
+    }
     
     /**
      * Format a value for the database in accordance to this type

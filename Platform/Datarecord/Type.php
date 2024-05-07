@@ -402,6 +402,25 @@ class Type {
     }
     
     /**
+     * Filter if a value is represented in a foreign filter
+     * @param mixed $value
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return bool
+     */
+    public function filterInFilter($value, \Platform\Filter\Filter $filter) {
+        return false;
+    }
+    
+    /**
+     * Get SQL to determine if a field of this type is matched by a foreign filter
+     * @param \Platform\Filter\Filter $filter Filter to match against
+     * @return string SQL to use
+     */
+    public function filterInFilterSQL(\Platform\Filter\Filter $filter) {
+        return 'FALSE';
+    }
+    
+    /**
      * Get this field as an extensible field
      * @return ExtensibleField
      */
