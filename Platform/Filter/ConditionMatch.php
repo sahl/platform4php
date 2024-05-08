@@ -8,6 +8,7 @@ class ConditionMatch extends Condition {
     public function __construct(string $fieldname, $value) {
         $this->fieldname = $fieldname;
         $this->value = $value;
+        $this->type = new \Platform\Datarecord\Type($fieldname);
     }
     
     public function getAsArray(): array {

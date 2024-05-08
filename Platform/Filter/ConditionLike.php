@@ -9,6 +9,7 @@ class ConditionLike extends Condition {
         $this->fieldname = $fieldname;
         if ($value instanceof Datarecord) $value = $value->getKeyValue();
         $this->value = $value;
+        $this->type = new \Platform\Datarecord\Type($fieldname);
     }
     
     public function getAsArray(): array {

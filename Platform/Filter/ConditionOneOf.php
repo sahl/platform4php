@@ -8,6 +8,7 @@ class ConditionOneOf extends Condition {
     public function __construct(string $fieldname, array $values) {
         $this->fieldname = $fieldname;
         $this->value = $values;
+        $this->type = new \Platform\Datarecord\Type($fieldname);
     }
     
     public function getAsArray(): array {
