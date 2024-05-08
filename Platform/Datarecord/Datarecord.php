@@ -1691,14 +1691,16 @@ class Datarecord implements DatarecordReferable {
             }
         }
         
-        if ($is_new_object) $this->onAfterCreate();
-        $this->onAfterSave($changed_fields);
-        
         if (static::$log_changes) $this->logChange();
-        $this->values_on_load = $this->values;
         
         // This is now in the database
         $this->is_in_database = true;
+
+        // Perform on after handlers
+        if ($is_new_object) $this->onAfterCreate();
+        $this->onAfterSave($changed_fields);
+        
+        $this->values_on_load = $this->values;
         
         // Update reference buffer
         TitleBuffer::updateBuffer(get_called_class(), $this->getKeyValue(), $this->getTitle());
