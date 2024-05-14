@@ -40,6 +40,7 @@ var Platform = {
                 }
             } else {
                 $.get(src).done(function() {
+                    Platform.registerScript(src);
                     if (scripts_to_load.length) loadNextScript();
                     else Platform.runCustomFunctions(selector);
                 }).fail(function(jqxhr, settings, exception) {
