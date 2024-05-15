@@ -53,13 +53,16 @@ class TitleBuffer {
      */
     public static function populateBuffer(array $request) {
         foreach ($request as $class_name => $ids) {
+            // The ids can contain null values
+            $cleaned_ids = [];
+            foreach ($ids as $id) if (is_numeric($id)) $cleaned_ids[] = $id;
             if (!class_exists($class_name)) trigger_error('Unknown class '.$class_name.' passed to the TitleBuffer', E_USER_ERROR);
             if (array_key_exists($class_name, static::$buffer)) {
                 // We have some IDs already, so only fetch the missing ones
-                $fetch_ids = array_diff(array_unique($ids), array_keys(static::$buffer[$class_name]));
+                $fetch_ids = array_diff(array_unique($cleaned_ids), array_keys(static::$buffer[$class_name]));
             } else {
                 // We don't have any IDs, so fetch them all
-                $fetch_ids = array_unique($ids);
+                $fetch_ids = array_unique($cleaned_ids);
             }
             if (! count($fetch_ids)) return;
             // Check if we are refering Datarecord classes
