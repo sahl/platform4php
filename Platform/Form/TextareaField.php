@@ -29,7 +29,7 @@ class TextareaField extends TextField {
     public function renderInput() {
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
         echo '<textarea data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';"'.$placeholder.' name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
-        echo $this->value;
+        echo htmlentities($this->value, ENT_QUOTES);
         echo '</textarea>';
     }
 }

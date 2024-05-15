@@ -20,7 +20,7 @@ class DateType extends DateTimeType {
     }
     
     public function getFullValue($value, Collection &$collection = null): string {
-        return $value->getReadableDate();
+        return htmlentities($value->getReadableDate());
     }
     
     /**

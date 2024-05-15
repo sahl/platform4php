@@ -136,7 +136,7 @@ class BoolType extends IntegerType {
     }
     
     public function getFullValue($value, Collection &$collection = null) : string {
-        return static::getTextValue($value);
+        return htmlentities(static::getTextValue($value));
     }
     
     public function getTextValue($value, Collection &$collection = null): string {

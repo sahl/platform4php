@@ -104,14 +104,15 @@ class MultiEnumerationType extends EnumerationType {
     /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
-     * @return string
+     * @return html
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        $result = [];
+        $result = []; $sort_array = [];
         foreach ($value as $v) {
-            $result[] = $this->enumeration[$v];
+            $sort_array[] = $v;
+            $result[] = htmlentities($this->enumeration[$v]);
         }
-        sort($result, SORT_NATURAL);
+        array_multisort($sort_array, SORT_NATURAL, $result);
         return implode(', ', $result);
     }
     

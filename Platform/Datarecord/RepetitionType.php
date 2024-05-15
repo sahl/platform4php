@@ -191,10 +191,10 @@ class RepetitionType extends Type {
     /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
-     * @return string
+     * @return html
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        return $value ? $value->getDescription() : '';
+        return htmlentities($value ? $value->getDescription() : '');
     }
     
     /**

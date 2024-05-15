@@ -14,7 +14,7 @@ class BigTextType extends TextType {
     }
     
     public function getFullValue($value, Collection &$collection = null): string {
-        return str_replace("\n", "<br>", parent::getFullValue($value, $collection));
+        return str_replace("\n", "<br>", htmlentities(parent::getFullValue($value, $collection)));
     }
     
     protected function getBaseFormField(): ?\Platform\Form\Field {

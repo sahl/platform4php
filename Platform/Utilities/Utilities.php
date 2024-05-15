@@ -54,4 +54,13 @@ class Utilities {
         if (substr($url,-1) != '/') $url .= '/';
         return $url;
     }
+    
+    /**
+     * Remove all HTML from a string, both tags and html entities
+     * @param string $string
+     * @return string
+     */
+    public static function unHTML(string $string) : string {
+        return html_entity_decode(strip_tags($string));
+    }
 }

@@ -54,10 +54,10 @@ class FileField extends Field {
     public function renderInput() {
         $value = $this->getValue();
         if (! is_array($value)) $value = array();
-        echo '<input type="hidden" name="'.$this->getName().'[mimetype]" value="'.$value['mimetype'].'">';
-        echo '<input type="hidden" name="'.$this->getName().'[action]" value="'.$value['action'].'">';
-        echo '<input type="hidden" name="'.$this->getName().'[filename]" value="'.$value['filename'].'">';
-        echo '<input type="hidden" name="'.$this->getName().'[temp_file]" value="'.$value['temp_file'].'">';
+        echo '<input type="hidden" name="'.$this->getName().'[mimetype]" value="'.htmlentities($value['mimetype'], ENT_QUOTES).'">';
+        echo '<input type="hidden" name="'.$this->getName().'[action]" value="'.htmlentities($value['action'], ENT_QUOTES).'">';
+        echo '<input type="hidden" name="'.$this->getName().'[filename]" value="'.htmlentities($value['filename'], ENT_QUOTES).'">';
+        echo '<input type="hidden" name="'.$this->getName().'[temp_file]" value="'.htmlentities($value['temp_file'], ENT_QUOTES).'">';
         echo '<iframe data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&filename='.$value['filename'].'" frameborder=0 height=36 style="vertical-align: top;"></iframe>';
     }
     

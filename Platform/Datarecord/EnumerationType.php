@@ -236,7 +236,7 @@ class EnumerationType extends IntegerType {
      * @return string
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        if ($value) return $this->enumeration[$value];
+        if ($value) return htmlentities($this->enumeration[$value]);
         return '';
     }
     

@@ -254,14 +254,14 @@ class ArrayType extends Type {
      * Format a value for final display in accordance to this type
      * @param mixed $value
      * @param Collection An optional collection which can contain further records
-     * @return string
+     * @return html
      */
     public function getFullValue($value, Collection &$collection = null) : string {
         if ($value === null) return '';
         if (count($this->substructure)) {
             return \Platform\Utilities\Translation::translateForUser('Complex value');
         } else {
-            return implode(',', $value);
+            return htmlentities(implode(',', $value));
         }
     }
     

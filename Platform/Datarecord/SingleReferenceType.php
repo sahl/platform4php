@@ -282,7 +282,7 @@ class SingleReferenceType extends IntegerType {
            // Resolve foreign class 
            $object = new $this->foreign_class();
            $object->loadForRead($value, false);
-           $visual = $object->getTitle();
+           $visual = \Platform\Utilities\Utilities::unHTML($object->getTitle());
         }
         return array('id' => (int)$value, 'visual' => strip_tags($visual));
     }
@@ -290,7 +290,7 @@ class SingleReferenceType extends IntegerType {
     /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
-     * @return string
+     * @return html
      */
     public function getFullValue($value, Collection &$collection = null) : string {
         if ($value === null) return '';

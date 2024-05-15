@@ -222,7 +222,7 @@ class HyperReferenceType extends Type {
     /**
      * Format a value for final display in accordance to this type
      * @param mixed $value
-     * @return string
+     * @return html
      */
     public function getFullValue($value, Collection &$collection = null) : string {
         if ($value['foreign_class'] == '') return '';

@@ -290,7 +290,7 @@ class MultiReferenceType extends Type {
         $result = [];
         foreach ($value as $id) {
             $title = TitleBuffer::getTitleByClassAndId($this->foreign_class, $id);
-            if ($title !== null) $result[] = ['id' => $id, 'visual' => strip_tags($title)];
+            if ($title !== null) $result[] = ['id' => $id, 'visual' => \Platform\Utilities\Utilities::unHTML($title)];
         }
         return $result;
     }
@@ -320,7 +320,7 @@ class MultiReferenceType extends Type {
             }
             if ($element !== false) {
                 $result[] = $element;
-                $sorter[] = strip_tags($element);
+                $sorter[] = \Platform\Utilities\Utilities::unHTML($element);
             }
         }
         array_multisort($sorter, SORT_NATURAL, $result);

@@ -988,7 +988,7 @@ class Datarecord implements DatarecordReferable {
     /**
      * Get a fully formatted value from this object
      * @param string $field Field name
-     * @return string Formatted string, this may be HTML
+     * @return html Formatted string, this may be HTML
      */
     public function getFullValue(string $field) {
         $type = static::getFieldDefinition($field);

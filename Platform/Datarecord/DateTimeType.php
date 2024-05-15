@@ -108,7 +108,7 @@ class DateTimeType extends Type {
     }
     
     public function getFullValue($value, Collection &$collection = null): string {
-        return $value->getReadable();
+        return htmlentities($value->getReadable());
     }
     
     public function getTableValue($value) {
