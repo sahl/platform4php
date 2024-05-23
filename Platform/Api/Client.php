@@ -64,7 +64,7 @@ class Client {
     public static function parseResponse(string $http_output) : array {
         $lines = explode("\n", $http_output);
         $parsingheader = true; $canswitch = false;
-        $result = array();
+        $result = ['body' => ''];
         foreach ($lines as $line) {
             $line = trim($line);
             if ($line == '') {
