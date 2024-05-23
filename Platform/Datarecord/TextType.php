@@ -9,12 +9,14 @@ namespace Platform\Datarecord;
 
 class TextType extends Type {
     
+    protected $default_value = '';
+    
     public function getTextValue($value, Collection &$collection = null): string {
-        return htmlentities($value);
+        return htmlentities((string)$value);
     }
     
     public function getFullValue($value, Collection &$collection = null): string {
-        return htmlentities($value);
+        return htmlentities((string)$value);
     }
 
     public function getSQLFieldType() : string {
