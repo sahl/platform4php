@@ -31,6 +31,19 @@ class Property extends Datarecord {
     }
     
     /**
+     * Delete all of a specific property, for all and every user
+     * @param string $property Property name
+     * @param type $subproperty Sub property name. Omit to delete everything with just the property name
+     */
+    public static function deleteAll(string $property, $subproperty = null) {
+        $filter = new \Platform\Filter\Filter(__CLASS__);
+        $filter->conditionMatch('property', $property);
+        if ($subproperty !== null) $filter->conditionMatch('subproperty', $subproperty);
+        $properties = $filter->execute();
+        $properties->deleteAll();
+    }
+    
+    /**
      * Get a shared property - a property for all users
      * @param string $property Property to return
      * @param string $subproperty Subproperty to return
