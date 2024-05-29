@@ -9,6 +9,8 @@ namespace Platform\Datarecord;
 
 class BigTextType extends TextType {
     
+    protected $default_value = '';
+    
     public function getLogValue($value) : string {
         return \Platform\Utilities\Utilities::condenseLongText((string)$value);
     }
