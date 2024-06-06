@@ -34,6 +34,9 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     
     clear() {
         this.dom_node.find('.platform_form_multiplier_element:not(:first-child)').remove();
+        $.each(this.getChildren(), function(i, val) {
+            val.clear();
+        });
     }    
     
     checkForChanges(row) {
