@@ -323,6 +323,15 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Clear the structure from this class
+     */
+    public static function clearStructure() {
+        static::$structure = false;
+        static::$key_field = false;
+        static::$title_field = false;
+    }
+    
+    /**
      * Make a copy of this object
      * @return Datarecord New copied and saved object (in read mode)
      */
@@ -1697,7 +1706,9 @@ class Datarecord implements DatarecordReferable {
             $sql = 'INSERT INTO '.static::$database_table.' ('.implode(',',$fieldlist).') VALUES ('.implode(',',$fieldvalues).')';
             self::query($sql);
             $this->unlock();
-            $this->values[static::getKeyField()] = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
+            if (! static::$manual_key) {
+                $this->values[static::getKeyField()] = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalGetInsertedKey() : Database::instanceGetInsertedKey();
+            }
             if ($keep_open_for_write) {
                 // Lock the new object
                 $this->lock();
@@ -1748,6 +1759,8 @@ class Datarecord implements DatarecordReferable {
                 $this->setValue($field.'_'.$subfield_name, $value);
             }
         } else {
+            // We can only modify the primary key if we are handling keys manually
+            if (! static::$manual_key && $type->isPrimaryKey()) return;
             $this->values[$field] = $type->parseValue($value, $this->values[$field]);
         }
     }

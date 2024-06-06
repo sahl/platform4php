@@ -20,8 +20,7 @@ class DatarecordExtensible extends Datarecord {
         $fields = $filter->execute()->getAll();
         $additional_structure = [];
         foreach ($fields as $field) {
-            $class = $field->type_class;
-            $additional_structure[] = new $class($field->field_name, $field->title, $field->properties);
+            $additional_structure[] = $field->getAsType();
         }
         self::addStructure($additional_structure);
         // Remember to call parent
@@ -41,7 +40,7 @@ class DatarecordExtensible extends Datarecord {
     
     public static function ensureInDatabase(bool $dry_run = false): bool {
         // As the structure can change during runtime, we clear the structure to make sure we read the newest one.
-        static::$structure = false;
+        static::clearStructure();
         return parent::ensureInDatabase($dry_run);
     }
     
