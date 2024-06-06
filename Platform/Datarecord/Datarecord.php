@@ -876,7 +876,7 @@ class Datarecord implements DatarecordReferable {
     public function getChangedFields() : array {
         $result = array();
         foreach (static::$structure as $name => $type) {
-            if ($type->getStoreLocation() == Type::STORE_DATABASE && !$type->compare($this->values[$name], $this->values_on_load[$name])) {
+            if (in_array($type->getStoreLocation(), [Type::STORE_DATABASE, Type::STORE_METADATA]) && !$type->compare($this->values[$name], $this->values_on_load[$name])) {
                 $result[] = $name;
             }
         }
@@ -1473,7 +1473,7 @@ class Datarecord implements DatarecordReferable {
      */
     private function encodeMetadata() {
         $metadata = array();
-        foreach (static::$structure as $field => $type) {
+        foreach (static::getStructure() as $field => $type) {
             if ($type->getStoreLocation() != Type::STORE_METADATA) continue;
             $metadata[$field] = $this->getJSONValue($field);
         }
