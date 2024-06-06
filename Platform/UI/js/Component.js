@@ -14,14 +14,18 @@ Platform.Component = class {
         var found_components = [];
         $.each(Platform.Component.class_library, function(key, library_element) {
             selector.find('.'+library_element.dom_class).each(function() {
+                // Don't apply if already applied
+                if ($(this).is('.platform_applied')) return true;
                 var component = new library_element.javascript_class($(this));
                 component.componentInitialize();
                 found_components.push(component);
             });
             if (selector.is('.'+library_element.dom_class)) {
-                var component = new library_element.javascript_class(selector);
-                component.componentInitialize();
-                found_components.push(component);
+                if (! selector.is('.platform_applied')) {
+                    var component = new library_element.javascript_class(selector);
+                    component.componentInitialize();
+                    found_components.push(component);
+                }
             }
         })
         $.each(found_components, function(key, component) {
@@ -51,6 +55,7 @@ Platform.Component = class {
     constructor(dom_node) {
         this.dom_node = dom_node;
         dom_node.data('platform_component', this);
+        dom_node.addClass('platform_applied');
     }
     
     /**
@@ -141,12 +146,9 @@ Platform.Component = class {
         var component = this;
         if (this.dom_node.is('.platform_container_component')) {
             // Redraw all subcomponents
-            this.dom_node.find('.platform_component').each(function() {
-                if ($(this).parent().closest('.platform_component')[0] == component.dom_node[0]) {
-                    // Redraw subcomponent.
-                    $(this).platformComponent().redraw();
-                }
-            })
+            $.each(this.getChildren(), function(i, component) {
+                component.redraw();
+            });
         } else {
             var componentproperties = this.dom_node.data('componentproperties');
             
@@ -383,8 +385,8 @@ Platform.Component = class {
     getChildren(include_grandchildren) {
         var children = [];
         var _this = this;
-        this.dom_node.find('[data-componentclass]').each(function() {
-            if (!include_grandchildren && !$(this).parent().closest('[data-componentclass]').is(_this.dom_node))
+        this.dom_node.find('.platform_applied').each(function() {
+            if (!include_grandchildren && !$(this).parent().closest('.platform_applied').is(_this.dom_node))
                 return;
             
             children.push($(this).platformComponent());
