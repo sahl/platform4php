@@ -187,7 +187,7 @@ class Field extends Component {
             unset($options['class']);
         }
         if (array_key_exists('containerclass', $options)) {
-            $field->addContainerClass($options['containerclass']);
+            $field->addClass($options['containerclass']);
             unset($options['containerclass']);
         }        
         if (array_key_exists('container-style', $options)) {
@@ -634,7 +634,7 @@ class Field extends Component {
      * @param bool $required
      */
     public function setRequired(bool $required) {
-        $this->required = $required;
+        $this->is_required = $required;
     }    
     
     /**
