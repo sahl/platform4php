@@ -75,6 +75,15 @@ Platform.Component = class {
      * Destroy this component
      */
     destroy() {
+        // Destroy any contained components
+        $.each(this.getChildren(), function(i, component) {
+            component.destroy();
+        });
+        // Destroy all dialogs within this component
+        this.contained_dialogs.forEach(function(value) {
+            $('#'+value).dialog('destroy');
+        });
+        // Remove the dom node
         this.dom_node.remove();        
     }
     
@@ -144,7 +153,7 @@ Platform.Component = class {
             // Destroy all dialogs within this component
             this.contained_dialogs.forEach(function(value) {
                 $('#'+value).dialog('destroy');
-            })
+            });
 
             var component = this;
             
