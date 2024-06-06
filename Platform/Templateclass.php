@@ -18,15 +18,17 @@ class Templateclass extends Datarecord {
     protected static $structure = false;
     protected static $key_field = false;
     protected static $title_field = false;
+    protected static $description = '';
+    protected static $object_name = '';
     
     protected static function buildStructure() {
         static::addStructure([
             new \Platform\Datarecord\KeyType('object_id'),
-            new \Platform\Datarecord\TextType('property1', 'Required property', ['is_required' => true, 'is_title' => true]),
+            new \Platform\Datarecord\TextType('property1', 'Required property', ['is_required' => true, 'is_title' => true, 'description' => 'Description of property 1']),
             new \Platform\Datarecord\IntegerType('property2', 'Optional property'),
-            new \Platform\Datarecord\SingleReferenceType('property3', 'Linked property', ['foreign_class' => 'Namespace\Class']),
-            new \Platform\Datarecord\FileType('property4', 'File property', ['folder' => 'folder_to_save_files']),
-            new \Platform\Datarecord\DateTimeType('property5', 'Property in metadata', ['store_location' => \Platform\Datarecord\Type::STORE_METADATA]),
+            new \Platform\Datarecord\SingleReferenceType('property3', 'Linked property', ['foreign_class' => 'Namespace\Class', 'description' => 'Description of property 3']),
+            new \Platform\Datarecord\FileType('property4', 'File property', ['folder' => 'folder_to_save_files', 'description' => 'Description of property 4']),
+            new \Platform\Datarecord\DateTimeType('property5', 'Property in metadata', ['store_location' => \Platform\Datarecord\Type::STORE_METADATA, 'description' => 'Description of property 5']),
         ]);
         parent::buildStructure();
     }
