@@ -39,6 +39,12 @@ class DatarecordExtensible extends Datarecord {
         static::ensureInDatabase();
     }
     
+    public static function ensureInDatabase(bool $dry_run = false): bool {
+        // As the structure can change during runtime, we clear the structure to make sure we read the newest one.
+        static::$structure = false;
+        return parent::ensureInDatabase($dry_run);
+    }
+    
     public static function removeFieldByName(string $field_name) {
         $filter = new Filter('Platform\Datarecord\ExtensibleField');
         $filter->addCondition(new ConditionMatch('attached_class', get_called_class()));
