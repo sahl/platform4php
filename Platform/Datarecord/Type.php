@@ -135,7 +135,7 @@ class Type {
      * Misc properties
      * @var type array
      */
-    protected $misc_properties = [];
+    protected $properties = [];
     
     /**
      * Name of subfields on this type
@@ -564,7 +564,7 @@ class Type {
      */
     public function getOptionsAsArray() : array {
         $result = [];
-        $valid_options = ['layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'properties'];
+        $valid_options = ['description', 'layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'form_visibility', 'properties'];
         
         foreach ($valid_options as $option) {
             if ($this->$option != null) $result[$option] = $this->$option;
@@ -744,7 +744,7 @@ class Type {
      * @return type Value of property
      */
     public function getProperty(string $property) {
-        if (array_key_exists($property, $this->misc_properties)) return $this->misc_properties[$property];
+        if (array_key_exists($property, $this->properties)) return $this->properties[$property];
         return null;
     }
     
@@ -909,8 +909,8 @@ class Type {
      * @param type $value Property value
      */
     public function setProperty(string $property, $value) {
-        if ($value === null) unset($this->misc_properties[$property]);
-        else $this->misc_properties[$property] = $value;
+        if ($value === null) unset($this->properties[$property]);
+        else $this->properties[$property] = $value;
     }
     
     /**
