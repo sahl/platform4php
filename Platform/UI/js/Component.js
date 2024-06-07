@@ -14,18 +14,14 @@ Platform.Component = class {
         var found_components = [];
         $.each(Platform.Component.class_library, function(key, library_element) {
             selector.find('.'+library_element.dom_class).each(function() {
-                // Don't apply if already applied
-                if ($(this).is('.platform_applied')) return true;
                 var component = new library_element.javascript_class($(this));
                 component.componentInitialize();
                 found_components.push(component);
             });
             if (selector.is('.'+library_element.dom_class)) {
-                if (! selector.is('.platform_applied')) {
-                    var component = new library_element.javascript_class(selector);
-                    component.componentInitialize();
-                    found_components.push(component);
-                }
+                var component = new library_element.javascript_class(selector);
+                component.componentInitialize();
+                found_components.push(component);
             }
         })
         $.each(found_components, function(key, component) {
