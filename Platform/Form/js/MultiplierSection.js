@@ -47,7 +47,12 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         // Check if we need to expand
         if ((row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)')) && this.gotValues(row)) {
             // We need to expand.
+            // Advice all components that they are about to be cloned.
+            row.find('.platform_applied').trigger('platform_multiplier_section_before_clone');
+            // Clone
             var new_row = row.clone(true); // We need to set true to bring data values along
+            // Advice all components that cloning is done
+            row.find('.platform_applied').trigger('platform_multiplier_section_after_clone');
             new_row.off().find('*').off(); // Destroy all event listeners
             new_row.find('*').data('platform_component', null); // Destroy platform component object
             new_row.insertAfter(row);
