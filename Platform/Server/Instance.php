@@ -258,6 +258,9 @@ class Instance extends \Platform\Datarecord\Datarecord {
         $instance = new $cls();
         $instance->title = $title;
         $instance->server_ref = $server->server_id;
+        $result = $instance->createDatabase();
+        if (! $result) return false;
+        $instance->is_initiated = true;
         $instance->save(false, true);
         
         $instance->activate();
@@ -361,20 +364,6 @@ class Instance extends \Platform\Datarecord\Datarecord {
             $table = current($row);
             if (in_array($table, static::$obsolete_instance_tables)) Database::instanceQuery("DROP TABLE ".$table);
         }
-    }
-    
-    /**
-     * Save the instance initializing it if not already initialized
-     * @param bool $force_save Set true to always save object
-     * @param bool $keep_open_for_write Set to true to keep object open for write after saving
-     * @return bool True if we actually saved the object
-     */
-    public function save(bool $force_save = false, bool $keep_open_for_write = false) : bool {
-        $result = parent::save($force_save, $keep_open_for_write);
-        if (! $this->is_initiated) {
-            if ($this->createDatabase()) parent::save($force_save);
-        }
-        return $result;
     }
     
     /**

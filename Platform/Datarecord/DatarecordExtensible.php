@@ -14,15 +14,18 @@ class DatarecordExtensible extends Datarecord {
      * Build additional structure based on information from database.
      */
     protected static function buildStructure() {
-        $filter = new Filter('Platform\Datarecord\ExtensibleField');
-        $filter->addCondition(new ConditionMatch('attached_class', get_called_class()));
-        $filter->setOrderColumn('order_id');
-        $fields = $filter->execute()->getAll();
-        $additional_structure = [];
-        foreach ($fields as $field) {
-            $additional_structure[] = $field->getAsType();
+        // Only instance tables support extensible fields
+        if (static::$location == static::LOCATION_INSTANCE) {
+            $filter = new Filter('Platform\Datarecord\ExtensibleField');
+            $filter->addCondition(new ConditionMatch('attached_class', get_called_class()));
+            $filter->setOrderColumn('order_id');
+            $fields = $filter->execute()->getAll();
+            $additional_structure = [];
+            foreach ($fields as $field) {
+                $additional_structure[] = $field->getAsType();
+            }
+            self::addStructure($additional_structure);
         }
-        self::addStructure($additional_structure);
         // Remember to call parent
         parent::buildStructure();
     }
