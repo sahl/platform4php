@@ -15,6 +15,8 @@ class EnumerationType extends IntegerType {
      */
     protected $enumeration = [];
     
+    protected $enumeration_colours = [];
+    
     /**
      * Construct a field of this type
      * @param string $name Field name
@@ -22,7 +24,7 @@ class EnumerationType extends IntegerType {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        $valid_options = ['enumeration'];
+        $valid_options = ['enumeration', 'enumeration_colours'];
         foreach ($valid_options as $valid_option) {
             if (isset($options[$valid_option])) {
                 $this->$valid_option = $options[$valid_option];
@@ -199,7 +201,20 @@ class EnumerationType extends IntegerType {
      */
     public function getEnumeration() {
         return $this->enumeration;
-    }    
+    }
+    
+    /**
+     * Get enumeration colours
+     * @return string
+     */
+    public function getEnumerationColours() {
+        $result = [];
+        foreach ($this->enumeration as $idx => $value) {
+            if (array_key_exists($idx, $this->enumeration_colours)) $result[$idx] = $this->enumeration_colours[$idx];
+            else $result[$idx] = '';
+        }
+        return $result;
+    }
     
     /**
      * Format a value for the database in accordance to this type
@@ -217,7 +232,10 @@ class EnumerationType extends IntegerType {
      */
     public function getFormFieldOptions() : array {
         $result = parent::getFormFieldOptions();
-        if ($this->enumeration) $result['options'] = $this->enumeration;
+        if ($this->enumeration) {
+            $result['options'] = $this->enumeration;
+            $result['options_colours'] = $this->getEnumerationColours();
+        }
         return $result;
     }
     
@@ -236,7 +254,14 @@ class EnumerationType extends IntegerType {
      * @return string
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        if ($value) return htmlentities($this->enumeration[$value]);
+        if ($value) {
+            if (array_key_exists($value, $this->enumeration_colours)) {
+                $colour = $this->enumeration_colours[$value];
+                return '<div class="platform_text_with_background" style="background: '.$colour.'; color: '.\Platform\Utilities\Utilities::getContrastColour($colour).';">'.htmlentities($this->enumeration[$value]).'</div>';
+            } else {
+                return htmlentities($this->enumeration[$value]);
+            }
+        }
         return '';
     }
     
@@ -249,13 +274,17 @@ class EnumerationType extends IntegerType {
         return $value.'('.$this->enumeration[$value].')';
     }
     
+    public function getTableValue($value) {
+        return static::getFullValue($value);
+    }
+    
     /**
      * Get all the options of this type as an array.
      * @return array
      */
     public function getOptionsAsArray() : array {
         $result = parent::getOptionsAsArray();
-        $valid_options = ['enumeration'];
+        $valid_options = ['enumeration', 'enumeration_colours'];
         
         foreach ($valid_options as $option) {
             if ($this->$option != null) $result[$option] = $this->$option;
@@ -309,6 +338,22 @@ class EnumerationType extends IntegerType {
         return false;
     }
     
+    /**
+     * Set the enumeration of this type
+     * @param array $enumeration
+     */
+    public function setEnumeration(array $enumeration) {
+        $this->enumeration = $enumeration;
+    }
+    
+    /**
+     * Set the enumeration of this type
+     * @param array $enumeration_colours
+     */
+    public function setEnumerationColours(array $enumeration_colours) {
+        $this->enumeration_colours = $enumeration_colours;
+    }
+
     /**
      * Validate if this is a valid value for fields of this type
      * @param mixed $value

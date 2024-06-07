@@ -55,6 +55,27 @@ class Utilities {
         return $url;
     }
     
+    private static $colour_map = [
+        'black'     => 'white',
+        'white'     => 'black',
+    ];
+    
+    /**
+     * Get a contrast colour to the given colour, which will be either white or black
+     * @param string $colour Colour value
+     * @return string Contrast colour value
+     */
+    public static function getContrastColour(string $colour) : string {
+        if (array_key_exists($colour, static::$colour_map)) return static::$colour_map[$colour];
+        if (preg_match('/\\#?([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])([0-9a-fA-F][0-9a-fA-F])/', $colour, $match)) {
+            $r = hexdec($match[1]);
+            $g = hexdec($match[2]);
+            $b = hexdec($match[3]);
+            return ($r*3 + $g*5 + $b*2)/10 < 130 ? 'white' : 'black';
+        }
+        return 'inherit';
+    }
+    
     /**
      * Remove all HTML from a string, both tags and html entities
      * @param string $string
