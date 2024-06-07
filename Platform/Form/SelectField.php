@@ -18,10 +18,11 @@ class SelectField extends Field {
     
     public function renderInput() {
         echo '<select data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
-        echo '<option value="">'.$this->heading;
+        echo '<option style="background: white; colour:black;" value="">'.$this->heading;
         foreach ($this->options as $key => $option) {
             $selected = $key == $this->value ? ' selected' : '';
-            echo '<option value="'.htmlentities($key, ENT_QUOTES).'"'.$selected.'>'.$option;
+            $style = (array_key_exists($key, $this->options_colours) && $this->options_colours[$key]) ? 'background: '.$this->options_colours[$key].'; color:'.\Platform\Utilities\Utilities::getContrastColour($this->options_colours[$key]).';' : 'background: white; color: black;';
+            echo '<option style="'.$style.'" value="'.htmlentities($key, ENT_QUOTES).'"'.$selected.'>'.$option;
         }
         echo '</select>';
     }

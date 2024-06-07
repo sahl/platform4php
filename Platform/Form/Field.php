@@ -111,7 +111,19 @@ class Field extends Component {
      * Field options if field have specific options
      * @var array 
      */
-    protected $options = array();
+    protected $options = [];
+    
+    /**
+     * Field options can have colours.
+     * @var array
+     */
+    protected $options_colours = [];
+    
+    /**
+     * Field option colours (if they should be coloured)
+     * @var array
+     */
+    protected $colours = [];
     
     /**
      * Placeholder text for the input field
@@ -173,6 +185,10 @@ class Field extends Component {
         if (array_key_exists('options', $options)) {
             $field->setOptions($options['options']);
             unset($options['options']);
+        }
+        if (array_key_exists('options_colours', $options)) {
+            $field->setOptionsColours($options['options_colours']);
+            unset($options['options_colours']);
         }
         if (array_key_exists('dont-clear', $options)) {
             $field->addFieldClass('platform_dont_clear');
@@ -245,7 +261,10 @@ class Field extends Component {
         
         if ($field->is_required) $field->addClass('form_required_field');
         
+        // Add the rest of the options as attributes
         foreach ($options as $key => $val) {
+            // Some options can be reserved by subclasses. These shouldn't be added as attributes
+            if (array_key_exists('reserved_options', $options) && array_key_exists($key, $options['reserved_options'])) continue;
             $field->addAttribute($key, $val);
         }
         return $field;
@@ -415,6 +434,22 @@ class Field extends Component {
     }
     
     /**
+     * Get options
+     * @return array
+     */
+    public function getOptions() : array {
+        return $this->options;
+    }
+    
+    /**
+     * Get options colours
+     * @return array
+     */
+    public function getOptionsColours() : array {
+        return $this->options_colours;
+    }
+    
+    /**
      * Get field value
      * @return object
      */
@@ -534,7 +569,7 @@ class Field extends Component {
                 echo '</label>';
             break;
             case self::LABEL_ALIGN_RIGHT:
-                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_right_label"> - '.$this->label;
+                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_right_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
@@ -619,6 +654,15 @@ class Field extends Component {
     public function setOptions(array|Collection $options) {
         if ($options instanceof Collection) $options = $options->getAllAsArray();
         $this->options = $options;
+    }
+    
+    /**
+     * Set the colours of the options of this field
+     * @param array|Collection $options_colours
+     */
+    public function setOptionsColours(array|Collection $options_colours) {
+        if ($options_colours instanceof Collection) $options_colours = $options_colours->getAllAsArray();
+        $this->options_colours = $options_colours;
     }
     
     /**
