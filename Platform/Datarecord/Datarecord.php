@@ -373,7 +373,7 @@ class Datarecord implements DatarecordReferable {
                             // Loop all replacement objects
                             foreach ($remap as $foreign_class => $copies) {
                                 if ($type->matchesForeignClass($foreign_class)) {
-                                    $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getValue($fieldname), $copies['old_object'], $copies['new_object']));
+                                    $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getRawValue($fieldname), $copies['old_object'], $copies['new_object']));
                                 }
                             }
                         }
@@ -1405,7 +1405,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function lock() {
         if (!Semaphore::wait($this->getLockFileName())) {
-            trigger_error('Failed to lock '.get_called_class().' ('.$this->getValue($this->getKeyField()).') within reasonable time / '.Semaphore::getCallStack($this->getLockFileName()), E_USER_ERROR);
+            trigger_error('Failed to lock '.get_called_class().' ('.$this->getRawValue($this->getKeyField()).') within reasonable time / '.Semaphore::getCallStack($this->getLockFileName()), E_USER_ERROR);
         }
     }
     
