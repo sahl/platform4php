@@ -124,11 +124,8 @@ Platform.Dialog = class extends Platform.Component {
                 return;
 
             if (typeof(callback_ok) == 'function') {
-                var return_values = {};
+                var return_values = $(form_id).platformComponent().getValues();
                 
-                $.each($(form_id).find('form').serializeArray(), function(key, value) {
-                    return_values[value.name] = value.value;
-                })
                 callback_ok(return_values, function() {
                     $('#platform_allpurpose_dialog').dialog('close');
                     // Move form back in place
