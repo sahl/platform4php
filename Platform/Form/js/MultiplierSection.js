@@ -142,6 +142,28 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         return result;
     }
     
+    getValue() {
+        var values = [];
+        // Expression for fetching base name field[0][name] => name
+        var regexp = /\[([^\]]*)\]$/;
+        // Loop all nearest multiplier elements
+        this.dom_node.closestChildren('.platform_form_multiplier_element').each(function() {
+            var inner_values = {};
+            // Loop all nearest contained fields
+            $(this).closestChildren('.platform_form_field_component').each(function() {
+                var component = $(this).platformComponent();
+                var name = component.getName();
+                // Replace name
+                var result = name.match(regexp);
+                if (result.length == 2) name = result[1];
+                var value = component.getValue();
+                inner_values[name] = value;
+            });
+            values.push(inner_values);
+        });
+        return values;
+    }
+    
     setValue(value) {
         var i = 0;
         var component = this;
