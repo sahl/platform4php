@@ -20,6 +20,16 @@ Platform.Form.FileField = class extends Platform.Form.Field {
         dom_node.prop('src', '/Platform/Form/php/file.php?form_name='+dom_node.closest('form').attr('id')+'&field_name='+dom_node.data('name')+'&file_id='+value);
         this.trigger('change');
    }
+   
+   getValue() {
+       var values = this.dom_node.find('[type="hidden"]');
+       return {
+           mimetype: $(values[0]).val(),
+           action: $(values[1]).val(),
+           filename: $(values[2]).val(),
+           temp_file: $(values[3]).val()
+       };
+   }
     
 }
 

@@ -43,22 +43,22 @@ if ($_POST['action'] == 'send_file') {
 }
 
 if ($current_file_name) {
-    if ($file instanceof File) {
-        echo '<a href="'.$file->getURL().'" target="_blank"><img border=0 style="vertical-align: top;" src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'"></a>';
-    } else {
-        echo '<img style="vertical-align: top;" src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'">';
-    }
-    echo $current_file_name;
-    echo ' <span class="fa fa-minus-circle" id="file_delete" style="color: red"> </span>';
-    echo '<form method="post" id="file_delete_form">';
-    echo '<input type="hidden" name="temp_file_name" value="'.basename($_POST['temp_file_name']).'">';
-    echo '<input type="hidden" name="action" value="delete_file">';
+    echo '<form method="post" id="file_delete_form" enctype="multipart/form-data">';
+    echo '<input type="hidden" name="temp_file_name" value="'.basename($_REQUEST['temp_file_name']).'">';
+    echo '<input type="hidden" name="action" value="send_file">';
+    echo '<input name="file" type="file" style="display: none;" id="file_field">';
+    echo '<label for="file_field" style="width:100%; height: 32px; border: 1px dashed black; display: flex; justify-content: flex-start; align-items: center; box-sizing: border-box;">';
+    echo '<img src="'.File::getFiletypeURLByExtension(File::extractExtension($current_file_name)).'">';
+    echo '<div>'.$current_file_name.'</div>';
+    echo '</label>';
+    echo '<div class="fa fa-minus-circle" id="file_delete" style="color: red; position: relative; top: -34px; float: right; margin: 3px;"> </div>';
     echo '</form>';
 } else {
     echo '<form method="post" enctype="multipart/form-data">';
     echo '<input type="hidden" name="action" value="send_file">';
-    echo '<input type="hidden" name="temp_file_name" value="'.basename($_POST['temp_file_name']).'">';
-    echo '<input name="file" type="file">';
+    echo '<input type="hidden" name="temp_file_name" value="'.basename($_REQUEST['temp_file_name']).'">';
+    echo '<input name="file" type="file" style="display: none;" id="file_field">';
+    echo '<label for="file_field" style="width:100%; height: 32px; border: 1px dashed black; display: flex; justify-content: center; align-items: center; box-sizing: border-box;">'.Platform\Utilities\Translation::translateForUser('Add file').'</label>';
     echo '</form>';
 }
 

@@ -18,6 +18,8 @@ class FileField extends Field {
         parent::__construct();
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/FileField.js'); 
+        static::CSSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/css/FileField.css');
+        $this->addFieldClass('platform_file_field');
     }
     
     public static function Field(string $label, string $name, array $options = []): Field {
@@ -58,7 +60,11 @@ class FileField extends Field {
         echo '<input type="hidden" name="'.$this->getName().'[action]" value="'.htmlentities($value['action'], ENT_QUOTES).'">';
         echo '<input type="hidden" name="'.$this->getName().'[filename]" value="'.htmlentities($value['filename'], ENT_QUOTES).'">';
         echo '<input type="hidden" name="'.$this->getName().'[temp_file]" value="'.htmlentities($value['temp_file'], ENT_QUOTES).'">';
-        echo '<iframe data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&filename='.$value['filename'].'" frameborder=0 height=36 style="vertical-align: top;"></iframe>';
+        if ($value['action'] == 'remove') {
+            $value['filename'] = ''; 
+            $value['file_id'] = 0;
+        }
+        echo '<iframe data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&filename='.$value['filename'].'&temp_file_name='.$value['temp_file'].'" scrolling="no"></iframe>';
     }
     
     public function setValue($value) {
