@@ -108,35 +108,31 @@ Platform.Dialog = class extends Platform.Component {
         $('#platform_allpurpose_text').html(text);
         
         // We want the form component
-        form_id = form_id + '_component';
+        var form_component_id = form_id + '_component';
         var form = $(form_id).platformComponent();
 
         // Ensure that the form is moved into place and shown
-        var form_original_parent = $(form_id).parent();
+        var form_original_parent = $(form_component_id).parent();
 
-        $(form_id).appendTo('#platform_allpurpose_form').show();
+        $(form_component_id).appendTo('#platform_allpurpose_form').show();
 
         // (Re)bind submitter
         $(form_id).off('submit.allpurpose_dialog');
         $(form_id).on('submit.allpurpose_dialog', function(data) {
-            // validate the form, this will also fill in the 'form_hiddenfields' element
-            if (!form.validate())
-                return;
-
             if (typeof(callback_ok) == 'function') {
-                var return_values = $(form_id).platformComponent().getValues();
+                var return_values = form.getValues();
                 
                 callback_ok(return_values, function() {
                     $('#platform_allpurpose_dialog').dialog('close');
                     // Move form back in place
-                    $(form_id).appendTo(form_original_parent);
+                    $(form_component_id).appendTo(form_original_parent);
                     // Be sure to clean form area
                     $('#platform_allpurpose_form').html('');
                 });
             } else {
                 $('#platform_allpurpose_dialog').dialog('close');
                 // Move form back in place
-                $(form_id).appendTo(form_original_parent);
+                $(form_component_id).appendTo(form_original_parent);
                 // Be sure to clean form area
                 $('#platform_allpurpose_form').html('');
             }
@@ -167,7 +163,7 @@ Platform.Dialog = class extends Platform.Component {
             ]).dialog('option', 'close', function() {  
                 if (typeof(callback_cancel) == 'function') callback_cancel();
                 // Move form back in place
-                $(form_id).appendTo(form_original_parent);
+                $(form_component_id).appendTo(form_original_parent);
             }).dialog('open');
         }
     }
