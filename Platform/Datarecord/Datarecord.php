@@ -401,8 +401,11 @@ class Datarecord implements DatarecordReferable {
      * Decode metadata
      */
     private function decodeMetadata() {
+        $valid_field_names = array_keys(static::getStructure());
         if (is_array($this->values['metadata'])) {
             foreach ($this->values['metadata'] as $key => $value) {
+                // Only unpack valid fields
+                if (! in_array($key, $valid_field_names)) continue;
                 $this->setValue($key, $value);
             }
         }
