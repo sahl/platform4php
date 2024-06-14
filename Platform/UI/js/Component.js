@@ -10,6 +10,10 @@ Platform.Component = class {
     
     contained_dialogs = [];
     
+    /**
+     * Initialize components on the given selector
+     * @param {jQuery} selector
+     */
     static addComponentClasses(selector) {
         var found_components = [];
         $.each(Platform.Component.class_library, function(key, library_element) {
@@ -42,9 +46,15 @@ Platform.Component = class {
         
     }
     
+    /**
+     * Initialize this component
+     */
     componentInitialize() {
+        // Gather all dialogs within the component
         this.gatherDialogs();
+        // Register backend events
         this.registerBackendEvents();
+        // Register backend forms
         this.registerBackendForms();
     }
     
@@ -73,7 +83,7 @@ Platform.Component = class {
     }
     
     /**
-     * Destroy this component
+     * Destroy this component, also removing it from the dom
      */
     destroy() {
         // Destroy any contained components
@@ -102,7 +112,11 @@ Platform.Component = class {
         Platform.Component.bindClass(dom_class, quick_component);
     }
     
-    
+    /**
+     * Get the javascript class which handles a specific DOM class
+     * @param {string} dom_class DOM class name
+     * @returns {object} The associated class or null if no such class
+     */
     static getClassBinding(dom_class) {
         var result = null;
         $.each(Platform.Component.class_library, function(key, library_element) {
@@ -114,22 +128,47 @@ Platform.Component = class {
         return result;
     }
     
+    /**
+     * Convenience for placing an event handler in the DOM
+     * @param {string} event Event name
+     * @param {function} callback
+     */
     on(event, callback) {
         this.dom_node.on(event, callback);
     }
     
+    /**
+     * Convenience for removing an event handler from the DOM
+     * @param {string} event Event name
+     */
     off(event) {
         this.dom_node.off(event);
     }
     
+    /**
+     * Convenience for triggering an event on the DOM
+     * @param {string} event Event to trigger
+     * @param {object} payload Payload to pass
+     */
     trigger(event, payload) {
         this.dom_node.trigger(event, payload);
     }
     
+    /**
+     * Convenience for finding a child in the DOM and returning the associated 
+     * Platform.Component
+     * @param {string} dom_selector Jquery selector to use
+     * @returns {object} The associated Platform.Component
+     */
     find(dom_selector) {
         return this.dom_node.find(dom_selector).platformComponent();
     }
     
+    /**
+     * Gather all dialogs within this component, so we can destroy them later as
+     * this component is destroyed. This is because dialogs are moved outside the
+     * component when initialized.
+     */
     gatherDialogs() {
         var component = this;
         $('.platform_base_dialog', this.dom_node).each(function() {
@@ -137,7 +176,10 @@ Platform.Component = class {
             return true;
         })
     }
-    
+
+    /**
+     * Redraw this component
+     */
     redraw() {
         var component = this;
         if (this.dom_node.is('.platform_container_component')) {
@@ -167,6 +209,9 @@ Platform.Component = class {
         }
     }
     
+    /**
+     * Register all backend events passed in the data
+     */
     registerBackendEvents() {
         var component = this;
         // Pass custom events to backend
@@ -188,7 +233,10 @@ Platform.Component = class {
             })
         }
     }
-    
+
+    /**
+     * Register all backend forms passed in the data
+     */
     registerBackendForms() {
         var component = this;
         // Pass selected forms to backend
@@ -199,8 +247,17 @@ Platform.Component = class {
         }
     }
     
+    /**
+     * Add a form to this component. Such a form will be send to the backend handleIO function
+     * when it is submitted
+     * @param {jquery} form jquery selector or string
+     * @param {function} func Function to call if the backend passes status=true
+     * @param {function} failfunc Function to call if the backend passes status=false
+     */
     addIOForm(form, func, failfunc) {
         var component = this;
+        // Ensure this is Jquery
+        form = $(form);
         form.off('submit.ioform').on('submit.ioform', function() {
             component.backendIO($(this).serialize(), function(data) {
                 if (! data.status) {
@@ -213,7 +270,12 @@ Platform.Component = class {
             return false;
         })
     }
-    
+
+    /**
+     * Send a request to the back handleIO function
+     * @param {object} values A serialized string or an object with the values to pass
+     * @param {function} func Function to call with the return data
+     */
     backendIO(values, func) {
         var component = this;
         // Values can be an object or a serialized string
@@ -262,6 +324,13 @@ Platform.Component = class {
     static timed_IO_stack = [];
     static IO_timer = null;
 
+    /**
+     * Register a repeated callback, which should be called at a given interval.
+     * @param {object} values The values to pass to the backend
+     * @param {function} callback A callback to call when a result is received
+     * @param {int} polltime The interval in seconds
+     * @param {int} precision The number of seconds we are allowed to deviate from the interval if we can reduce the number of calls
+     */
     timedIO(values, callback, polltime, precision) {
         var component = this.dom_node;
         var object = {};
@@ -275,7 +344,6 @@ Platform.Component = class {
         object.componentproperties = this.dom_node.data('componentproperties');
         object.componentid = this.dom_node.prop('id');
         object.timeleft = polltime;
-
 
         // Add or replace to queue
         var inserted = false;
@@ -292,6 +360,9 @@ Platform.Component = class {
         if (! Platform.Component.IO_timer) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
     }
 
+    /**
+     * Remove all timed IO associated with this component
+     */
     removeTimedIO() {
         var component = this;
         $.each(Platform.Component.timed_IO_stack, function(id, element) {
@@ -307,6 +378,9 @@ Platform.Component = class {
         }
     }
 
+    /**
+     * Runs the heartbeat of timed IO
+     */
     static executeTimedIO() {
         // Decrease everything and find if something needs to run now
 
@@ -375,8 +449,8 @@ Platform.Component = class {
 
     /**
      * Get a list of the child components for the component
-     * @param bool include_grandchildren
-     * @return array<Component>
+     * @param {bool} include_grandchildren
+     * @return {array} Array of Platform.Component
      */
     getChildren(include_grandchildren) {
         var children = [];
@@ -392,7 +466,7 @@ Platform.Component = class {
     
     /**
      * Get the parent component, if any
-     * @return Component|null
+     * @return {object}
      */
     getParent() {
         var parent = this.dom_node.parent().closest('[data-componentclass]');

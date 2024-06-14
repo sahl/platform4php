@@ -97,7 +97,7 @@ Platform.Form = class extends Platform.Component {
     
     /**
      * Get the values of all fields in the form that validate, hidden fields are not returned
-     * @returns object Values hashed by their field names
+     * @returns {object} Values hashed by their field names
      */
     getValues() {
         var values = {};
@@ -111,8 +111,17 @@ Platform.Form = class extends Platform.Component {
         return values;
     }
     
+    /**
+     * Get all the form fields hashed by their names
+     * @returns {object} Components hashed by their field names
+     */
     getFields() {
-        return this.getChildren();
+        var fields = {};
+        $.each(this.getChildren(), function(idx, component) {
+            var name = component.getName();
+            fields[name] = component;
+        });
+        return fields;
     }
     
     /**
@@ -136,7 +145,7 @@ Platform.Form = class extends Platform.Component {
     /**
      * Check if all fields have valid values; hidden fields and disabled fields are not checked
      * If no errors are encountered, and the form is set to "save on submit" then the form values are sent to the server 
-     * @returns bool
+     * @returns {bool}
      */
     validate() {
         var allow_submit = true;
