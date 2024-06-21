@@ -76,7 +76,7 @@ class NumberField extends Field {
                        'type' => 'number',
                        'name' => $this->name,
                        'id' => $this->getFieldIdForHTML(),
-                       'value' => htmlentities($value, ENT_QUOTES)
+                       'value' => htmlentities($this->value, ENT_QUOTES)
             ];
         if (trim($this->placeholder))
             $attributes['placeholder'] = $this->placeholder;
