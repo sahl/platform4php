@@ -100,6 +100,8 @@ class Form extends Component {
             if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                    // If the field is in a group, then place into same group
+                    if ($formfield->getGroup()) $field->setGroup($formfield->getGroup());
                     $newfields[] = $field;
                     $field->attachToForm($this);
                 }
@@ -131,6 +133,8 @@ class Form extends Component {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
                     $newfields[] = $field;
+                    // If the field is in a group, then place into same group
+                    if ($formfield->getGroup()) $field->setGroup($formfield->getGroup());
                     $field->attachToForm($this);
                 }
                 $inserted = true;
