@@ -51,7 +51,7 @@ class NumberField extends Field {
             $value = round($value);
         if ($this->minimum_value !== false && $value < $this->minimum_value)
             $value = $this->minimum_value;
-        if ($this->maximum_value !== false && $value < $this->maximum_value)
+        if ($this->maximum_value !== false && $value > $this->maximum_value)
             $value = $this->maximum_value;
         $this->value = $value;
     }
