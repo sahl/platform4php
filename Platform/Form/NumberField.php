@@ -84,8 +84,8 @@ class NumberField extends Field {
             $attributes['min'] = htmlentities($this->minimum_value, ENT_QUOTES);
         if ($this->maximum_value !== false)
             $attributes['max'] = htmlentities($this->maximum_value, ENT_QUOTES);
-        if (!$this->allow_decimal)
-            $attributes['step'] = 1;
+        if ($this->allow_decimal)
+            $attributes['step'] = 'any';
         
         foreach ($attributes as $name => $value)
             $attributes[$name] = $name.'="'.$value.'"';

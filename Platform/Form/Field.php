@@ -264,7 +264,7 @@ class Field extends Component {
         // Add the rest of the options as attributes
         foreach ($options as $key => $val) {
             // Some options can be reserved by subclasses. These shouldn't be added as attributes
-            if (array_key_exists('reserved_options', $options) && array_key_exists($key, $options['reserved_options'])) continue;
+            if ($key == 'reserved_options' || array_key_exists('reserved_options', $options) && in_array($key, $options['reserved_options'])) continue;
             $field->addAttribute($key, $val);
         }
         return $field;
