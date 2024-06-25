@@ -11,6 +11,7 @@ Platform.Form = class extends Platform.Component {
         var component = this;
         var dom_node = this.dom_node;
         this.dom_node.find('form').submit(function(e) {
+            component.clearErrors();
             if (component.validate()) {
                 return true;
             }
@@ -65,6 +66,16 @@ Platform.Form = class extends Platform.Component {
         this.dom_node.find('.platform_form_global_error_container').html('').hide();
         $.each(this.getFields(), function(idx, component) {
             component.clear();
+            component.clearError();
+        });
+    }
+
+    /**
+     * Clear all errors from this form
+     */
+    clearErrors() {
+        this.dom_node.find('.platform_form_global_error_container').html('').hide();
+        $.each(this.getFields(), function(idx, component) {
             component.clearError();
         });
     }
