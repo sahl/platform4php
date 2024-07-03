@@ -153,7 +153,7 @@ Platform.Dialog = class extends Platform.Component {
             if (typeof(callback_ok) === 'function') {
                 var return_values = form.getValues();
                 
-                callback_ok(return_values);
+                return callback_ok(return_values);
             }
             return true;
         })
