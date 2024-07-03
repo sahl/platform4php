@@ -106,7 +106,7 @@ class Job extends \Platform\Datarecord\Datarecord {
             $this->frequency = $frequency == self::FREQUENCY_NOCHANGE ? self::FREQUENCY_PAUSED : $frequency;
             $this->frequency_offset_from_end = $frequency_offset_from_end !== -1 ? $frequency_offset_from_end : false;
             $this->slot_size = $slot_size != -1 ? $slot_size : 10;
-            $this->max_runtime = $max_runtime != -1 ? $max_runtime : 10;
+            $this->max_runtime = $max_runtime != -1 ? $max_runtime : 60;
             $this->process_id = 0;
         }
     }    
