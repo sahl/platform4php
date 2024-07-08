@@ -1497,7 +1497,7 @@ class Datarecord implements DatarecordReferable {
      * @param array $databaserow The database row
      */
     private function parseFromDatabaseRow(array $databaserow) {
-        $this->values = array();
+        $this->buildDefaultValues();
         if (! is_array($databaserow)) return;
         foreach ($databaserow as $field => $value) {
             // When reading a database row, we can encounter an extended field structure, so we 
