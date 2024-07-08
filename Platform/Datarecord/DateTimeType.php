@@ -103,6 +103,10 @@ class DateTimeType extends Type {
         return \Platform\Form\DatetimeField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
+    public function getDefaultValue() {
+        return new \Platform\Utilities\Time();
+    }
+    
     public function getFormValue($value) {
         return str_replace(' ', 'T', $value->getReadable('Y-m-d H:i'));
     }
