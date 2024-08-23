@@ -27,11 +27,11 @@ class Table extends Component {
     
     protected static $can_redraw = false;
     
-    private $multi_buttons = [];
+    protected $multi_buttons = [];
     
-    private $line_icons = [];
+    protected $line_icons = [];
     
-    private $tabulator_options = array();
+    protected $tabulator_options = array();
     
     protected static $component_class = 'platform_component_table';
     
@@ -39,7 +39,7 @@ class Table extends Component {
     
     private $include_column_selector = false;
     
-    private $table_style = [];
+    protected $table_style = [];
 
     /**
      * Construct a new table
