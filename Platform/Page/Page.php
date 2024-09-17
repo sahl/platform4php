@@ -25,10 +25,25 @@ class Page {
     public static $css_files = [];
     
     /**
+     * Data elements to add to body
+     * @var type
+     */
+    public static $data = [];
+    
+    /**
      * Indicate if page rendering have started.
      * @var bool 
      */
     private static $page_started = false;
+    
+    /**
+     * Add some data to the body
+     * @param string $keyword Keyword to use
+     * @param string $value Value to add under keyword
+     */
+    public static function addData($keyword, $value) {
+        static::$data[$keyword] = $value;
+    }
 
     /**
      * Add a timestamp to the end of the filename for when the physical file
@@ -168,7 +183,13 @@ class Page {
             echo '<script src="'.static::addTimeStamp($js_file).'" type="text/javascript"></script>';
         }
         if ($options['custom_head_html']) echo $options['custom_head_html'];
-        echo '</head><body>';
+        
+        // We add the number format
+        static::addData('platform_number_format', \Platform\Utilities\NumberFormat::getFormat());
+        
+        echo '</head><body';
+        foreach (static::$data as $key => $value) echo ' data-'.$key.'="'.htmlentities ($value, ENT_QUOTES).'"';
+        echo '>';
     }
     
     /**

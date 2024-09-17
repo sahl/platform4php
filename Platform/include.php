@@ -62,6 +62,10 @@ Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
 Page::queueCSSFile('/Platform/Page/css/Platform.css');
 Page::queueJSFile('/Platform/Page/js/MenuItem.js');
 
+// Number format
+Page::queueJSFile('/Platform/Utilities/js/NumberFormat.js');
+
+
 // Components
 Page::queueCSSFile('/Platform/UI/css/Component.css');
 Page::queueJSFile('/Platform/UI/js/Component.js');

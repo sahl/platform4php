@@ -8,6 +8,23 @@ namespace Platform\Datarecord;
 
 
 class IntegerType extends Type {
+    
+    protected $is_formatted = false;
+    
+    /**
+     * Construct a field of this type
+     * @param string $name Field name
+     * @param string $title Field title
+     * @param type $options Field options
+     */
+    public function __construct(string $name, string $title = '', array $options = []) {
+        if (isset($options['is_formatted'])) {
+            $this->is_formatted = $options['is_formatted'] ? true : false;
+            unset($options['is_formatted']);
+        }
+        parent::__construct($name, $title, $options);
+    }
+    
 
     public function filterGreaterEqual($value, $other_value) {
         if ($value === null) return false;
@@ -93,9 +110,30 @@ class IntegerType extends Type {
     }
     
     protected function getBaseFormField() : ?\Platform\Form\Field {
-        return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
-        
+        if ($this->is_formatted) return \Platform\Form\FormattedNumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
+        else return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
+    
+    /**
+     * Return true if this integer should be visually formatted.
+     * @return bool
+     */
+    public function getFormatted() : bool {
+        return $this->is_formatted;
+    }
+    
+    public function getFormFieldOptions(): array {
+        $result = parent::getFormFieldOptions();
+        if ($this->is_formatted) $result['maximum_decimals'] = 0;
+        return $result;
+    }
+    
+    
+    public function getFullValue($value, Collection &$collection = null): string {
+        if ($this->is_formatted) return \Platform\Utilities\NumberFormat::getFormattedNumber($value, 0, true);
+        else return (string)$value;
+    }
+    
 
     public function getLogValue($value) : string {
         return $value;
@@ -130,6 +168,14 @@ class IntegerType extends Type {
         if ($value === null) return null;
         return (int)$value;
     }    
+    
+    /**
+     * Set if this integer should be formatted when displayed
+     * @param bool $is_formatted
+     */
+    public function setFormatted(bool $is_formatted = true) {
+        $this->is_formatted = $is_formatted;
+    }
     
     public function validateValue($value) {
         if ($value !== null && ! is_int($value)) return false;
