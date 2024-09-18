@@ -84,10 +84,9 @@ class FormattedNumberField extends Field {
     public function setValue($value) {
         if ($value !== null) {
             // Get number of decimals
-            $parts = explode('.', (string)$value);
-            $number_of_decimals = strlen($parts[1]);
+            $number_of_decimals = NumberFormat::getNumberOfDecimals($value);
             $decimals_to_display = max(min($number_of_decimals, $this->maximum_decimals), $this->minimum_decimals);
-            $this->value = NumberFormat::getFormattedNumber($this->value, $decimals_to_display, true);
+            $this->value = NumberFormat::getFormattedNumber($value, $decimals_to_display, true);
         } else {
             $this->value = '';
         }
