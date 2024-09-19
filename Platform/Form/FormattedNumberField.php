@@ -55,7 +55,10 @@ class FormattedNumberField extends Field {
         $result = parent::parse($value);
         if (! $result) return false;
         
-        if (!NumberFormat::isValid($value)) {
+        // Empty value is allowed and shouldn't be checked further.
+        if (! $value) return true;
+        
+        if ( !NumberFormat::isValid($value)) {
             $this->triggerError(\Platform\Utilities\Translation::translateForUser('Invalid number'));
             return false;
         }

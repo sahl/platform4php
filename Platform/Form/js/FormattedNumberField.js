@@ -9,7 +9,12 @@ Platform.Form.FormattedNumberField = class extends Platform.Form.Field {
     }
     
     validate() {
-        if (! Platform.NumberFormat.isValid(this.dom_node.find('input').val())) {
+        var result = super.validate();
+        if (! result) return false;
+        
+        var value = this.dom_node.find('input').val();
+        // Only validate number if filled
+        if (value && ! Platform.NumberFormat.isValid(value)) {
             this.setError(Platform.Translation.forUser('Invalid number'));
             return false;
         }
