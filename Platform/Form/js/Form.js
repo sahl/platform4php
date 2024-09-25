@@ -112,7 +112,7 @@ Platform.Form = class extends Platform.Component {
      */
     getValues() {
         var values = {};
-        $.each(this.getChildren(), function(idx, component) {
+        $.each(this.getFields(), function(idx, component) {
             if (!component.isHidden() && component.validate() && !component.isDisabled()) {
                 var name = component.getName();
                 var value = component.getValue();
@@ -128,7 +128,8 @@ Platform.Form = class extends Platform.Component {
      */
     getFields() {
         var fields = {};
-        $.each(this.getChildren(), function(idx, component) {
+        $.each(this.dom_node.closestChildren('.platform_form_field_component'), function(idx, dom_node) {
+            var component = $(dom_node).platformComponent();
             var name = component.getName();
             fields[name] = component;
         });
