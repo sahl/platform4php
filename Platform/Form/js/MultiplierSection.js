@@ -6,8 +6,14 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         this.dom_node.find('.platform_form_multiplier_element').each(function() {
             component.primeRow($(this));
         })
+        component.adjustNames();
     }
-    
+
+    /**
+     * Prime a row to be ready for the MultiplierSection
+     * @param {jQuery} row
+     * @returns {unresolved}
+     */
     primeRow(row) {
         // Check if we entered another multiplier
         if (! row.closest('.platform_form_multiplier').is(this.dom_node)) {
@@ -81,9 +87,10 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
     }
     
     adjustNames() {
-        var component = this.dom_node;
+        var component = this;
+        var dom_node = this.dom_node;
         // Determine number of array markers in base name
-        var base_name = component.prop('id').substring(component.closest('form').prop('id').length+1);
+        var base_name = dom_node.prop('id').substring(dom_node.closest('form').prop('id').length+1);
         base_name = base_name.substring(0,base_name.length-10);
         // Catch all before relevant counter
         var regexp_string = '/('+base_name.replace(/(\[|\])/gi, '\\$1')+')';
@@ -91,41 +98,33 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         regexp_string += '\\[\\d*\\](\\.*)/i';
         var regexp = eval(regexp_string);
         var i = 0;
-        component.find('.platform_form_multiplier_element').each(function() {
-            if (! $(this).closest('.platform_form_multiplier').is(component)) {
-                // We went to deep
-                return true;
+        dom_node.find('.platform_form_multiplier_element').each(function() {
+            component.adjustNameInRow(i++, $(this), regexp);
+        })
+    }
+    
+    adjustNameInRow(row_number, dom_node, regexp) {
+        var component = this;
+        if (! dom_node.closest('.platform_form_multiplier').is(component.dom_node)) {
+            // We went into a contained multiplier
+            return true;
+        }
+        dom_node.find('*').each(function() {
+            var name = $(this).prop('name');
+            var id = $(this).prop('id');
+            var label_for = $(this).prop('for');
+            if (name) {
+                var new_name = name.replace(regexp, '$1['+row_number+']$2');
+                $(this).prop('name', new_name);
             }
-            $(this).find('*').each(function() {
-                var name = $(this).prop('name');
-                var id = $(this).prop('id');
-                var label_for = $(this).prop('for');
-                if (name) {
-                    var new_name = name.replace(regexp, '$1['+i+']$2');
-                    $(this).prop('name', new_name);
-                }
-                if (id) {
-                    var new_id = id.replace(regexp, '$1['+i+']$2');
-                    $(this).prop('id', new_id);
-                }
-                if (label_for) {
-                    var new_label_for = label_for.replace(regexp, '$1['+i+']$2');
-                    $(this).prop('for', label_for);
-                }
-            })
-            /*
-            $(this).find('iframe.file_select_frame').each(function() {
-                var name = $(this).data('name');
-                var new_name = name.replace(regexp, '$1['+i+']$2');
-                var id = $(this).attr('id');
-                var new_id = id.replace(regexp, '$1['+i+']$2');
+            if (id) {
+                var new_id = id.replace(regexp, '$1['+row_number+']$2');
                 $(this).prop('id', new_id);
-                // Recode url if source changed
-                var src = '/Platform/Field/php/file.php?form_name='+$(this).closest('form').attr('id')+'&field_name='+new_name;
-                if (name != new_name) $(this).prop('src', src);
-            })
-            */
-            i++;
+            }
+            if (label_for) {
+                var new_label_for = label_for.replace(regexp, '$1['+row_number+']$2');
+                $(this).prop('for', label_for);
+            }
         })
     }
     
@@ -140,6 +139,10 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
             return true;
         })
         return result;
+    }
+    
+    getNumberOfRows() {
+        return this.dom_node.closestChildren('.platform_form_multiplier_element').length;
     }
     
     getValue() {
