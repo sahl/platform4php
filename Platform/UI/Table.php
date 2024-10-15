@@ -12,7 +12,7 @@ use Platform\Datarecord\Datarecord;
 use Platform\Filter\Filter;
 use Platform\Form\Form;
 use Platform\Form\HiddenField;
-use Platform\Form\MulticheckboxField;
+use Platform\Form\MultiCheckboxField;
 use Platform\Page\MenuItem;
 use Platform\Security\Property;
 use Platform\Security\Accesstoken;
@@ -237,7 +237,7 @@ class Table extends Component {
         asort($options);
         
         $form->addField(HiddenField::Field('', 'table_id'));
-        $form->addField(MulticheckboxField::Field('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
+        $form->addField(MultiCheckboxField::Field('Visible fields', 'fields', array('options' => $options, 'value' => $selected, 'height' => 200)));
         return $form;
     }
     
