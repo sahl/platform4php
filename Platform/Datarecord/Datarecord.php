@@ -1157,6 +1157,14 @@ class Datarecord implements DatarecordReferable {
         if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
         return $type->getTableValue($this->getRawValue($field), $this->collection);
     }
+    
+    /**
+     * Get the text title of this object (which isn't formatted by HTML)
+     * @return string
+     */
+    public function getTextTitle() : string {
+        return strip_tags($this->getTitle());
+    }
 
     /**
      * Override to return a full formatted title of this object
