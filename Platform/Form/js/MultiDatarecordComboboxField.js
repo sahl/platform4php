@@ -1,4 +1,4 @@
-Platform.Form.MultidatarecordCombobox = class extends Platform.Form.MultiplierSection {
+Platform.Form.MultiDatarecordCombobox = class extends Platform.Form.MultiplierSection {
     
     clear() {
         this.dom_node.find('.platform_form_multiplier_element').not(':first').remove();
@@ -17,4 +17,4 @@ Platform.Form.MultidatarecordCombobox = class extends Platform.Form.MultiplierSe
     }
 }
 
-Platform.Component.bindClass('platform_component_form_multidatarecordcombobox', Platform.Form.MultidatarecordCombobox);
+Platform.Component.bindClass('platform_component_form_multi_datarecord_combobox', Platform.Form.MultiDatarecordCombobox);
