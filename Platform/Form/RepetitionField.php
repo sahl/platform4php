@@ -82,9 +82,9 @@ class RepetitionField extends Field {
         
         $interval_field = NumberField::Field(Translation::translateForUser('Every'), $this->name.'[interval]', ['required' => true, 'class' => 'repetition_interval', 'value' => $value['interval'] ?: 1]);
         
-        $weekdays_field = MulticheckboxField::Field(Translation::translateForUser('Weekdays'), $this->name.'[weekdays]', ['required' => true, 'class' => 'weekdays', 'value' => $value['weekdays'], 'options' => $weekday_options]);
+        $weekdays_field = MultiCheckboxField::Field(Translation::translateForUser('Weekdays'), $this->name.'[weekdays]', ['required' => true, 'class' => 'weekdays', 'value' => $value['weekdays'], 'options' => $weekday_options]);
         
-        $months_field = MulticheckboxField::Field(Translation::translateForUser('In these months'), $this->name.'[months]', ['required' => true, 'class' => 'months', 'value' => $value['months'], 'options' => $month_options]);
+        $months_field = MultiCheckboxField::Field(Translation::translateForUser('In these months'), $this->name.'[months]', ['required' => true, 'class' => 'months', 'value' => $value['months'], 'options' => $month_options]);
         
         $monthday_field = SelectField::Field(Translation::translateForUser('On the'), $this->name.'[monthday]', ['required' => true, 'class' => 'monthday', 'value' => $value['monthday'], 'options' => $monthday_options]);
         
