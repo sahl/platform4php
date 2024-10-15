@@ -129,6 +129,16 @@ Platform.Component = class {
     }
     
     /**
+     * Convenience for handling data in the DOM
+     * @param {string} parameter
+     * @param {mixed} option
+     */
+    data(parameter, option) {
+        if (! option) return this.dom_node.data(parameter);
+        else this.dom_node.data(parameter, option);
+    }
+    
+    /**
      * Convenience for placing an event handler in the DOM
      * @param {string} event Event name
      * @param {function} callback
