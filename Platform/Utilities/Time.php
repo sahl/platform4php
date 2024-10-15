@@ -45,6 +45,7 @@ class Time implements \Platform\UI\Serializable {
         if ($time instanceof Time) $this->timestamp = $time->getTimestamp();
         elseif ($time == 'now') $this->timestamp = time();
         elseif ($time == 'today') $this->timestamp = strtotime(self::now()->get('Y-m-d'));
+        elseif ($time == 'today_in_display_timezone') $this->timestamp = strtotime(self::now()->getReadable('Y-m-d 00:00:00'));
         elseif ($time == 'end_of_today') $this->timestamp = strtotime(self::now()->get('Y-m-d 23:59:59'));
         elseif (is_numeric($time)) $this->timestamp = (int)$time;
         elseif ($time) {
@@ -603,11 +604,20 @@ class Time implements \Platform\UI\Serializable {
     }    
     
     /**
-     * Return a new time with the current time at midnight today
+     * Return a new time with the current time at midnight today GMT
      * @return \Platform\Utilities\Time
      */
     public static function today() : Time {
         return new Time('today');
+    }
+    
+    /**
+     * Return a new time with with the current time at midnight today in the
+     * display time zone
+     * @return Time
+     */
+    public static function todayInDisplayTimezone() : Time {
+        return new Time('today_in_display_timezone');
     }
     
     /**
