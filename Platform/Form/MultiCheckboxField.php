@@ -6,16 +6,16 @@ namespace Platform\Form;
  * @link https://wiki.platform4php.dk/doku.php?id=field_class
  */
 
-class MulticheckboxField extends Field {
+class MultiCheckboxField extends Field {
     
     public $height;
     
-    public static $component_class = 'platform_component_multicheckbox_field';
+    public static $component_class = 'platform_component_multi_checkbox_field';
     
     public function __construct() {
         parent::__construct();
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
-        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/MulticheckboxField.js'); 
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/MultiCheckboxField.js'); 
         $this->addFieldClass('platform_multicheck_container');
     }
     

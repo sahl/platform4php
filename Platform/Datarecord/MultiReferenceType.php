@@ -278,7 +278,7 @@ class MultiReferenceType extends Type {
     protected function getBaseFormField() : ?\Platform\Form\Field {
         $options = $this->getFormFieldOptions();
         $options['datarecord_class'] = $this->foreign_class;
-        return \Platform\Form\MultidatarecordcomboboxField::Field($this->title, $this->name, $options);
+        return \Platform\Form\MultiDatarecordComboboxField::Field($this->title, $this->name, $options);
     }
     
     /**

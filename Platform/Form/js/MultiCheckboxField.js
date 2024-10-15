@@ -40,4 +40,4 @@ Platform.Form.MulticheckboxField = class extends Platform.Form.Field {
     
 }
 
-Platform.Component.bindClass('platform_component_multicheckbox_field', Platform.Form.MulticheckboxField);
+Platform.Component.bindClass('platform_component_multi_checkbox_field', Platform.Form.MulticheckboxField);

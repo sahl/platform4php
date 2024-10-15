@@ -273,7 +273,7 @@ class SingleReferenceType extends IntegerType {
     protected function getBaseFormField() : ?\Platform\Form\Field {
         $options = $this->getFormFieldOptions();
         $options['datarecord_class'] = $this->foreign_class;
-        return \Platform\Form\DatarecordcomboboxField::Field($this->title, $this->name, $options);
+        return \Platform\Form\DatarecordComboboxField::Field($this->title, $this->name, $options);
     }
     
     public function getFormValue($value): mixed {

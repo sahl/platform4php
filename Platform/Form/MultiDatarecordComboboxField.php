@@ -6,17 +6,17 @@ namespace Platform\Form;
  * @link https://wiki.platform4php.dk/doku.php?id=field_class
  */
 
-class MultidatarecordcomboboxField extends MultiplierSection {
+class MultiDatarecordComboboxField extends MultiplierSection {
     
     private $datarecord_combobox = null;
     
-    protected static $component_class = 'platform_component_form_multidatarecordcombobox';
+    protected static $component_class = 'platform_component_form_multi_datarecord_combobox';
     
     public function __construct() {
         parent::__construct();
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js');
-        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Multidatarecordcombobox.js');
-        $this->datarecord_combobox = DatarecordcomboboxField::Field('', 'innercombobox');
+        static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/MultiDatarecordComboboxField.js');
+        $this->datarecord_combobox = DatarecordComboboxField::Field('', 'innercombobox');
         $this->datarecord_combobox->addFieldStyle('margin-top: 0px');
         $this->addFields($this->datarecord_combobox);
     }
