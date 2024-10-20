@@ -46,8 +46,8 @@ Platform.PopupMenu = class extends Platform.Component {
             break;
         }
         // Prevent menu from exiting the screen
-        if (left-$(window).scrollLeft() + dom_element.width() > $(window).width()-5) left = $(window).scrollLeft()+$(window).width() - dom_element.width()-5;
-        if (top-$(window).scrollTop() + dom_element.height() > $(window).height()-5) top = $(window).scrollTop()+$(window).height() - dom_element.height()-5;
+        if (left-$(window).scrollLeft() + dom_element.outerWidth() > $(window).width()-5) left = $(window).scrollLeft()+$(window).width() - dom_element.outerWidth()-5;
+        if (top-$(window).scrollTop() + dom_element.outerHeight() > $(window).height()-5) top = $(window).scrollTop()+$(window).height() - dom_element.outerHeight()-5;
         if (left-$(window).scrollLeft() < 5) left = $(window).scrollLeft() + 5;
         if (top-$(window).scrollTop() < 5) top = $(window).scrollTop() + 5;
         

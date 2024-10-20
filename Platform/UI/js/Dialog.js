@@ -253,13 +253,10 @@ $(function() {
     $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div><div id="platform_allpurpose_container"></div></div>');
     var dialog = new Platform.Dialog($('#platform_allpurpose_dialog'), [], {
         close: function() {
-            console.log('Calling close');
             // If a component is contained, then move it back to its original position
             if (Platform.Dialog.component_in_dialog_dom !== null) {
-                console.log('Moving back');
                 Platform.Dialog.component_in_dialog_dom.appendTo(Platform.Dialog.component_original_parent_dom);
                 Platform.Dialog.component_in_dialog_dom = null;
-                //$('#platform_allpurpose_container').html('');
             }
         }
     });
