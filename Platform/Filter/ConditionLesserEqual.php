@@ -17,6 +17,10 @@ class ConditionLesserEqual extends Condition {
     }
     
     public function getSQLFragment(): string {
+        if ($this->type->getStoreLocation() != \Platform\Datarecord\Type::STORE_DATABASE) {
+            $this->setNoSQL();
+            return true;
+        }
         $sql = $this->type->filterLesserEqualSQL($this->value);
         if ($sql === false) {
             $this->setNoSQL();
