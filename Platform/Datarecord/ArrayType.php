@@ -269,9 +269,9 @@ class ArrayType extends Type {
      * Get all the options of this type as an array.
      * @return array
      */
-    public function getOptionsAsArray() : array {
+    public function getValidOptionsAsArray() : array {
         if (count($this->substructure)) trigger_error('The array substructure cannot be expressed as an array', E_USER_ERROR);
-        return parent::getOptionsAsArray();
+        return parent::getValidOptionsAsArray();
     }
     
     
@@ -318,7 +318,7 @@ class ArrayType extends Type {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

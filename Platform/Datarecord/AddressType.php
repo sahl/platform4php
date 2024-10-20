@@ -14,12 +14,14 @@ class AddressType extends Type {
      * @return array
      */
     public function addAdditionalStructure() : array {
+        $options = $this->getSetOptionsAsArray();
+        $options['is_invisible'] = true;
         return [
-            new TextType('address', '', ['is_invisible' => true]),
-            new TextType('address2', '', ['is_invisible' => true]),
-            new TextType('city', '', ['is_invisible' => true]),
-            new TextType('zip', '', ['is_invisible' => true]),
-            new TextType('countrycode', '', ['is_invisible' => true]),
+            new TextType('address', '', $options),
+            new TextType('address2', '', $options),
+            new TextType('city', '', $options),
+            new TextType('zip', '', $options),
+            new TextType('countrycode', '', $options),
         ];
     }
     
@@ -249,7 +251,7 @@ class AddressType extends Type {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

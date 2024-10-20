@@ -14,10 +14,12 @@ class CurrencyType extends Type {
      * @return array
      */
     public function addAdditionalStructure() : array {
+        $options = $this->getSetOptionsAsArray();
+        $options['is_invisible'] = true;
         return [
-            new FloatType('localvalue', '', ['is_invisible' => true]),
-            new TextType('currency', '', ['is_invisible' => true]),
-            new FloatType('foreignvalue', '', ['is_invisible' => true]),
+            new FloatType('localvalue', '', $options),
+            new TextType('currency', '', $options),
+            new FloatType('foreignvalue', '', $options),
         ];
     }
     

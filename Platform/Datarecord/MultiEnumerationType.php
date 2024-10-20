@@ -150,7 +150,7 @@ class MultiEnumerationType extends EnumerationType {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         if (! $this->enumeration) return ['Missing enumeration'];
         return [];
     }

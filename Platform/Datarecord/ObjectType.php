@@ -62,7 +62,7 @@ class ObjectType extends ArrayType {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

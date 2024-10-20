@@ -162,7 +162,7 @@ class DateTimeType extends Type {
         return 'DATETIME';
     }
     
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

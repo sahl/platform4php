@@ -155,7 +155,7 @@ class BoolType extends IntegerType {
         return 'TINYINT(1) NOT NULL';
     }
     
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

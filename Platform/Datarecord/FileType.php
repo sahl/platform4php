@@ -34,14 +34,6 @@ class FileType extends SingleReferenceType {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        $valid_options = ['keep_file_on_delete', 'folder'];
-        
-        foreach ($valid_options as $valid_option) {
-            if ($options[$valid_option]) {
-                $this->$valid_option = $options[$valid_option];
-                unset($options[$valid_option]);
-            }
-        }
         $options['foreign_class'] = 'Platform\File\File';
         parent::__construct($name, $title, $options);
     }
@@ -88,21 +80,15 @@ class FileType extends SingleReferenceType {
      * Get all the options of this type as an array.
      * @return array
      */
-    public function getOptionsAsArray() : array {
-        $result = parent::getOptionsAsArray();
-        $valid_options = ['keep_file_on_delete', 'folder'];
-        
-        foreach ($valid_options as $option) {
-            if ($this->$option != null) $result[$option] = $this->$option;
-        }
-        return $result;
+    public function getValidOptionsAsArray() : array {
+        return array_merge(parent::getValidOptionsAsArray(),['keep_file_on_delete', 'folder']);
     }
     
     /**
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

@@ -49,7 +49,7 @@ class DateType extends DateTimeType {
         return $this->getFullValue($value);
     }
     
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

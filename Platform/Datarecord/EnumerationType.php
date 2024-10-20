@@ -24,13 +24,6 @@ class EnumerationType extends IntegerType {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        $valid_options = ['enumeration', 'enumeration_colours'];
-        foreach ($valid_options as $valid_option) {
-            if (isset($options[$valid_option])) {
-                $this->$valid_option = $options[$valid_option];
-                unset($options[$valid_option]);
-            }
-        }
         if (! is_array($this->enumeration)) trigger_error('You must add an enumeration to the field '.$name, E_USER_ERROR);
         parent::__construct($name, $title, $options);
     }
@@ -282,14 +275,8 @@ class EnumerationType extends IntegerType {
      * Get all the options of this type as an array.
      * @return array
      */
-    public function getOptionsAsArray() : array {
-        $result = parent::getOptionsAsArray();
-        $valid_options = ['enumeration', 'enumeration_colours'];
-        
-        foreach ($valid_options as $option) {
-            if ($this->$option != null) $result[$option] = $this->$option;
-        }
-        return $result;
+    public function getValidOptionsAsArray() : array {
+        return array_merge(parent::getValidOptionsAsArray(), ['enumeration', 'enumeration_colours']);
     }
     
     /**
@@ -313,7 +300,7 @@ class EnumerationType extends IntegerType {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         if (! $this->enumeration) return ['Missing enumeration'];
         return [];
     }

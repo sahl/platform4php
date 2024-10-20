@@ -355,14 +355,8 @@ class MultiReferenceType extends Type {
      * Get all the options of this type as an array.
      * @return array
      */
-    public function getOptionsAsArray() : array {
-        $result = parent::getOptionsAsArray();
-        $valid_options = ['foreign_class'];
-        
-        foreach ($valid_options as $option) {
-            if ($this->$option != null) $result[$option] = $this->$option;
-        }
-        return $result;
+    public function getValidOptionsAsArray() : array {
+        return array_merge(parent::getValidOptionsAsArray(), ['foreign_class']);
     }
     
     /**
@@ -404,10 +398,11 @@ class MultiReferenceType extends Type {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         $result = [];
         if (! $this->foreign_class) $result[] = 'Missing foreign class';
         if (! class_exists($this->foreign_class)) $result[] = 'No such foreign class: '.$this->foreign_class;
+        if (! in_array($context_class, $this->foreign_class::getDependingClasses()) && ! in_array($context_class, $this->foreign_class::getReferringClasses())) $result[] = 'Foreign class '.$this->foreign_class.' does not list this class as dependent or referring but we refer it from '.$this->name;
         return $result;
     }
     

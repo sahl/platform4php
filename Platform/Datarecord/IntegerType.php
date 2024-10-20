@@ -155,7 +155,7 @@ class IntegerType extends Type {
         return 'INT';
     }
     
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

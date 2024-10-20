@@ -1252,6 +1252,14 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get all depending classes
+     * @return array
+     */
+    public static function getDependingClasses() : array {
+        return static::$depending_classes;
+    }
+    
+    /**
      * Get the description of this datarecord class
      * @return string
      */
@@ -1265,6 +1273,14 @@ class Datarecord implements DatarecordReferable {
      */
     public static function getEditComplex(array $parameters = array()) : EditComplex {
         return EditComplex::EditComplex(get_called_class(), $parameters);        
+    }
+    
+    /**
+     * Get referring classes
+     * @return array
+     */
+    public static function getReferringClasses() : array {
+        return static::$referring_classes;
     }
     
     /**
@@ -1600,7 +1616,7 @@ class Datarecord implements DatarecordReferable {
         if ($changed) $errors[] = 'Database was changed even though there should be no changes. This is probably a problem with Platform.';
         
         foreach (static::getStructure() as $name => $type) {
-            $errors = array_merge($errors, $type->integrityCheck());
+            $errors = array_merge($errors, $type->integrityCheck(get_called_class()));
         }
         // Check referring classes
         foreach (static::$referring_classes as $foreign_class) {

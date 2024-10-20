@@ -20,9 +20,11 @@ class HyperReferenceType extends Type {
      * @return array
      */
     public function addAdditionalStructure() : array {
+        $options = $this->getSetOptionsAsArray();
+        $options['is_invisible'] = true;
         return [
-            new TextType('foreign_class', '', ['is_invisible' => true]),
-            new IntegerType('reference', '', ['is_invisible' => true]),
+            new TextType('foreign_class', '', $options),
+            new IntegerType('reference', '', $options),
         ];
     }
     
@@ -296,7 +298,7 @@ class HyperReferenceType extends Type {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

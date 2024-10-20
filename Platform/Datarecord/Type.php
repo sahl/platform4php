@@ -159,7 +159,7 @@ class Type {
         $this->name = $name;
         $this->title = $title;
         
-        $valid_options = ['description', 'layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'form_visibility', 'properties'];
+        $valid_options = $this->getValidOptionsAsArray();
         foreach ($options as $key => $option) {
             if (! in_array($key, $valid_options)) trigger_error('Invalid options passed to '.get_called_class().': '.$key, E_USER_ERROR);
             switch ($key) {
@@ -184,9 +184,11 @@ class Type {
                 case 'is_invisible':
                     if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_NEVER;
                     if (! array_key_exists('list_visibility', $options) && $option) $this->list_visibility = self::LIST_NEVER;
+                    $this->setInvisible($option);
                     break;
                 case 'is_readonly':
                     if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_HIDDEN;
+                    $this->setReadonly($option);
                     break;
                 default:
                     $this->$key = $option;
@@ -435,7 +437,7 @@ class Type {
             'title' => $this->title,
             'field_name' => $this->name,
             'type_class' => get_called_class(),
-            'properties' => $this->getOptionsAsArray()
+            'properties' => $this->getSetOptionsAsArray()
         ]);
         return $extensible_field;
     }
@@ -562,12 +564,18 @@ class Type {
      * Get all the options of this type as an array.
      * @return array
      */
-    public function getOptionsAsArray() : array {
+    public function getValidOptionsAsArray() : array {
+        return ['description', 'layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'form_visibility', 'properties'];
+    }
+    
+    /**
+     * Return all options of this type, but only if they are set
+     * @return array
+     */
+    public function getSetOptionsAsArray() : array {
         $result = [];
-        $valid_options = ['description', 'layout_priority', 'default_value', 'is_subfield', 'is_title', 'is_readonly', 'is_searchable', 'store_location', 'index', 'is_required', 'list_visibility', 'layout_group', 'is_invisible', 'form_visibility', 'properties'];
-        
-        foreach ($valid_options as $option) {
-            if ($this->$option != null) $result[$option] = $this->$option;
+        foreach ($this->getValidOptionsAsArray() as $option) {
+            if ($this->$option !== null) $result[$option] = $this->$option;
         }
         return $result;
     }
@@ -646,7 +654,7 @@ class Type {
      * Do an integrity check of this field
      * @return array Array of problems
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         return [];
     }
     

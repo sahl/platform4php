@@ -34,16 +34,9 @@ class SingleReferenceType extends IntegerType {
      * @param type $options Field options
      */
     public function __construct(string $name, string $title = '', array $options = []) {
-        $valid_options = ['foreign_class'];
-        foreach ($valid_options as $valid_option) {
-            if ($options[$valid_option]) {
-                $this->$valid_option = $options[$valid_option];
-                unset($options[$valid_option]);
-            }
-        }
+        parent::__construct($name, $title, $options);
         if (! $this->foreign_class) trigger_error('You must specify a foreign class to the field '.$name, E_USER_ERROR);
         if (! class_exists($this->foreign_class)) trigger_error('The class '.$this->foreign_class.' does not exists in '.get_called_class(), E_USER_ERROR);
-        parent::__construct($name, $title, $options);
     }
     
     /**
@@ -256,14 +249,8 @@ class SingleReferenceType extends IntegerType {
      * Get all the options of this type as an array.
      * @return array
      */
-    public function getOptionsAsArray() : array {
-        $result = parent::getOptionsAsArray();
-        $valid_options = ['foreign_class'];
-        
-        foreach ($valid_options as $option) {
-            if ($this->$option != null) $result[$option] = $this->$option;
-        }
-        return $result;
+    public function getValidOptionsAsArray() : array {
+        return array_merge(parent::getValidOptionsAsArray(), ['foreign_class']);
     }
     
     /**
@@ -384,10 +371,11 @@ class SingleReferenceType extends IntegerType {
      * Do an integrity check of this field
      * @return array
      */
-    public function integrityCheck() : array {
+    public function integrityCheck(string $context_class) : array {
         $result = [];
         if (! $this->foreign_class) $result[] = 'Missing foreign class';
         if (! class_exists($this->foreign_class)) $result[] = 'No such foreign class: '.$this->foreign_class;
+        if (! in_array($context_class, $this->foreign_class::getDependingClasses()) && ! in_array($context_class, $this->foreign_class::getReferringClasses())) $result[] = 'Foreign class '.$this->foreign_class.' does not list this class as dependent or referring but we refer it from '.$this->name;
         return $result;
     }
     
