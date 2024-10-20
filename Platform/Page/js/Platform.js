@@ -12,7 +12,7 @@ var Platform = {
     
     did_onetime_run: false,
     
-    apply(selector) {
+    apply(selector, callback_when_applied) {
         selector = $(selector);
         // Check for scripts to postload
         var script_containers = $('.platform_post_load_javascript', selector);
@@ -30,30 +30,30 @@ var Platform = {
             scripts_to_load.push(src);
         })
         
-        function loadNextScript() {
+        function loadNextScript(callback_when_applied) {
             var src = scripts_to_load.shift();
             if (Platform.scripts_loaded.includes(src)) {
                 if (scripts_to_load.length) {
-                    loadNextScript();
+                    loadNextScript(callback_when_applied);
                 } else {
-                    Platform.runCustomFunctions(selector);
+                    Platform.runCustomFunctions(selector,callback_when_applied);
                 }
             } else {
                 $.get(src).done(function() {
                     Platform.registerScript(src);
-                    if (scripts_to_load.length) loadNextScript();
-                    else Platform.runCustomFunctions(selector);
+                    if (scripts_to_load.length) loadNextScript(callback_when_applied);
+                    else Platform.runCustomFunctions(selector, callback_when_applied);
                 }).fail(function(jqxhr, settings, exception) {
                     console.log('Error loading '+src);
                     console.log(jqxhr);
                     console.log(settings);
                     console.log(exception);
-                    if (scripts_to_load.length) loadNextScript();
-                    else Platform.runCustomFunctions(selector);
+                    if (scripts_to_load.length) loadNextScript(callback_when_applied);
+                    else Platform.runCustomFunctions(selector, callback_when_applied);
                 });
             }
         }
-        loadNextScript();
+        loadNextScript(callback_when_applied);
     },
     
     /**
@@ -76,7 +76,7 @@ var Platform = {
         Platform.scripts_loaded.push(src);
     },
     
-    runCustomFunctions(selector) {
+    runCustomFunctions(selector, callback_when_applied) {
         Platform.custom_functions.forEach(function(fn) {
             fn(selector);
         });
@@ -89,6 +89,7 @@ var Platform = {
                 fn();
             });
         }
+        if (typeof callback_when_applied == 'function') callback_when_applied();
     },
     
     addCustomFunction(fn) {
@@ -142,8 +143,8 @@ $(function() {
     Platform.apply('body');
 });
 
-$.fn.applyPlatform = function() {
-    Platform.apply(this);
+$.fn.applyPlatform = function(callback_when_applied) {
+    Platform.apply(this, callback_when_applied);
     return this;
 };
 

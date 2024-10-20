@@ -34,6 +34,11 @@ Platform\Utilities\Time::setDateAndTimeFormatFromSession();
 // Set number format from session
 \Platform\Utilities\NumberFormat::setFormatFromSession();
 
+// Add number format for javascript
+Page::addData('platform_number_format', \Platform\Utilities\NumberFormat::getFormat());
+Page::addData('platform_component_io_url', Bizz\UI\Component::getIOUrl());
+
+
 // Load languages
 if (Translation::isEnabled()) {
     Translation::prepareTranslationsForFile($_SERVER['PHP_SELF']);

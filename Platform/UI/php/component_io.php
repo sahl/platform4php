@@ -26,12 +26,16 @@ $class = $_POST['componentclass'];
 
 if (!class_exists($class)) die('Class does not exist');
 
+if ($_POST['event'] == 'build') {
+    \Platform\Page\Page::setPagestarted();
+    ob_start();
+}
 $component = new $class();
 
 if (! $component instanceof \Platform\UI\Component) die('Not a component');
 
 if ($_POST['componentproperties']) $component->decodeProperties($_POST['componentproperties']);
-$component->setID($_POST['componentid']);
+if ($_POST['componentid']) $component->setID($_POST['componentid']);
 $component->prepareComponent();
 
 if ($class::$is_secure && !\Platform\Security\Accesstoken::validateSession()) die('Must be logged in');
@@ -46,6 +50,16 @@ if ($_POST['event'] == 'redraw') {
     }
     exit;
 }
+
+if ($_POST['event'] == 'build') {
+    if ($component->canRender()) {
+        $component->render();
+        $content = ob_get_clean();
+        echo json_encode($content);
+    }
+    exit;
+}
+
 
 $result = $component->handleIO();
 

@@ -277,6 +277,14 @@ class Component {
     }
     
     /**
+     * Get the URL for doing IO with the backend.
+     * @return string
+     */
+    public static function getIOUrl() : string {
+        return static::$io_url;
+    }
+    
+    /**
      * Get a friendly name for this component, which is the class name without path.
      * @return string
      */

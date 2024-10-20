@@ -83,6 +83,27 @@ Platform.Component = class {
     }
     
     /**
+     * Build a new component of the given class
+     * @param {string} component_class The Component PHP class
+     * @param {object} properties The component properties
+     * @param {string} id The wanted ID
+     * @param {function} callback A function which will be called with the element
+     * @returns {jQuery}
+     */
+    static build(component_class, properties, id, callback) {
+        $.post($('body').data('platform_component_io_url'), {event: 'build', componentclass: component_class, componentproperties: JSON.stringify(properties), componentid: id ? id : ''}, function(data) {
+            // Create a div for content
+            var container = $('<div></div>');
+            // Now attach the received data to this div
+            container.append(data);
+            // Apply platform to the div
+            container.applyPlatform(function() {
+                if (typeof callback == 'function') callback(container.children('div'));
+            });
+        }, 'json');
+    }
+    
+    /**
      * Destroy this component, also removing it from the dom
      */
     destroy() {

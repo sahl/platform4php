@@ -184,9 +184,6 @@ class Page {
         }
         if ($options['custom_head_html']) echo $options['custom_head_html'];
         
-        // We add the number format
-        static::addData('platform_number_format', \Platform\Utilities\NumberFormat::getFormat());
-        
         echo '</head><body';
         foreach (static::$data as $key => $value) echo ' data-'.$key.'="'.htmlentities ($value, ENT_QUOTES).'"';
         echo '>';
