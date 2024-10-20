@@ -32,10 +32,16 @@ class Filter {
     protected $errors = array();
     
     /**
-     * Indicate if we should limit the number of results returned?
+     * Indicate if we should limit the number of results returned? Limit to X results
      * @var int
      */
     protected $limit_results = null;
+    
+    /**
+     * Indicate if we should start beyond the first result. Start at result X.
+     * @var type
+     */
+    protected $start_at_result = null;
     
     /**
      * SQL for sorting the results
@@ -120,14 +126,46 @@ class Filter {
      */
     public function execute() {
         if (! $this->isValid()) return false;
-        $result = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
-        if (! $this->filter_after_sql) return $result;
+        // We prepare a collection if we need to do manual filtering
         $filtered_datacollection = new Collection();
-        foreach ($result as $object) {
-            if ($this->base_condition->match($object)) {
-                $filtered_datacollection->add($object);
+        // We track original limits as we can change them during execution
+        $original_start = $this->start_at_result;
+        $original_limit = $this->limit_results;
+        // If we need to do manual filtering, we need to start the SQL limit at 0, as we cannot predict the number of results not received.
+        if ($this->filter_after_sql && (int) $this->start_at_result > 0) $this->start_at_result = 0;
+        // We need to track discarded result (if we don't start from zero)
+        $discarded_results = 0;
+        while (true) {
+            // Do the SQL selection
+            $result = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
+            // If this filter can be done purely in SQL we have a valid result
+            if (! $this->filter_after_sql) return $result;
+            // Loop all results
+            foreach ($result as $object) {
+                // Do a manual match on the object
+                if ($this->base_condition->match($object)) {
+                    // If we shouldn't start from the beginning we need to throw away some results
+                    if ($this->start_at_result !== null && $discarded_results++ < $original_start) continue;
+                    // Add it
+                    $filtered_datacollection->add($object);
+                    // Check if we have enough results (if there is a limit) and stop collecting more if we have
+                    if ($this->limit_results !== null && count($filtered_datacollection) == $original_limit) break;
+                }
             }
+            // Check if we have enough results (if there is a limit) and break out of the "fetch more" loop
+            if ($this->limit_results === null || count($filtered_datacollection) == $original_limit) break;
+            // Also break out if we can see we have exhausted the database.
+            if (count($result) < $original_limit) break;
+            // We need to do a new SQL, so we increase the start result
+            $this->start_at_result = (int)$this->start_at_result + $this->limit_results;
+            // To prevent a lot of small queries, we also gradually increase the limit of returned results
+            if ($this->limit_results < 1000) $this->limit_results = 1000;
+            else $this->limit_results *= 2;
         }
+        // Reset limits to original count
+        $this->start_at_result = $original_start;
+        $this->limit_results = $original_limit;
+        // Return the final result
         return $filtered_datacollection;
     }
     
@@ -252,7 +290,11 @@ class Filter {
     public function getSQLOrderAndLimit() : string {
         $result = '';
         if ($this->sql_sort) $result .= ' ORDER BY '.$this->sql_sort;
-        if ($this->limit_results) $result .= ' LIMIT 0,'.$this->limit_results;
+        if ($this->limit_results !== null || $this->start_at_result !== null) {
+            $start = $this->start_at_result ?: 0;
+            $limit = $this->limit_results;
+            $result .= ' LIMIT '.$start.','.$limit;
+        }
         return $result;
     }
     
@@ -306,6 +348,10 @@ class Filter {
      */
     public function setResultLimit(int $result_limit) {
         $this->limit_results = $result_limit;
+    }
+    
+    public function setResultStart(int $result_start) {
+        $this->start_at_result = $result_start;
     }
     
     /**
