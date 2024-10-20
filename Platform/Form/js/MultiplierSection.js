@@ -53,36 +53,54 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         // Check if we need to expand
         if ((row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)')) && this.gotValues(row)) {
             // We need to expand.
-            // Advice all components that they are about to be cloned.
-            row.find('.platform_applied').trigger('platform_multiplier_section_before_clone');
-            // Clone
-            var new_row = row.clone(true); // We need to set true to bring data values along
-            // Advice all components that cloning is done
-            row.find('.platform_applied').trigger('platform_multiplier_section_after_clone');
-            new_row.off().find('*').off(); // Destroy all event listeners
-            new_row.find('*').data('platform_component', null); // Destroy platform component object
-            new_row.insertAfter(row);
-            this.adjustNames();
-            Platform.apply(new_row); // Reapply platform
-            new_row.find('.platform_form_field_component').each(function() {
-                var field = $(this).platformComponent();
-                field.clear();
-            });
-            this.primeRow(new_row);
-            this.dom_node.trigger('row_added');
+            this.addRow(row);
         } else {
             // Check if we need to contract
             if (! this.gotValues(row) && ! (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))) {
-                var container = $(this).closest('.platform_form_multiplier_element');
-                if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
-                    row.prev().find('input[type!="hidden"],textarea').first().focus();
-                else
-                    row.next().find('input[type!="hidden"],textarea').first().focus();
-                row.remove();
-                this.adjustNames();
-                container.trigger('row_deleted');
+                this.removeRow(row);
             }
         }
+        return true;
+    }
+    
+    addRow(row) {
+        // Check if row is valid
+        if (! row.is('.platform_form_multiplier_element')) row = row.closest('.platform_form_multiplier_element');
+        if (! row.is('.platform_form_multiplier_element')) return false;
+        // Advice all components that they are about to be cloned.
+        row.find('.platform_applied').trigger('platform_multiplier_section_before_clone');
+        // Clone
+        var new_row = row.clone(true); // We need to set true to bring data values along
+        // Advice all components that cloning is done
+        row.find('.platform_applied').trigger('platform_multiplier_section_after_clone');
+        new_row.off().find('*').off(); // Destroy all event listeners
+        new_row.find('*').data('platform_component', null); // Destroy platform component object
+        new_row.insertAfter(row);
+        this.adjustNames();
+        Platform.apply(new_row); // Reapply platform
+        new_row.find('.platform_form_field_component').each(function() {
+            var field = $(this).platformComponent();
+            field.clear();
+        });
+        this.primeRow(new_row);
+        this.dom_node.trigger('row_added');
+        return true;
+    }
+    
+    removeRow(row) {
+        // Check if row is valid
+        if (! row.is('.platform_form_multiplier_element')) row = row.closest('.platform_form_multiplier_element');
+        if (! row.is('.platform_form_multiplier_element')) return false;
+        // We cannot remove the last row
+        if (row.is(':only-child')) return false;
+        if (row.is(':last-child') || row.next().is(':not(.platform_form_multiplier_element)'))
+            row.prev().find('input[type!="hidden"],textarea').first().focus();
+        else
+            row.next().find('input[type!="hidden"],textarea').first().focus();
+        var index = row.parent().children().index(row);
+        row.remove();
+        this.adjustNames();
+        this.dom_node.trigger('row_deleted', [index+1]);
         return true;
     }
     
@@ -151,6 +169,8 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         var regexp = /\[([^\]]*)\]$/;
         // Loop all nearest multiplier elements
         this.dom_node.closestChildren('.platform_form_multiplier_element').each(function() {
+            // Never include last child
+            if ($(this).is(':last-child')) return true;
             var inner_values = {};
             // Loop all nearest contained fields
             $(this).closestChildren('.platform_form_field_component').each(function() {
