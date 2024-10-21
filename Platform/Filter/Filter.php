@@ -184,7 +184,9 @@ class Filter {
      * @return Datarecord First result or empty object of same type.
      */
     public function executeAndGetFirst() {
-        $collection = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
+        $this->setResultLimit(1);
+        $this->setResultStart(0);
+        $collection = $this->execute();
         if (! $collection->getCount()) return new $this->base_classname();
         return $collection->get(0);
     }
