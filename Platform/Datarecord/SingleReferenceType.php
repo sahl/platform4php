@@ -386,8 +386,8 @@ class SingleReferenceType extends IntegerType {
      * @return type
      */
     public function parseValue($value, $existing_value = null) {
-        if ($value === null || $value == 0) return null;
         if ($value instanceof Datarecord) $value = $value->getKeyValue();
+        if ($value === null || $value == 0) return null;
         if (is_array($value)) {
             return $value['id'] ?: null;
         }
