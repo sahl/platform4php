@@ -228,7 +228,7 @@ class Datarecord implements DatarecordReferable {
             }
             $sub_fields = $type->addAdditionalStructure();
             if ($sub_fields) {
-                $type->setStoreLocation(\Platform\Datarecord\Type::STORE_NOWHERE);
+                $type->setStoreLocation(\Platform\Datarecord\Type::STORE_SUBFIELDS);
                 foreach ($sub_fields as $field) {
                     $field->name = $type->name.'_'.$field->name;
                     static::addStructure([$field]);

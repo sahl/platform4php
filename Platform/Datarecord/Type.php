@@ -12,6 +12,7 @@ class Type {
     const STORE_NOWHERE = 0;
     const STORE_DATABASE = 1;
     const STORE_METADATA = 2;
+    const STORE_SUBFIELDS = 3;
     
     const LIST_NEVER = 0;
     const LIST_HIDDEN = 1;
@@ -987,7 +988,7 @@ class Type {
      * @param int $store_location
      */
     public function setStoreLocation(int $store_location) {
-        $valids = [self::STORE_NOWHERE, self::STORE_DATABASE, self::STORE_METADATA];
+        $valids = [self::STORE_NOWHERE, self::STORE_DATABASE, self::STORE_METADATA, self::STORE_SUBFIELDS];
         if (! in_array($store_location, $valids)) trigger_error('Invalid store location', E_USER_ERROR);
         $this->store_location = $store_location;
     }
