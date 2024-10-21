@@ -36,7 +36,7 @@ Platform\Utilities\Time::setDateAndTimeFormatFromSession();
 
 // Add number format for javascript
 Page::addData('platform_number_format', \Platform\Utilities\NumberFormat::getFormat());
-Page::addData('platform_component_io_url', Bizz\UI\Component::getIOUrl());
+Page::addData('platform_component_io_url', \Platform\UI\Component::getIOUrl());
 
 
 // Load languages
