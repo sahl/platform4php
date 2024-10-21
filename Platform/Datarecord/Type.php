@@ -640,6 +640,15 @@ class Type {
     public function getTextValue($value, Collection &$collection = null) : string {
         return $value;
     }
+
+    /**
+     * Get a nice name for this type, which is the class name without namespace and "...Type"
+     * @return string
+     */
+    public function getTypeName() : string {
+        $classname = get_class($this);
+        return substr($classname, strrpos($classname,'\\')+1,-4);
+    }
     
     /**
      * Get the json store value for fields of this type
