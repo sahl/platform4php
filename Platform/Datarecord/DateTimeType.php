@@ -71,18 +71,26 @@ class DateTimeType extends Type {
     }
     
     public function filterGreater($value, $other_value): bool {
+        $value = $this->parseValue($value);
+        $other_value = $this->parseValue($other_value);
         return $value->isAfter($other_value);
     }
     
     public function filterGreaterEqual($value, $other_value): bool {
+        $value = $this->parseValue($value);
+        $other_value = $this->parseValue($other_value);
         return $value->isAfterEqual($other_value);
     }
     
     public function filterLesser($value, $other_value): bool {
+        $value = $this->parseValue($value);
+        $other_value = $this->parseValue($other_value);
         return $value->isBefore($other_value);
     }
     
     public function filterLesserEqual($value, $other_value): bool {
+        $value = $this->parseValue($value);
+        $other_value = $this->parseValue($other_value);
         return $value->isBeforeEqual($other_value);
     }
     
