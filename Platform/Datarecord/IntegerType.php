@@ -165,7 +165,7 @@ class IntegerType extends Type {
     }
     
     public function parseValue($value, $existing_value = null) {
-        if ($value === null) return null;
+        if ($value === null || $value === '') return null;
         return (int)$value;
     }    
     
