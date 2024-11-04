@@ -15,7 +15,7 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
     }
 
     clearOptions() {
-        this.dom_node.find('select').html('');
+        this.dom_node.find('select option[class!="heading"]').remove();
     }
 
     removeOption(key) {
@@ -35,7 +35,7 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
     }
 
     setValue(value) {
-        if (value !== null) this.dom_node.find('select').val(value);
+        if (value !== null && this.dom_node.find('option[value="'+value+'"]').length) this.dom_node.find('select').val(value);
         else this.dom_node.find('option:first-child').prop('selected', true);
         this.setColourFromSelected();
     }

@@ -19,7 +19,7 @@ class SelectField extends Field {
     public function renderInput() {
         $attributes = ['data-fieldclass' => $this->getFieldClass(),
                        'class' => $this->getFieldClasses(),
-                       'style' => 'max-width: '.$this->field_width.';',
+                       'style' => 'width: '.$this->field_width.'; max-width: '.$this->field_width.';',
                        'name' => $this->name,
                        'id' => $this->getFieldIdForHTML()
                        ];
@@ -30,7 +30,7 @@ class SelectField extends Field {
          * of subarrays hashed by group names, in which case each subarray is title hashed by fieldname
          */
         echo '<select '.implode(' ', $attributes).'>';
-        echo   '<option style="background: white; colour:black;" value="">'.$this->heading;
+        echo   '<option style="background: white; colour:black;" value="" class="heading">'.$this->heading;
         foreach ($this->options as $key => $option) {
             if (is_array($option)) {
                 $group = $key;
