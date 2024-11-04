@@ -477,11 +477,22 @@ class Time implements \Platform\UI\Serializable {
     
     /**
      * Check if this date is the same date as another time
-     * @param \Platform\Utilities\Time $other_time
+     * @param Time $other_time
      * @return bool
      */
     public function isSameDate(Time $other_time) {
+        if ($this->isNull() || $other_time->isNull()) return false;
         return $this->getDay() == $other_time->getDay() && $this->getMonth() == $other_time->getMonth() && $this->getYear() == $other_time->getYear();
+    }
+    
+    /**
+     * Check if this date is the same date as another time, 
+     * when observed from the display time zone
+     * @param Time $other_time
+     * @return type
+     */
+    public function isSameDateInDisplayTimeZone(Time $other_time) {
+        return $this->getReadable('Y-m-d') == $other_time->getReadable('Y-m-d');
     }
     
     /**
