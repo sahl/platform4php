@@ -296,7 +296,7 @@ class Type {
      * @return bool
      */
     public function filterLike($value, $other_value) {
-        return mb_stripos($value, $other_value);
+        return mb_stripos($value, $other_value) !== false;
     }
     
     /**

@@ -87,11 +87,11 @@ class AddressType extends Type {
      * @return bool
      */
     public function filterLike($value, $other_value) {
-        return mb_stripos($value['address'], $other_value) ||
-               mb_stripos($value['address2'], $other_value) ||
-               mb_stripos($value['city'], $other_value) ||
-               mb_stripos($value['zip'], $other_value) ||
-               mb_stripos($value['countrycode'], $other_value);
+        return mb_stripos($value['address'], $other_value) !== false ||
+               mb_stripos($value['address2'], $other_value) !== false ||
+               mb_stripos($value['city'], $other_value) !== false ||
+               mb_stripos($value['zip'], $other_value) !== false ||
+               mb_stripos($value['countrycode'], $other_value) !== false;
     }
     
     /**
