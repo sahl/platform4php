@@ -111,6 +111,7 @@ class Component {
     
     
     public function __construct() {
+        $this->addClass('platform_component_style');
     }
 
     /**

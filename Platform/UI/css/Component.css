@@ -1,7 +1,7 @@
-.platform_component {
+.platform_component_style {
     box-sizing: border-box;
 }
 
-.platform_component * {
+.platform_component_style * {
     box-sizing: inherit;
 }

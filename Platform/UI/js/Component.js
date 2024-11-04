@@ -38,6 +38,26 @@ Platform.Component = class {
         })
     }
     
+    handleReturnData(data) {
+        var component = this;
+        if (data.destroy) component.destroy();
+        if (data.script) eval(data.script);
+        if (data.redirect) {
+            if (data.target) 
+                window.open(data.redirect, data.target);
+            else 
+                location.href = data.redirect;
+        }
+        if (data.properties) component.dom_node.data('componentproperties', data.properties);
+        if (data.data) {
+            $.each(data.data, function(i, v) {
+                component.dom_node.data(i,v);
+            });
+        }
+        if (data.trigger) component.dom_node.trigger(data.trigger, data.parameters);
+        if (data.redraw) component.redraw();
+    }
+    
     initialize() {
         
     }
@@ -332,23 +352,8 @@ Platform.Component = class {
 
         // Post
         $.post(this.dom_node.data('io_url'), values, function(data) {
-            if (data.destroy) component.destroy();
-            if (data.script) eval(data.script);
-            if (data.redirect) {
-                if (data.target) 
-                    window.open(data.redirect, data.target);
-                else 
-                    location.href = data.redirect;
-            }
-            if (data.properties) component.dom_node.data('componentproperties', data.properties);
-            if (data.data) {
-                $.each(data.data, function(i, v) {
-                    component.dom_node.data(i,v);
-                });
-            }
-            if (data.trigger) component.dom_node.trigger(data.trigger, data.parameters);
-            if (data.redraw) component.redraw();
-            if (typeof func == 'function') func(data);
+            component.handleReturnData(data);
+            if (typeof func === 'function') func(data);
         }, 'json');
     }
     
@@ -370,7 +375,7 @@ Platform.Component = class {
         object.callback = callback;
         object.polltime = polltime;
         object.precision = precision;
-        object.component = this.dom_node;
+        object.component = this;
         object.componentclass = this.dom_node.data('componentclass');
         object.componentproperties = this.dom_node.data('componentproperties');
         object.componentid = this.dom_node.prop('id');
@@ -427,17 +432,19 @@ Platform.Component = class {
             // We need to run now
             var run_payload = [];
             var callbacks = [];
+            var components = [];
             var url = null;
             $.each(Platform.Component.timed_IO_stack, function(id, element) {
                 if (element.timeleft - element.precision <= 0) {
                     var payload = {};
-                    if (! url) url = element.component.data('io_url')
+                    if (! url) url = element.component.data('io_url');
                     payload.componentclass = element.componentclass;
                     payload.componentproperties = JSON.stringify(element.componentproperties);
                     payload.componentid = element.componentid;
-                    payload.values = (typeof element.values == 'function') ? element.values() : element.values;
+                    payload.values = (typeof element.values === 'function') ? element.values() : element.values;
                     run_payload.push(payload);
                     callbacks.push(element.callback);
+                    components.push(element.component);
                     // Reset element
                     element.timeleft += element.polltime;
                 }
@@ -446,6 +453,7 @@ Platform.Component = class {
             var final_payload = {event: '__timedio', payloads: run_payload};
             $.post(url, final_payload, function(data) {
                 $.each(data, function(id, return_value) {
+                    components[id].handleReturnData(return_value);
                     if (callbacks[id]) callbacks[id](return_value);
                 })
                 Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
