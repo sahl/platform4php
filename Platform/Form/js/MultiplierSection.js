@@ -194,22 +194,31 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         var base_id = new String(element.prop('id'));
         base_id = base_id.substring(0,base_id.length-10);
         $.each(value, function(index, val) {
-            // This is each section
-            var insert_node = element.children('.platform_form_multiplier_element:last');
-            $.each(val, function(inner_key, inner_val) {
-                var inner_id = base_id+'['+(i)+']['+inner_key+']';
-                inner_id = inner_id.replace(/\[/g,"\\[").replace(/\]/g,"\\]")+'_component';
-                var input_component = $('#'+inner_id).platformComponent();
-                if (input_component) {
-                    input_component.setValue(inner_val);
-                    component.checkForChanges(input_component.dom_node.closest('.platform_form_multiplier_element'));
-                }
-                //Platform.Form.setValue($('#'+inner_id), inner_val);
-            });
-            // Can't we do better than keyup?
-            insert_node.find('input[type!="checkbox"],textarea').trigger('keyup');
-            i++;
+            component.addValue(val);
         });
+    }
+    
+    addValue(values) {
+        var component = this;
+        var dom_node = this.dom_node;
+        var base_id = new String(dom_node.prop('id'));
+        base_id = base_id.substring(0,base_id.length-10);
+
+        var insert_node = dom_node.children(':first').children('.platform_form_multiplier_element:last');
+        var i = dom_node.children(':first').children('.platform_form_multiplier_element').length-1;
+        $.each(values, function(inner_key, inner_val) {
+            var inner_id = base_id+'['+(i)+']['+inner_key+']';
+            inner_id = inner_id.replace(/\[/g,"\\[").replace(/\]/g,"\\]")+'_component';
+            var input_component = $('#'+inner_id).platformComponent();
+            if (input_component) {
+                input_component.setValue(inner_val);
+                component.checkForChanges(input_component.dom_node.closest('.platform_form_multiplier_element'));
+            }
+            //Platform.Form.setValue($('#'+inner_id), inner_val);
+        });
+        // Can't we do better than keyup?
+        insert_node.find('input[type!="checkbox"],textarea').trigger('keyup');
+        
     }
     
 }
