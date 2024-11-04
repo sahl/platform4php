@@ -91,10 +91,12 @@ Platform.Form.Field = class extends Platform.Component {
      */
     setOptions(options) {
         var field = this;
+        var existing_value = this.getValue();
         this.clearOptions();
         $.each(options, function(key, value) {
             field.addOption(key, value);
         })
+        this.setValue(existing_value);
     }
     
     /**
