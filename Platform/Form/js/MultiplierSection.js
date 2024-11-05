@@ -36,6 +36,10 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
             component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
             return true;
         });
+        row.on('changed', function() {
+            component.checkForChanges($(this).closest('.platform_form_multiplier_element'));
+            return true;
+        });
     }
     
     clear() {
@@ -204,8 +208,8 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         var base_id = new String(dom_node.prop('id'));
         base_id = base_id.substring(0,base_id.length-10);
 
-        var insert_node = dom_node.children(':first').children('.platform_form_multiplier_element:last');
-        var i = dom_node.children(':first').children('.platform_form_multiplier_element').length-1;
+        var insert_node = dom_node.closestChildren('.platform_form_multiplier_container').children('.platform_form_multiplier_element:last');
+        var i = dom_node.closestChildren('.platform_form_multiplier_container').children('.platform_form_multiplier_element').length-1;
         $.each(values, function(inner_key, inner_val) {
             var inner_id = base_id+'['+(i)+']['+inner_key+']';
             inner_id = inner_id.replace(/\[/g,"\\[").replace(/\]/g,"\\]")+'_component';
@@ -214,11 +218,8 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
                 input_component.setValue(inner_val);
                 component.checkForChanges(input_component.dom_node.closest('.platform_form_multiplier_element'));
             }
-            //Platform.Form.setValue($('#'+inner_id), inner_val);
         });
-        // Can't we do better than keyup?
-        insert_node.find('input[type!="checkbox"],textarea').trigger('keyup');
-        
+        insert_node.trigger('changed');
     }
     
 }
