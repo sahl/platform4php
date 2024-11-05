@@ -377,7 +377,6 @@ Platform.Component = class {
         object.precision = precision;
         object.component = this;
         object.componentclass = this.dom_node.data('componentclass');
-        object.componentproperties = this.dom_node.data('componentproperties');
         object.componentid = this.dom_node.prop('id');
         object.timeleft = polltime;
 
@@ -439,7 +438,7 @@ Platform.Component = class {
                     var payload = {};
                     if (! url) url = element.component.data('io_url');
                     payload.componentclass = element.componentclass;
-                    payload.componentproperties = JSON.stringify(element.componentproperties);
+                    payload.componentproperties = JSON.stringify(element.component.dom_node.data('componentproperties'));
                     payload.componentid = element.componentid;
                     payload.values = (typeof element.values === 'function') ? element.values() : element.values;
                     run_payload.push(payload);
