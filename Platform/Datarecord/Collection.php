@@ -207,6 +207,8 @@ class Collection implements Iterator,Countable {
      * @return Collection All associated objects
      */
     public function getAssociatedObjects(string $field) : Collection {
+        // Ensure we have elements because else we don't have a type
+        if (! count($this)) return new Collection();
         // Get field type
         $type = $this->collectiontype::getFieldDefinition($field);
         // Harvest all foreign reference pointers
