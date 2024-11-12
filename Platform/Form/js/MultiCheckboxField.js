@@ -1,4 +1,4 @@
-Platform.Form.MulticheckboxField = class extends Platform.Form.Field {
+Platform.Form.MultiCheckboxField = class extends Platform.Form.Field {
     
     addOption(key, value) {
         var html = '<div class="platform_multicheck_option"><input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'+this.dom_node.find('.platform_multicheck_container').data('realname')+'[]" value="'+key+'"> '+value+'</div>';
@@ -40,4 +40,4 @@ Platform.Form.MulticheckboxField = class extends Platform.Form.Field {
     
 }
 
-Platform.Component.bindClass('platform_component_multi_checkbox_field', Platform.Form.MulticheckboxField);
+Platform.Component.bindClass('platform_component_multi_checkbox_field', Platform.Form.MultiCheckboxField);
