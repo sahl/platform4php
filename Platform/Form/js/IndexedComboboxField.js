@@ -11,7 +11,7 @@ Platform.Form.IndexedComboboxField = class extends Platform.Form.ComboboxField {
                 var options = {event: 'autocomplete', term: request.term};
                 component.backendIO(options, function(data) {
                     callback(data);
-                })
+                });
             },
             minLength: 2,
             select: function(event, ui) {

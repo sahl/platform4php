@@ -43,7 +43,7 @@ Platform.Form.ComboboxField = class extends Platform.Form.Field {
     static zIndex(element) {
         var zindex = parseInt(element.css('z-index'));
         if (isNaN(zindex)) {
-            if (element.parent().length) return Platform.Form.ComboboxField.zIndex(element.parent());
+            if (element.parent().length && ! element.is('body')) return Platform.Form.ComboboxField.zIndex(element.parent());
             return 0;
         }
         return zindex;

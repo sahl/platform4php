@@ -32,7 +32,7 @@ class DatarecordComboboxField extends IndexedComboboxField {
     public function autoComplete(string $term): array {
         if (!class_exists($this->connected_class)) return [];
         $filter = $this->filter ? \Platform\Filter::getFilterFromJSON($this->filter) : null;
-        return $this->connected_class::findByKeywords($_POST['term'], 'autocomplete', $filter);
+        return $this->connected_class::findByKeywords($term, 'autocomplete', $filter);
     }
     
     public function handleIO(): array {
