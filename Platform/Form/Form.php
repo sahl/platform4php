@@ -48,8 +48,6 @@ class Form extends Component {
 
     private $save_on_submit = self::SAVE_NO;
     
-    private $script = null;
-    
     private $validationfunctions = array();
     
     public function __construct() {
@@ -603,8 +601,6 @@ class Form extends Component {
      * Render the form
      */
     public function renderContent() {
-        if ($this->script) Page::JSFile ($this->script);
-        
         /**
          * Apply layout if not yet applied
          */
@@ -734,10 +730,11 @@ class Form extends Component {
     
     /**
      * Set a script for handling this form
+     * @deprecated Use JSFile instead
      * @param string $script
      */
     public function setScript(string $script) {
-        $this->script = $script;
+        $this->JSFile($script);
     }
     
     /**
