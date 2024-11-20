@@ -333,10 +333,14 @@ class Datarecord implements DatarecordReferable {
     
     /**
      * Make a copy of this object
+     * @param array $related_classes_to_copy If you name one or more class names which relate to this class, 
+     * then the copy will also copy all records which refer to this, and make sure the copies relates to the
+     * new copy. This works on any level
+     * @param bool $name_as_copy If this is true the title field will be prepended with "Copy of "
      * @return Datarecord New copied and saved object (in read mode)
      */
-    public function copy(array $related_classes_to_copy = array()) : Datarecord {
-        $copy = $this->getCopy(true);
+    public function copy(array $related_classes_to_copy = [], bool $name_as_copy = false) : Datarecord {
+        $copy = $this->getCopy($name_as_copy);
         // Rename object
         $copy->save(false, true);
         // Check if there also are related objects to copy
@@ -371,9 +375,11 @@ class Datarecord implements DatarecordReferable {
                     foreach ($class::getStructure() as $fieldname => $type) {
                         if ($type->isReference()) {
                             // Loop all replacement objects
-                            foreach ($remap as $foreign_class => $copies) {
+                            foreach ($remap as $foreign_class => $objects) {
                                 if ($type->matchesForeignClass($foreign_class)) {
-                                    $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getRawValue($fieldname), $copies['old_object'], $copies['new_object']));
+                                    foreach ($objects as $object) {
+                                        $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getRawValue($fieldname), $object['old_object'], $object['new_object']));
+                                    }
                                 }
                             }
                         }
