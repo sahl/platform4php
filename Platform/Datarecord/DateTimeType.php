@@ -112,7 +112,8 @@ class DateTimeType extends Type {
     }
     
     public function getDefaultValue() {
-        return new \Platform\Utilities\Time();
+        $default_value = parent::getDefaultValue();
+        return $default_value ?: new \Platform\Utilities\Time();
     }
     
     public function getFormValue($value) {
