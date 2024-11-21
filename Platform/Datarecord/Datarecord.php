@@ -217,8 +217,9 @@ class Datarecord implements DatarecordReferable {
     /**
      * Add the given array to the structure of this datarecord
      * @param array $structure Array of Type objects describing individual fields
+     * @param bool $allow_replace Indicate if a similar named record is allowed to replace an existing record. Otherwise a fault will be thrown
      */
-    public static function addStructure(array $structure) {
+    public static function addStructure(array $structure, bool $allow_replace = false) {
         foreach ($structure as $type) {
             if (! $type instanceof Type) trigger_error('Can only add objects of Type to Record', E_USER_ERROR);
             if ($type->isTitle()) static::$title_field = $type->name;
@@ -234,8 +235,17 @@ class Datarecord implements DatarecordReferable {
                     static::addStructure([$field]);
                 }
             }
+            if (! $allow_replace && isset(static::$structure[$type->name])) trigger_error('Trying to add field '.$type->name.' to '.get_called_class().' which is already present.', E_USER_ERROR);
             static::$structure[$type->name] = $type;
         }
+    }
+    
+    /**
+     * Add the given array to the structure of this datarecord, replacing already existing records
+     * @param array $structure Array of Type objects describing individual fields
+     */
+    public static function replaceStructure(array $structure) {
+        static::addStructure($structure, true);
     }
 
     /**
