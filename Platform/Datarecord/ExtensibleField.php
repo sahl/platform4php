@@ -39,7 +39,7 @@ class ExtensibleField extends Datarecord {
      */
     public function getAsType() : Type {
         $class = $this->type_class;
-        return new $class($this->field_name, $this->title, $this->properties);
+        return new $class($this->field_name, $this->title, $this->properties ?: []);
     }
     
     public function onCreate() : bool {
