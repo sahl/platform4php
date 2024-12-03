@@ -118,6 +118,7 @@ class Filter {
     public function addFilter(Filter $filter) {
         if ($filter->getBaseClassName() != $this->getBaseClassName()) trigger_error('Tried to add incompatible filter', E_USER_ERROR);
         if ($filter->getBaseCondition()) $this->addCondition($filter->getBaseCondition());
+        if ($this->getResultLimit() === null && $filter->getResultLimit() !== null) $this->setResultLimit($filter->getResultLimit());
     }
     
     /**
@@ -342,6 +343,14 @@ class Filter {
      */
     public function setPerformAccessCheck(bool $perform_access_check = true) {
         $this->perform_access_check = $perform_access_check;
+    }
+    
+    /**
+     * Get result limit
+     * @return int Number of results or null if no limit
+     */
+    public function getResultLimit() {
+        return $this->limit_results;
     }
     
     /**
