@@ -122,7 +122,7 @@ class Repetition {
     public function match(Time $date_to_match, Time $start_date = null) : bool {
         $date_to_match = $date_to_match->startOfDay();
         
-        if ($start_date === null) $start_date = Time::today();
+        if ($start_date === null || $start_date->isNull()) $start_date = Time::today();
         else $start_date = $start_date->startOfDay();
         
         if ($date_to_match->isBefore($start_date)) return false;
