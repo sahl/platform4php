@@ -160,7 +160,7 @@ class PasswordType extends TextType {
     }    
 
     public function getSQLFieldType() : string {
-        return 'VARCHAR(256) NOT NULL';
+        return 'VARCHAR(255) NOT NULL';
     }
     
     public function getFullValue($value, Collection &$collection = null): string {

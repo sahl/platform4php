@@ -223,7 +223,7 @@ class RepetitionType extends Type {
      * @return string
      */
     public function getSQLFieldType() : string {
-        return 'VARCHAR(1024)';
+        return 'VARCHAR(255)';
     }
     
     /**

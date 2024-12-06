@@ -133,7 +133,7 @@ class MultiEnumerationType extends EnumerationType {
      * @return string
      */
     public function getSQLFieldType() : string {
-        return 'VARCHAR(4096)';
+        return 'MEDIUMTEXT';
     }
     
     /**
