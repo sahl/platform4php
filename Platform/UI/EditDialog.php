@@ -41,9 +41,10 @@ class EditDialog extends Dialog {
         $class = $this->class;
         $form = $class::getForm();
         if ($form->isSubmitted()) {
-            if (! $form->validate()) return ['status' => false, 'form_errors' => $form->getAllErrors()];
             $datarecord = new $class();
             if ($this->object_id) $datarecord->loadForWrite($this->object_id);
+            $form->setValues($datarecord->getAsArrayForForm());
+            if (! $form->validate()) return ['status' => false, 'form_errors' => $form->getAllErrors()];
             if ($datarecord->canEdit()) {
                 $values = $form->getValues();
                 $datarecord->setFromArray($values);
