@@ -342,6 +342,64 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get all objects of this class which related to the foreign object. If other classnames are given, then we will also find objects in
+     * these classes relating to the objects found here.
+     * @param Datarecord $foreign_object Foreign object
+     * @param array $nested_classes If one or more classes are named they are also searched for relations to objects found by this function
+     * @return array
+     */
+    public static function getObjectsRelatingTo(Datarecord $foreign_object, array $nested_classes = []) : array {
+        // Find all fields in this object pointing to the foreign object type
+        $referring_fields = static::getFieldsRelatingTo(get_class($foreign_object));
+        // Bail if we don't refer to the passed object
+        if (! count($referring_fields)) return [];
+        // Build a filter to retrieve all related objects
+        $filter = new Filter(get_called_class());
+        foreach ($referring_fields as $referring_field)
+            $filter->addConditionOR(new ConditionMatch($referring_field, $foreign_object));
+        // Get the matching objects
+        $result = $filter->execute()->getAll();
+        // Check if we should continue the search
+        if (count($nested_classes)) {
+            // Go into the other classes
+            foreach ($result as $object) {
+                foreach ($object->getRelatedObjectsInClasses($nested_classes) as $related_object) $result[] = $related_object;
+            }
+        }
+        return $result;
+    }
+    
+    /**
+     * Find all objects in the passed classes which relates to this object
+     * @param array $classes Class names
+     * @return array All related objects
+     */
+    public function getRelatedObjectsInClasses(array $classes) : array {
+        $result = [];
+        // Be sure we are not mentioning our own class to prevent infinite loops
+        $new_classes = [];
+        foreach ($classes as $class) if (\Platform\Utilities\Utilities::getProperClassName($class) != get_called_class()) $new_classes[] = $class;
+        
+        // Loop all the classes
+        foreach ($new_classes as $class) {
+            if (! class_exists($class)) trigger_error('No such class '.$class, E_USER_ERROR);
+            // Add results to this result
+            foreach ($class::getObjectsRelatingTo($this, $classes) as $object) $result[] = $object;
+        }
+        // An object can be found several times, but we only want to return one copy
+        $final_result = []; $found_map = [];
+        foreach ($result as $object) {
+            // Skip if this is already included in result
+            if ($found_map[get_class($object)][$object->getKeyValue()]) continue;
+            // Add it to result
+            $final_result[] = $object;
+            // Mark that we have included it
+            $found_map[get_class($object)][$object->getKeyValue()] = true;
+        }
+        return $final_result;
+    }
+    
+    /**
      * Make a copy of this object
      * @param array $related_classes_to_copy If you name one or more class names which relate to this class, 
      * then the copy will also copy all records which refer to this, and make sure the copies relates to the
@@ -350,59 +408,90 @@ class Datarecord implements DatarecordReferable {
      * @return Datarecord New copied and saved object (in read mode)
      */
     public function copy(array $related_classes_to_copy = [], bool $name_as_copy = false) : Datarecord {
+        $remap = [];
+        // Get all related objects
+        $objects_to_copy = $this->getRelatedObjectsInClasses($related_classes_to_copy);
+        // Copy all related objects and add them to the remap table
+        foreach ($objects_to_copy as $object) {
+            $new_object = $object->copy();
+            $new_object->reloadForWrite();
+            $remap[get_class($object)][] = ['old_object' => $object, 'new_object' => $new_object];
+        }
+        // Now copy this
         $copy = $this->getCopy($name_as_copy);
-        // Rename object
-        $copy->save(false, true);
-        // Check if there also are related objects to copy
-        if (count($related_classes_to_copy)) {
-            $remap = array();
-            // Add a remapping from the old object to the new object
-            $remap[get_called_class()][] = ['old_object' => $this, 'new_object' => $copy];
-            // Loop all objects
-            foreach ($related_classes_to_copy as $class) {
-                if (! class_exists($class)) trigger_error('Class '.$class.' does not exist.', E_USER_ERROR);
-                // Find all fields in remote object pointing to this object type
-                $referring_fields = $class::getFieldsRelatingTo(get_called_class());
-                if (! count($referring_fields)) continue;
-                // Build a filter to retrieve relevant objects
-                $filter = new Filter($class);
-                foreach ($referring_fields as $referring_field)
-                    $filter->addConditionOR(new ConditionMatch($referring_field, $this));
-                // Now get all relevant objects and copy them
-                $objects_to_copy = $filter->execute()->getAll();
-                foreach ($objects_to_copy as $relevant_object) {
-                    $new_object = $relevant_object->getCopy();
-                    $new_object->save(false, true);
-                    // Add a remapping from the old ID to the new ID
-                    $remap[$class][] = ['old_object' => $relevant_object, 'new_object' => $new_object];
-                }
-            }
-            // Now we need to loop again to fix relations
-            foreach ($remap as $class => $new_object_structure) {
-                foreach ($new_object_structure as $new_object_reference) {
-                    $new_object = $new_object_reference['new_object'];
-                    // Loop to find all relevant fields
-                    foreach ($class::getStructure() as $fieldname => $type) {
-                        if ($type->isReference()) {
-                            // Loop all replacement objects
-                            foreach ($remap as $foreign_class => $objects) {
-                                if ($type->matchesForeignClass($foreign_class)) {
-                                    foreach ($objects as $object) {
-                                        $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getRawValue($fieldname), $object['old_object'], $object['new_object']));
-                                    }
+        $copy->save();
+        // And add it to the remap
+        $remap[get_called_class()][] = ['old_object' => $this, 'new_object' => $copy];
+        
+        // Loop all objects to fix relations
+        foreach ($remap as $class => $new_object_structure) {
+            foreach ($new_object_structure as $new_object_reference) {
+                $new_object = $new_object_reference['new_object'];
+                // Loop to find all relevant fields
+                foreach ($class::getStructure() as $fieldname => $type) {
+                    if ($type->isReference()) {
+                        // Loop all replacement objects
+                        foreach ($remap as $foreign_class => $objects) {
+                            if ($type->matchesForeignClass($foreign_class)) {
+                                foreach ($objects as $object) {
+                                    $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getRawValue($fieldname), $object['old_object'], $object['new_object']));
                                 }
                             }
                         }
                     }
-                    // Save the finalized object.
-                    $new_object->save();
                 }
+                // Save the finalized object.
+                $new_object->save();
             }
         }
-        $copy->unlock();
         return $copy;
     }
     
+    /**
+     * Make a copy of all objects of the given classes pointing to this object, and attaches them to another object instead
+     * @param Datarecord $target_object The object to attach the newly created objects to.
+     * @param array $related_classes_to_copy Name all classes where objects should be copied.
+     */
+    public function copyRelations(Datarecord $target_object, array $related_classes_to_copy = []) {
+        $remap = [];
+        // Get all related objects
+        $objects_to_copy = $this->getRelatedObjectsInClasses($related_classes_to_copy);
+        // Copy all related objects and add them to the remap table
+        foreach ($objects_to_copy as $object) {
+            $new_object = $object->copy();
+            $new_object->reloadForWrite();
+            $remap[get_class($object)][] = ['old_object' => $object, 'new_object' => $new_object];
+        }
+        // Add the current objects to the remap
+        $remap[get_called_class()][] = ['old_object' => $this, 'new_object' => $target_object];
+        
+        // Loop all objects to fix relations
+        foreach ($remap as $class => $new_object_structure) {
+            foreach ($new_object_structure as $new_object_reference) {
+                $new_object = $new_object_reference['new_object'];
+                // Loop to find all relevant fields
+                foreach ($class::getStructure() as $fieldname => $type) {
+                    if ($type->isReference()) {
+                        // Loop all replacement objects
+                        foreach ($remap as $foreign_class => $objects) {
+                            if ($type->matchesForeignClass($foreign_class)) {
+                                foreach ($objects as $object) {
+                                    $new_object->setValue($fieldname, $type->replaceReferenceToObject($new_object->getRawValue($fieldname), $object['old_object'], $object['new_object']));
+                                }
+                            }
+                        }
+                    }
+                }
+                // Save the finalized object.
+                $new_object->save();
+            }
+        }
+    }
+
+    /**
+     * Fill this object with data from another object including the key
+     * @param Datarecord $otherobject
+     */
     public function copyFrom(Datarecord $otherobject) {
         if (! is_a($this, get_class($otherobject))) trigger_error('Incompatible objects', E_USER_ERROR);
         $values = $otherobject->getAsArray();
@@ -745,9 +834,11 @@ class Datarecord implements DatarecordReferable {
      * @param string $keywords Keywords to search for
      * @param string $output Output format. Either "Collection" (default)
      * "array" or "autocomplete"
+     * @param Filter $additional_filter If a filter is passed, then this filter is also applyed to the keyword search
+     * @param bool $with_access_control Should we use access control when finding records
      * @return type
      */
-    public static function findByKeywords(string $keywords, string $output = 'Collection', $additional_filter = null) {
+    public static function findByKeywords(string $keywords, string $output = 'Collection', $additional_filter = null, bool $with_access_control = true) {
         // Backward compatibility
         if (! in_array($output, array('Collection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
         $search_fields = array();
@@ -773,7 +864,7 @@ class Datarecord implements DatarecordReferable {
             }
             $filter->addCondition($condition);
         }
-        $filter->setPerformAccessCheck(true);
+        $filter->setPerformAccessCheck($with_access_control);
         $results = $filter->execute();
         if ($results === false) return $results = new Collection(get_called_class());
         if ($output == 'autocomplete') {
@@ -1234,7 +1325,7 @@ class Datarecord implements DatarecordReferable {
      */
     public function getRawValue(string $field, bool $use_values_on_load = false) {
         $type = static::getFieldDefinition($field);
-        if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
+        if (! $type) trigger_error('Unknown field '.$field.' in object '. get_called_class(), E_USER_ERROR);
         // Check if we have subfields
         if (count($type->getSubfieldNames())) {
             $value_to_pass = [];

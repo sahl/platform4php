@@ -77,6 +77,17 @@ class Utilities {
     }
     
     /**
+     * Get a uniform class name with class path by removing leading slashes or double slashes
+     * So \\Platform\\Datarecord would become Platform\Datarecord
+     * @param string $class_name
+     * @return string
+     */
+    public static function getProperClassName(string $class_name) : string {
+        $result = str_replace("\\\\", "\\", $class_name);
+        return substr($result,0,1) == '\\' ? substr($result,1) : $result;
+    }
+    
+    /**
      * Remove all HTML from a string, both tags and html entities
      * @param string $string
      * @return string
