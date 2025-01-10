@@ -102,13 +102,13 @@ class Microbizz {
     
     /**
      * Get a form for connecting with Microbizz (consisting only of a button)
+     * @param string $base_url The base URL of the Microbizz-server
      * @param array $request The connection request, which can be retrieved from buildRequest function
      * @param string $button_text The button text
-     * @param bool $connect_testserver Indicate if the Microbizz test environment should be used
      */
-    public static function getConnectForm(array $request, string $button_text = 'Link to Microbizz', bool $connect_testserver = false) : Form {
+    public static function getConnectForm(string $base_url, array $request, string $button_text = 'Link to Microbizz') : Form {
         $request_form = Form::Form('microbizz_connect_form');
-        $action = $connect_testserver ? 'https://rc1.microbizz.dk/appconnect/' : 'https://system15.microbizz.dk/appconnect/';
+        $action = $base_url.'/appconnect/';
         $request_form->setAction($action);
         $request_form->addField(HiddenField::Field('', 'request', array('value' => json_encode($request))));
         if ($button_text) $request_form->addField(SubmitButton::Field($button_text, 'performlink'));
