@@ -16,6 +16,25 @@ Platform.Form.MultiCheckboxField = class extends Platform.Form.Field {
     removeOption(key) {
         this.dom_node.find('input[value="'+key+'"]').parent().remove();
     }
+    
+    addAllowedOption(option) {
+        super.addAllowedOption(option);
+        this.dom_node.find('input[value="'+option+'"]').closest('.platform_multicheck_option').removeClass('platform_hidden_option');
+    }
+    
+    setAllowedOptions(allowed_options) {
+        var component = this;
+        if (allowed_options === false) {
+            // All is allowed
+            this.dom_node.find('.platform_multicheck_option').removeClass('platform_hidden_option');
+        }
+        if (Array.isArray(allowed_options)) {
+            this.dom_node.find('.platform_multicheck_option').addClass('platform_hidden_option');
+            allowed_options.forEach(element => component.dom_node.find('input[value="'+element+'"]').closest('.platform_multicheck_option').removeClass('platform_hidden_option'));
+            this.dom_node.find('.platform_hidden_option').find('input').prop('checked', false);
+        }
+    }
+    
 
     getValue() {
         var result = [];

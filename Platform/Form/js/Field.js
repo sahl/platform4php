@@ -77,6 +77,24 @@ Platform.Form.Field = class extends Platform.Component {
     }
     
     /**
+     * Add an option as allowed
+     * @param {mixed} option
+     */
+    addAllowedOption(option) {
+        
+    }
+    
+    /**
+     * Set which options are allowed
+     * @param {mixed} allowed_options
+     */
+    setAllowedOptions(allowed_options) {
+        if (Array.isArray(allowed_options)) {
+            if (! allowed_options.includes(this.getValue())) this.setValue('');
+        }
+    }
+    
+    /**
      * Trigger and show an error message in the field
      * @param {string} error_message The error message to show
      */
@@ -101,7 +119,7 @@ Platform.Form.Field = class extends Platform.Component {
     
     /**
      * Set if this field is required or not
-     * @param bool is_required
+     * @param {bool} is_required
      */
     setRequired(is_required) {
         var span = this.dom_node.find('.platform_field_label_container label span');
@@ -133,6 +151,7 @@ Platform.Form.Field = class extends Platform.Component {
      * @param value
      */
     setValue(value) {
+        this.addAllowedOption(value);
         this.dom_node.find('input').val(value);
     }
     

@@ -16,7 +16,19 @@ class SelectField extends Field {
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/SelectField.js'); 
     }
     
+    public function parse($value): bool {
+        $result = parent::parse($value);
+        if ($result) {
+            if ($value && ! in_array($value, $this->getAllowedOptions())) {
+                $this->triggerError(\Platform\Utilities\Translation::translateForUser('This value is not allowed'));
+                $result = false;
+            }
+        }
+        return $result;
+    }
+    
     public function renderInput() {
+        $allowed_options = $this->getAllowedOptions();
         $attributes = ['data-fieldclass' => $this->getFieldClass(),
                        'class' => $this->getFieldClasses(),
                        'style' => 'width: '.$this->field_width.'; max-width: '.$this->field_width.';',
@@ -49,7 +61,8 @@ class SelectField extends Field {
                 $style = 'background: white; color: black;';
                 if (array_key_exists($key, $this->options_colours) && $this->options_colours[$key])
                     $style = 'background: '.$this->options_colours[$key].'; color:'.\Platform\Utilities\Utilities::getContrastColour($this->options_colours[$key]).';';
-                echo '<option style="'.$style.'" value="'.htmlentities($key, ENT_QUOTES).'"'.$selected.'>'.$option;
+                $class = in_array($key, $allowed_options) ? '' : 'platform_hidden_option';
+                echo '<option class="'.$class.'" style="'.$style.'" value="'.htmlentities($key, ENT_QUOTES).'"'.$selected.'>'.$option;
             }
         }
         echo '</select>';

@@ -55,13 +55,19 @@ class DatarecordComboboxField extends IndexedComboboxField {
     
     public function parse($value) : bool {
         $result = true;
+        $previous_id = $this->value['id'];
         if (! $value['id']) {
             if (trim($value['visual'])) {
                 // Try to resolve visual value to an ID
-                $datarecordcollection = $this->connected_class::findByKeywords($value['visual']);
+                $datarecordcollection = $this->connected_class::findByKeywords($value['visual'], 'Collection', null, false);
                 if ($datarecordcollection->getCount()) {
-                    $object = $datarecordcollection->get(0);
-                    $value['id'] = $object->getRawValue($this->connected_class::getKeyField());
+                    foreach ($datarecordcollection as $record) {
+                        if ($record->canAccess() || $this->always_allow_selected_value && $record->getKeyValue() == $previous_id) {
+                            $object = $record;
+                            $value['id'] = $record->getKeyValue();
+                            break;
+                        }
+                    }
                 }
                 // Check for mismatch value
                 if (! $value['id']) {
@@ -81,7 +87,7 @@ class DatarecordComboboxField extends IndexedComboboxField {
             // Check for valid ID
             $object = new $this->connected_class();
             $object->loadForRead($value['id']);
-            if (! $object->isInDatabase() || ! $object->canAccess()) {
+            if (! $object->isInDatabase() || (! $object->canAccess() && (! $this->always_allow_selected_value || $value['id'] != $previous_id))) {
                 $this->triggerError('This is not a valid value for this field');
                 $result = false;
             }

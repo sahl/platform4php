@@ -26,6 +26,24 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
         this.dom_node.find('option:first-child').prop('selected', true);
     }
     
+    addAllowedOption(option) {
+        super.addAllowedOption(option);
+        this.dom_node.find('option[value="'+option+'"]').removeClass('platform_hidden_option');
+    }
+    
+    setAllowedOptions(allowed_options) {
+        super.setAllowedOptions(allowed_options);
+        var component = this;
+        if (allowed_options === false) {
+            // All is allowed
+            this.dom_node.find('option').removeClass('platform_hidden_option');
+        }
+        if (Array.isArray(allowed_options)) {
+            this.dom_node.find('option').addClass('platform_hidden_option');
+            allowed_options.forEach(element => component.dom_node.find('option[value="'+element+'"]').removeClass('platform_hidden_option'));
+        }
+    }
+    
     setColourFromSelected() {
         var dom_node = this.dom_node.find('select');
         var selected_element = dom_node.find('option:selected');

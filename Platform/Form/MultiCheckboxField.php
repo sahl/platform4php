@@ -30,19 +30,34 @@ class MultiCheckboxField extends Field {
     }
     
     public function parse($value) : bool {
+        $result = true;
         if (! is_array($value)) $value = array();
+        if ($this->is_required && ! count($value)) {
+            $this->triggerError(\Platform\Utilities\Translation::translateForUser(\Platform\Utilities\Translation::translateForUser('This is a required field')));
+            $result = false;
+        }
+        if ($result && $this->allowed_options !== false) {
+            foreach ($value as $v) {
+                if (! in_array($v, $this->getAllowedOptions())) {
+                    $this->triggerError(\Platform\Utilities\Translation::translateForUser('One or more selected values are not allowed'));
+                    $result = false;
+                }
+            }
+        }
         $this->value = $value;
-        return true;
+        return $result;
     }    
     
     public function renderInput() {
+        $allowed_options = $this->getAllowedOptions();
         if (! $this->value) $this->value = array();
         $style = 'max-width: '.$this->field_width.';';
         if ($this->height) $style = 'max-height: '.$this->height.'px; overflow: auto; padding: 3px;';
         echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" style="'.$style.'" class="'.$this->getFieldClasses().'" data-realname="'.$this->name.'"'.$this->additional_attributes.'>';
         foreach ($this->options as $key => $option) {
             $checked = in_array($key, $this->value) ? ' checked' : '';
-            echo '<div class="platform_multicheck_option"><input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'.$this->name.'[]" value="'.$key.'"'.$checked.'> '.$option.'</div>';
+            $class = in_array($key, $allowed_options) ? '' : ' platform_hidden_option';
+            echo '<div class="platform_multicheck_option'.$class.'"><input style="vertical-align: -1px; margin: 0px;" type="checkbox" name="'.$this->name.'[]" value="'.$key.'"'.$checked.'> '.$option.'</div>';
         }
         echo '</div>';
     }

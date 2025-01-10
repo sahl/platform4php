@@ -120,6 +120,18 @@ class Field extends Component {
     protected $options_colours = [];
     
     /**
+     * We can restrict which options can be selected
+     * @var mixed
+     */
+    protected $allowed_options = false;
+    
+    /**
+     * Indicate if we are always allowed to select the field value
+     * @var bool
+     */
+    protected $always_allow_selected_value = true;
+    
+    /**
      * Field option colours (if they should be coloured)
      * @var array
      */
@@ -186,6 +198,14 @@ class Field extends Component {
             $field->setOptions($options['options']);
             unset($options['options']);
         }
+        if (array_key_exists('allowed_options', $options)) {
+            $field->setAllowedOptions($options['allowed_options']);
+            unset($options['allowed_options']);
+        }
+        if (array_key_exists('always_allow_selected_value', $options)) {
+            $field->setAlwaysAllowSelectedValue($options['always_allow_selected_value'] ? true : false);
+            unset($options['always_allow_selected_value']);
+        }        
         if (array_key_exists('options_colours', $options)) {
             $field->setOptionsColours($options['options_colours']);
             unset($options['options_colours']);
@@ -434,6 +454,23 @@ class Field extends Component {
     }
     
     /**
+     * Return all allowed options for this field
+     * @return array All allowed keys
+     */
+    public function getAllowedOptions() : array {
+        $allowed_options = $this->allowed_options ?: array_keys($this->options);
+        if ($this->always_allow_selected_value) {
+            // The value can be an array so we handle everything as an array
+            $values = is_array($this->value) ? $this->value : [$this->value];
+            // Add value as allowed if already set in this field
+            foreach ($values as $value) {
+                if (! in_array($value, $allowed_options)) $allowed_options[] = $value;
+            }
+        }
+        return $allowed_options;
+    }
+    
+    /**
      * Get options
      * @return array
      */
@@ -477,7 +514,7 @@ class Field extends Component {
     public function parse($value) : bool {
         $this->value = $value;
         if ($this->is_required && is_string($value) && ! strlen($value)) {
-            $this->triggerError('This is a required field');
+            $this->triggerError(\Platform\Utilities\Translation::translateForUser('This is a required field'));
             return false;
         }
         return true;
@@ -645,6 +682,23 @@ class Field extends Component {
      */
     public function setName(string $new_name) {
         $this->name = $new_name;
+    }
+    
+    /**
+     * Set if we should always allow the selected value when validating values
+     * @param bool $always_allow_selected_value
+     */
+    public function setAlwaysAllowSelectedValue(bool $always_allow_selected_value) {
+        $this->always_allow_selected_value = $always_allow_selected_value;
+    }
+    
+    /**
+     * Set which options are allowed
+     * @param array|bool IDs of allowed options or true/false if all options are allowed
+     */
+    public function setAllowedOptions(array|bool $allowed_options) {
+        if ($allowed_options === true) $allowed_options = false;
+        $this->allowed_options = $allowed_options;
     }
     
     /**
