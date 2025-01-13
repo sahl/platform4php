@@ -15,6 +15,7 @@
 }
 
 .platform_field_label_container {
+    width: 100%;
     display: flex;
     align-items: flex-start;
 }
