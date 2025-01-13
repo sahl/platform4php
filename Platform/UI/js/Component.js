@@ -108,7 +108,6 @@ Platform.Component = class {
      * @param {object} properties The component properties
      * @param {string} id The wanted ID
      * @param {function} callback A function which will be called with the element
-     * @returns {jQuery}
      */
     static build(component_class, properties, id, callback) {
         $.post($('body').data('platform_component_io_url'), {event: 'build', componentclass: component_class, componentproperties: JSON.stringify(properties), componentid: id ? id : ''}, function(data) {

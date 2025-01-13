@@ -20,7 +20,7 @@ class TexteditorField extends TextField {
     }    
     
     public function renderInput() {
-        echo '<textarea data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="max-width: '.$this->field_width.';" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
+        echo '<textarea data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" style="'.$this->getFieldStyleString().'" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
         echo htmlentities($this->value, ENT_QUOTES);
         echo '</textarea>';
     }

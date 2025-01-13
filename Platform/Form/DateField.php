@@ -48,7 +48,7 @@ class DateField extends Field {
         // Determine all attributes
         $attributes = ['data-fieldclass' => $this->getFieldClass(),
                        'class' => $this->getFieldClasses(),
-                       'style'=> 'max-width: '.$this->field_width.';"',
+                       'style'=> $this->getFieldStyleString(),
                        'type' => 'date',
                        'name' => $this->name,
                        'id' => $this->getFieldIdForHTML(),

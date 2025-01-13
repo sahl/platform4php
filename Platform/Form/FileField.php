@@ -64,7 +64,7 @@ class FileField extends Field {
             $value['filename'] = ''; 
             $value['file_id'] = 0;
         }
-        echo '<iframe data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&filename='.$value['filename'].'&temp_file_name='.$value['temp_file'].'" scrolling="no"></iframe>';
+        echo '<iframe data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" id="'.$this->getFieldIdForHTML().'" style="'.$this->getFieldStyleString().'" data-name="'.$this->getName().'" class="platform_file_input_frame" src="/Platform/Form/php/file.php?form_name='.$this->getFormId().'&field_name='.$this->getName().'&file_id='.$value['file_id'].'&filename='.$value['filename'].'&temp_file_name='.$value['temp_file'].'" scrolling="no"></iframe>';
     }
     
     public function setValue($value) {

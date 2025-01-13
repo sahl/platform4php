@@ -51,7 +51,7 @@ class MultiCheckboxField extends Field {
     public function renderInput() {
         $allowed_options = $this->getAllowedOptions();
         if (! $this->value) $this->value = array();
-        $style = 'max-width: '.$this->field_width.';';
+        $style = $this->getFieldStyleString();
         if ($this->height) $style = 'max-height: '.$this->height.'px; overflow: auto; padding: 3px;';
         echo '<div data-fieldclass="'.$this->getFieldClass().'" id="'.$this->getFieldIdForHTML().'" style="'.$style.'" class="'.$this->getFieldClasses().'" data-realname="'.$this->name.'"'.$this->additional_attributes.'>';
         foreach ($this->options as $key => $option) {

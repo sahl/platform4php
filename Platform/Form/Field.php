@@ -93,7 +93,7 @@ class Field extends Component {
      * Width of input field
      * @var int
      */
-    public $field_width = self::FIELD_SIZE_NORMAL;
+    public $field_width = null;
     
     /**
      * Height of the entire input construction
@@ -154,6 +154,12 @@ class Field extends Component {
      * @var array
      */
     protected $field_styles = [];
+    
+    /**
+     * Styles to apply to labels
+     * @var array
+     */
+    protected $label_styles = [];
     
     /**
      * Field value
@@ -230,6 +236,14 @@ class Field extends Component {
             $field->container_styles[] = $options['container-style'];
             unset($options['container-style']);
         }        
+        if (array_key_exists('field-style', $options)) {
+            $field->addFieldStyle($options['field-style']);
+            unset($options['field-style']);
+        }        
+        if (array_key_exists('label-style', $options)) {
+            $field->addLabelStyle($options['label-style']);
+            unset($options['label-style']);
+        }        
         if (array_key_exists('field-width', $options)) {
             $field->setFieldWidth($options['field-width']);
             unset($options['field-width']);
@@ -279,8 +293,6 @@ class Field extends Component {
             unset($options['group']);
         }
         
-        if ($field->is_required) $field->addClass('form_required_field');
-        
         // Add the rest of the options as attributes
         foreach ($options as $key => $val) {
             // Some options can be reserved by subclasses. These shouldn't be added as attributes
@@ -310,7 +322,7 @@ class Field extends Component {
     }
     
     /**
-     * Add a style to the container of this field
+     * Add a style to the field itself
      * @param string|array $styles Style or array of styles
      */
     public function addFieldStyle($styles) {
@@ -318,6 +330,15 @@ class Field extends Component {
         foreach ($styles as $style) $this->field_styles[] = $style;
     }
     
+    /**
+     * Add a style to the field label container
+     * @param string|array $styles Style or array of styles
+     */
+    public function addLabelStyle($styles) {
+        if (! is_array($styles)) $styles = array($styles);
+        foreach ($styles as $style) $this->label_styles[] = $style;
+    }
+
     /**
      * Add errors from this field to the given array
      * @param array $error_array Array to add to
@@ -370,6 +391,14 @@ class Field extends Component {
     
     public function getFieldClasses() : string {
         return implode(' ', $this->field_classes);
+    }
+    
+    /**
+     * Get the field style as a string
+     * @return string
+     */
+    public function getFieldStyleString() : string {
+        return implode(';', $this->field_styles);
     }
     
     /**
@@ -522,6 +551,9 @@ class Field extends Component {
     
     protected function prepareData() {
         parent::prepareData();
+        if ($this->is_required) $this->addClass('form_required_field');
+        if (strpos(strtolower(implode(';', $this->label_styles)), 'width') === false) $this->addLabelStyle('width: '.$this->label_width.'px;');
+        if (strpos(strtolower(implode(';', $this->field_styles)), 'width') === false && $this->field_width !== null) $this->addFieldStyle('width: '.$this->field_width);
         $this->addData('field_name', $this->name);
     }
     
@@ -594,24 +626,25 @@ class Field extends Component {
      */
     public function renderLabel() {
         if (! $this->label) return;
+        $style = count($this->label_styles) ? implode(';', $this->label_styles) : '';
         switch ($this->getFinalLabelAlignment()) {
             case self::LABEL_ALIGN_TOP:
-                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_top_label">'.$this->label;
+                echo '<label style="'.$style.'" for="'.$this->getFieldIdForHTML().'" class="platform_top_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
             case self::LABEL_ALIGN_LEFT:
-                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_left_label">'.$this->label;
+                echo '<label style="'.$style.'" for="'.$this->getFieldIdForHTML().'" class="platform_left_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
             case self::LABEL_ALIGN_RIGHT:
-                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_right_label">'.$this->label;
+                echo '<label style="'.$style.'" for="'.$this->getFieldIdForHTML().'" class="platform_right_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
             case self::LABEL_ALIGN_BOTTOM:
-                echo '<label style="width: '.$this->label_width.'px;" for="'.$this->getFieldIdForHTML().'" class="platform_bottom_label">'.$this->label;
+                echo '<label style="'.$style.'" for="'.$this->getFieldIdForHTML().'" class="platform_bottom_label">'.$this->label;
                 if ($this->is_required) echo ' <span style="color:red; font-size: 0.8em;">*</span>';
                 echo '</label>';
             break;
@@ -638,9 +671,10 @@ class Field extends Component {
     
     /**
      * Set the width of the field itself
-     * @param type $width
+     * @param int $width
      */
-    public function setFieldWidth($width) {
+    public function setFieldWidth(string $width) {
+        if (is_numeric($width)) $width .= 'px';
         $this->field_width = $width;
     }
     

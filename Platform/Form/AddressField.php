@@ -84,7 +84,7 @@ class AddressField extends Field {
     public function renderInput() {
         $id = $this->getFieldIdForHTML();
         $classes = $this->getFieldClasses();
-        $style = 'style="max-width: '.$this->field_width.';"';
+        $style = $this->getFieldStyleString();
         echo '<input '.$style.' id="'.$id.'" class="'.$classes.' address_address" placeholder="'. Translation::translateForUser('Address').'" type="text" name="'.$this->name.'[address]" value="'.htmlentities($this->value['address'], ENT_QUOTES).'"> ';
         echo '<input '.$style.' id="'.$id.'" class="'.$classes.' address_address2" placeholder="'. Translation::translateForUser('Address 2').'" type="text" name="'.$this->name.'[address2]" value="'.htmlentities($this->value['address2'], ENT_QUOTES).'"> ';
         echo '<input '.$style.' id="'.$id.'" class="'.$classes.' address_zip" placeholder="'. Translation::translateForUser('Zip').'" type="text" name="'.$this->name.'[zip]" value="'.htmlentities($this->value['zip'], ENT_QUOTES).'"> ';

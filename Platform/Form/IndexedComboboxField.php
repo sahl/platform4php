@@ -66,7 +66,7 @@ class IndexedComboboxField extends ComboboxField {
          if (! is_array($this->value)) $this->value = array();
         $placeholder = trim($this->placeholder) ? ' placeholder="'.$this->placeholder.'"' : '';
         echo '<input type="hidden" name="'.$this->name.'[id]" value="'.$this->value['id'].'">';
-        echo '<input id="'.$this->getFieldIdForHTML().'" style="max-width: '.$this->field_width.';"'.$placeholder.' class="'.$this->getFieldClasses().'" type="text" data-realname="'.$this->name.'" name="'.$this->name.'[visual]" value="'.htmlentities($this->value['visual'], ENT_QUOTES).'"'.$this->additional_attributes.'>';
+        echo '<input id="'.$this->getFieldIdForHTML().'" style="'.$this->getFieldStyleString().'"'.$placeholder.' class="'.$this->getFieldClasses().'" type="text" data-realname="'.$this->name.'" name="'.$this->name.'[visual]" value="'.htmlentities($this->value['visual'], ENT_QUOTES).'"'.$this->additional_attributes.'>';
     }
     
     public function setValue($value) {

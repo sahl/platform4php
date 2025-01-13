@@ -72,7 +72,7 @@ class NumberField extends Field {
         // Determine all attributes
         $attributes = ['data-fieldclass' => $this->getFieldClass(),
                        'class' => $this->getFieldClasses(),
-                       'style'=> 'max-width: '.$this->field_width.';"',
+                       'style'=> $this->getFieldStyleString(),
                        'type' => 'number',
                        'name' => $this->name,
                        'id' => $this->getFieldIdForHTML(),

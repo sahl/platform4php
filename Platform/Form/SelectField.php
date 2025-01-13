@@ -14,6 +14,7 @@ class SelectField extends Field {
         parent::__construct();
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/Field.js'); 
         static::JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/js/SelectField.js'); 
+        static::CSSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'/css/SelectField.css'); 
     }
     
     public function parse($value): bool {
@@ -31,7 +32,7 @@ class SelectField extends Field {
         $allowed_options = $this->getAllowedOptions();
         $attributes = ['data-fieldclass' => $this->getFieldClass(),
                        'class' => $this->getFieldClasses(),
-                       'style' => 'width: '.$this->field_width.'; max-width: '.$this->field_width.';',
+                       'style' => $this->getFieldStyleString(),
                        'name' => $this->name,
                        'id' => $this->getFieldIdForHTML()
                        ];

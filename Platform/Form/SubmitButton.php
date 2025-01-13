@@ -16,6 +16,6 @@ class SubmitButton extends Field {
     }
     
     public function renderInput() {
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" type="submit" value="'.$this->label.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" style="'.$this->getFieldStyleString().'" class="'.$this->getFieldClasses().'" type="submit" value="'.$this->label.'" id="'.$this->getFieldIdForHTML().'"'.$this->additional_attributes.'>';
     }
 }

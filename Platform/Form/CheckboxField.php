@@ -29,6 +29,6 @@ class CheckboxField extends Field {
     
     public function renderInput() {
         $checked = $this->value ? ' checked' : '';
-        echo '<input data-fieldclass="'.$this->getFieldClass().'" class="'.$this->getFieldClasses().'" type="checkbox" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="1"'.$this->additional_attributes.$checked.'> ';
+        echo '<input data-fieldclass="'.$this->getFieldClass().'" style="'.$this->getFieldStyleString().'" class="'.$this->getFieldClasses().'" type="checkbox" name="'.$this->name.'" id="'.$this->getFieldIdForHTML().'" value="1"'.$this->additional_attributes.$checked.'> ';
     }
 }
