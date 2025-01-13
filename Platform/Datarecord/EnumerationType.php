@@ -148,6 +148,7 @@ class EnumerationType extends IntegerType {
      */
     public function filterMatch($value, $other_value) {
         $other_value = $this->parseValue($other_value);
+        if ($other_value === null) return false;
         return $value == $other_value;
     }
     
