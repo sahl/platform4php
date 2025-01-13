@@ -34,10 +34,10 @@ if ($_POST['action'] == 'send_file') {
     echo '<script language="javascript" type="text/javascript">';
     echo '$(\'#'.$_GET['form_name'].' input[name="'.$_GET['field_name'].'[action]"]\', window.parent.document).val(\'remove\');';
     echo '</script>';
-} elseif ($_GET['file_id']) {
+} elseif (is_numeric($_GET['file_id'])) {
     $file = new File();
-    $file->loadForRead($_GET['file_id']);
-    $current_file_name = $file->canAccess() ? $file->filename : '';
+    $file->loadForRead($_GET['file_id'], false);
+    $current_file_name = ($file->isInDatabase() && $file->canAccess()) ? $file->filename : '';
 } elseif ($_GET['filename']) {
     $current_file_name = $_GET['filename'];
 }
