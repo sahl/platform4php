@@ -93,6 +93,22 @@ Platform.Form.Field = class extends Platform.Component {
             if (! allowed_options.includes(this.getValue())) this.setValue('');
         }
     }
+
+    /**
+     * Get the container for the error message
+     * @returns {jQuery}
+     */
+    getErrorContainer() {
+        var result = $();
+        var dom_node = this.dom_node;
+        // As there can be nested fields, we need to ensure we don't find an error container in another field
+        this.dom_node.find('.platform_field_error_container').each(function() {
+            if (! $(this).closest('.platform_form_field_component').is(dom_node)) return true;
+            result = $(this);
+            return false;
+        });
+        return result;
+    }
     
     /**
      * Trigger and show an error message in the field
@@ -100,7 +116,7 @@ Platform.Form.Field = class extends Platform.Component {
      */
     setError(error_message) {
         this.dom_node.find('.platform_form_field').addClass('platform_form_field_error');
-        this.dom_node.find('.platform_field_error_container').html(error_message).slideDown();
+        this.getErrorContainer().html(error_message).slideDown();
     }
     
     /**
