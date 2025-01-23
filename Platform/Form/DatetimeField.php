@@ -11,8 +11,11 @@ use Platform\Utilities\Time;
 
 class DatetimeField extends Field {
     
+    protected static $component_class = 'platform_component_date_time_field';
+    
     public function __construct() {
         parent::__construct();
+        $this->JSFile(\Platform\Utilities\Utilities::directoryToURL(__DIR__).'js/DateTimeField.js');
         $this->value = new Time();
     }
     

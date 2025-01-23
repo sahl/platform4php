@@ -15,12 +15,12 @@ class DateType extends DateTimeType {
         return \Platform\Form\DateField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
-    public function getFormValue($value) {
-        return $value->getReadable('Y-m-d');
-    }
-    
     public function getFullValue($value, Collection &$collection = null): string {
         return htmlentities($value->getReadableDate());
+    }
+    
+    public function getFormValue($value) {
+        return $value->get('Y-m-d');
     }
     
     /**

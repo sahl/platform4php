@@ -17,6 +17,7 @@ class NumberFormat {
         if (! in_array($format, [1,2])) trigger_error('Invalid format specified: \''.$format.'\'!', E_USER_ERROR);
         static::$format = $format;
         if ($store_in_session) $_SESSION['platform']['number_format'] = $format;
+        if (!\Platform\Page\Page::isPageStarted()) \Platform\Page\Page::addData('platform_number_format', $format);
     }
     
     /**

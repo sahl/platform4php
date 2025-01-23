@@ -37,6 +37,7 @@ Platform\Utilities\Time::setDateAndTimeFormatFromSession();
 // Add number format for javascript
 Page::addData('platform_number_format', \Platform\Utilities\NumberFormat::getFormat());
 Page::addData('platform_component_io_url', \Platform\UI\Component::getIOUrl());
+Page::addData('platform_time_zone', \Platform\Utilities\Time::getDisplayTimeZoneFromSession());
 
 
 // Load languages
@@ -70,6 +71,8 @@ Page::queueJSFile('/Platform/Page/js/MenuItem.js');
 // Number format
 Page::queueJSFile('/Platform/Utilities/js/NumberFormat.js');
 
+// Time functions
+Page::queueJSFile('/Platform/Utilities/js/Time.js');
 
 // Components
 Page::queueCSSFile('/Platform/UI/css/Component.css');

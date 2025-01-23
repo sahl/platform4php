@@ -117,7 +117,7 @@ class DateTimeType extends Type {
     }
     
     public function getFormValue($value) {
-        return str_replace(' ', 'T', $value->getReadable('Y-m-d H:i'));
+        return $value->get('Y-m-d H:i');
     }
     
     public function getFullValue($value, Collection &$collection = null): string {

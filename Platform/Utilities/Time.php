@@ -561,6 +561,7 @@ class Time implements \Platform\UI\Serializable {
     public static function setDisplayTimeZone(string $display_timezone, bool $store_in_session = false) {
         self::$time_zone_object = new \DateTimeZone($display_timezone);
         if ($store_in_session) $_SESSION['platform']['display_timezone'] = $display_timezone;
+        if (!\Platform\Page\Page::isPageStarted()) \Platform\Page\Page::addData ('platform_time_zone', $display_timezone);
     }
 
     /**
