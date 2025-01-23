@@ -41,6 +41,15 @@ class Utilities {
         if (mb_strlen($long_text) <= $lead+$trail) return $long_text;
         return mb_substr($long_text,0,$lead).'...'.mb_substr($long_text,-$trail);
     }
+
+    /**
+     * Surround all links in the text with a-tags making them clickable.
+     * @param string $text Text with links
+     * @return string HTML text with clickable links
+     */
+    public static function linksToHTML(string $text) : string {
+        return preg_replace('/(https?:\/\/[^\s]+)/i', '<a href="$1" target="_blank">$1</a>', $text);        
+    }
     
     /**
      * Translates a physical path to an URL. Only works when script is called from

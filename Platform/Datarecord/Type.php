@@ -191,6 +191,9 @@ class Type {
                     if (! array_key_exists('form_visibility', $options) && $option) $this->form_visibility = self::FORM_HIDDEN;
                     $this->setReadonly($option);
                     break;
+                case 'layout_priority':
+                    $this->setLayoutPriority((int)$option);
+                    break;
                 default:
                     $this->$key = $option;
                     break;

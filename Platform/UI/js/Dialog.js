@@ -168,6 +168,9 @@ Platform.Dialog = class extends Platform.Component {
         if (open_dialog_form) {
             // Ensure that the form is moved into place and shown
             Platform.Dialog.#moveToGeneralDialog(form.dom_node);
+            
+            // Clear errors from the form if it has been opened before
+            form.clearErrors();
         
             $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
                 {
