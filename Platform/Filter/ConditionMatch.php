@@ -17,8 +17,6 @@ class ConditionMatch extends Condition {
     
     public function getSQLFragment(): string {
         if (! in_array($this->type->getStoreLocation(), [\Platform\Datarecord\Type::STORE_DATABASE, \Platform\Datarecord\Type::STORE_SUBFIELDS])) {
-            var_dump($this->type);
-            die('dbg 3');
             $this->setNoSQL();
             return true;
         }
