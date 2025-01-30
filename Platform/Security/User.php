@@ -32,7 +32,7 @@ class User extends Datarecord {
     
     protected static $depending_classes = array(
         'Platform\\Security\\Accesstoken',
-        'Platform\\Property'
+        'Platform\\Security\\Property'
     );
     
     public function canDelete() : bool {
