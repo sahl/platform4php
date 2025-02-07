@@ -12,7 +12,7 @@ class TextType extends Type {
     protected $default_value = '';
     
     public function getTextValue($value, Collection &$collection = null): string {
-        return htmlentities((string)$value);
+        return (string)$value;
     }
     
     public function getFullValue($value, Collection &$collection = null): string {

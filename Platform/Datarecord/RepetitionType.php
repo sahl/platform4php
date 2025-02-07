@@ -232,7 +232,7 @@ class RepetitionType extends Type {
      * @return string
      */
     public function getTextValue($value, Collection &$collection = null) : string {
-        return static::getFullValue($value);
+        return $value->getDescription();
     }
     
     public function parseDatabaseValue($value) {

@@ -274,16 +274,6 @@ class ArrayType extends Type {
     }
     
     /**
-     * Get the textual value for fields of this type
-     * @param mixed $value
-     * @param Collection An optional collection which can contain further records
-     * @return string
-     */
-    public function getTextValue($value, Collection &$collection = null) : string {
-        return strip_tags($this->getFullValue($value));
-    }
-    
-    /**
      * Parse a value of this type from the database
      * @param mixed $value
      * @return mixed

@@ -244,7 +244,7 @@ class AddressType extends Type {
      * @return string
      */
     public function getTextValue($value, Collection &$collection = null) : string {
-        return str_replace("<br>","\n", $this->getFullValue($value));
+        return html_entity_decode(str_replace("<br>","\n", $this->getFullValue($value)));
     }
     
     /**

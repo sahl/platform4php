@@ -635,13 +635,13 @@ class Type {
     }
     
     /**
-     * Get the textual value for fields of this type
+     * Get the textual value for fields of this type. This is a plain string without any HTML
      * @param mixed $value
      * @param Collection An optional collection which can contain further records
      * @return string
      */
     public function getTextValue($value, Collection &$collection = null) : string {
-        return $value;
+        return (string)strip_tags($value);
     }
 
     /**

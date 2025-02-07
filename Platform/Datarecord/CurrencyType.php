@@ -236,15 +236,6 @@ class CurrencyType extends Type {
     }
     
     /**
-     * Get the textual value for fields of this type
-     * @param mixed $value
-     * @return string
-     */
-    public function getTextValue($value, Collection &$collection = null) : string {
-        return static::getFullValue($value);
-    }
-    
-    /**
      * Parse a value of this type
      * @param $value The new value to set
      * @param $existing_value The existing value of this field (if any)

@@ -46,7 +46,7 @@ class DateType extends DateTimeType {
     }
     
     public function getTextValue($value, Collection &$collection = null): string {
-        return $this->getFullValue($value);
+        return $value->getReadableDate();
     }
     
     public function integrityCheck(string $context_class) : array {

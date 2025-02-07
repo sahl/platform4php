@@ -391,7 +391,7 @@ class MultiReferenceType extends Type {
      */
     public function getTextValue($value, Collection &$collection = null) : string {
         // TODO: This is slow as hell and should be fixed
-        return strip_tags($this->getFullValue($value, $collection));
+        return html_entity_decode(strip_tags($this->getFullValue($value, $collection)));
     }
     
     /**

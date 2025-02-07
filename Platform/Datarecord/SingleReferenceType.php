@@ -354,7 +354,7 @@ class SingleReferenceType extends IntegerType {
      * @return string
      */
     public function getTextValue($value, Collection &$collection = null) : string {
-        return strip_tags($this->getFullValue($value, $collection));
+        return html_entity_decode(strip_tags($this->getFullValue($value, $collection)));
     }
     
     /**
