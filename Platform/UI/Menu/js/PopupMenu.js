@@ -66,7 +66,7 @@ Platform.PopupMenu = class extends Platform.Component {
     }
     
     static hideAll() {
-        $('.platform_menu_popupmenu:visible').hide().trigger('disappear');
+        $('.platform_menu_popupmenu:visible').trigger('disappear').hide();
     }
 }
 
