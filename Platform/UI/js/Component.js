@@ -119,7 +119,23 @@ Platform.Component = class {
             container.applyPlatform(function() {
                 if (typeof callback == 'function') callback(container.children('div'));
             });
-        }, 'json');
+        }, 'json').fail(function() {alert('Error in server response while building component '+component_class);});
+    }
+    
+    /**
+     * Build a new component into a given container
+     * @param {jQuery} target
+     * @param {string} component_class The Component PHP class
+     * @param {object} properties The component properties
+     * @param {string} id The wanted ID
+     * @param {function} callback A function which will be called with the element
+     */
+    static buildInto(target, component_class, properties, id, callback) {
+        $.post($('body').data('platform_component_io_url'), {event: 'build', componentclass: component_class, componentproperties: JSON.stringify(properties), componentid: id ? id : ''}, function(data) {
+            // Attach the received data to the target and apply platform
+            $(target).append(data).applyPlatform();
+            if (typeof callback == 'function') callback($(target).children('div:last-child'));
+        }, 'json').fail(function() {alert('Error in server response while building component '+component_class);});
     }
     
     /**

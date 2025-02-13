@@ -116,6 +116,8 @@ Platform.Dialog = class extends Platform.Component {
     static component_in_dialog_dom = null;
     
     static component_original_parent_dom = null;
+    
+    static component_is_temporary = false;
 
     /**
      * Move a given DOM node into the general purpose dialog and remember where
@@ -193,9 +195,9 @@ Platform.Dialog = class extends Platform.Component {
      * @param {html} text Text to display above the form
      * @param {string} component_id ID of the component, must begin with '#'
      * @param {html} ok_text Text to display in the "OK" button
-     * @param {function} callback_ok Will be called when the user click the OK-button
+     * @param {function|string} callback_ok When the user clicks the OK button, if this is a function it will be called and if it is a string, then an event with that name will trigger on the component
      * @param {function} callback_open Will be called to determine if the dialog should be opened, should return true/false
-     * @param {function} callback_cancel Will be called if the user clicks on "Cancel"
+     * @param {function|string} callback_cancel When the user clicks the OK button, if this is a function it will be called and if it is a string, then an event with that name will trigger on the component
      */
     static componentDialog(title, text, component_id, ok_text, callback_ok, callback_open, callback_cancel) {
         $('#platform_allpurpose_text').html(text);
@@ -216,16 +218,72 @@ Platform.Dialog = class extends Platform.Component {
                 {
                     text: ok_text,
                     click: function() {
-                        callback_ok();
+                        if (typeof callback_ok == 'function') callback_ok();
+                        else if (callback_ok) component_id.platformComponent().trigger(callback_ok);
                     }
                 },
                 {
                     text: 'Cancel',
-                    click: Platform.Dialog.closeGeneral
+                    click: function() {
+                        if (typeof callback_cancel == 'function') callback_cancel();
+                        else if (callback_cancel) component_id.platformComponent().trigger(callback_cancel);
+                        else Platform.Dialog.closeGeneral();
+                    }
                 }        
             ]).dialog('open');
         }
     }
+    
+    /**
+     * Open a dialog displaying a component, which is moved inside the dialog
+     * @param {string} title
+     * @param {html} text Text to display above the form
+     * @param {string} component_class ID of the component, must begin with '#'
+     * @param {object} properties Properties to pass to the component
+     * @param {html} ok_text Text to display in the "OK" button
+     * @param {function|string} callback_ok When the user clicks the OK button, if this is a function it will be called and if it is a string, then an event with that name will trigger on the component
+     * @param {function} callback_open Will be called to determine if the dialog should be opened, should return true/false
+     * @param {function|string} callback_cancel When the user clicks the OK button, if this is a function it will be called and if it is a string, then an event with that name will trigger on the component
+     */
+    static buildComponentDialog(title, text, component_class, properties, ok_text, callback_ok, callback_open, callback_cancel) {
+        $('#platform_allpurpose_text').html(text);
+        
+        if (ok_text == null) ok_text = 'Save';
+
+        var open_dialog = true;
+        if (callback_open) {
+            if (! callback_open()) open_dialog = false;
+        }
+
+        if (open_dialog) {
+            // Open the dialog and build the component
+            Platform.Component.buildInto('#platform_allpurpose_container', component_class, properties);
+            Platform.Dialog.component_is_temporary = true;
+            
+            $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
+                {
+                    text: ok_text,
+                    click: function() {
+                        var component_id = $('#platform_allpurpose_container div:last-child');
+                        if (typeof callback_ok == 'function') callback_ok();
+                        else if (callback_ok) {
+                            component_id.platformComponent().trigger(callback_ok);
+                        }
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    click: function() {
+                        var component_id = $('#platform_allpurpose_container div:last-child');
+                        if (typeof callback_cancel == 'function') callback_cancel();
+                        else if (callback_cancel) component_id.platformComponent().trigger(callback_cancel);
+                        else Platform.Dialog.closeGeneral();
+                    }
+                }        
+            ]).dialog('open');
+        }
+    }
+    
     
     /**
      * Open this dialog
@@ -256,6 +314,11 @@ $(function() {
     $('body').append('<div id="platform_allpurpose_dialog"><div id="platform_allpurpose_text"></div><div id="platform_allpurpose_container"></div></div>');
     var dialog = new Platform.Dialog($('#platform_allpurpose_dialog'), [], {
         close: function() {
+            // If there is a temporary component, we destroy it!
+            if (Platform.Dialog.component_is_temporary) {
+                $('#platform_allpurpose_container div').platformComponent().destroy();
+                Platform.Dialog.component_is_temporary = false;
+            }
             // If a component is contained, then move it back to its original position
             if (Platform.Dialog.component_in_dialog_dom !== null) {
                 Platform.Dialog.component_in_dialog_dom.appendTo(Platform.Dialog.component_original_parent_dom);
