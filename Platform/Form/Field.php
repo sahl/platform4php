@@ -178,6 +178,7 @@ class Field extends Component {
         $this->addFieldClass('platform_form_field');
         $this->addClass('platform_form_field_component');
         static::JSFile(Utilities::directoryToURL(__DIR__).'js/Field.js');
+        static::CSSFile(Utilities::directoryToURL(__DIR__).'css/Field.css');
     }
     
     /**

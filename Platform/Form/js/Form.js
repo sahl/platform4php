@@ -24,6 +24,11 @@ Platform.Form = class extends Platform.Component {
             // We cannot submit table control forms before the table is ready, so those submit is handled by the table
             if (! component.dom_node.is('.platform_table_control_form')) component.dom_node.find('form.platform_form_auto_submit').submit();
         });
+        
+        // Event to trigger a submit
+        dom_node.on('do_submit', function() {
+            component.submit();
+        });
     }
     
     /**
