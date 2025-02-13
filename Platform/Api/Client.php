@@ -29,6 +29,12 @@ class Client {
     protected $custom_headers = [];
     
     /**
+     * Indicate if we should log communication
+     * @var type
+     */
+    protected $log = false;
+    
+    /**
      * Constructs a new API Client
      * @param string $endpoint The endpoint to connect to
      */
@@ -53,6 +59,20 @@ class Client {
      */
     public function filter(string $object, Condition $condition) : array {
         return $this->query($object, 'GET', 0, array('query' => $condition->getAsJSON()));
+    }
+    
+    /**
+     * Log communication
+     * @param string $event Communication event
+     * @param string $endpoint Endpoint used
+     * @param string $data Data
+     */
+    public function log($event, $endpoint, $data) {
+        // Delve log name from endpoint
+        if (preg_match('/http(s)?\\:\\/\\/([^\\/]*)/i', $endpoint, $match)) $log_file = $match[2];
+        else $log_file = 'unknown';
+        $log = new \Platform\Utilities\Log('api_client_'.$log_file, ['6r', '10r', '10']);
+        $log->log(\Platform\Security\Accesstoken::getCurrentUserID(), $event, $endpoint, $data);
     }
     
     /**
@@ -128,14 +148,13 @@ class Client {
         if ($this->token_code) {
             $options[] = 'Authorization: Bearer '.$this->token_code;
         }
+        
+        if ($this->log) $this->log('Request', $endpoint, json_encode($parameters));
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, $options);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($curl, CURLOPT_HEADER, 1);
-        if ($this->token_code) {
-            curl_setopt($curl, CURLOPT_COOKIE, 'access_token='.$this->token_code.'; path:/;');
-        }
 
         if ($parameters_as_body) {
             curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($parameters));
@@ -143,9 +162,11 @@ class Client {
 
         $curlResponse = curl_exec($curl);
         if ($curlResponse === false) {
+            if ($this->log) $this->log('CURL error', $endpoint, curl_error($curl));
             return ['code' => '000', 'error' => true, 'message' => curl_error($curl)];
         }
         curl_close($curl);
+        if ($this->log) $this->log('Response', $endpoint, $curlResponse);
         
         return $this->parseResponse($curlResponse);
     }
