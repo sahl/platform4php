@@ -109,7 +109,7 @@ class IntegerType extends Type {
         return (int)$value;
     }
     
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         if ($this->is_formatted) return \Platform\Form\FormattedNumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
         else return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
@@ -136,7 +136,7 @@ class IntegerType extends Type {
     
 
     public function getLogValue($value) : string {
-        return $value;
+        return (string)$value;
     }
     
     public function getRawValue($value) {

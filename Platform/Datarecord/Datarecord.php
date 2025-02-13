@@ -194,6 +194,7 @@ class Datarecord implements DatarecordReferable {
         static::ensureStructure();
         $this->buildDefaultValues();
         $this->setFromArray($initialvalues);
+        $this->values_on_load = $this->values;
     }
     
     /**
@@ -1547,19 +1548,22 @@ class Datarecord implements DatarecordReferable {
         $log = new Log('datarecord', ['6r']);
         $text = '';
         if ($this->isInDatabase()) $text = 'CH '.$this->getBaseClassName().'('.$this->getKeyValue().') - ';
-        else $text = 'CR '.$this->getClassName().'('.$this->getKeyValue().') - ';
-        $first = true;
-        foreach ($this->getChangedFields() as $fieldname) {
-            // Skip metadata
-            if ($fieldname == 'metadata') continue;
-            if ($first) $first = false;
-            else $text .= ',';
-            $text .= $fieldname.':';
-            $text .= static::getLogValue($fieldname, true);
-            $text .= '=>';
-            $text .= static::getLogValue($fieldname);
+        else $text = 'CR '.$this->getBaseClassName().'('.$this->getKeyValue().') - ';
+        if (static::$log_full) {
+            $log_line = [];
+            foreach (static::getStructure() as $type) {
+                if ($type->getStoreLocation() == Type::STORE_DATABASE) $log_line[$type->name] = static::getLogValue($type->name);
+            }
+        } else {
+            $log_line = ['before' => [], 'after' => []];
+            foreach ($this->getChangedFields() as $fieldname) {
+                // Skip metadata
+                if ($fieldname == 'metadata') continue;
+                if ($this->isInDatabase()) $log_line['before'][$fieldname] = static::getLogValue($fieldname, true);
+                $log_line['after'][$fieldname] = static::getLogValue($fieldname);
+            }
         }
-        $log->log(Accesstoken::getCurrentUserID(), $text);
+        $log->log(Accesstoken::getCurrentUserID(), $text, json_encode($log_line));
     }
     
     /**

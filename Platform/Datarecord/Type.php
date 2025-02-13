@@ -491,7 +491,7 @@ class Type {
      * return the field and not check if it is shown.
      * @return \Platform\Form\Field|null
      */
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\TextField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
@@ -561,6 +561,7 @@ class Type {
      * @return string
      */
     public function getLogValue($value) : string {
+        if ($value === null) return '[NULL]';
         return (string)$value;
     }
     

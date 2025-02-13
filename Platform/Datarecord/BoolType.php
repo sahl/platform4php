@@ -130,7 +130,7 @@ class BoolType extends IntegerType {
         return $value ? 'true' : 'false';
     }
     
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\CheckboxField::Field($this->title, $this->name, $this->getFormFieldOptions());
         
     }

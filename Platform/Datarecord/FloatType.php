@@ -32,7 +32,7 @@ class FloatType extends IntegerType {
     }
     
 
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         if ($this->is_formatted) return \Platform\Form\FormattedNumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
         else return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }

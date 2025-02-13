@@ -97,7 +97,7 @@ class MultiEnumerationType extends EnumerationType {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\MultiCheckboxField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     

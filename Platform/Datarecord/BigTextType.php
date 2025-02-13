@@ -9,6 +9,8 @@ namespace Platform\Datarecord;
 
 class BigTextType extends TextType {
     
+    protected $string_length = (1<<24)-1;
+    
     protected $default_value = '';
     
     public function getLogValue($value) : string {
@@ -19,7 +21,7 @@ class BigTextType extends TextType {
         return str_replace("\n", "<br>", parent::getFullValue($value, $collection));
     }
     
-    protected function getBaseFormField(): ?\Platform\Form\Field {
+    public function getBaseFormField(): ?\Platform\Form\Field {
         return \Platform\Form\TextareaField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
 

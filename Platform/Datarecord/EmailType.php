@@ -17,7 +17,7 @@ class EmailType extends TextType {
         return $value ? '<a href="mailto:'.$value.'">'.htmlentities($value).'</a>' : '';
     }
     
-    protected function getBaseFormField(): \Platform\Form\Field {
+    public function getBaseFormField(): \Platform\Form\Field {
         return \Platform\Form\EmailField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
 }

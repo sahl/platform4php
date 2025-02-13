@@ -203,7 +203,7 @@ class AddressType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\AddressField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     

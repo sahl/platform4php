@@ -11,7 +11,7 @@ namespace Platform\Datarecord;
 
 class DateType extends DateTimeType {
 
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\DateField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
@@ -34,7 +34,7 @@ class DateType extends DateTimeType {
     }    
 
     public function getLogValue($value) : string {
-        return $value->get('Y-m-d');
+        return $value->get('Y-m-d') ?: '[NULL]';
     }
     
     /**

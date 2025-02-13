@@ -107,13 +107,12 @@ class DateTimeType extends Type {
         return "'". \Platform\Utilities\Database::escape($value->get())."'";
     }
     
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         return \Platform\Form\DatetimeField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     public function getDefaultValue() {
-        $default_value = parent::getDefaultValue();
-        return $default_value ?: new \Platform\Utilities\Time();
+        return new \Platform\Utilities\Time();
     }
     
     public function getFormValue($value) {
@@ -140,7 +139,7 @@ class DateTimeType extends Type {
     }
 
     public function getLogValue($value) : string {
-        return $value->get();
+        return $value->get('Y-m-d H:i:s') ?: '[NULL]';
     }
     
     public function getRawValue($value) {

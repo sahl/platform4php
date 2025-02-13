@@ -215,7 +215,7 @@ class ArrayType extends Type {
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */
-    protected function getBaseFormField() : ?\Platform\Form\Field {
+    public function getBaseFormField() : ?\Platform\Form\Field {
         if (count($this->substructure)) {
             $multiplier_section = \Platform\Form\MultiplierSection::Field($this->title, $this->name, $this->getFormFieldOptions());
             foreach ($this->substructure as $type) {
