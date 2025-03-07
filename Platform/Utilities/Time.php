@@ -79,6 +79,7 @@ class Time implements \Platform\UI\Serializable {
      * @return $this
      */
     public function add(int $seconds, int $minutes = 0, int $hours = 0) : Time {
+        if ($this->isNull()) return new Time();
         $result = new Time($this->getTimestamp()+ $seconds + $minutes*60 + $hours*3600);
         return $result;
     }
@@ -90,6 +91,7 @@ class Time implements \Platform\UI\Serializable {
      * @param int $years Years to add
      */
     public function addDays(int $days, int $months = 0, int $years = 0) : Time {
+        if ($this->isNull()) return new Time();
         $new_timestamp = $this->getTimestamp();
         if ($months || $years) {
             // We handle this a little special
@@ -149,6 +151,7 @@ class Time implements \Platform\UI\Serializable {
      * @return string
      */
     public function getDate() : string {
+        if ($this->isNull()) return '';
         return gmdate('Y-m-d', $this->timestamp);
     }
     
@@ -347,6 +350,7 @@ class Time implements \Platform\UI\Serializable {
      * @return string
      */
     public function getTime() : string {
+        if ($this->isNull()) return '';
         return gmdate('H:i:s', $this->timestamp);
     }    
     
