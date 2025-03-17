@@ -48,6 +48,7 @@ class EditDialog extends Dialog {
             if ($datarecord->canEdit()) {
                 $values = $form->getValues();
                 $datarecord->setFromArray($values);
+                if (count($datarecord->getChangedFields())) $datarecord->onEdit();
                 $datarecord->save();
                 // return the ID of the edited object
                 return ['status' => true, 'object_id' => $datarecord->getRawValue($datarecord->getKeyField())];
