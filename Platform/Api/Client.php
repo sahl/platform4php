@@ -51,6 +51,13 @@ class Client {
     }
     
     /**
+     * Enable logging of this client
+     */
+    public function enableLog() {
+        $this->log = true;
+    }
+    
+    /**
      * Perform a filtered GET on a given object
      * @param string $object The object to filter
      * @param \Platform\Data\Condition\Condition $condition The condition to use
@@ -112,7 +119,19 @@ class Client {
     }
     
     /**
-     * Query the API
+     * Make a request against a common REST API
+     * @param string $path The path to request against
+     * @param string $method The request method
+     * @param array $parameters Parameters for the request
+     * @return array Hashed by code=http code  message=http message  headers=array of all headers
+     * body=body output  json=json decoded body output
+     */
+    public function request(string $path, string $method = '', array $parameters = []) : array {
+        return $this->query($path, $method, 0, $parameters);
+    }
+    
+    /**
+     * Query a REST API from Platform
      * @param string $object The object to query
      * @param string $method The method to use
      * @param int $id The object ID to query (if any)
@@ -127,7 +146,7 @@ class Client {
         $endpoint .= $object;
         if ($id) $endpoint .= '/'.$id;
         
-        $parameters_as_body = in_array(strtolower($method), ['post', 'put', 'getwithbody']);
+        $parameters_as_body = in_array(strtolower($method), ['post', 'put', 'getwithbody', 'patch']);
         
         if (strtolower($method) == 'getwithbody') $method = 'GET';
         
@@ -149,7 +168,7 @@ class Client {
             $options[] = 'Authorization: Bearer '.$this->token_code;
         }
         
-        if ($this->log) $this->log('Request', $endpoint, json_encode($parameters));
+        if ($this->log) $this->log('Request', strtoupper($method).' '.$endpoint, json_encode($parameters));
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, $options);
