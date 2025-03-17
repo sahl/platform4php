@@ -80,9 +80,8 @@ Page::queueJSFile('/Platform/UI/js/Component.js');
 Page::queueJSFile('/Platform/Form/js/Form.js');
 Page::queueJSFile('/Platform/UI/js/Dialog.js');
 
-// Google dialogs
+// Google loader
 Page::queueJSFile('https://www.gstatic.com/charts/loader.js');
-
 
 // Font awesome
 Page::queueCSSFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
