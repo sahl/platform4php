@@ -185,7 +185,7 @@ class SingleReferenceType extends IntegerType {
      * @param array $other_values Other values
      * @return bool
      */
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         $final_values = [];
         foreach ($other_values as $other_value) {
             $final_values[] = $this->parseValue($other_value);
@@ -198,7 +198,7 @@ class SingleReferenceType extends IntegerType {
      * @param mixed $values Other values
      * @return bool
      */
-    public function filterOneOfSQL(array $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
         $final_values = [];
         foreach ($values as $value) {
@@ -389,7 +389,7 @@ class SingleReferenceType extends IntegerType {
         if ($value instanceof Datarecord) $value = $value->getKeyValue();
         if ($value === null || $value == 0) return null;
         if (is_array($value)) {
-            return $value['id'] ?: null;
+            return (int)$value['id'] ?: null;
         }
         return (int)$value;
     }

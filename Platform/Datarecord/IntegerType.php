@@ -91,11 +91,11 @@ class IntegerType extends Type {
         return '`'.$this->name.'` = '.(double)\Platform\Utilities\Database::escape($value);
     }
     
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         return in_array($value, $other_values);
     }
     
-    public function filterOneOfSQL(array $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
         $array = [];
         foreach ($values as $value) {

@@ -18,6 +18,10 @@ class HTMLTextType extends BigTextType {
     public function getFullValue($value, Collection &$collection = null): string {
         return (string)$value;
     }
+    
+    public function getTextValue($value, Collection &$collection = null): string {
+        return (string)strip_tags($value);
+    }
 
     public function getSQLFieldType() : string {
         return 'MEDIUMTEXT NOT NULL';

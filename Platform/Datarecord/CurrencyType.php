@@ -1,5 +1,11 @@
 <?php
 namespace Platform\Datarecord;
+
+use Platform\Currency\Currency;
+use Platform\Form\CurrencyField;
+use Platform\Form\Field;
+use Platform\Utilities\NumberFormat;
+use Platform\Utilities\Translation;
 /**
  * Type class for descriping currency
  * 
@@ -16,6 +22,7 @@ class CurrencyType extends Type {
     public function addAdditionalStructure() : array {
         $options = $this->getSetOptionsAsArray();
         $options['is_invisible'] = true;
+        $this->setStoreLocation(self::STORE_SUBFIELDS);
         return [
             new FloatType('localvalue', '', $options),
             new TextType('currency', '', $options),
@@ -171,7 +178,7 @@ class CurrencyType extends Type {
      * @param array $other_values Other values
      * @return bool
      */
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         $final_other_values = [];
         foreach ($other_values as $other_value) {
             $final_other_values[] = is_array($other_value) ? (double)$other_value['localvalue'] : (double)$other_value;
@@ -184,7 +191,7 @@ class CurrencyType extends Type {
      * @param mixed $values Other values
      * @return bool
      */
-    public function filterOneOfSQL(array $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
         $array = [];
         foreach ($values as $value) {
@@ -195,10 +202,10 @@ class CurrencyType extends Type {
     
     /**
      * Get a form field for editing fields of this type
-     * @return \Platform\Form\Field
+     * @return Field
      */
-    public function getBaseFormField() : ?\Platform\Form\Field {
-        return \Platform\Form\CurrencyField::Field($this->title, $this->name, $this->getFormFieldOptions());
+    public function getBaseFormField() : ?Field {
+        return CurrencyField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }
     
     /**
@@ -207,8 +214,23 @@ class CurrencyType extends Type {
      * @return html
      */
     public function getFullValue($value, Collection &$collection = null) : string {
-        return htmlentities($value['foreignvalue'].' '.$value['currency']);
+        $result = NumberFormat::getFormattedNumber($value['foreignvalue'],2,true);
+        if ($value['currency'] && $value['currency'] != Currency::getBaseCurrency()) $result .= ' '.$value['currency'];
+        return htmlentities($result);
     }
+    
+    /**
+     * Get the textual value for fields of this type. This is a plain string without any HTML
+     * @param mixed $value
+     * @param Collection An optional collection which can contain further records
+     * @return string
+     */
+    public function getTextValue($value, Collection &$collection = null) : string {
+        $result = NumberFormat::getFormattedNumber($value['foreignvalue'],2,true);
+        if ($value['currency'] && $value['currency'] != Currency::getBaseCurrency()) $result .= ' '.$value['currency'];
+        return $result;
+    }
+    
     
     /**
      * Get the value for logging fields of this type
@@ -268,7 +290,7 @@ class CurrencyType extends Type {
         if (is_float($value)) return true;
         $result = static::arrayCheck($value, [], ['localvalue', 'currency', 'foreignvalue']);
         if ($result === true) {
-            if (!\Platform\Currency\Currency::isValidCurrency($value['currency'])) return \Platform\Utilities\Translation::translateForUser('Invalid currency code %1', $value['currency']);
+            if (!Currency::isValidCurrency($value['currency'])) return Translation::translateForUser('Invalid currency code %1', $value['currency']);
         }
         return $result;
     }

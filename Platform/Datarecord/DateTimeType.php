@@ -33,7 +33,7 @@ class DateTimeType extends Type {
         return $this->filterMatchSQL($value);
     }
     
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         foreach ($other_values as $other_value) {
             $other_time = new \Platform\Utilities\Time($other_value);
             if ($other_time->isEqualTo($value)) return true;
@@ -41,7 +41,7 @@ class DateTimeType extends Type {
         return false;
     }
     
-    public function filterOneOfSQL(mixed $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         return parent::filterOneOfSQL(array_map(function($v){return $this->parseValue($v)->get();}, $values));
     }
     

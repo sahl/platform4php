@@ -56,7 +56,7 @@ class MultiEnumerationType extends EnumerationType {
      * @param array $other_values Other values
      * @return bool
      */
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         $final_values = [];
         foreach ($other_values as $other_value) {
             $final_values = array_merge($final_values, $this->parseValue($other_value));
@@ -69,7 +69,7 @@ class MultiEnumerationType extends EnumerationType {
      * @param mixed $values Other values
      * @return bool
      */
-    public function filterOneOfSQL(array $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
         $final_values = [];
         foreach ($values as $value) {

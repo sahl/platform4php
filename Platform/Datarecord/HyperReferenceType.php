@@ -22,6 +22,7 @@ class HyperReferenceType extends Type {
     public function addAdditionalStructure() : array {
         $options = $this->getSetOptionsAsArray();
         $options['is_invisible'] = true;
+        $this->setStoreLocation(self::STORE_SUBFIELDS);
         return [
             new TextType('foreign_class', '', $options),
             new IntegerType('reference', '', $options),
@@ -168,7 +169,7 @@ class HyperReferenceType extends Type {
      * @param array $other_values Other values
      * @return bool
      */
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         if ($value['foreign_class'] == '') return false;
         $final_values = [];
         foreach ($other_values as $other_value) {
@@ -185,7 +186,7 @@ class HyperReferenceType extends Type {
      * @param mixed $values Other values
      * @return bool
      */
-    public function filterOneOfSQL(array $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
         $sql = [];
         foreach ($values as $value) {

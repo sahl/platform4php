@@ -70,7 +70,7 @@ class Type {
      * Indexes in the database
      * @var bool|array
      */
-    protected $indexes = false;
+    protected $index = false;
     
     /**
      * Layout group. Which group to appear in?
@@ -170,7 +170,7 @@ class Type {
                     break;
                 case 'index':
                     if ($option === true) $this->setIndex();
-                    else {
+                    elseif ($option !== false) {
                         if (! is_array($option)) $option = explode(',',$option);
                         $this->setIndexes($option);
                     }
@@ -395,7 +395,7 @@ class Type {
      * @param array $other_values Other values
      * @return bool
      */
-    public function filterOneOf($value, array $other_values) {
+    public function filterOneOf($value, array|Collection $other_values) {
         return in_array($value, $other_values);
     }
     
@@ -404,7 +404,7 @@ class Type {
      * @param mixed $values Other values
      * @return bool
      */
-    public function filterOneOfSQL(array $values) {
+    public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
         $array = [];
         foreach ($values as $value) {
@@ -741,7 +741,7 @@ class Type {
      * @return array|bool
      */
     public function getIndexes() {
-        return $this->indexes;
+        return $this->index;
     }
     
     /**
@@ -897,7 +897,7 @@ class Type {
      * @param bool $is_index
      */
     public function setIndex(bool $is_index = true) {
-        $this->indexes = $is_index;
+        $this->index = $is_index;
     }
     
     /**
@@ -906,7 +906,7 @@ class Type {
      */
     public function setIndexes(array $indexes) {
         if (! in_array($this->name, $indexes)) array_unshift ($indexes, $this->name);
-        $this->indexes = $indexes;
+        $this->index = $indexes;
     }
     
     /**
