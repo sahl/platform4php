@@ -367,6 +367,13 @@ class Field extends Component {
         $this->errortext = '';
     }
     
+    /**
+     * Clear the value from this field
+     */
+    public function clearValue() {
+        $this->setValue(null);
+    }
+    
     protected function getAutoLabelAlignment() : int {
         if ($this->form) return $this->form->getDefaultLabelAlignment ();
         return self::LABEL_ALIGN_LEFT;
