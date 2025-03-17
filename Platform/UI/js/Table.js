@@ -376,8 +376,18 @@ Platform.Table = class extends Platform.Component {
     }    
     
     static makeObject(array) {
+        var array_reg_exp = /(.+)\[\]/g;
         var res = {};
+        var counters = [];
         array.forEach(function(val) {
+            // Check for empty array and do handling
+            if (val.name.match(array_reg_exp)) {
+                // We adjust the name
+                if (! counters[val.name]) counters[val.name] = 0;
+                var result = val.name.replace(array_reg_exp, '$1['+counters[val.name]+']');
+                counters[val.name]++;
+                val.name = result;
+            }
             res[val.name] = val.value;
         })
         return res;
