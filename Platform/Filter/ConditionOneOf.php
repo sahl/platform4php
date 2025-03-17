@@ -1,14 +1,16 @@
 <?php
 namespace Platform\Filter;
 
+use Platform\Datarecord\Collection;
 use Platform\Datarecord\Datarecord;
+use Platform\Datarecord\Type;
 
 class ConditionOneOf extends Condition {
 
-    public function __construct(string $fieldname, array $values) {
+    public function __construct(string $fieldname, array|Collection $values) {
         $this->fieldname = $fieldname;
         $this->value = $values;
-        $this->type = new \Platform\Datarecord\Type($fieldname);
+        $this->type = new Type($fieldname);
     }
     
     public function getAsArray(): array {
@@ -20,7 +22,7 @@ class ConditionOneOf extends Condition {
     }
     
     public function getSQLFragment(): string {
-        if (! in_array($this->type->getStoreLocation(), [\Platform\Datarecord\Type::STORE_DATABASE, \Platform\Datarecord\Type::STORE_SUBFIELDS])) {
+        if (! in_array($this->type->getStoreLocation(), [Type::STORE_DATABASE, Type::STORE_SUBFIELDS])) {
             $this->setNoSQL();
             return true;
         }
