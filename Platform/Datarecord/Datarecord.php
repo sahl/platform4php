@@ -765,7 +765,7 @@ class Datarecord implements DatarecordReferable {
         }
         // Check for new keys
         foreach (static::$structure as $name => $type) {
-            if ($type->getIndexes()) {
+            if ($type->getIndexes() && $type->getStoreLocation() == Type::STORE_DATABASE) {
                 $key_name = $name.'_key';
                 if ($type->getIndexes() === true) {
                     $key_fields = array($name);
@@ -1073,6 +1073,32 @@ class Datarecord implements DatarecordReferable {
      */
     public static function getBaseClassName() {
         return strtolower(strpos(get_called_class(), '\\') !== false ? substr(get_called_class(), strrpos(get_called_class(), '\\')+1) : get_called_class());
+    }
+    
+    /**
+     * Get the object of this type with the given ID. Will fail if no such object exists
+     * @param int $id 
+     * @return static
+     */
+    public static function getByID(int $id) : static {
+        $filter = new Filter(get_called_class());
+        $filter->conditionMatch(static::getKeyField(), $id);
+        $result = $filter->execute();
+        if ($result->count() <> 1) trigger_error('No '.static::getObjectName().' with ID '.$id);
+        return $result->get(0);
+    }
+
+    /**
+     * Get the objects of this type with the given ID. Will fail is an invalid ID is passed
+     * @param array $ids
+     * @return array The objects hashed by their IDs
+     */
+    public static function getByIDs(array $ids) : array {
+        $filter = new Filter(get_called_class());
+        $filter->conditionOneOf(static::getKeyField(), $ids);
+        $result = $filter->execute();
+        if ($result->count() <> count(array_unique($ids))) trigger_error('At least one ID is invalid '.implode(',',$ids));
+        return $result->getAll();
     }
     
     /**
@@ -1594,6 +1620,13 @@ class Datarecord implements DatarecordReferable {
      */
     public function onCreate() : bool {
         return true;
+    }
+    
+    /**
+     * When this object is edited by a user this should be called to allow the
+     * object to do common housekeeping
+     */
+    public function onEdit() {
     }
     
     /**
