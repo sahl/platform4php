@@ -13,6 +13,11 @@ Platform.Form = class extends Platform.Component {
         this.dom_node.find('form').submit(function(e) {
             component.clearErrors();
             if (component.validate()) {
+                // Check if we should save form values
+                if (dom_node.data('save_on_submit')) {
+                    var form_node = dom_node.find('form');
+                    $.post('/Platform/Form/php/save_form_values.php', {destination: dom_node.data('save_on_submit'), formid: form_node.prop('id'), formdata: form_node.serialize()});
+                }
                 return true;
             }
             e.stopImmediatePropagation();
@@ -187,13 +192,6 @@ Platform.Form = class extends Platform.Component {
         });
 
         if (hidden_fields.length) form_node.find('[name="form_hiddenfields"]').val(hidden_fields.join(' '));
-
-        if (allow_submit) {
-            // Check if we should save form values
-            if (this.dom_node.data('save_on_submit')) {
-                $.post('/Platform/Form/php/save_form_values.php', {destination: this.dom_node.data('save_on_submit'), formid: form_node.prop('id'), formdata: form_node.serialize()});
-            }
-        }
         return allow_submit;
     }
 }

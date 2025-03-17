@@ -181,6 +181,15 @@ class Form extends Component {
     public function addHTML(string $html) {
         $this->addField(HTML::HTML($html));
     }
+    
+    /**
+     * Clear all values from the form
+     */
+    public function clearValues() {
+        foreach ($this->getAllFields() as $field) {
+            $field->clearValue();
+        }
+    }
 
     /**
      * Destroy an index in the given array
