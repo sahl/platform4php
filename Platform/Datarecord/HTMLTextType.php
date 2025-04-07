@@ -20,7 +20,7 @@ class HTMLTextType extends BigTextType {
     }
     
     public function getTextValue($value, Collection &$collection = null): string {
-        return (string)strip_tags($value);
+        return html_entity_decode(strip_tags((string)$value));
     }
 
     public function getSQLFieldType() : string {
