@@ -42,13 +42,20 @@ class Endpoint {
     protected $token_code = null;
     
     /**
-     * Construct an API endpoint
+     * Construct an API endpoint. Classes will be references by their short name in lower case.
+     * You can provide a class name alias by specifying it as a key in the array such as
+     * ['Namespace1\Class', 'OtherExampleCass' => 'Namespace2\Class']
      * @param array $classnames Classes to include in this endpoint
      */
     public function __construct(array $classnames = []) {
-        foreach ($classnames as $classname) {
+        foreach ($classnames as $alias => $classname) {
             if (!class_exists($classname)) trigger_error('No such class '.$classname, E_USER_ERROR);
-            $shortname = $classname::getBaseClassName();
+            if (is_numeric($alias)) {
+                $shortname = $classname::getBaseClassName();
+            } else {
+                $shortname = strtolower($alias);
+            }
+            if (key_exists($shortname, $this->classes)) trigger_error('Tried to register class '.$classname.' as "'.$shortname.'" but this is used by class '.$this->classes[$shortname], E_USER_ERROR);
             $this->classes[$shortname] = $classname;
         }
     }
