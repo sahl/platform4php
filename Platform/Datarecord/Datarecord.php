@@ -526,20 +526,72 @@ class Datarecord implements DatarecordReferable {
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to delete object '.static::$database_table.' in read mode', E_USER_ERROR);
         if (! $this->isInDatabase()) return false;
         
+        // We can only keep sub-objects if we don't delete this
         if (static::$delete_strategy == self::DELETE_STRATEGY_DO_NOTHING) {
             if (! in_array(static::$delete_mode,[self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) trigger_error('You can only use DELETE_STRATEGY_DO_NOTHING along with DELETE_MODE_MARK or DELETE_MODE_EMPTY', E_USER_ERROR);
         }
         
+        // If there are objects referring this and we are configured to block, then we doesn't delete anything
         if (! $force_purge && static::$delete_strategy == self::DELETE_STRATEGY_BLOCK && count($this->getReferringObjectTitles())) return false;
         
+        // If the delete handler answers false, we don't delete anything.
         if (! $this->onDelete()) return false;
         
-        // Terminate all files
+        // Start deleting by asking each field to handle the delete if they need to do some cleanup
         if (static::$delete_strategy != self::DELETE_STRATEGY_DO_NOTHING) {
             foreach (static::getStructure() as $field => $type) {
                 $type->onDelete($this->getRawValue($field));
             }
         }
+        
+        // Only delete sub objects if we are not configured not to do anything
+        if (static::$delete_strategy != self::DELETE_STRATEGY_DO_NOTHING) {
+        
+            // Find all foreign objects referring this object
+            foreach (static::$referring_classes as $referring_class) {
+                // Build a filter to find all referers
+                $referer_field_found = false;
+                $filter = new Filter($referring_class);
+                foreach ($referring_class::getStructure() as $field => $type) {
+                    if ($type->isReference()) {
+                        $filter->addConditionOR(new ConditionMatch($field, $this));
+                        $referer_field_found = true;
+                    }
+                }
+                // Bail if remote object doesn't have fields pointing at us.
+                if (! $referer_field_found) continue;
+                // Get all objects referring this
+                $referring_objects = $filter->execute();
+                foreach ($referring_objects->getAll() as $referring_object) {
+                    $referring_object->reloadForWrite();
+                    foreach ($referring_class::getStructure() as $field => $type) {
+                        if ($type->isReference()) $referring_object->setValue($field, $type->removeReferenceToObject($referring_object->getRawValue($field), $this));
+                    }
+                    $referring_object->save();
+                }
+            }
+            
+            // Find all foreign objects depending of this object
+            foreach (static::$depending_classes as $depending_class) {
+                // Build a filter to find all referers
+                $referer_field_found = false;
+                $filter = new Filter($depending_class);
+                foreach ($depending_class::getStructure() as $field => $type) {
+                    if ($type->isReference()) {
+                        $filter->addConditionOR(new ConditionMatch($field, $this));
+                        $referer_field_found = true;
+                    }
+                }
+                // Bail if remote object doesn't have fields pointing at us.
+                if (! $referer_field_found) continue;
+                // Get all objects referring this
+                $depending_objects = $filter->execute();
+                $depending_objects->deleteAll();
+            }
+        }
+        
+        
+        // Perform the delete action by either deleting the record or marking it as deleted
         if (static::$delete_mode == self::DELETE_MODE_DELETE) {
             self::query("DELETE FROM ".static::$database_table." WHERE ".static::getKeyField()." = ".((int)$this->values[static::getKeyField()]));
             $number_of_items_deleted = static::getLocation() == self::LOCATION_GLOBAL ? Database::globalAffected() : Database::instanceAffected();
@@ -552,53 +604,11 @@ class Datarecord implements DatarecordReferable {
             $this->save();
         }
         
-        // This is no longer in the database
+        // Mark that this isn't in the database anymore
         $this->is_in_database = false;
         
+        // If anything was actually deleted, call the after delete function
         if ($number_of_items_deleted > 0) $this->onAfterDelete();
-
-        // Stop here if we are configured to do nothing
-        if (static::$delete_strategy == self::DELETE_STRATEGY_DO_NOTHING) return $number_of_items_deleted > 0;
-        
-        // Find all objects referring this
-        foreach (static::$referring_classes as $referring_class) {
-            // Build a filter to find all referers
-            $referer_field_found = false;
-            $filter = new Filter($referring_class);
-            foreach ($referring_class::getStructure() as $field => $type) {
-                if ($type->isReference()) {
-                    $filter->addConditionOR(new ConditionMatch($field, $this));
-                    $referer_field_found = true;
-                }
-            }
-            // Bail if remote object doesn't have fields pointing at us.
-            if (! $referer_field_found) continue;
-            // Get all objects referring this
-            $referring_objects = $filter->execute();
-            foreach ($referring_objects->getAll() as $referring_object) {
-                $referring_object->reloadForWrite();
-                foreach ($referring_class::getStructure() as $field => $type) {
-                    if ($type->isReference()) $referring_object->setValue($field, $type->removeReferenceToObject($referring_object->getRawValue($field), $this));
-                }
-                $referring_object->save();
-            }
-        }
-        foreach (static::$depending_classes as $depending_class) {
-            // Build a filter to find all referers
-            $referer_field_found = false;
-            $filter = new Filter($depending_class);
-            foreach ($depending_class::getStructure() as $field => $type) {
-                if ($type->isReference()) {
-                    $filter->addConditionOR(new ConditionMatch($field, $this));
-                    $referer_field_found = true;
-                }
-            }
-            // Bail if remote object doesn't have fields pointing at us.
-            if (! $referer_field_found) continue;
-            // Get all objects referring this
-            $depending_objects = $filter->execute();
-            $depending_objects->deleteAll();
-        }
         
         return $number_of_items_deleted > 0;
     }
@@ -1297,7 +1307,7 @@ class Datarecord implements DatarecordReferable {
      * @return string
      */
     public function getTextTitle() : string {
-        return strip_tags($this->getTitle());
+        return strip_tags(html_entity_decode($this->getTitle()));
     }
 
     /**
