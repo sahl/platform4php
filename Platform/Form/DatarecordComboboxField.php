@@ -39,6 +39,11 @@ class DatarecordComboboxField extends IndexedComboboxField {
         switch ($_POST['event']) {
             case 'autocomplete':
                 return $this->autoComplete($_POST['term']);
+            case 'lookup':
+                $results = $this->autoComplete($_POST['term']);
+                if (count($results)) return ['status' => 1, 'id' => $results[0]['real_id']];
+                return ['status' => 0];
+                
         }
         return parent::handleIO();
     }
@@ -97,6 +102,11 @@ class DatarecordComboboxField extends IndexedComboboxField {
         return $result;
     }
     
+    public function setValue($value) {
+        if (is_numeric($value)) $this->value = $value;
+        else parent::setValue($value);
+    }
+    
     /**
      * Attach a filter to this datarecordcombobox
      * @param \Platform\Filter\Filter $filter
@@ -105,18 +115,17 @@ class DatarecordComboboxField extends IndexedComboboxField {
         $this->filter = $filter->getAsJSON();
     }
     
-    public function setValue($value) {
-        if (! is_array($value)) {
-            if (! $value) {
-                $this->value = array();
+    public function prepareData() {
+        parent::prepareData();
+        if (! is_array($this->value)) {
+            if (! $this->value) {
+                $this->value = [];
                 return;
             }
             $object = new $this->connected_class();
-            $object->loadForRead($value);
+            $object->loadForRead($this->value);
             $visual_value = $object->getTextTitle();
-            $this->value = array('id' => $value, 'visual' => $visual_value);
-        } else {
-            $this->value = $value;
+            $this->value = array('id' => $this->value, 'visual' => $visual_value);
         }
     }
 }

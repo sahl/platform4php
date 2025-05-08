@@ -28,13 +28,34 @@ Platform.Form.IndexedComboboxField = class extends Platform.Form.ComboboxField {
                 var zindex = Platform.Form.ComboboxField.zIndex(text_field);
                 $(text_field).autocomplete('widget').css('z-index', zindex+1);
             }
-        }).data( "ui-autocomplete" )._renderItem = function(ul, item) {
-            ul.addClass('platform_component_combobox_searchresult');
-            return $("<div id='list_autocomplete'></div>")
+        }).autocomplete( "instance" )._renderItem = function(ul, item) {
+            return $("<li>")
+                .append('<div>'+item.value+'</div>')
                 .data("item.autocomplete", item)
-                .append(item.value)
                 .appendTo(ul);
         }
+        text_field.change(function() {
+            if (text_field.val().trim() == '') {
+                id_field.val('0');
+                return true;
+            }
+            if (! id_field.val() || id_field.val() == '0') {
+                // We don't have an ID. Try to resolve it from the backend.
+                component.backendIO({event: 'lookup', term: text_field.val()}, function(data) {
+                    if (data.status) id_field.val(data.id);
+                    text_field.data('validated_value', text_field.val());
+                    // We trigger change on the main component to prevent a loop
+                    console.log(id_field.val());
+                    component.trigger('change');
+                })
+                // We consume the event and fire it again when backend is ready
+                return false;
+            }
+        })
+        
+        text_field.keyup(function() {
+            if (text_field.val() != text_field.data('validated_value')) id_field.val('0');
+        })
 
         return true;
     }
