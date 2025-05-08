@@ -213,7 +213,7 @@ class Time implements \Platform\UI\Serializable {
      * @return \Platform\Mtime
      */
     public function getFirstDayInMonth() : Time {
-        return $this->addDays(-($this->getDay())+1);
+        return $this->addDays(-($this->getDay())+1)->startOfDay();
     }
     
     /**
@@ -221,7 +221,7 @@ class Time implements \Platform\UI\Serializable {
      * @return \Platform\Utilities\Time
      */
     public function getFirstDayInWeek() : Time {
-        return $this->addDays(-($this->getWeekday()-1));
+        return $this->addDays(-($this->getWeekday()-1))->startOfDay();
     }
     
     public function getHour() : int {
@@ -233,7 +233,15 @@ class Time implements \Platform\UI\Serializable {
      * @return \Platform\Utilities\Time
      */
     public function getLastDayInMonth() : Time {
-        return $this->add($this->getDaysInMonth()-$this->getDay());
+        return $this->add($this->getDaysInMonth()-$this->getDay())->startOfDay();
+    }
+    
+    /**
+     * Get the last day in this week
+     * @return Time
+     */
+    public function getLastDayInWeek() : Time {
+        return $this->getFirstDayInWeek()->addDays(6)->startOfDay();
     }
     
     /**
