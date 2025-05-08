@@ -24,6 +24,10 @@ class Chart extends Component {
 
     const CHART_TYPE_HISTOGRAM = 15;
     
+    const CHART_TYPE_STACKED_BAR = 51;
+    const CHART_TYPE_STACKED_COLUMN = 52;
+    const CHART_TYPE_STACKED_AREA = 53;
+    
     const CHART_TYPE_BUBBLE = 20;
     const CHART_TYPE_CANDLESTICK = 21;
     const CHART_TYPE_GAUGE = 22;
@@ -82,8 +86,22 @@ class Chart extends Component {
         }
     }
     
+    public function addIndexedPieData(array $data, array $label_info) {
+        // Clear existing data
+        $this->clearData();
+        
+        $this->addRow(['Data', 'Value']);
+        // Add a row with the data sets
+        foreach ($label_info as $key => $label) {
+            $this->addRow([$label, $data[$key]]);
+        }
+    }
+    
+    
     protected function prepareData() {
         parent::prepareData();
+        if (in_array($this->chart_type, [self::CHART_TYPE_STACKED_BAR, self::CHART_TYPE_STACKED_AREA, self::CHART_TYPE_STACKED_COLUMN])) $this->chart_options['isStacked'] = true;
+        
         $this->addData('chart_data', json_encode($this->chart_data));
         $this->addData('options', json_encode($this->chart_options));
     }

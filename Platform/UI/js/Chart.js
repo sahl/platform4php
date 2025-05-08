@@ -9,6 +9,7 @@ Platform.Chart = class extends Platform.Component {
         google.charts.setOnLoadCallback(function() {
             switch (component.getProperty('chart_type')) {
                 case 2:
+                case 52:
                     component.chart = new google.visualization.ColumnChart(component.dom_node.get(0));
                     break;
                 case 3:
@@ -18,6 +19,7 @@ Platform.Chart = class extends Platform.Component {
                     component.chart = new google.visualization.LineChart(component.dom_node.get(0));
                     break;
                 case 10:
+                case 53:
                     component.chart = new google.visualization.AreaChart(component.dom_node.get(0));
                     break;
                 case 11:
@@ -59,7 +61,6 @@ Platform.Chart = class extends Platform.Component {
         var component = this;
         var data = component.dom_node.data('chart_data');
         var column_types = component.getProperty('column_types');
-        console.log(column_types);
         for (var i = 0; i < data.length; i++) {
             for (var j = 0; j < data[i].length; j++) {
                 switch (column_types[j]) {
