@@ -192,6 +192,7 @@ Platform.Form = class extends Platform.Component {
         });
 
         if (hidden_fields.length) form_node.find('[name="form_hiddenfields"]').val(hidden_fields.join(' '));
+        else form_node.find('[name="form_hiddenfields"]').val('');
         return allow_submit;
     }
 }
