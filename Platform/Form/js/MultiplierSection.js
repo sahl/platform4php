@@ -112,7 +112,10 @@ Platform.Form.MultiplierSection = class extends Platform.Form.Field {
         var component = this;
         var dom_node = this.dom_node;
         // Determine number of array markers in base name
-        var base_name = dom_node.prop('id').substring(dom_node.closest('form').prop('id').length+1);
+        var base_name = dom_node.prop('id');
+        // Strip form name from id (if inside form)
+        if (dom_node.closest('form').length) base_name = base_name.substring(dom_node.closest('form').prop('id').length+1);
+        // Strip "_component" from name
         base_name = base_name.substring(0,base_name.length-10);
         // Catch all before relevant counter
         var regexp_string = '/('+base_name.replace(/(\[|\])/gi, '\\$1')+')';
