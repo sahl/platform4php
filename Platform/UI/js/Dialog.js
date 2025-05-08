@@ -76,7 +76,7 @@ Platform.Dialog = class extends Platform.Component {
         $('#platform_allpurpose_container').children().hide();
         $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
             {
-                text: 'OK',
+                text: Platform.Translation.forUser('OK'),
                 click: function() {
                     Platform.Dialog.closeGeneral();
                     if (typeof(callback) == 'function') callback();
@@ -97,14 +97,14 @@ Platform.Dialog = class extends Platform.Component {
         $('#platform_allpurpose_container').children().hide();
         $('#platform_allpurpose_dialog').dialog('option', 'title', title).dialog('option', 'buttons', [
             {
-                text: 'OK',
+                text: Platform.Translation.forUser('OK'),
                 click: function() {
                     Platform.Dialog.closeGeneral();
                     if (typeof(callback_ok) == 'function') callback_ok();
                 }
             },
             {
-                text: 'Cancel',
+                text: Platform.Translation.forUser('Cancel'),
                 click:  function() {
                     Platform.Dialog.closeGeneral();
                     if (typeof(callback_cancel) == 'function') callback_cancel();
@@ -160,7 +160,7 @@ Platform.Dialog = class extends Platform.Component {
             return true;
         })
 
-        if (ok_text === null) ok_text = 'Save';
+        if (ok_text === null) ok_text = Platform.Translation.forUser('Save');
 
         var open_dialog_form = true;
         if (callback_open) {
@@ -182,7 +182,7 @@ Platform.Dialog = class extends Platform.Component {
                     }
                 },
                 {
-                    text: 'Cancel',
+                    text: Platform.Translation.forUser('Cancel'),
                     click:  Platform.Dialog.closeGeneral
                 }        
             ]).dialog('open');
@@ -202,7 +202,7 @@ Platform.Dialog = class extends Platform.Component {
     static componentDialog(title, text, component_id, ok_text, callback_ok, callback_open, callback_cancel) {
         $('#platform_allpurpose_text').html(text);
         
-        if (ok_text == null) ok_text = 'Save';
+        if (ok_text == null) ok_text = Platform.Translation.forUser('Save');
 
         var open_dialog = true;
         if (callback_open) {
@@ -223,7 +223,7 @@ Platform.Dialog = class extends Platform.Component {
                     }
                 },
                 {
-                    text: 'Cancel',
+                    text: Platform.Translation.forUser('Cancel'),
                     click: function() {
                         if (typeof callback_cancel == 'function') callback_cancel();
                         else if (callback_cancel) component_id.platformComponent().trigger(callback_cancel);
@@ -248,7 +248,7 @@ Platform.Dialog = class extends Platform.Component {
     static buildComponentDialog(title, text, component_class, properties, ok_text, callback_ok, callback_open, callback_cancel) {
         $('#platform_allpurpose_text').html(text);
         
-        if (ok_text == null) ok_text = 'Save';
+        if (ok_text == null) ok_text = Platform.Translation.forUser('Save');
 
         var open_dialog = true;
         if (callback_open) {
@@ -272,7 +272,7 @@ Platform.Dialog = class extends Platform.Component {
                     }
                 },
                 {
-                    text: 'Cancel',
+                    text: Platform.Translation.forUser('Cancel'),
                     click: function() {
                         var component_id = $('#platform_allpurpose_container div:last-child');
                         if (typeof callback_cancel == 'function') callback_cancel();
