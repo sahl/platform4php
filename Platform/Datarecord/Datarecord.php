@@ -223,11 +223,7 @@ class Datarecord implements DatarecordReferable {
     public static function addStructure(array $structure, bool $allow_replace = false) {
         foreach ($structure as $type) {
             if (! $type instanceof Type) trigger_error('Can only add objects of Type to Record', E_USER_ERROR);
-            if ($type->isTitle()) static::$title_field = $type->name;
-            if ($type->isPrimaryKey()) {
-                if (static::$key_field) trigger_error('There can only be one key field added to a Record', E_USER_ERROR);
-                static::$key_field = $type->name;
-            }
+            if (! $allow_replace && isset(static::$structure[$type->name])) trigger_error('Trying to add field '.$type->name.' to '.get_called_class().' which is already present.', E_USER_ERROR);
             $sub_fields = $type->addAdditionalStructure();
             if ($sub_fields) {
                 $type->setStoreLocation(\Platform\Datarecord\Type::STORE_SUBFIELDS);
@@ -236,7 +232,6 @@ class Datarecord implements DatarecordReferable {
                     static::addStructure([$field]);
                 }
             }
-            if (! $allow_replace && isset(static::$structure[$type->name])) trigger_error('Trying to add field '.$type->name.' to '.get_called_class().' which is already present.', E_USER_ERROR);
             static::$structure[$type->name] = $type;
         }
     }
@@ -274,6 +269,15 @@ class Datarecord implements DatarecordReferable {
                 new BoolType('is_deleted', '', ['is_invisible' => true, 'default_value' => false]), // BOOLEAN
             ));
         }
+        
+        foreach (static::$structure as $type) {
+            if ($type->isTitle()) static::$title_field = $type->name;
+            if ($type->isPrimaryKey()) {
+                if (static::$key_field) trigger_error('There can only be one key field added to a Record', E_USER_ERROR);
+                static::$key_field = $type->name;
+            }
+        }
+        
     }
     
     /**
