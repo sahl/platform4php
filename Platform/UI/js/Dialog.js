@@ -20,7 +20,7 @@ Platform.Dialog = class extends Platform.Component {
         
         for (var i in buttons) {
             if (typeof buttons[i] == 'function')
-                dialog_buttons.push({text: i, id: 'dialog_option'+dialog_buttons.length+'_button', click: button[i]});
+                dialog_buttons.push({text: i, id: 'dialog_option'+dialog_buttons.length+'_button', click: buttons[i]});
             else
                 dialog_buttons.push(buttons[i]);
         }
