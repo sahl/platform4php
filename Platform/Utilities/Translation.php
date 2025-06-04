@@ -251,7 +251,7 @@ class Translation {
         } else {
             $extension = '';
         }
-        if (in_array($extension, array('frm', 'tut'))) $extension = 'php';
+        if (in_array($extension, array('frm', 'tut'))) $extension .= '.php';
         $language_path = self::getConfiguration('translation_directory');
         return $web_root.$language_path.$original_path.$filename.'.'.$language_key.'.'.$extension;
     }
@@ -581,7 +581,7 @@ class Translation {
             $translations = self::loadTranslationsFromCSVFile($csv_file);
             foreach ($files as $file) {
                 // Only pick current language files
-                if (preg_match('/([a-z]{2})\\.[a-z]{2,3}$/', $file, $match)) {
+                if (preg_match('/([a-z]{2})\\.[a-z]{2,3}(\\.php)?$/', $file, $match)) {
                     // Continue if language doesn't match
                     if ($match[1] != $language_key) continue;
                     // Load existing.
