@@ -12,7 +12,7 @@ class MultiplierSection extends Field {
     
     protected $contained_fields = array();
     
-    private $error_cache = array();
+    protected $error_cache = array();
     
     protected static $component_class = 'platform_component_form_multiplier_section';
     
