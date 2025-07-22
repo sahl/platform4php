@@ -178,13 +178,14 @@ class MultiReferenceType extends Type {
     /**
      * Get SQL to determine if a field of this type matches another value
      * @param mixed $value The other value
-     * @return bool
+     * @return string
      */
     public function filterMatchSQL($value) {
         $final_values = [];
         foreach ($this->parseValue($value) as $v) {
             $final_values[] = '`'.$this->name.'` LIKE \'%"'.((int)$v).'"%\'';
         }
+        if (! count($final_values)) return 'FALSE';
         return '('.implode(' OR ', $final_values).')';
     }
     
