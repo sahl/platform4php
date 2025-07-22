@@ -269,15 +269,6 @@ class Datarecord implements DatarecordReferable {
                 new BoolType('is_deleted', '', ['is_invisible' => true, 'default_value' => false]), // BOOLEAN
             ));
         }
-        
-        foreach (static::$structure as $type) {
-            if ($type->isTitle()) static::$title_field = $type->name;
-            if ($type->isPrimaryKey()) {
-                if (static::$key_field) trigger_error('There can only be one key field added to a Record', E_USER_ERROR);
-                static::$key_field = $type->name;
-            }
-        }
-        
     }
     
     /**
@@ -833,6 +824,7 @@ class Datarecord implements DatarecordReferable {
     protected static function ensureStructure() {
         if (is_array(static::$structure)) return;
         static::buildStructure();
+        static::finalizeStructure();
     }
     
     /**
@@ -841,6 +833,19 @@ class Datarecord implements DatarecordReferable {
     public function buildDefaultValues() {
         foreach ($this->getStructure() as $name => $type) {
             $this->setValue($name, $type->getDefaultValue());
+        }
+    }
+
+    /**
+     * Finalize the structure by finding the title and the key field.
+     */
+    protected static function finalizeStructure() {
+        foreach (static::$structure as $type) {
+            if ($type->isTitle()) static::$title_field = $type->name;
+            if ($type->isPrimaryKey()) {
+                if (static::$key_field) trigger_error('There can only be one key field added to a Record', E_USER_ERROR);
+                static::$key_field = $type->name;
+            }
         }
     }
 
@@ -1324,10 +1329,10 @@ class Datarecord implements DatarecordReferable {
     
     /**
      * Get the field containing the title (if any)
-     * @return string
+     * @return mixed Title field or false if no title field
      */
-    public static function getTitleField() : string {
-        return static::$title_field;
+    public static function getTitleField() {
+        return static::$title_field ?: false;
     }
     
     /**
