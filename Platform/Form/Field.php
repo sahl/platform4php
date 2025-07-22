@@ -354,7 +354,6 @@ class Field extends Component {
      */
     public function attachToForm(Form $form) {
         $this->form = $form;
-        $this->setID($form->getFormId().'_'.$this->getName().'_component');
     }
     
     /**

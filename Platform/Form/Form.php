@@ -571,6 +571,10 @@ class Form extends Component {
     protected function prepareData() {
         parent::prepareData();
         if ($this->save_on_submit != self::SAVE_NO) $this->addData('save_on_submit', $this->save_on_submit);
+        // Set the IDs of all form fields
+        foreach ($this->getAllFields() as $field) {
+            $field->setID($this->getFormId().'_'.$field->getName().'_component');
+        }
     }
     
     /**
