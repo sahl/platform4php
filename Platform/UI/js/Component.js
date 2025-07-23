@@ -327,7 +327,7 @@ Platform.Component = class {
         form.off('submit.ioform').on('submit.ioform', function() {
             component.backendIO($(this).serialize(), function(data) {
                 if (! data.status) {
-                    form.closest('.platform_component_form').platformComponent().attachErrors(data.form_errors);
+                    form.platformComponent().attachErrors(data.form_errors);
                     if (typeof failfunc == 'function') failfunc(data);
                 } else {
                     if (typeof func == 'function') func(data);
