@@ -24,6 +24,7 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
     
     clear() {
         this.dom_node.find('option:first-child').prop('selected', true);
+        this.setColourFromSelected();
     }
     
     addAllowedOption(option) {
