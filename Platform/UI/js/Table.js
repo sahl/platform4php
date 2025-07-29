@@ -215,7 +215,7 @@ Platform.Table = class extends Platform.Component {
 
         this.table_is_initialized = true;
 
-        if (! this.control_form_dom_node) this.loadData();
+        /*if (! this.control_form_dom_node)*/ this.loadData();
         
         
     }
