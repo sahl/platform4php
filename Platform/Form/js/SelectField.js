@@ -54,7 +54,14 @@ Platform.Form.SelectField = class extends Platform.Form.Field {
     }
 
     setValue(value) {
-        if (value !== null && this.dom_node.find('option[value="'+value+'"]').length) this.dom_node.find('select').val(value);
+        if (value === null) {
+            this.clear();
+            return;
+        }
+        // Escape value for selector
+        var escaped_value = new String(value).replaceAll('\\', '\\\\');
+        
+        if (this.dom_node.find('option[value="'+escaped_value+'"]').length) this.dom_node.find('select').val(value);
         else this.dom_node.find('option:first-child').prop('selected', true);
         this.setColourFromSelected();
     }
