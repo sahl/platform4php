@@ -856,9 +856,10 @@ class Datarecord implements DatarecordReferable {
      * "array" or "autocomplete"
      * @param Filter $additional_filter If a filter is passed, then this filter is also applyed to the keyword search
      * @param bool $with_access_control Should we use access control when finding records
+     * @param int $result_limit The maximum number of records to retrieve. Any non-positive number means all
      * @return type
      */
-    public static function findByKeywords(string $keywords, string $output = 'Collection', $additional_filter = null, bool $with_access_control = true) {
+    public static function findByKeywords(string $keywords, string $output = 'Collection', $additional_filter = null, bool $with_access_control = true, int $result_limit = 0) {
         // Backward compatibility
         if (! in_array($output, array('Collection', 'array', 'autocomplete'))) trigger_error('Invalid output format', E_USER_ERROR);
         $search_fields = array();
@@ -885,6 +886,7 @@ class Datarecord implements DatarecordReferable {
             $filter->addCondition($condition);
         }
         $filter->setPerformAccessCheck($with_access_control);
+        if ($result_limit) $filter->setResultLimit($result_limit);
         $results = $filter->execute();
         if ($results === false) return $results = new Collection(get_called_class());
         if ($output == 'autocomplete') {
