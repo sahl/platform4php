@@ -27,8 +27,13 @@ Platform.Table = class extends Platform.Component {
     tabulator = null;
     
     initialize() {
+        var component = this;
+        
         this.initializeTabulator();
-        this.addEventListeners();
+        
+        this.tabulator.on('tableBuilt', function() {
+            component.initializeTable();
+        });
     }
     
     
@@ -104,7 +109,7 @@ Platform.Table = class extends Platform.Component {
             delete table_configuration['jsonfilter'];
         }
 
-        // CHeck if we have added a speciel filter field to filter the table content
+        // Check if we have added a speciel filter field to filter the table content
         if (table_configuration['filter_field']) {
             this.filter_field = $('#'+table_configuration['filter_field']);
             delete table_configuration['filter_field'];
@@ -212,10 +217,12 @@ Platform.Table = class extends Platform.Component {
             }, true);
         
         this.updateMultiButtons();
+        
+        this.addEventListeners();
 
         this.table_is_initialized = true;
 
-        /*if (! this.control_form_dom_node)*/ this.loadData();
+        if (! this.control_form_dom_node) this.loadData();
         
         
     }
@@ -244,12 +251,6 @@ Platform.Table = class extends Platform.Component {
         this.tabulator.on('reloadData', function() {
             component.loadData();
         });
-        
-        this.tabulator.on('tableBuilt', function() {
-            component.initializeTable();
-        });
-
-        
     }
     
     /**
@@ -278,7 +279,6 @@ Platform.Table = class extends Platform.Component {
             var component = this;
             // Setup a custom submit handler for this form
             this.control_form_dom_node.off('submit.platform_table').on('submit.platform_table', function() {
-                console.log('Submit fire');
                 if (! component.table_is_initialized) {
                     // We cannot submit the form before the table is initialised, so we instead convert the form to
                     // an auto-submit
