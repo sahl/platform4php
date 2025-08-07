@@ -480,7 +480,7 @@ class Filter {
      * @param string $field Field to check
      * @param array $values Values to check against
      */
-    public function conditionOneOf(string $field, array $values) {
+    public function conditionOneOf(string $field, array|Collection $values) {
         $this->addCondition(new ConditionOneOf($field, $values));
     }
     
