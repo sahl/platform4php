@@ -151,13 +151,7 @@ class Table extends Component {
         foreach (self::getColumnDefinitionsFromDatarecord($classname, $classname::getBaseClassName().'-') as $definition) {
             $this->tabulator_options['columns'][] = $definition;
         }
-        $groupfields = array();
-        foreach ($classname::getStructure() as $key => $definition) {
-            if ($definition['tablegroup']) $groupfields[] = $classname::getBaseClassName().'-'.$key;
-        }
-        if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
-        
-        $this->adjustColumnsFromConfiguration();
+        if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
     
     /**
@@ -246,32 +240,73 @@ class Table extends Component {
      * @param Collection $collection
      * @param string $resolve_relation_field If a field name is given here, the
      * relation of this field is resolved and the resulting data is also added.
+     * @param string $class_with_relation_field If a class is typed here, then the relation field
+     * is instead expected to be in this class and point to the objects in the collection
      * @return array Array ready to use for table
      */
-    public static function getDataFromCollection(Collection $collection, string $resolve_relation_field = '') {
-        $result = array(); $supplemental_data = array();
+    public static function getDataFromCollection(Collection $collection, string $resolve_relation_field = '', string $class_with_relation_field = '') {
+        $result = array(); $foreign_class_name = '';
+        // Get the class name from the collection
         $classname = $collection->getCollectionType();
         if (! $classname) return array();
-        // Resolve relation (if any)
+        // Check if we should resolve relations. In that case we need to find all foreign objects
         if ($resolve_relation_field) {
-            if (! in_array($classname::getStructure()[$resolve_relation_field]['fieldtype'], array(Datarecord::FIELDTYPE_REFERENCE_SINGLE))) trigger_error('getDataFromDatarecordCollection can only resolve single reference fields and '.$resolve_relation_field.' is not of this type.', E_USER_ERROR);
-            $foreign_class = $classname::getStructure()[$resolve_relation_field]['foreign_class'];
-            $simple_foreign_class = $foreign_class::getBaseClassName();
-            $filter = new Filter($foreign_class);
-            $filter->addCondition(new ConditionOneOf($filter->getBaseClassName()::getKeyField(), $collection->getAllRawValues($resolve_relation_field)));
-            $supplemental_datarecord = $filter->execute();
-            $supplemental_data = $supplemental_datarecord->getAllWithKeys();
+            // Check if it is the remote class that holds the relation
+            if ($class_with_relation_field) {
+                // We can find all relevant foreign objects by a filter
+                $filter = new Filter($class_with_relation_field);
+                $filter->conditionOneOf($resolve_relation_field, $collection);
+                $foreign_objects = [];
+                // Loop all found objects
+                foreach ($filter->execute()->getAll() as $foreign_object) {
+                    // We want an array hashed by the ID of the objects from the collection,
+                    // so we need to resolve what the foreign object points to
+                    $foreign_object_pointers = $foreign_object->getForeignObjectPointers($resolve_relation_field);
+                    foreach ($foreign_object_pointers as $foreign_object_pointer) {
+                        if ($foreign_object_pointer->getForeignClass() == $classname) $foreign_objects[$foreign_object_pointer->getForeignID()] = $foreign_object;
+                    }
+                }
+                // Get the base class name of the remote class
+                $foreign_class_name = $class_with_relation_field::getBaseClassName();
+            } else {
+                // We get all the pointers from the collection, so we can find the remote objects
+                $foreign_object_pointers = \Platform\Datarecord\ForeignObjectPointer::getUniquePointers($collection->getAllForeignObjectPointers($resolve_relation_field));
+                // We cannot handle if we are pointing to objects of several classes
+                if (! \Platform\Datarecord\ForeignObjectPointer::pointsToSameClass($foreign_object_pointers)) trigger_error('Only works if all pointers point to same class', E_USER_ERROR);
+                // Get all the foreign objects in an array hashed by their IDs
+                $foreign_objects = $collection->getAssociatedObjects($resolve_relation_field)->getAll();
+                // Get the base class name of the remote class
+                if (count($foreign_object_pointers)) $foreign_class_name = $foreign_object_pointers[0]->getForeignClass()::getBaseClassName();
+            }
         }
         foreach ($collection->getAll() as $object) {
-            $columns = array();
-            foreach ($object->getStructure() as $name => $type) {
-                if ($type->isPrimaryKey()) $columns['id'] = $object->getRawValue($name);
-                $columns[$name] = $object->getTableValue($name);
-            }
-            // Add relation data (if any)
-            if ($resolve_relation_field && $supplemental_data[$object->getRawValue($resolve_relation_field)]) {
-                foreach ($supplemental_data[$object->getRawValue($resolve_relation_field)]->getAsArray(array(), Datarecord::RENDER_TEXT) as $field => $value) {
-                    $columns[$simple_foreign_class.'-'.$field] = $value;
+            $columns = $object->getAsArrayForTable();
+            // We require that the key column is named id
+            $columns['id'] = $object->getKeyValue();
+            // Check if we are using relations
+            if ($resolve_relation_field) {
+                // Check if the relation is in the other data
+                if ($class_with_relation_field) {
+                    // Check if there is a foreign object belonging to this record and add it to the table data
+                    if (array_key_exists($object->getKeyValue(), $foreign_objects)) {
+                        foreach ($foreign_objects[$object->getKeyValue()]->getAsArrayForTable() as $field => $value) {
+                            $columns[$foreign_class_name.'-'.$field] = $value;
+                        }
+                    }
+                } else {
+                    // Get all pointers from this record
+                    $object_foreign_object_pointers = $object->getForeignObjectPointers($resolve_relation_field);
+                    // Check if we got any pointers
+                    if (count($object_foreign_object_pointers)) {
+                        // There could be several but we are just using the first
+                        $object_foreign_object_pointer = $object_foreign_object_pointers[0];
+                        // Check if there is a foreign object belonging to this record and add it to the table data
+                        if (array_key_exists($object_foreign_object_pointer->getForeignID(), $foreign_objects)) {
+                            foreach ($foreign_objects[$object_foreign_object_pointer->getForeignID()]->getAsArrayForTable() as $field => $value) {
+                                $columns[$foreign_class_name.'-'.$field] = $value;
+                            }
+                        }
+                    }
                 }
             }
             $result[] = $columns;
