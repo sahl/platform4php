@@ -44,4 +44,38 @@ class ForeignObjectPointer {
         $object->loadForRead($this->foreign_id);
         return $object;
     }
+    
+    /**
+     * Returns an array of all unique pointers in the given array
+     * @param array $foreign_object_pointers Array of ForeignObjectPointer
+     * @return array
+     */
+    public static function getUniquePointers(array $foreign_object_pointers) {
+        $result = []; $map = [];
+        foreach ($foreign_object_pointers as $foreign_object_pointer) {
+            // Skip of seen
+            if (isset($map[$foreign_object_pointer->getForeignClass()][$foreign_object_pointer->getForeignID()])) continue;
+            $result[] = $foreign_object_pointer;
+            if (! is_array($map[$foreign_object_pointer->getForeignClass()])) $map[$foreign_object_pointer->getForeignClass()] = [];
+            $map[$foreign_object_pointer->getForeignClass()][$foreign_object_pointer->getForeignID()] = true;
+        }
+        return $result;
+    }
+    
+    /**
+     * Examines if all pointers in an array points to the same class
+     * @param array $foreign_object_pointers Array of ForeignObjectPointer
+     * @return bool True if all pointers point to same class
+     */
+    public static function pointsToSameClass(array $foreign_object_pointers) : bool {
+        $seen_class = null;
+        foreach ($foreign_object_pointers as $foreign_object_pointer) {
+            if ($seen_class == null) {
+                $seen_class = $foreign_object_pointer->getForeignClass();
+            } else {
+                if ($seen_class != $foreign_object_pointer->getForeignClass()) return false;
+            }
+        }
+        return true;
+    }
 }
