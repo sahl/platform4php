@@ -869,7 +869,8 @@ class Datarecord implements DatarecordReferable {
                 $search_fields[] = $name;
             }
         }
-        if (! count($search_fields)) {
+        // Bail if no searchable fields and we searched for something
+        if (! count($search_fields) && $keywords) {
             if ($output == 'Collection') return new Collection();
             return array();
         }
@@ -997,6 +998,20 @@ class Datarecord implements DatarecordReferable {
         }
         return $result;
     }
+    
+    /**
+     * Return all fields suitable for insertion into a table.
+     * @return array
+     */
+    public function getAsArrayForTable() : array {
+        $result = array();
+        foreach (static::$structure as $name => $type) {
+            if ($type->isSubfield()) continue;
+            $result[$name] = $this->getTableValue($name);
+        }
+        return $result;
+    }
+    
     
     /**
      * Get a SQL assignment for the given field.
@@ -1176,11 +1191,20 @@ class Datarecord implements DatarecordReferable {
      * @return Datarecord Referenced object or null
      */
     public function getForeignObject(string $field) : ?DatarecordReferable {
-        $type = static::getFieldDefinition($field);
-        if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
-        $objects = $type->getForeignObjectPointers($this->getRawValue($field));
+        $objects = $this->getForeignObjectPointers($field);
         if (count($objects) == 0) return null;
         return $objects[0]->getForeignObject();
+    }
+
+    /**
+     * Return ForeignObjectPointers for all objects pointed to by this field
+     * @param string $field Field name
+     * @return array Array of ForeignObjectPointers
+     */
+    public function getForeignObjectPointers(string $field) : array {
+        $type = static::getFieldDefinition($field);
+        if (! $type) trigger_error('Unknown field '.$field.' in object '.__CLASS__, E_USER_ERROR);
+        return $type->getForeignObjectPointers($this->getRawValue($field));
     }
 
     /**
