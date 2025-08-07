@@ -180,6 +180,28 @@ class Collection implements Iterator,Countable {
     }
     
     /**
+     * Return all the foreign object pointers referred to from this field
+     * @param string $field Field name
+     * @param int $limit Limit number of pointers
+     * @return array An array of foreign pointers
+     */
+    public function getAllForeignObjectPointers(string $field, int $limit = -1) : array {
+        $foreign_object_pointers = [];
+        if ($this->collectiontype === false) return $foreign_object_pointers;
+        $classname = $this->collectiontype;
+        $type = $classname::getFieldDefinition($field);
+        if ($type === null) trigger_error('No such field '.$field, E_USER_ERROR);
+        if (! $type->isReference()) trigger_error('Field '.$field.' is not a relation field', E_USER_ERROR);
+        foreach ($this->datarecords as $datarecord) {
+            foreach ($type->getForeignObjectPointers($datarecord->getRawValue($field)) as $foreign_object_pointer) {
+                if ($limit > -1 && count($foreign_object_pointers) == $limit) break 2;
+                $foreign_object_pointers[] = $foreign_object_pointer;
+            }
+        }
+        return $foreign_object_pointers;
+    }
+    
+    /**
      * Get the full value from the given field from all objects in this collection.
      * @param string $field Field to read from
      * @param int $limit Max number of values to retrieve. -1 = get all
