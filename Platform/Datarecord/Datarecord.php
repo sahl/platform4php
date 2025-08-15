@@ -887,7 +887,7 @@ class Datarecord implements DatarecordReferable {
             $filter->addCondition($condition);
         }
         $filter->setPerformAccessCheck($with_access_control);
-        if ($result_limit) $filter->setResultLimit($result_limit);
+        if ($result_limit > 0) $filter->setResultLimit($result_limit);
         $results = $filter->execute();
         if ($results === false) return $results = new Collection(get_called_class());
         if ($output == 'autocomplete') {
