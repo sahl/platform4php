@@ -90,6 +90,7 @@ Platform.NumberFormat = class {
      * @returns {string} The formatted number
      */
     static getFormattedNumber(number, decimals, separate_thousands) {
+        if (number === null) return '';
         return number.toLocaleString(Platform.NumberFormat.getLocaleString(), {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals,
