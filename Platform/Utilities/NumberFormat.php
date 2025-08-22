@@ -93,9 +93,11 @@ class NumberFormat {
     /**
      * Converts a formatted string (as formatted by getFormattedNumber) to a float
      * @param string $value Formatted value
-     * @return float Value as float
+     * @return Value as float unless it is null or an empty string
      */
-    public static function getUnformattedNumber(string $value) : float {
+    public static function getUnformattedNumber(string $value) {
+        if ($value === null) return null;
+        if ($value === '') return '';
         return (float)str_replace(static::getDecimalSeparator(), '.', str_replace(static::getThousandSeparator(), '', $value));
     }
     
