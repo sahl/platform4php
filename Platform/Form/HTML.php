@@ -21,6 +21,10 @@ class HTML extends Field {
         return $field;
     }
     
+    public function clearValue() {
+        // We don't clear html fields
+    }
+    
     public function parse($value) : bool {
         return true;
     }
