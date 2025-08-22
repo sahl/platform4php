@@ -402,6 +402,7 @@ class Form extends Component {
         if (! $values) $values = $_SESSION['platform']['saved_forms'][$this->form_id];
         // See if we got anything
         if ($values) {
+            $this->clearValues();
             $this->getValuesFromSerializedForm($values);
             if ($auto_submit_if_values) $this->setAutoSubmit(true);
             return true;
