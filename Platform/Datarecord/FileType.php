@@ -125,6 +125,9 @@ class FileType extends SingleReferenceType {
             $file->save(false, true);
             return $file->file_id;
         }
+        elseif (is_numeric($value) && $value > 0) {
+            return $value;
+        }
         return null;
     }
     
