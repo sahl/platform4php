@@ -338,6 +338,22 @@ class Datarecord implements DatarecordReferable {
     }
     
     /**
+     * Get all objects of a foreign class, which is related from this class.
+     * @param string $foreign_class Name of foreign class
+     * @return array Array of Datarecord objects
+     */
+    public function getForeignObjectsRelatedFromThis(string $foreign_class) : array {
+        $result = [];
+        $referring_fields = static::getFieldsRelatingTo($foreign_class);
+        foreach ($referring_fields as $referring_field) {
+            foreach ($this->getForeignObjectPointers($referring_field) as $pointer) {
+                if ($pointer->getForeignClass() == $foreign_class) $result[] = $pointer->getForeignObject();
+            }
+        }
+        return $result;
+    }
+    
+    /**
      * Get all objects of this class which related to the foreign object. If other classnames are given, then we will also find objects in
      * these classes relating to the objects found here.
      * @param Datarecord $foreign_object Foreign object
@@ -381,6 +397,7 @@ class Datarecord implements DatarecordReferable {
             if (! class_exists($class)) trigger_error('No such class '.$class, E_USER_ERROR);
             // Add results to this result
             foreach ($class::getObjectsRelatingTo($this, $classes) as $object) $result[] = $object;
+            foreach ($this->getForeignObjectsRelatedFromThis($class) as $object) $result[] = $object;
         }
         // An object can be found several times, but we only want to return one copy
         $final_result = []; $found_map = [];
