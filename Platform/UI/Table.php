@@ -151,6 +151,12 @@ class Table extends Component {
         foreach (self::getColumnDefinitionsFromDatarecord($classname, $classname::getBaseClassName().'-') as $definition) {
             $this->tabulator_options['columns'][] = $definition;
         }
+        $groupfields = array();
+        foreach ($classname::getStructure() as $key => $definition) {
+            if ($definition['tablegroup']) $groupfields[] = $classname::getBaseClassName().'-'.$key;
+        }
+        if ($groupfields) $this->setTabulatorOption('groupBy', $groupfields);
+        
         if (Instance::getActiveInstanceID()) $this->adjustColumnsFromConfiguration();
     }
     
