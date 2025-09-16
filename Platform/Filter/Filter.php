@@ -138,20 +138,27 @@ class Filter {
         $discarded_results = 0;
         while (true) {
             // Do the SQL selection
-            $result = $this->base_object->getCollectionFromSQL($this->getSQL(), $this->perform_access_check);
+            $result = $this->base_object->getCollectionFromSQL($this->getSQL());
             // If this filter can be done purely in SQL we have a valid result
-            if (! $this->filter_after_sql) return $result;
+            if (! $this->filter_after_sql && ! $this->perform_access_check) return $result;
             // Loop all results
             foreach ($result as $object) {
-                // Do a manual match on the object
-                if ($this->base_condition->match($object)) {
-                    // If we shouldn't start from the beginning we need to throw away some results
-                    if ($this->start_at_result !== null && $discarded_results++ < $original_start) continue;
-                    // Add it
-                    $filtered_datacollection->add($object);
-                    // Check if we have enough results (if there is a limit) and stop collecting more if we have
-                    if ($this->limit_results !== null && count($filtered_datacollection) == $original_limit) break;
+                // First check for a manual access check
+                if ($this->filter_after_sql) {
+                    // Do a manual match on the object
+                    if ($this->base_condition->match($object)) {
+                        // If we shouldn't start from the beginning we need to throw away some results
+                        if ($this->start_at_result !== null && $discarded_results++ < $original_start) continue;
+                    }
                 }
+                // Then check for access check
+                if ($this->perform_access_check) {
+                    if (! $object->canAccess()) continue;
+                }
+                // Add it
+                $filtered_datacollection->add($object);
+                // Check if we have enough results (if there is a limit) and stop collecting more if we have
+                if ($this->limit_results !== null && count($filtered_datacollection) == $original_limit) break;
             }
             // Check if we have enough results (if there is a limit) and break out of the "fetch more" loop
             if ($this->limit_results === null || count($filtered_datacollection) == $original_limit) break;
