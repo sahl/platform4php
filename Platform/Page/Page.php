@@ -150,6 +150,28 @@ class Page {
     }    
     
     /**
+     * Do a onestop rendering of the entire page.
+     * @param string $title Page title
+     * @param mixed $js_files Javascript files to include. Either string with one file name or array with one or more file names.
+     * @param mixed $css_files CSS files to include. Either string with one file name or array with one or more file names.
+     * @param array $options Options to the page
+     */
+    public static function render(string $title, $js_files = [], $css_files = [], array $options = []) {
+        // Prepare all components
+        foreach (static::$components as $component) {
+            $component->prepareComponent();
+        }
+        // Render page start
+        static::renderPagestart($title, $js_files, $css_files, $options);
+        // Render all components
+        foreach (static::$components as $component) {
+            $component->render();
+        }
+        // Render page end
+        static::renderPageend();
+    }
+    
+    /**
      * Render the page start including html, head and body tag
      * @param string $title Page title
      * @param mixed $js_files Javascript files to include. Either string with one file name or array with one or more file names.
