@@ -288,6 +288,28 @@ class Time implements \Platform\UI\Serializable {
             ];
     }
     
+    /**
+     * Get an array of all month names on short form
+     * @return array
+     */
+    public static function getShortMonthsArray() : array {
+        return 
+            [
+                1 => Translation::translateForUser('Jan'),
+                2 => Translation::translateForUser('Feb'),
+                3 => Translation::translateForUser('Mar'),
+                4 => Translation::translateForUser('Apr'),
+                5 => Translation::translateForUser('May'),
+                6 => Translation::translateForUser('Jun'),
+                7 => Translation::translateForUser('Jul'),
+                8 => Translation::translateForUser('Aug'),
+                9 => Translation::translateForUser('Sep'),
+                10=> Translation::translateForUser('Oct'),
+                11=> Translation::translateForUser('Nov'),
+                12=> Translation::translateForUser('Dec'),
+            ];
+    }
+    
     
     /**
      * Get the number of months until another time
@@ -411,6 +433,24 @@ class Time implements \Platform\UI\Serializable {
                 7 => Translation::translateForUser('Sunday'),
             ];
     }
+    
+    /**
+     * Get an array with all weekday names hashed by their index on short form
+     * @return array
+     */
+    public static function getShortWeekDaysArray() : array {
+        return 
+            [
+                1 => Translation::translateForUser('Mon'),
+                2 => Translation::translateForUser('Tue'),
+                3 => Translation::translateForUser('Wed'),
+                4 => Translation::translateForUser('Thu'),
+                5 => Translation::translateForUser('Fri'),
+                6 => Translation::translateForUser('Sat'),
+                7 => Translation::translateForUser('Sun'),
+            ];
+    }
+    
     
     /**
      * Get year
