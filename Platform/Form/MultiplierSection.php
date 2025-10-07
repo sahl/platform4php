@@ -109,7 +109,7 @@ class MultiplierSection extends Field {
      * @return bool
      */
     public function isError() : bool {
-        return count($this->error_cache) > 0;
+        return parent::isError() || (count($this->error_cache) > 0);
     }
     
     
