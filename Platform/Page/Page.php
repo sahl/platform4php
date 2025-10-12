@@ -9,6 +9,7 @@ namespace Platform\Page;
  * @link https://wiki.platform4php.dk/doku.php?id=menuitem_class
  */
 
+use Platform\UI\Component;
 use Platform\Utilities\Translation;
 
 class Page {
@@ -31,10 +32,24 @@ class Page {
     public static $data = [];
     
     /**
+     * Components to render for one-line page rendering
+     * @var array
+     */
+    public static $components = [];
+    
+    /**
      * Indicate if page rendering have started.
      * @var bool 
      */
     private static $page_started = false;
+    
+    /**
+     * Add a component to this page
+     * @param Component $component
+     */
+    public static function addComponent(Component $component) {
+        static::$components[] = $component;
+    }
     
     /**
      * Add some data to the body
