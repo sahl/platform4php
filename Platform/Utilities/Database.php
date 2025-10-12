@@ -65,7 +65,9 @@ class Database {
      */
     public static function connectGlobal() {
         if (self::$global_connection === false) {
-            self::$global_connection = @mysqli_connect(Platform::getConfiguration('global_database_server'), Platform::getConfiguration('global_database_username'), Platform::getConfiguration('global_database_password'));
+            // See if we are using non-standard port
+            $port = Platform::getConfiguration('global_database_port') ?: 3306;
+            self::$global_connection = @mysqli_connect(Platform::getConfiguration('global_database_server'), Platform::getConfiguration('global_database_username'), Platform::getConfiguration('global_database_password'), null, $port);
             if (! self::$global_connection) return false;
             mysqli_set_charset(self::$global_connection,"utf8mb4");        
         }
@@ -77,7 +79,9 @@ class Database {
      */
     public static function connectLocal() {
         if (self::$local_connection === false) {
-            self::$local_connection = @mysqli_connect(Platform::getConfiguration('local_database_server'), Platform::getConfiguration('local_database_username'), Platform::getConfiguration('local_database_password'));
+            // See if we are using non-standard port
+            $port = Platform::getConfiguration('local_database_port') ?: 3306;
+            self::$local_connection = @mysqli_connect(Platform::getConfiguration('local_database_server'), Platform::getConfiguration('local_database_username'), Platform::getConfiguration('local_database_password'), null, $port);
             if (! self::$local_connection) return false;
         }
         mysqli_set_charset(self::$local_connection, 'utf8mb4');
