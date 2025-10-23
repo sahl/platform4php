@@ -146,10 +146,9 @@ class Filter {
                 // First check for a manual access check
                 if ($this->filter_after_sql) {
                     // Do a manual match on the object
-                    if ($this->base_condition->match($object)) {
-                        // If we shouldn't start from the beginning we need to throw away some results
-                        if ($this->start_at_result !== null && $discarded_results++ < $original_start) continue;
-                    }
+                    if (! $this->base_condition->match($object)) continue;
+                    // If we shouldn't start from the beginning we need to throw away some results
+                    if ($this->start_at_result !== null && $discarded_results++ < $original_start) continue;
                 }
                 // Then check for access check
                 if ($this->perform_access_check) {

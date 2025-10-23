@@ -882,7 +882,7 @@ class Datarecord implements DatarecordReferable {
         $search_fields = array();
         // Locate search fields
         foreach (static::getStructure() as $name => $type) {
-            if ($type->isSearchable() || $type->isTitle()) {
+            if ($type->isSearchable()) {
                 $search_fields[] = $name;
             }
         }

@@ -167,6 +167,8 @@ class Type {
                 case 'is_title':
                     if (!array_key_exists('list_visibility', $options)) $this->list_visibility = self::LIST_SHOWN;
                     $this->$key = $option;
+                    // Set the title as searchable unless anything else is specified
+                    if (!array_key_exists('is_searchable', $options)) $this->is_searchable = true;
                     break;
                 case 'index':
                     if ($option === true) $this->setIndex();
