@@ -42,4 +42,23 @@ Platform.Time = class {
     static localeStringToPlatformString(date_string) {
         return date_string.replace(/(\d+)\.(\d+)\.(\d+), (\d+)\.(\d+)\.(\d+)/, "$3-$2-$1 $4:$5:$6");        
     }
+    
+    static dateToString(date) {
+        const year   = date.getFullYear();
+        const month  = String(date.getUTCMonth() + 1).padStart(2, "0"); // months are 0–11
+        const day    = String(date.getUTCDate()).padStart(2, "0");
+        const hour   = String(date.getUTCHours()).padStart(2, "0");
+        const minute = String(date.getUTCMinutes()).padStart(2, "0");
+        const second = String(date.getUTCSeconds()).padStart(2, "0");
+
+        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+    }
+    
+    static now() {
+        return this.dateToString(new Date());
+    }
+    
+    static today() {
+        return this.now().substr(0,10)+' 00:00:00';
+    }
 }
