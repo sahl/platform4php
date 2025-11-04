@@ -67,6 +67,14 @@ class Client {
     public function filter(string $object, Condition $condition) : array {
         return $this->query($object, 'GET', 0, array('query' => $condition->getAsJSON()));
     }
+	
+    /**
+     * Get the endpoint of this client
+     * @return string
+     */
+    public function getEndpoint() : string {
+        return $this->endpoint;
+    }
     
     /**
      * Log communication
