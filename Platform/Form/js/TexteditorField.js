@@ -31,6 +31,11 @@ Platform.Form.Texteditor = class extends Platform.Form.Field {
         this.textarea.summernote('code', value);
     }
     
+    isDisabled() {
+        return false;
+    }
+
+    
 }
 
 Platform.Component.bindClass('platform_component_texteditor_field', Platform.Form.Texteditor);
