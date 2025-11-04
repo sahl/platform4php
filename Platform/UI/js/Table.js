@@ -8,6 +8,8 @@ Platform.Table = class extends Platform.Component {
     
     multi_popup_dom_node_id = false;
     
+    auto_submit_form_after_init = false
+    
     control_form_dom_node = false;
     
     action_buttons = [];
@@ -86,6 +88,11 @@ Platform.Table = class extends Platform.Component {
             this.control_form_dom_node = $('#'+table_configuration['control_form']);
             // We remove the ajaxURL (if any) to prevent an initial display of the table
             this.table_data_url = table_configuration['ajaxURL'];
+            // We examine if this form is set to autosubmit
+            if (this.control_form_dom_node.is('.platform_form_auto_submit')) {
+                this.control_form_dom_node.removeClass('platform_form_auto_submit');
+                this.auto_submit_form_after_init = true;
+            }
             delete table_configuration['ajaxURL'];
             delete table_configuration['control_form'];
         }
@@ -222,7 +229,7 @@ Platform.Table = class extends Platform.Component {
 
         this.table_is_initialized = true;
 
-        if (! this.control_form_dom_node) this.loadData();
+        if (! this.control_form_dom_node || this.auto_submit_form_after_init) this.loadData();
         
         
     }
