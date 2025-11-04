@@ -247,9 +247,10 @@ class Datarecord implements DatarecordReferable {
     /**
      * Build something to the default filter
      * @param Filter $filter
+     * @param bool $include_deleted_objects Should deleted objects be included (if present)
      */
-    protected static function buildDefaultFilter(Filter $filter) {
-        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
+    protected static function buildDefaultFilter(Filter $filter, bool $include_deleted_objects = false) {
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK]) && ! $include_deleted_objects) {
             $filter->addCondition(new ConditionMatch('is_deleted', 0));
         }
     }
@@ -266,7 +267,7 @@ class Datarecord implements DatarecordReferable {
         
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
             static::addStructure(array(
-                new BoolType('is_deleted', '', ['is_invisible' => true, 'default_value' => false]), // BOOLEAN
+                new BoolType('is_deleted', '', ['is_readonly' => true, 'default_value' => false, 'form_visibility' => Type::FORM_NEVER, 'list_visibility' => Type::LIST_NEVER]), // BOOLEAN
             ));
         }
     }
@@ -1439,11 +1440,12 @@ class Datarecord implements DatarecordReferable {
      * Get a default filter for this class to use for current user. This can
      * be used to improve performance, if the user is only allowed to see a 
      * subset of the data.
+     * @bool $include_deleted Should deleted objects be included (if present)
      * @return Filter
      */
-    public static final function getDefaultFilter() : Filter {
+    public static final function getDefaultFilter(bool $include_deleted_objects = false) : Filter {
         $filter = new Filter(get_called_class());
-        static::buildDefaultFilter($filter);
+        static::buildDefaultFilter($filter, $include_deleted_objects);
         return $filter;
     }
     
