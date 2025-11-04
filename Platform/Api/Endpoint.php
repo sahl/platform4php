@@ -188,7 +188,7 @@ class Endpoint {
                 // Check if we are looking to update something specific
                 $updated_object = new $class();
                 if ($object_id) {
-                    $updated_object->loadForWrite($object_id);
+                    $updated_object->loadForWrite($object_id, false);
                     if (! $updated_object->isInDatabase()) static::respondErrorAndDie(404, 'No object of type: '.$object_name.' with id: '.$object_id);
                     if (! $updated_object->canAccess()) static::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
                     if (! $updated_object->canEdit()) static::respondErrorAndDie(403, 'You don\'t have the permission to edit this object.');
@@ -215,7 +215,7 @@ class Endpoint {
                     $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
                     static::respondAndDie(200, json_encode($response));
                 } else {
-                    $filter = $class::getDefaultFilter();
+                    $filter = $class::getDefaultFilter(true);
                     $filter->setPerformAccessCheck(true);
                     if ($_GET['query']) {
                         $query = json_decode($_GET['query'], true);
