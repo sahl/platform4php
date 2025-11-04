@@ -160,7 +160,7 @@ Platform.Dialog = class extends Platform.Component {
             return true;
         })
 
-        if (ok_text === null) ok_text = Platform.Translation.forUser('Save');
+        if (ok_text === undefined) ok_text = Platform.Translation.forUser('Save');
 
         var open_dialog_form = true;
         if (callback_open) {
