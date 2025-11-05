@@ -53,8 +53,8 @@ register_shutdown_function('Platform\\Utilities\\Errorhandler::shutdown');
 set_error_handler('Platform\\Utilities\\Errorhandler::handler');
 
 // Jquery        
-Page::queueJSFile('/Platform/Jquery/js/jquery.js');
-Page::queueJSFile('/Platform/Jquery/js/jquery-ui.min.js');
+Page::queueJSFile('https://unpkg.com/jquery@3.7.1/dist/jquery.js');
+Page::queueJSFile('https://unpkg.com/jquery-ui@1.14.1/dist/jquery-ui.js');
 Page::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 
 // General Platform
