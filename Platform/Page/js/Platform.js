@@ -39,7 +39,7 @@ var Platform = {
                     Platform.runCustomFunctions(selector,callback_when_applied);
                 }
             } else {
-                $.get(src).done(function() {
+                $.getScript(src).done(function() {
                     Platform.registerScript(src);
                     if (scripts_to_load.length) loadNextScript(callback_when_applied);
                     else Platform.runCustomFunctions(selector, callback_when_applied);
