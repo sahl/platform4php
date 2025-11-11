@@ -1543,7 +1543,8 @@ class Datarecord implements DatarecordReferable {
      * @return bool
      */
     public function isDeleted() : bool {
-        return $this->getRawValue('is_deleted') ? true : false;
+        if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) return $this->getRawValue('is_deleted') ? true : false;
+        return false;
     }
     
     /**
