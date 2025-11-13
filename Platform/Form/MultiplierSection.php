@@ -40,6 +40,9 @@ class MultiplierSection extends Field {
      * @param array $error_array Array to add to
      */
     public function addErrors(array &$error_array) {
+        // Get from this field
+        if ($this->errortext) $error_array[$this->getName()] = $this->errortext;
+        // Get from subfields
         for ($i = 0; $i < count($this->value)+1; $i++) {
             foreach ($this->contained_fields as $field) {
                 // Store old field name
