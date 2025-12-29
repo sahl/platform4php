@@ -386,7 +386,10 @@ class SingleReferenceType extends IntegerType {
      * @return type
      */
     public function parseValue($value, $existing_value = null) {
-        if ($value instanceof Datarecord) $value = $value->getKeyValue();
+        if ($value instanceof Datarecord) {
+             if ($value instanceof $this->foreign_class) $value = $value->getKeyValue();
+             else $value = -1;
+        }
         if ($value === null || $value == 0) return null;
         if (is_array($value)) {
             return (int)$value['id'] ?: null;

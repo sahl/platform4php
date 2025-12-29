@@ -432,7 +432,10 @@ class MultiReferenceType extends Type {
             foreach ($value as $v) $result = array_merge($result, $this->parseValue($v));
             return array_unique($result);
         }
-        if ($value instanceof Datarecord) return [(int)$value->getKeyValue()];
+        if ($value instanceof Datarecord) {
+            if ($value instanceof $this->foreign_class) return [(int)$value->getKeyValue()];
+            else return [-1];
+        }
         return [(int)$value];
     }
     

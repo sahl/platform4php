@@ -566,7 +566,7 @@ class Datarecord implements DatarecordReferable {
                 $referer_field_found = false;
                 $filter = new Filter($referring_class);
                 foreach ($referring_class::getStructure() as $field => $type) {
-                    if ($type->isReference()) {
+                    if ($type->isReference() && $type->matchesForeignClass(get_called_class())) {
                         $filter->addConditionOR(new ConditionMatch($field, $this));
                         $referer_field_found = true;
                     }
@@ -578,7 +578,7 @@ class Datarecord implements DatarecordReferable {
                 foreach ($referring_objects->getAll() as $referring_object) {
                     $referring_object->reloadForWrite();
                     foreach ($referring_class::getStructure() as $field => $type) {
-                        if ($type->isReference()) $referring_object->setValue($field, $type->removeReferenceToObject($referring_object->getRawValue($field), $this));
+                        if ($type->isReference() && $type->matchesForeignClass(get_called_class())) $referring_object->setValue($field, $type->removeReferenceToObject($referring_object->getRawValue($field), $this));
                     }
                     $referring_object->save();
                 }
