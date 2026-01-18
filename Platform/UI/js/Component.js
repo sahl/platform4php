@@ -496,8 +496,31 @@ Platform.Component = class {
      */
     setProperty(property, value) {
         var properties = this.dom_node.data('componentproperties');
+        if (properties[property] === undefined) {
+            console.log('Tried to set invalid property '+property);
+            return;
+        }
         properties[property] = value;
         this.dom_node.data('componentproperties', properties);
+        this.dom_node.trigger('platform_properties_changed');
+    }
+    
+    /**
+     * Set several properties of this Component
+     * @param {object} property_map An object with the properties to update
+     */
+    setProperties(property_map) {
+        var properties = this.dom_node.data('componentproperties');
+        $.each(property_map, function(property, value) {
+            if (properties[property] === undefined) {
+                console.log('Tried to set invalid property '+property);
+                return true;
+            }
+            properties[property] = value;
+            return true;
+        });   
+        this.dom_node.data('componentproperties', properties);
+        this.dom_node.trigger('platform_properties_changed');
     }
 
     /**
