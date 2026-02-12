@@ -8,7 +8,7 @@ namespace Platform\Security;
  * @link https://wiki.platform4php.dk/doku.php?id=user_class
  */
 
-use Platform\Datarecord\Datarecord;
+use Platform\Datarecord\DatarecordExtensible;
 use Platform\Datarecord\EmailType;
 use Platform\Datarecord\KeyType;
 use Platform\Datarecord\PasswordType;
@@ -18,7 +18,7 @@ use Platform\Filter\Filter;
 use Platform\Security\Accesstoken;
 use Platform\Utilities\Translation;
 
-class User extends Datarecord {
+class User extends DatarecordExtensible {
     
     protected static $username_is_email = false;
     
