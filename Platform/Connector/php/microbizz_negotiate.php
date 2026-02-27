@@ -16,7 +16,7 @@ $token = Accesstoken::getByTokencode($_GET['token']);
 if (! $token->isValid()) die(0);
 
 File::ensureFolderInStore('temp');
-$fh = fopen(File::getFullFolderPath('temp').'microbizz_credentials_user_'.$_GET['userid'], 'w');
+$fh = fopen(File::getFullFolderPath('temp').'microbizz_credentials_user_'.((int)$_GET['userid']), 'w');
 if ($fh !== false) {
     fwrite($fh, $_POST['endpoint']."\n");
     fwrite($fh, $_POST['contract']."\n");
