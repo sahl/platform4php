@@ -58,7 +58,7 @@ class Menu extends Component {
      */
     protected function calculateSelectedMenuItemByLocation() {
         // Current location
-        $current_location = $_SERVER['PHP_SELF'];
+        $current_location = urldecode($_SERVER['REQUEST_URI']);
         // Extract links
         $menuitems = $this->getAllMenuitems();
         $best_menuitem = null;
