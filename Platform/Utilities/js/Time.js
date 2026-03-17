@@ -27,11 +27,13 @@ Platform.Time = class {
     }
     
     /**
-     * Get the local timezone as passed from the backend
+     * Get the local timezone as passed from the backend or the default time zone
+     * if none is passed
      * @returns {string}
      */
     static getLocalTimeZone() {
-        return new String($('body').data('platform_time_zone'));
+        
+        return new String($('body').data('platform_time_zone') ? $('body').data('platform_time_zone') : Temporal.Now.timeZoneId());
     }
     
     /**
