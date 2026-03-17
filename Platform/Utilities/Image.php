@@ -8,7 +8,7 @@ namespace Platform\Utilities;
  * @link https://wiki.platform4php.dk/doku.php?id=image_class
  */
 
-use Platform\File;
+use Platform\File\File;
 use Platform\Platform;
 
 class Image {
@@ -47,8 +47,7 @@ class Image {
             if ($soft_fail) return false;
             trigger_error('Tried to attach non-image file to Image class.', E_USER_ERROR);
         }
-        $filedata = file_get_contents($file->getCompleteFilename());
-        $image = imagecreatefromstring($filedata);
+        $image = static::getPropertyRotatedImageDataFromFile($file->getCompleteFilename());
         if ($image === false) {
             if ($soft_fail) return false;
             trigger_error('Couldn\'t parse file data as valid image data.', E_USER_ERROR);
@@ -129,6 +128,23 @@ class Image {
         imagecopy($target_image, $this->image_data, $dest_x, $dest_y, $source_x, $source_y, min($width, $current_width), min($height,$current_height));
         $this->image_data = $target_image;
     }
+    
+    /**
+     * Get the width of this image
+     * @return int
+     */
+    public function getWidth() : int {
+        return imagesx($this->image_data);
+    }
+    
+    /**
+     * Get the height of this image
+     * @return int
+     */
+    public function getHeight() : int {
+        return imagesx($this->image_data);
+    }
+    
 
     /**
      * Display image as PNG
@@ -175,6 +191,48 @@ class Image {
         return $this->image_data;
     }
     
+    private static function getPropertyRotatedImageDataFromFile(string $filename) {
+        $file_content = file_get_contents($filename);
+        $image = imagecreatefromstring($file_content);
+
+        $exif = @exif_read_data($filename);
+
+        if (!empty($exif['Orientation'])) {
+            switch ($exif['Orientation']) {
+                case 3:
+                    $image = imagerotate($image, 180, 0);
+                    break;
+
+                case 6:
+                    $image = imagerotate($image, -90, 0);
+                    break;
+
+                case 8:
+                    $image = imagerotate($image, 90, 0);
+                    break;
+
+                case 2:
+                    imageflip($image, IMG_FLIP_HORIZONTAL);
+                    break;
+
+                case 4:
+                    imageflip($image, IMG_FLIP_VERTICAL);
+                    break;
+
+                case 5:
+                    imageflip($image, IMG_FLIP_VERTICAL);
+                    $image = imagerotate($image, -90, 0);
+                    break;
+
+                case 7:
+                    imageflip($image, IMG_FLIP_HORIZONTAL);
+                    $image = imagerotate($image, -90, 0);
+                    break;
+            }
+        }    
+        return $image;
+    }
+    
     /**
      * Check if the given strategy is a valid strategy
      * @param int $strategy Strategy
@@ -198,9 +256,9 @@ class Image {
         if ($width == $current_width && $height == $current_height) return;
         $scalefactor = $strategy == self::RESIZE_STRATEGY_FILL ? min($current_width / $width, $current_height / $height) : max($current_width / $width, $current_height / $height);
         // Do the resize
-        $target_image = imagecreatetruecolor($current_width/$scalefactor, $current_height/$scalefactor);
+        $target_image = imagecreatetruecolor(ceil($current_width/$scalefactor), ceil($current_height/$scalefactor));
         // Copy the resized image onto the new canvas
-        imagecopyresampled($target_image, $this->image_data, 0, 0, 0, 0, $current_width/$scalefactor, $current_height/$scalefactor, $current_width, $current_height);
+        imagecopyresampled($target_image, $this->image_data, 0, 0, 0, 0, ceil($current_width/$scalefactor), ceil($current_height/$scalefactor), $current_width, $current_height);
         // Copy back
         $this->image_data = $target_image;
         // In some cases we need to crop
