@@ -55,6 +55,7 @@ set_error_handler('Platform\\Utilities\\Errorhandler::handler');
 // Jquery        
 Page::queueJSFile('https://unpkg.com/jquery@3.7.1/dist/jquery.js');
 Page::queueJSFile('https://unpkg.com/jquery-ui@1.14.1/dist/jquery-ui.js');
+Page::queueCSSFile('https://unpkg.com/jquery-ui@1.14.1/dist/themes/base/jquery-ui.css');
 Page::queueJSFile('/Platform/Jquery/js/serialize2json.js');
 
 // General Platform
@@ -62,8 +63,6 @@ Page::queueJSFile('/Platform/Page/js/Platform.js');
 
 // Translation system
 Page::queueJSFile('/Platform/Utilities/js/Translation.js');
-
-Page::queueCSSFile('/Platform/Jquery/css/jquery-ui.css');
 
 Page::queueCSSFile('/Platform/Page/css/Platform.css');
 Page::queueJSFile('/Platform/Page/js/MenuItem.js');
