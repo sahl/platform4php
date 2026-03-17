@@ -22,7 +22,6 @@ class CurrencyType extends Type {
     public function addAdditionalStructure() : array {
         $options = $this->getSetOptionsAsArray();
         $options['is_invisible'] = true;
-        $this->setStoreLocation(self::STORE_SUBFIELDS);
         return [
             new FloatType('localvalue', '', $options),
             new TextType('currency', '', $options),

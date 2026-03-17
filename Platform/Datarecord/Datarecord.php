@@ -226,7 +226,7 @@ class Datarecord implements DatarecordReferable {
             if (! $allow_replace && isset(static::$structure[$type->name])) trigger_error('Trying to add field '.$type->name.' to '.get_called_class().' which is already present.', E_USER_ERROR);
             $sub_fields = $type->addAdditionalStructure();
             if ($sub_fields) {
-                $type->setStoreLocation(\Platform\Datarecord\Type::STORE_SUBFIELDS);
+                if ($type->getStoreLocation() != \Platform\Datarecord\Type::STORE_METADATA) $type->setStoreLocation(\Platform\Datarecord\Type::STORE_SUBFIELDS);
                 foreach ($sub_fields as $field) {
                     $field->name = $type->name.'_'.$field->name;
                     static::addStructure([$field]);

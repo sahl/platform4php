@@ -22,7 +22,6 @@ class HyperReferenceType extends Type {
     public function addAdditionalStructure() : array {
         $options = $this->getSetOptionsAsArray();
         $options['is_invisible'] = true;
-        $this->setStoreLocation(self::STORE_SUBFIELDS);
         return [
             new TextType('foreign_class', '', $options),
             new IntegerType('reference', '', $options),
