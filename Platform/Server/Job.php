@@ -117,7 +117,8 @@ class Job extends \Platform\Datarecord\Datarecord {
      */
     public function cleanUp() {
         $this->log('cleanup', 'Cleaning up', $this);
-        $this->reloadForWrite();
+        // Bail if job has disappeared
+        if (! $this->reloadForWrite()) return;
         $file = $this->getOutputFile();
         if (file_exists($file)) {
             // We read at most 10K bytes
