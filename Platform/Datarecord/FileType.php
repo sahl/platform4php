@@ -152,6 +152,14 @@ class FileType extends SingleReferenceType {
     }
     
     /**
+     * Get the folder used by this field type
+     * @return string
+     */
+    public function getFolder() : string {
+        return $this->folder;
+    }
+    
+    /**
      * Validate if this is a valid value for fields of this type
      * @param mixed $value
      * @return mixed True if no problem or otherwise a string explaining the problem
