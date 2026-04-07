@@ -92,16 +92,13 @@ class Time implements \Platform\UI\Serializable {
      */
     public function addDays(int $days, int $months = 0, int $years = 0) : Time {
         if ($this->isNull()) return new Time();
-        $new_timestamp = $this->getTimestamp();
-        if ($months || $years) {
-            // We handle this a little special
-            $newyear = date('Y', $new_timestamp)+$years;
-            $newmonth = date('n', $new_timestamp)+$months;
-            $currentday = date('j', $new_timestamp);
-            if ($currentday > self::daysInMonth($newmonth, $newyear)) $currentday = self::daysInMonth ($newmonth, $newyear);
-            $new_timestamp = mktime(date('H', $new_timestamp), date('i', $new_timestamp), date('s', $new_timestamp), $newmonth, $currentday, $newyear);
-        }
-        $new_timestamp += 24*60*60*$days;
+        $datetime = new \DateTime('@'.$this->getTimestamp());
+        
+        $day_modifier = $days >= 0 ? '+'.$days.' days' : $days.' days';
+        $month_modifier = $months >= 0 ? '+'.$months.' months' : $months.' months';
+        $year_modifier = $years >= 0 ? '+'.$years.' years' : $years.' years';
+        
+        $new_timestamp = new static($datetime->modify($day_modifier.' '.$month_modifier.' '.$year_modifier)->getTimestamp());
         return new Time($new_timestamp);
     }
     
