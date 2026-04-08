@@ -7,15 +7,22 @@ namespace Platform\Utilities;
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
+use Platform\Datarecord\BigTextType;
+use Platform\Datarecord\BoolType;
+use Platform\Datarecord\Datarecord;
+use Platform\Datarecord\DateTimeType;
+use Platform\Datarecord\EmailType;
+use Platform\Datarecord\EnumerationType;
+use Platform\Datarecord\IntegerType;
+use Platform\Datarecord\KeyType;
+use Platform\Datarecord\ObjectType;
+use Platform\Datarecord\TextType;
+use Platform\File\File;
 use Platform\Filter\ConditionLesserEqual;
 use Platform\Filter\ConditionMatch;
-use Platform\Datarecord\Datarecord;
 use Platform\Filter\Filter;
 use Platform\Platform;
 use Platform\Server\Job;
-use Platform\Utilities\Database;
-use Platform\Utilities\Semaphore;
-use Platform\Utilities\Time;
 
 class Mail extends Datarecord {
     
@@ -53,22 +60,22 @@ class Mail extends Datarecord {
     
     protected static function buildStructure() {
         static::addStructure([
-            new \Platform\Datarecord\KeyType('mail_id'),
-            new \Platform\Datarecord\TextType('from_name', Translation::translateForUser('From (name)'), ['is_required' => true]),
-            new \Platform\Datarecord\EmailType('from_email', Translation::translateForUser('From (email)'), ['is_required' => true]),
-            new \Platform\Datarecord\TextType('to_name', Translation::translateForUser('To (name)'), ['is_required' => true]),
-            new \Platform\Datarecord\EmailType('to_email', Translation::translateForUser('To (email)'), ['is_required' => true]),
-            new \Platform\Datarecord\TextType('reply_to_name', Translation::translateForUser('Reply to (name)'), []),
-            new \Platform\Datarecord\EmailType('reply_to_email', Translation::translateForUser('Reply to (email)'), []),
-            new \Platform\Datarecord\TextType('subject', Translation::translateForUser('Subject'), ['is_required' => true, 'is_title' => true]),
-            new \Platform\Datarecord\BigTextType('body', Translation::translateForUser('Body'), ['is_required' => true]),
-            new \Platform\Datarecord\ObjectType('attachment_data', '', ['is_required' => true, 'is_title' => true]),
-            new \Platform\Datarecord\EnumerationType('format', Translation::translateForUser('Format'), ['is_required' => true, 'enumeration' => static::getFormatOptions(), 'default_value' => static::FORMAT_HTML]),
-            new \Platform\Datarecord\BoolType('is_sent', Translation::translateForUser('Is sent'), []),
-            new \Platform\Datarecord\TextType('last_error', Translation::translateForUser('Last error'), []),
-            new \Platform\Datarecord\IntegerType('error_count', Translation::translateForUser('Error count'), ['default_value' => 0]),
-            new \Platform\Datarecord\DateTimeType('scheduled_for', Translation::translateForUser('Scheduled for'), []),
-            new \Platform\Datarecord\DateTimeType('sent_date', Translation::translateForUser('Sent date'), []),
+            new KeyType('mail_id'),
+            new TextType('from_name', Translation::translateForUser('From (name)'), ['is_required' => true]),
+            new EmailType('from_email', Translation::translateForUser('From (email)'), ['is_required' => true]),
+            new TextType('to_name', Translation::translateForUser('To (name)'), ['is_required' => true]),
+            new EmailType('to_email', Translation::translateForUser('To (email)'), ['is_required' => true]),
+            new TextType('reply_to_name', Translation::translateForUser('Reply to (name)'), []),
+            new EmailType('reply_to_email', Translation::translateForUser('Reply to (email)'), []),
+            new TextType('subject', Translation::translateForUser('Subject'), ['is_required' => true, 'is_title' => true]),
+            new BigTextType('body', Translation::translateForUser('Body'), ['is_required' => true]),
+            new ObjectType('attachment_data', '', ['is_required' => true]),
+            new EnumerationType('format', Translation::translateForUser('Format'), ['is_required' => true, 'enumeration' => static::getFormatOptions(), 'default_value' => static::FORMAT_HTML]),
+            new BoolType('is_sent', Translation::translateForUser('Is sent'), []),
+            new TextType('last_error', Translation::translateForUser('Last error'), []),
+            new IntegerType('error_count', Translation::translateForUser('Error count'), ['default_value' => 0]),
+            new DateTimeType('scheduled_for', Translation::translateForUser('Scheduled for'), []),
+            new DateTimeType('sent_date', Translation::translateForUser('Sent date'), []),
         ]);
         // Remember to call parent
         parent::buildStructure();
@@ -139,14 +146,14 @@ class Mail extends Datarecord {
                     $attachment_data = $mail->attachment_data;
                     if ($attachment_data['attachments']) {
                         foreach ($attachment_data['attachments'] as $file_id) {
-                            $file = new \Platform\File();
+                            $file = new File();
                             $file->loadForRead($file_id);
                             $res = $mailer->addAttachment($file->getCompleteFilename(), $file->filename);
                         }
                     }
                     if ($attachment_data['inline_attachments']) {
                         foreach ($attachment_data['inline_attachments'] as $identifier => $file_id) {
-                            $file = new \Platform\File();
+                            $file = new File();
                             $file->loadForRead($file_id);
                             $res = $mailer->addEmbeddedImage($file->getCompleteFilename(), $identifier);
                         }
@@ -218,7 +225,7 @@ class Mail extends Datarecord {
      * @param string $filename
      */
     public function addAttachment(string $filename) {
-        $attachment = new \Platform\File();
+        $attachment = new File();
         $attachment->attachFile($filename);
         $attachment->folder = $this->getAttachmentFolder();
         $attachment->save();
@@ -233,7 +240,7 @@ class Mail extends Datarecord {
      * @param string $filename
      */
     public function addInlineAttachment(string $identifier, string $filename) {
-        $attachment = new \Platform\File();
+        $attachment = new File();
         $attachment->attachFile($filename);
         $attachment->folder = $this->getAttachmentFolder();
         $attachment->save();
@@ -250,14 +257,14 @@ class Mail extends Datarecord {
             // Delete attachments
             if ($attachment_data['attachments']) {
                 foreach ($attachment_data['attachments'] as $file_id) {
-                    $file = new \Platform\File();
+                    $file = new File();
                     $file->loadForWrite($file_id);
                     $file->delete();
                 }
             }
             if ($attachment_data['inline_attachments']) {
                 foreach ($attachment_data['inline_attachments'] as $file_id) {
-                    $file = new \Platform\File();
+                    $file = new File();
                     $file->loadForWrite($file_id);
                     $file->delete();
                 }
@@ -279,9 +286,9 @@ class Mail extends Datarecord {
         while (true) {
             $sub_folder = sha1(rand());
             $folder = 'attachments/'.$sub_folder;
-            if (!file_exists(\Platform\File::getFullFolderPath($folder))) break;
+            if (!file_exists(File::getFullFolderPath($folder))) break;
         }
-        \Platform\File::ensureFolderInStore($folder);
+        File::ensureFolderInStore($folder);
         $attachment_data['folder'] = $folder;
         $this->attachment_data = $attachment_data;
         Semaphore::release($semaphore);
@@ -289,7 +296,7 @@ class Mail extends Datarecord {
     }
     
     public static function setupQueue() {
-        $job = Job::getJob('Platform\\Utilities\\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
+        $job = Job::getJob('Platform\Utilities\Mail', 'processQueue', Job::FREQUENCY_PAUSED);
         // Check for next run time
         $qr = Database::getRow(static::query("SELECT MIN(scheduled_for) as next_start FROM ".static::$database_table." WHERE is_sent = 0 AND (error_count < 10 OR error_count IS NULL)"));
         if ($qr['next_start']) {
