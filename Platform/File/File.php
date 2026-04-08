@@ -20,6 +20,7 @@ class File extends Datarecord {
     protected static $database_table = 'platform_files';
     protected static $structure = false;
     protected static $key_field = false;
+    protected static $title_field = false;
     protected static $location = self::LOCATION_INSTANCE;
     
     protected $content_source = false;

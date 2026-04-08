@@ -57,6 +57,7 @@ class Mail extends Datarecord {
 
     protected static $structure = false;
     protected static $key_field = false;
+    protected static $title_field = false;
     
     protected static function buildStructure() {
         static::addStructure([
