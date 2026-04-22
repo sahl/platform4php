@@ -139,6 +139,48 @@ class Client {
     }
     
     /**
+     * Post a binary file directly to the endpoint
+     * @param string $path The endpoint path
+     * @param string $file The full path to the file we want to post
+     * @param string $content_type The content type which we use in the header
+     * @return array
+     */
+    public function postBinaryFile(string $path, string $file, string $content_type = 'application/octet-stream') {
+        if (!file_exists($file)) die('Invalid file');
+
+        $endpoint = $this->endpoint;
+        if (substr($endpoint,-1,1) != '/') $endpoint .= '/';
+        $endpoint .= $path;
+
+        $curl = curl_init($endpoint);
+       
+        $options = ['Content-Type: '.$content_type];
+        // Add custom headers
+        if (count($this->custom_headers)) $options = array_merge($options, $this->custom_headers);
+        if ($this->token_code) $options[] = 'Authorization: Bearer '.$this->token_code;
+        $options[] = 'Content-Length: ' . filesize($file);
+        $options[] = 'Filename: '.\Platform\File\File::extractFilename($file);
+        
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $options);
+        curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($curl, CURLOPT_HEADER, 1);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, file_get_contents($file));
+
+        $curlResponse = curl_exec($curl);
+        if ($curlResponse === false) {
+            if ($this->log) $this->log('CURL error', $endpoint, curl_error($curl));
+            return ['code' => '000', 'error' => true, 'message' => curl_error($curl)];
+        }
+        curl_close($curl);
+        if ($this->log) $this->log('Response', $endpoint, $curlResponse);
+        
+        return $this->parseResponse($curlResponse);
+
+        
+    }
+    
+    /**
      * Query a REST API from Platform
      * @param string $object The object to query
      * @param string $method The method to use
@@ -154,9 +196,16 @@ class Client {
         $endpoint .= $object;
         if ($id) $endpoint .= '/'.$id;
         
-        $parameters_as_body = in_array(strtolower($method), ['post', 'put', 'getwithbody', 'patch']);
+        $json_encode_body = true;
+        
+        $parameters_as_body = in_array(strtolower($method), ['post', 'put', 'getwithbody', 'patch', 'postasform']);
         
         if (strtolower($method) == 'getwithbody') $method = 'GET';
+        
+        if (strtolower($method) == 'postasform') {
+            $method = 'POST';
+            $json_encode_body = false;
+        }
         
         if (! $parameters_as_body && count($parameters)) {
             // Build querystring
@@ -166,9 +215,11 @@ class Client {
         // Prepare CURL
         $curl = curl_init($endpoint);
         $options = array(
-            'Content-Type: application/json',
             'Accept: application/json'
         );
+        
+        if ($json_encode_body) $options[] = 'Content-Type: application/json';
+        
         // Add custom headers
         if (count($this->custom_headers)) $options = array_merge($options, $this->custom_headers);
         
@@ -184,8 +235,8 @@ class Client {
         curl_setopt($curl, CURLOPT_HEADER, 1);
 
         if ($parameters_as_body) {
-            curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($parameters));
-        }
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $json_encode_body ? json_encode($parameters) : $parameters);
+        } 
 
         $curlResponse = curl_exec($curl);
         if ($curlResponse === false) {
