@@ -423,10 +423,6 @@ Platform.Component = class {
             }
             return true;
         });
-        if (! Platform.Component.timed_IO_stack.length) {
-            clearTimeout(Platform.Component.IO_timer);
-            Platform.Component.IO_timer = null;
-        }
     }
 
     /**
@@ -476,7 +472,7 @@ Platform.Component = class {
             // Rearm
         } else {
             if (Platform.Component.timed_IO_stack.length) Platform.Component.IO_timer = setTimeout(Platform.Component.executeTimedIO, 1000);
-
+            else Platform.Component.IO_timer = null;
         }
     }
     
