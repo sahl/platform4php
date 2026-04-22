@@ -248,6 +248,7 @@ Platform.Component = class {
      */
     redraw() {
         var component = this;
+        component.removeTimedIO();
         if (this.dom_node.is('.platform_container_component')) {
             // Redraw all subcomponents
             $.each(this.getChildren(), function(i, component) {
