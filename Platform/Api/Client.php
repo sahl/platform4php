@@ -161,6 +161,8 @@ class Client {
         $options[] = 'Content-Length: ' . filesize($file);
         $options[] = 'Filename: '.\Platform\File\File::extractFilename($file);
         
+        if ($this->log) $this->log('Request', $endpoint, \Platform\File\File::extractFilename($file).' ('.filesize($file).')');
+        
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, $options);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
