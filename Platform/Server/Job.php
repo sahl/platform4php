@@ -154,14 +154,12 @@ class Job extends \Platform\Datarecord\Datarecord {
     }
     
     /**
-     * Delete a job, while also killing it.
+     * Delete a job.
      * @param type $force_remove
      */
     public function delete(bool $force_remove = false) : bool {
         // Delete the job
         $result = parent::delete($force_remove);
-        // If it was deleted also kill it (in case it is running)
-        if ($result) $this->kill();
         return $result;
     }
     
@@ -418,7 +416,10 @@ class Job extends \Platform\Datarecord\Datarecord {
         $this->reloadForWrite();
         self::log('start', 'Starting job scheduled at '.$this->getFullValue('next_start'), $this);
         $this->last_start = Time::now();
-        if ($this->frequency == self::FREQUENCY_ONCE) $this->frequency = self::FREQUENCY_PAUSED;
+        if ($this->frequency == self::FREQUENCY_ONCE) {
+            $this->next_start = null;
+            $this->frequency = self::FREQUENCY_PAUSED;
+        }
         if ($this->frequency > 0 && ! $this->frequency_offset_from_end) $this->next_start = Time::now()->add(0, $this->frequency);
         $result = (int)shell_exec('php '.static::getRunScript().' '.$this->job_id.' > '.$this->getOutputFile().' 2>&1 & echo $!');
         if ($result) {
