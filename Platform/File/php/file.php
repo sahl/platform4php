@@ -23,6 +23,7 @@ if (preg_match('/^\\/Platform\\/File\\/php\\/file\\.php\\/(\\d+?)\\/(\\d+?)\\//i
             } else {
                 // Serve file
                 header('Content-Type: '.$file->mimetype);
+                header('Content-Length: ' . filesize($file->getCompleteFilename()));
                 readfile($file->getCompleteFilename());
                 exit;
             }
