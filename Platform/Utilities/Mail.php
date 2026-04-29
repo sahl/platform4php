@@ -148,15 +148,15 @@ class Mail extends Datarecord {
                     if ($attachment_data['attachments']) {
                         foreach ($attachment_data['attachments'] as $file_id) {
                             $file = new File();
-                            $file->loadForRead($file_id);
-                            $res = $mailer->addAttachment($file->getCompleteFilename(), $file->filename);
+                            $file->loadForRead((int)$file_id, false);
+                            if ($file->isInDatabase()) $mailer->addAttachment($file->getCompleteFilename(), $file->filename);
                         }
                     }
                     if ($attachment_data['inline_attachments']) {
                         foreach ($attachment_data['inline_attachments'] as $identifier => $file_id) {
                             $file = new File();
-                            $file->loadForRead($file_id);
-                            $res = $mailer->addEmbeddedImage($file->getCompleteFilename(), $identifier);
+                            $file->loadForRead((int)$file_id, false);
+                            if ($file->isInDatabase()) $mailer->addEmbeddedImage($file->getCompleteFilename(), $identifier);
                         }
                     }
                     
@@ -259,14 +259,14 @@ class Mail extends Datarecord {
             if ($attachment_data['attachments']) {
                 foreach ($attachment_data['attachments'] as $file_id) {
                     $file = new File();
-                    $file->loadForWrite($file_id);
+                    $file->loadForWrite((int)$file_id,false);
                     $file->delete();
                 }
             }
             if ($attachment_data['inline_attachments']) {
                 foreach ($attachment_data['inline_attachments'] as $file_id) {
                     $file = new File();
-                    $file->loadForWrite($file_id);
+                    $file->loadForWrite((int)$file_id,false);
                     $file->delete();
                 }
             }
