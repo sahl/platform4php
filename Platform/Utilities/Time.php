@@ -230,7 +230,7 @@ class Time implements \Platform\UI\Serializable {
      * @return \Platform\Utilities\Time
      */
     public function getLastDayInMonth() : Time {
-        return $this->add($this->getDaysInMonth()-$this->getDay())->startOfDay();
+        return $this->addDays($this->getDaysInMonth()-$this->getDay())->startOfDay();
     }
     
     /**
