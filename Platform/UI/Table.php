@@ -349,7 +349,7 @@ class Table extends Component {
         if (!class_exists($class)) trigger_error('Unknown class '.$class, E_USER_ERROR);
         $table = static::Table($id);
         $table->setColumnsFromDatarecord($class);
-        $table->setTabulatorOption('placeholder', 'No '.$class::getObjectName());
+        $table->setTabulatorOption('placeholder', \Platform\Utilities\Translation::translateForUser('No').' '.$class::getObjectName());
         $table->setTabulatorOption('show_selector', true);
         $table->setTabulatorOption('movableColumns', true);
         foreach ($table_parameters as $parameter => $value) {
