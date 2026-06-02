@@ -16,7 +16,7 @@ class DateType extends DateTimeType {
     }
     
     public function getFullValue($value, Collection &$collection = null): string {
-        return htmlentities($value->getReadableDate());
+        return htmlentities($value->getReadableDate('', false));
     }
     
     public function getFormValue($value) {

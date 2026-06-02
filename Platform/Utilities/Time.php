@@ -334,14 +334,15 @@ class Time implements \Platform\UI\Serializable {
     /**
      * Get this time in a readable format
      * @param string $format Format to use
+     * @param bool $adjust_for_time_zone Indicate if the returned time should adjust for time zone (default)
      * @return string
      */
-    public function getReadable(string $format = '') : string {
+    public function getReadable(string $format = '', bool $adjust_for_time_zone = true) : string {
         if (! $format) $format = static::$date_format.' '.static::$time_format;
         if ($this->timestamp !== null) {
             $datetime = new \DateTime();
             $datetime->setTimestamp($this->timestamp);
-            if (self::$time_zone_object) $datetime->setTimezone(self::$time_zone_object);
+            if (self::$time_zone_object && $adjust_for_time_zone) $datetime->setTimezone(self::$time_zone_object);
             else $datetime->setTimezone(new \DateTimeZone("UTC"));
             return $datetime->format($format);
         }
@@ -351,21 +352,23 @@ class Time implements \Platform\UI\Serializable {
     /**
      * Get the date part of this time in a readable format
      * @param string $format Format to use
+     * @param bool $adjust_for_time_zone Indicate if the returned time should adjust for time zone (default)
      * @return string
      */
-    public function getReadableDate(string $format = '') : string {
+    public function getReadableDate(string $format = '', bool $adjust_for_time_zone = true) : string {
         if (! $format) $format = static::$date_format ?: 'Y-m-d';
-        return $this->getReadable($format);
+        return $this->getReadable($format, $adjust_for_time_zone);
     }
     
     /**
      * Get the time part of this time in a readable format
      * @param string $format Format to use
+     * @param bool $adjust_for_time_zone Indicate if the returned time should adjust for time zone (default)
      * @return string
      */
-    public function getReadableTime(string $format = '') : string {
+    public function getReadableTime(string $format = '', bool $adjust_for_time_zone = true) : string {
         if (! $format) $format = static::$time_format ?: 'h:i';
-        return $this->getReadable($format);
+        return $this->getReadable($format, $adjust_for_time_zone);
     }
     
     public function getSecond() : int {
