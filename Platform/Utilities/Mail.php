@@ -7,6 +7,7 @@ namespace Platform\Utilities;
  */
 
 use PHPMailer\PHPMailer\PHPMailer;
+use Platform\Datarecord\ArrayType;
 use Platform\Datarecord\BigTextType;
 use Platform\Datarecord\BoolType;
 use Platform\Datarecord\Datarecord;
@@ -68,6 +69,9 @@ class Mail extends Datarecord {
             new EmailType('to_email', Translation::translateForUser('To (email)'), ['is_required' => true]),
             new TextType('reply_to_name', Translation::translateForUser('Reply to (name)'), []),
             new EmailType('reply_to_email', Translation::translateForUser('Reply to (email)'), []),
+            new ArrayType('additional_to', Translation::translateForUser('Additional receivers'), ['is_invisible' => true]),
+            new ArrayType('cc', Translation::translateForUser('CC addresses'), ['is_invisible' => true]),
+            new ArrayType('bcc', Translation::translateForUser('BCC addresses'), ['is_invisible' => true]),
             new TextType('subject', Translation::translateForUser('Subject'), ['is_required' => true, 'is_title' => true]),
             new BigTextType('body', Translation::translateForUser('Body'), ['is_required' => true]),
             new ObjectType('attachment_data', '', ['is_required' => true]),
@@ -141,6 +145,27 @@ class Mail extends Datarecord {
                     // Handle reply to
                     if ($mail->reply_to_email) {
                         $mailer->addReplyTo($mail->reply_to_email, $mail->reply_to_name);
+                    }
+                    
+                    // Additional addresses
+                    if (count($mail->additional_to)) {
+                        foreach ($mail->additional_to as $contact) {
+                            $mailer->addAddress($contact['email'], $contact['name']);
+                        }
+                    }
+                    
+                    // CC
+                    if (count($mail->cc)) {
+                        foreach ($mail->cc as $contact) {
+                            $mailer->addCC($contact['email'], $contact['name']);
+                        }
+                    }
+                    
+                    // BCC
+                    if (count($mail->bcc)) {
+                        foreach ($mail->bcc as $contact) {
+                            $mailer->addBCC($contact['email'], $contact['name']);
+                        }
                     }
                     
                     // Handle attachments
@@ -217,8 +242,99 @@ class Mail extends Datarecord {
             $mail->addInlineAttachment($identifier, $filename);
         }
         $mail->save();
-        static::setupQueue();
         return $mail;
+    }
+
+    /**
+     * Set the To Address of a mail. This will clear all other To addresses (if any)
+     * @param string $email Email
+     * @param string $name Name 
+     */
+    public function setTo(string $email, string $name = '') {
+        $this->to_email = $email;
+        $this->to_name = $name;
+        $this->additional_to = [];
+    }
+    
+    /**
+     * Set the From Address of a mail.
+     * @param string $email Email
+     * @param string $name Name 
+     */
+    public function setFrom(string $email, string $name = '') {
+        $this->from_email = $email;
+        $this->from_name = $name;
+    }
+    
+    /**
+     * Set the Reply-To Address of a mail.
+     * @param string $email Email
+     * @param string $name Name 
+     */
+    public function setReplyTo(string $email, string $name = '') {
+        $this->reply_to_email = $email;
+        $this->reply_to_name = $name;
+    }
+    
+    /**
+     * Set the subject of the mail
+     * @param string $subject Subject
+     */
+    public function setSubject(string $subject) {
+        $this->subject = $subject;
+    }
+    
+    /**
+     * Set the body of the mail
+     * @param string $body Body
+     */
+    public function setBody(string $body) {
+        $this->body = $body;
+    }
+    
+    /**
+     * Add an additional To address to the mail
+     * @param string $name Name
+     * @param string $email Email
+     */
+    public function addTo(string $email, string $name = '') {
+        if (! $this->to_name && ! $this->to_email) $this->setTo($email, $name);
+        else {
+            $additional_to = $this->additional_to;
+            $additional_to[] = [
+                'email' => $email,
+                'name' => $name
+            ];
+            $this->additional_to = $additional_to;
+        }
+    }
+    
+    /**
+     * Add a cc address to the mail
+     * @param string $email
+     * @param string $name
+     */
+    public function addCC(string $email, string $name = '') {
+        $cc = $this->cc;
+        $cc[] = [
+            'email' => $email,
+            'name' => $name
+        ];
+        $this->cc = $cc;
+    }
+    
+    /**
+     * Add a bcc address to the mail
+     * @param string $email
+     * @param string $name
+     */
+    public function addBCC(string $email, string $name = '') {
+        $bcc = $this->bcc;
+        $bcc[] = [
+            'email' => $email,
+            'name' => $name
+        ];
+        $this->bcc = $bcc;
     }
     
     /**
@@ -249,6 +365,15 @@ class Mail extends Datarecord {
         if (! $attachment_data['inline_attachments']) $attachment_data['inline_attachments'] = [];
         $attachment_data['inline_attachments'][$identifier] = $attachment->file_id;
         $this->attachment_data = $attachment_data;
+    }
+    
+    /**
+     * Set the mail as queued
+     * @param Time $time Optional time to send
+     */
+    public function queue(?Time $time = null) {
+        if ($time === null) $time = Time::now();
+        $this->scheduled_for = $time;
     }
     
     public function delete(bool $force_purge = false): bool {
@@ -305,5 +430,12 @@ class Mail extends Datarecord {
             $job->frequency = Job::FREQUENCY_ONCE;
         }
         $job->save();
+    }
+    
+    public function onAfterSave(array $changed_fields) {
+        parent::onAfterSave($changed_fields);
+        if (in_array('scheduled_for', $changed_fields)) {
+            static::setupQueue();
+        }
     }
 }
