@@ -1,5 +1,8 @@
 <?php
 namespace Platform;
+
+use Microbizz\Security\Property;
+use Platform\Server\Instance;
 /**
  * Class for reading and setting Platform configuration options
  * 
@@ -7,6 +10,8 @@ namespace Platform;
  */
 
 class Platform {
+    
+    private static $overwritable_configuration = ['dir_log', 'dir_temp', 'dir_store', 'mail_type', 'smtp_server', 'smtp_port', 'smtp_username', 'smtp_password'];
     
     public static function getConfigFileName() : string {
         $root = $_SERVER['DOCUMENT_ROOT'];
@@ -25,7 +30,23 @@ class Platform {
      */
     public static function getConfiguration(string $key) {
         global $platform_configuration;
+        // Check if the configuration is overridden for active instance
+        if (Instance::getActiveInstanceID() !== false && in_array($key, static::$overwritable_configuration)) {
+            $value = Property::getForAll('platform_configuration_override', $key);
+            if ($value !== null) return $value;
+        }
         return array_key_exists($key, $platform_configuration) ? $platform_configuration[$key] : null;
+    }
+    
+    /**
+     * Override a configuration key in the active instance.
+     * @param string $key Configuration key to override
+     * @param mixed $value Value to set (or null to return to default)
+     */
+    public static function overrideConfigurationForActiveInstance(string $key, mixed $value) {
+        if (Instance::getActiveInstanceID() === false) trigger_error('You need an active instance to override configuration.', E_USER_ERROR);
+        if (! in_array($key, static::$overwritable_configuration)) trigger_error('You are not allowed to override '.$key, E_USER_ERROR);
+        Property::setForAll('platform_configuration_override', $key, $value);
     }
     
     /**
