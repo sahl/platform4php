@@ -11,7 +11,7 @@ use Platform\Server\Instance;
 
 class Platform {
     
-    private static $overwritable_configuration = ['dir_log', 'dir_temp', 'dir_store', 'mail_type', 'smtp_server', 'smtp_port', 'smtp_username', 'smtp_password'];
+    private static $overwritable_configuration = ['smtp_server', 'smtp_port', 'smtp_username', 'smtp_password'];
     
     public static function getConfigFileName() : string {
         $root = $_SERVER['DOCUMENT_ROOT'];
@@ -31,7 +31,7 @@ class Platform {
     public static function getConfiguration(string $key) {
         global $platform_configuration;
         // Check if the configuration is overridden for active instance
-        if (false && in_array($key, static::$overwritable_configuration) && Instance::getActiveInstanceID() !== false) {
+        if (in_array($key, static::$overwritable_configuration) && Instance::getActiveInstanceID() !== false) {
             $value = Property::getForAll('platform_configuration_override', $key);
             if ($value !== null) return $value;
         }

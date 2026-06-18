@@ -263,7 +263,7 @@ class Accesstoken extends Datarecord {
         if ($valid && $extend) {
             $token->quickExtend($seconds_to_live);
         }
-        if ($valid) {
+        if ($valid && $token->user_ref) {
             self::$current_user_id = $token->user_ref;
         }
         return $valid;
