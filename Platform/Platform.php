@@ -31,7 +31,7 @@ class Platform {
     public static function getConfiguration(string $key) {
         global $platform_configuration;
         // Check if the configuration is overridden for active instance
-        if (Instance::getActiveInstanceID() !== false && in_array($key, static::$overwritable_configuration)) {
+        if (in_array($key, static::$overwritable_configuration) && Instance::getActiveInstanceID() !== false) {
             $value = Property::getForAll('platform_configuration_override', $key);
             if ($value !== null) return $value;
         }
