@@ -193,8 +193,8 @@ class Datarecord implements DatarecordReferable {
     public function __construct(array $initialvalues = array()) {
         static::ensureStructure();
         $this->buildDefaultValues();
-        $this->setFromArray($initialvalues);
         $this->values_on_load = $this->values;
+        $this->setFromArray($initialvalues);
     }
     
     /**
