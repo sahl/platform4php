@@ -114,7 +114,7 @@ class Mail extends Datarecord {
         $filter = new Filter(get_called_class());
         $filter->addCondition(new ConditionMatch('is_sent', 0));
         $filter->addCondition(new ConditionLesserEqual('scheduled_for', new Time('now')));
-        $filter->addCondition(new ConditionLesserEqual('error_count', 5));
+        $filter->addCondition(new ConditionLesserEqual('error_count', 1));
         $mails = $filter->execute();
         if ($mails->getCount()) {
             self::initPhpmailer();
@@ -190,8 +190,6 @@ class Mail extends Datarecord {
                     if (! $result) {
                         $mail->last_error = Translation::translateForInstance('Could not send mail');
                         $mail->error_count = $mail->error_count + 1;
-                        // Postpone for an hour
-                        $mail->scheduled_for = Time::now()->add(0,0,1);
                     } else {
                         $mail->is_sent = 1;
                         $mail->sent_date = Time::now();
@@ -199,8 +197,6 @@ class Mail extends Datarecord {
                 } catch (\PHPMailer\PHPMailer\Exception $e) {
                     $mail->last_error = $e->errorMessage();
                     $mail->error_count = $mail->error_count + 1;
-                    // Postpone for an hour
-                    $mail->scheduled_for = Time::now()->add(0,0,1);
                 }
 
                 $mail->save();
