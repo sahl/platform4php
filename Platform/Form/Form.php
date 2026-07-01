@@ -657,6 +657,8 @@ class Form extends Component {
             if ($formfield->getName() == $fieldname && $fieldname && ! $inserted) {
                 foreach ($fields as $field) {
                     if (! $field instanceof Field) trigger_error('Added non-field object to form', E_USER_ERROR);
+                    // Copy group information from replaced field
+                    $field->setGroup($formfield->getGroup());
                     $field->attachToForm($this);
                     $newfields[] = $field;
                 }
