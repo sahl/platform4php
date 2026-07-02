@@ -100,7 +100,7 @@ class Collection implements Iterator,Countable {
      * @return Datarecord
      */
     public function get(int $i) {
-        if ($i < 0 || $i >= $this->getCount()) trigger_error('The value '+$i+' is not a valid index in the collection', E_USER_ERROR);
+        if ($i < 0 || $i >= $this->getCount()) trigger_error('The value '.$i.' is not a valid index in the collection', E_USER_ERROR);
         return $this->datarecords[$i];
     }
 
@@ -298,7 +298,7 @@ class Collection implements Iterator,Countable {
      * @param int $i The index of the element. Higher indexes will be shifted down.
      */
     public function remove(int $i) {
-        if ($i < 0 || $i >= $this->getCount()) trigger_error('The value '+$i+' is not a valid index in the collection', E_USER_ERROR);
+        if ($i < 0 || $i >= $this->getCount()) trigger_error('The value '.$i.' is not a valid index in the collection', E_USER_ERROR);
         array_splice($this->datarecords,$i,1);
     }
 
