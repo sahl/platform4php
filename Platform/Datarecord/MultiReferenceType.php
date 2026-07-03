@@ -353,6 +353,17 @@ class MultiReferenceType extends Type {
     }
     
     /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'array';
+        $result['x-refers-object'] = $this->foreign_class::getBaseClassName();
+        return $result;
+    }
+    
+    /**
      * Get all the options of this type as an array.
      * @return array
      */

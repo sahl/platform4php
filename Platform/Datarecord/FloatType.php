@@ -97,7 +97,17 @@ class FloatType extends IntegerType {
     public function parseValue($value, $existing_value = null) {
         if ($value === null) return null;
         return (float)$value;
-    }    
+    }
+    
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'number';
+        return $result;
+    }
     
     /**
      * Set the minimum number of decimals that should display when showing this number

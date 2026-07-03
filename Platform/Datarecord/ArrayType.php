@@ -212,6 +212,16 @@ class ArrayType extends Type {
     }
     
     /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
+    
+    /**
      * Get a form field for editing fields of this type
      * @return \Platform\Form\Field
      */

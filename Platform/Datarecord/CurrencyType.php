@@ -217,6 +217,16 @@ class CurrencyType extends Type {
         if ($value['currency'] && $value['currency'] != Currency::getBaseCurrency()) $result .= ' '.$value['currency'];
         return htmlentities($result);
     }
+
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
     
     /**
      * Get the textual value for fields of this type. This is a plain string without any HTML

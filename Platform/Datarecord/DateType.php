@@ -31,7 +31,18 @@ class DateType extends DateTimeType {
      */
     public function getJSONValue($value, $include_binary_data = false) {
         return $value->get('Y-m-d');
-    }    
+    }
+    
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'string';
+        $result['format'] = 'date';
+        return $result;
+    }
 
     public function getLogValue($value) : string {
         return $value->get('Y-m-d') ?: '[NULL]';

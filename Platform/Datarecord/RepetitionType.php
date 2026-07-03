@@ -217,6 +217,17 @@ class RepetitionType extends Type {
         return $value->getAsArray();
     }
     
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
+    
+    
     
     /**
      * Get the SQL field type for fields of this type

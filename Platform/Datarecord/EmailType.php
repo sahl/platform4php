@@ -17,6 +17,17 @@ class EmailType extends TextType {
         return $value ? '<a href="mailto:'.$value.'">'.htmlentities($value).'</a>' : '';
     }
     
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'string';
+        $result['format'] = 'email';
+        return $result;
+    }
+    
     public function getBaseFormField(): \Platform\Form\Field {
         return \Platform\Form\EmailField::Field($this->title, $this->name, $this->getFormFieldOptions());
     }

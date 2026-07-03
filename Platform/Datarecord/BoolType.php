@@ -151,6 +151,16 @@ class BoolType extends IntegerType {
         return $value ? true : false;
     }
     
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'bool';
+        return $result;
+    }
+    
     public function getSQLFieldType() : string {
         return 'TINYINT(1) NOT NULL';
     }

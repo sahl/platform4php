@@ -295,6 +295,17 @@ class HyperReferenceType extends Type {
     }
     
     /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
+    
+    
+    /**
      * Do an integrity check of this field
      * @return array
      */

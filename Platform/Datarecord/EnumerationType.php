@@ -268,6 +268,17 @@ class EnumerationType extends IntegerType {
         return $value.'('.$this->enumeration[$value].')';
     }
     
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['enum'] = $this->getEnumeration();
+        return $result;
+    }
+    
+    
     public function getTableValue($value) {
         return static::getFullValue($value);
     }

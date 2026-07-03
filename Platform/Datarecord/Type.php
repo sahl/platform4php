@@ -667,6 +667,21 @@ class Type {
     }
     
     /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = [
+            'type' => 'string',
+            'description' => $this->description ?: $this->title
+        ];
+        if ($this->isRequired() && ! $this->isReadonly()) $result['required'] = true;
+        if ($this->getDefaultValue()) $result['default'] = $this->getJSONValue($this->getDefaultValue ());
+        if ($this->isReadonly()) $result['readOnly'] = true;
+        return $result;
+    }
+    
+    /**
      * Do an integrity check of this field
      * @return array Array of problems
      */

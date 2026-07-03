@@ -341,6 +341,17 @@ class SingleReferenceType extends IntegerType {
     }
     
     /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'integer';
+        $result['x-refers-object'] = $this->foreign_class::getBaseClassName();
+        return $result;
+    }
+    
+    /**
      * Get the SQL field type for fields of this type
      * @return string
      */

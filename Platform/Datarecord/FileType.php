@@ -64,7 +64,18 @@ class FileType extends SingleReferenceType {
         $result = ['filename' => $file->filename, 'mimetype' => $file->mimetype];
         if ($include_binary_data) $result['binary'] = base64_encode($file->getFileContent());
         return $result;
-    }    
+    }
+    
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
+    
     
     /**
      * Get the value for logging fields of this type

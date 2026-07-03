@@ -42,6 +42,12 @@ class Endpoint {
     protected $token_code = null;
     
     /**
+     * If we want a limited selection of fields, they are present in this array
+     * @var array
+     */
+    protected $field_limit = [];
+    
+    /**
      * Construct an API endpoint. Classes will be references by their short name in lower case.
      * You can provide a class name alias by specifying it as a key in the array such as
      * ['Namespace1\Class', 'OtherExampleCass' => 'Namespace2\Class']
@@ -107,17 +113,39 @@ class Endpoint {
      * @param String $class A Datarecord class name
      * @param Datarecord $object An object of the given type
      * @param Boolean $retrieve_binary_data If true, then pass file and image fields as binary data
+     * @param array $field_list If only some fields are required pass them here
      * @return array An API object expressed as an array
      */
-    protected static function getApiObject(string $class, Datarecord $object, bool $retrieve_binary_data = false) {
+    protected static function getApiObject(string $class, Datarecord $object, bool $retrieve_binary_data = false, array $field_list = []) {
         $result = array();
         foreach ($class::getStructure() as $name => $type) {
-            if ($type->isInvisible()) continue;
+            if ($type->isInvisible() || count($field_list) && ! in_array($name, $field_list)) continue;
             $result[$name] = $type->getJSONValue($object->getRawValue($name), $retrieve_binary_data);
         }
         ksort($result);
         $result['__api_generated'] = Time::now()->get();
         return $result;
+    }
+    
+    /**
+     * Return the JSON schema of the given class
+     * @param string $class A Datarecord class name
+     * @param array $field_list If only some fields are required pass them here
+     */
+    protected static function returnSchema(string $class, array $field_list = []) {
+        $result = ['type' => 'object'];
+        $required = [];
+        foreach ($class::getStructure() as $name => $type) {
+            if ($type->isInvisible() || count($field_list) && ! in_array($name, $field_list)) continue;
+            $definition = $type->getJSONDefinition();
+            if ($definition['required']) {
+                unset($definition['required']);
+                $required[] = $name;
+            }
+            $result['properties'][$name] = $definition;
+        }
+        if (count($required)) $result['required'] = $required;
+        static::respondAndDie(200, json_encode($result));
     }
     
     /**
@@ -137,22 +165,25 @@ class Endpoint {
      * Handles API requests
      */
     public function handle() {
+        $schema_request = false;
         header('Content-Type: application/json');
         // Check for valid request and parse it
         $path = $_SERVER['PATH_INFO'];
         if ($this->preset_instanceid) {
-            if (! preg_match('/^\\/([^\\/]+?)(\\/(\\d+))?(\\/([^\\/]+?))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
+            if (! preg_match('/^\\/([^\\/]+?)((\\/(\\d+|schema))(\\/([^\\/]+?))?)?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $this->preset_instanceid;
             $object_name = $m[1];
-            $object_id = (int)$m[3];
-            $command = (string)$m[5];
+            if ($m[4] == 'schema') $schema_request = true;
+            $object_id = (int)$m[4];
+            $command = (string)$m[6];
         } else {
-            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)(\\/(\\d+))?(\\/([^\\/]+?))?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
+            if (! preg_match('/^(\\/(\\d+))?\\/([^\\/]+?)((\\/(\\d+|schema))(\\/([^\\/]+?))?)?$/i', $path, $m)) static::respondErrorAndDie (404, 'Invalid API path');
             $instance_id = $m[2];
             if (! $instance_id) static::respondErrorAndDie (404, 'Invalid instance specified');
             $object_name = $m[3];
-            $object_id = (int)$m[5];
-            $command = (string)$m[7];
+            if ($m[6] == 'schema') $schema_request = true;
+            $object_id = (int)$m[6];
+            $command = (string)$m[8];
         }
         
         // Check for valid instance and activate it
@@ -206,17 +237,35 @@ class Endpoint {
                 }
                 break;
             case 'GET':
+                // Field limit
+                $this->handleFieldLimit($class);
+                // Schema
+                if ($schema_request) static::returnSchema($class, $this->field_limit);
                 // Check if we are looking for something specific
                 if ($object_id) {
                     $object = new $class();
                     $object->loadForRead($object_id, false);
                     if (! $object->isInDatabase()) static::respondErrorAndDie(404, 'No object of type '.$object_name.' with id: '.$object_id);
                     if (! $object->canAccess()) static::respondErrorAndDie(403, 'You don\'t have the permission to access this object.');
-                    $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
+                    $response = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1, $this->field_limit);
                     static::respondAndDie(200, json_encode($response));
                 } else {
                     $filter = $class::getDefaultFilter(true);
                     $filter->setPerformAccessCheck(true);
+                    if ($_GET['limit']) {
+                        if (!is_numeric($_GET['limit']) || $_GET['limit'] < 1) static::respondAndDie (400, 'Invalid limit '.$_GET['limit']);
+                        $filter->setResultLimit($_GET['limit']);
+                    }
+                    if ($_GET['start']) {
+                        if (!is_numeric($_GET['start']) || $_GET['start'] < 0) static::respondAndDie (400, 'Invalid start '.$_GET['start']);
+                        $filter->setResultStart($_GET['start']);
+                    }
+                    if ($_GET['sort'] || $_GET['rsort']) {
+                        $sort = strtolower($_GET['sort'] ?: $_GET['rsort']);
+                        $structure = $class::getStructure();
+                        if (! array_key_exists($sort, $structure) || $structure[$sort]->getStoreLocation() != \Platform\Datarecord\Type::STORE_DATABASE) static::respondAndDie(400, 'Invalid sort '.$sort);
+                        $filter->setOrderColumn($sort, isset($_GET['sort']));
+                    }
                     if ($_GET['query']) {
                         $query = json_decode($_GET['query'], true);
                         if ($query === null) static::respondAndDie (400, 'Invalid query JSON');
@@ -230,7 +279,7 @@ class Endpoint {
                     $response = array();
                     foreach($collection->getAll() as $object) {
                         self::memoryCheck('Gathering elements');
-                        $response[] = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1);
+                        $response[] = self::getApiObject($class, $object, $_GET['include_binary_data'] == 1, $this->field_limit);
                     }
                     static::respondAndDie(200, json_encode($response));
                 }
@@ -260,6 +309,23 @@ class Endpoint {
     public static function memoryCheck($additional_info = '', $stop_level = 1024*1024*10) {
         if ($additional_info) $additional_info = ' ('.$additional_info.')';
         if (! Errorhandler::checkMemory($stop_level/(1024.0*1024.0), false)) static::respondErrorAndDie (500, 'Out of memory trying to execute your request'.$additional_info.' '.memory_get_usage().'/'.Errorhandler::getMemoryLimitInBytes());
+    }
+
+    /**
+     * Handle GET parameter asking for specific fields, such as validating if the
+     * fields exists
+     * @param string $class The class name to check against
+     */
+    protected function handleFieldLimit($class) {
+        if (! $_GET['fields']) return;
+        $structure = $class::getStructure();
+        $missing_fields = [];
+        foreach (explode(',',$_GET['fields']) as $field) {
+            $trimmed_field = strtolower(trim($field));
+            if ( !array_key_exists($trimmed_field, $structure)) $missing_fields[] = $field;
+            else $this->field_limit[] = $field;
+        }
+        if (count($missing_fields)) static::respondAndDie (500, 'Unknown fields: '.implode(', ',$missing_fields));
     }
     
     /**

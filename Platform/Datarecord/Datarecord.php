@@ -261,13 +261,13 @@ class Datarecord implements DatarecordReferable {
     protected static function buildStructure() {
         static::addStructure(array(
             new ArrayType('metadata', '', ['is_invisible' => true]), // ARRAY
-            new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true, 'is_readonly' => true, 'form_visibility' => Type::FORM_NEVER]),
-            new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true, 'is_readonly' => true, 'form_visibility' => Type::FORM_NEVER]),
+            new DateTimeType('create_date', Translation::translateForUser('Created'), ['is_required' => true, 'is_readonly' => true, 'form_visibility' => Type::FORM_NEVER, 'description' => Translation::translateForUser('Create date of this object')]),
+            new DateTimeType('change_date', Translation::translateForUser('Changed'), ['is_required' => true, 'is_readonly' => true, 'form_visibility' => Type::FORM_NEVER, 'description' => Translation::translateForUser('Create date of this object')]),
         ));
         
         if (in_array(static::$delete_mode, [self::DELETE_MODE_EMPTY, self::DELETE_MODE_MARK])) {
             static::addStructure(array(
-                new BoolType('is_deleted', '', ['is_readonly' => true, 'default_value' => false, 'form_visibility' => Type::FORM_NEVER, 'list_visibility' => Type::LIST_NEVER]), // BOOLEAN
+                new BoolType('is_deleted', Translation::translateForUser('Is deleted'), ['is_readonly' => true, 'default_value' => false, 'form_visibility' => Type::FORM_NEVER, 'list_visibility' => Type::LIST_NEVER, 'description' => Translation::translateForUser('Indicate if object is deleted')]), // BOOLEAN
             ));
         }
     }

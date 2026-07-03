@@ -109,6 +109,17 @@ class IntegerType extends Type {
         return (int)$value;
     }
     
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'integer';
+        return $result;
+    }
+    
+    
     public function getBaseFormField() : ?\Platform\Form\Field {
         if ($this->is_formatted) return \Platform\Form\FormattedNumberField::Field($this->title, $this->name, $this->getFormFieldOptions());
         else return \Platform\Form\NumberField::Field($this->title, $this->name, $this->getFormFieldOptions());

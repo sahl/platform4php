@@ -256,6 +256,16 @@ class AddressType extends Type {
     }
     
     /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
+    
+    /**
      * Parse a value of this type
      * @param $value The new value to set
      * @param $existing_value The existing value of this field (if any)

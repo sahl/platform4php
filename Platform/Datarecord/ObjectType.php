@@ -56,7 +56,17 @@ class ObjectType extends ArrayType {
      */
     public function parseValue($value, $existing_value = null) {
         return $value;
-    }    
+    }
+    
+    /**
+     * Get the JSON definition in Schema notation
+     * @return array
+     */
+    public function getJSONDefinition() {
+        $result = parent::getJSONDefinition();
+        $result['type'] = 'object';
+        return $result;
+    }
     
     /**
      * Do an integrity check of this field
