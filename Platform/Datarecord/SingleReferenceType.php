@@ -347,7 +347,7 @@ class SingleReferenceType extends IntegerType {
     public function getJSONDefinition() {
         $result = parent::getJSONDefinition();
         $result['type'] = 'integer';
-        $result['x-refers-object'] = $this->foreign_class::getBaseClassName();
+        if (is_a($this->foreign_class, Datarecord::class, true)) $result['x-refers-object'] = $this->foreign_class::getBaseClassName();
         return $result;
     }
     

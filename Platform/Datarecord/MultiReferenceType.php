@@ -359,7 +359,7 @@ class MultiReferenceType extends Type {
     public function getJSONDefinition() {
         $result = parent::getJSONDefinition();
         $result['type'] = 'array';
-        $result['x-refers-object'] = $this->foreign_class::getBaseClassName();
+        if (is_a($this->foreign_class, 'Platform\Datarecord\Datarecord', true)) $result['x-refers-object'] = $this->foreign_class::getBaseClassName();
         return $result;
     }
     
