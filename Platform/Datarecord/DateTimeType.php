@@ -30,6 +30,7 @@ class DateTimeType extends Type {
     }
     
     public function filterLikeSQL($value) {
+        if (! $this->validateValue($value)) return 'FALSE';
         return $this->filterMatchSQL($value);
     }
     

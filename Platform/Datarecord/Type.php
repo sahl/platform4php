@@ -255,7 +255,14 @@ class Type {
      * @return bool
      */
     public function filterGreaterEqualSQL($value) {
-        return '`'.$this->name.'` >= \''.\Platform\Utilities\Database::escape($value).'\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` >= \''.\Platform\Utilities\Database::escape($value).'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' >= \''.\Platform\Utilities\Database::escape($value).'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -274,7 +281,14 @@ class Type {
      * @return bool
      */
     public function filterGreaterSQL($value) {
-        return '`'.$this->name.'` > \''.\Platform\Utilities\Database::escape($value).'\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` > \''.\Platform\Utilities\Database::escape($value).'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' > \''.\Platform\Utilities\Database::escape($value).'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -291,7 +305,14 @@ class Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return '`'.$this->name.'` <> \'\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` <> \'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' <> \'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -310,7 +331,14 @@ class Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        return '`'.$this->name.'` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` LIKE \''.\Platform\Utilities\Database::escape($value).'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' LIKE \''.\Platform\Utilities\Database::escape($value).'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -329,7 +357,14 @@ class Type {
      * @return bool
      */
     public function filterLesserEqualSQL($value) {
-        return '`'.$this->name.'` <= \''.\Platform\Utilities\Database::escape($value).'\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` <= \''.\Platform\Utilities\Database::escape($value).'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' <= \''.\Platform\Utilities\Database::escape($value).'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -369,7 +404,14 @@ class Type {
      * @return bool
      */
     public function filterLesserSQL($value) {
-        return '`'.$this->name.'` < \''.\Platform\Utilities\Database::escape($value).'\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` < \''.\Platform\Utilities\Database::escape($value).'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' < \''.\Platform\Utilities\Database::escape($value).'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -388,7 +430,14 @@ class Type {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        return '`'.$this->name.'` = \''.\Platform\Utilities\Database::escape($value).'\'';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` = \''.\Platform\Utilities\Database::escape($value).'\'';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' = \''.\Platform\Utilities\Database::escape($value).'\'';
+            default:
+                return false;
+        }
     }
     
     /**
@@ -412,7 +461,14 @@ class Type {
         foreach ($values as $value) {
             $array[] = '\''.\Platform\Utilities\Database::escape($value).'\'';
         }
-        return '`'.$this->name.'` IN ('.implode(',',$array).')';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` IN ('.implode(',',$array).')';
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' IN ('.implode(',',$array).')'; 
+            default:
+                return false;
+        }
     }
     
     /**
