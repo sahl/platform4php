@@ -14,10 +14,6 @@ class ConditionIsSet extends Condition {
     }
     
     public function getSQLFragment(): string {
-        if (! in_array($this->type->getStoreLocation(), [\Platform\Datarecord\Type::STORE_DATABASE, \Platform\Datarecord\Type::STORE_SUBFIELDS])) {
-            $this->setNoSQL();
-            return true;
-        }
         $sql = $this->type->filterIsSetSQL($this->value);
         if ($sql === false) {
             $this->setNoSQL();

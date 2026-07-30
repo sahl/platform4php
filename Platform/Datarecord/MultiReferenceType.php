@@ -97,7 +97,16 @@ class MultiReferenceType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        return '`'.$this->name.'` IS NOT NULL';
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                return '`'.$this->name.'` IS NOT NULL';
+
+            case self::STORE_METADATA:
+                return '`metadata`->>\'$.'.$this->name.'\' IS NOT NULL';
+
+            default:
+                return false;
+        }
     }
     
     /**
@@ -182,10 +191,25 @@ class MultiReferenceType extends Type {
      */
     public function filterMatchSQL($value) {
         $final_values = [];
-        foreach ($this->parseValue($value) as $v) {
-            $final_values[] = '`'.$this->name.'` LIKE \'%"'.((int)$v).'"%\'';
+
+        switch ($this->store_location) {
+            case self::STORE_DATABASE:
+                $field = '`'.$this->name.'`';
+                break;
+
+            case self::STORE_METADATA:
+                $field = '`metadata`->>\'$.'.$this->name.'\'';
+                break;
+
+            default:
+                return false;
         }
-        if (! count($final_values)) return 'FALSE';
+
+        foreach ($this->parseValue($value) as $v) {
+            $final_values[] = $field.' LIKE \'%"'.((int)$v).'"%\'';
+        }
+
+        if (!count($final_values)) return 'FALSE';
         return '('.implode(' OR ', $final_values).')';
     }
     

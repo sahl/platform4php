@@ -22,10 +22,11 @@ class ConditionOneOf extends Condition {
     }
     
     public function getSQLFragment(): string {
-        if (! in_array($this->type->getStoreLocation(), [Type::STORE_DATABASE, Type::STORE_SUBFIELDS])) {
-            $this->setNoSQL();
-            return true;
+        // If we don't provide a valid value for this field, it will not match anything
+        foreach ($this->value as $value) {
+            if (! $this->type->validateValue($value)) return 'FALSE';
         }
+        
         $sql = $this->type->filterOneOfSQL($this->value);
         if ($sql === false) {
             $this->setNoSQL();
