@@ -82,6 +82,7 @@ class HyperReferenceType extends Type {
     public function filterIsSetSQL() {
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_foreign_class` IS NOT NULL AND `'.$this->name.'_foreign_class` <> \'\'';
 
             case self::STORE_METADATA:
@@ -172,6 +173,7 @@ class HyperReferenceType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_foreign_class` = \''.\Platform\Utilities\Database::escape($value['foreign_class']).'\' AND `'.$this->name.'_reference` = '.((int)$value['reference']);
 
             case self::STORE_METADATA:
@@ -302,16 +304,6 @@ class HyperReferenceType extends Type {
     public function getTextValue($value, Collection &$collection = null) : string {
         // TODO: This is slow as hell and should be fixed
         return html_entity_decode(strip_tags($this->getFullValue($value, $collection)));
-    }
-    
-    /**
-     * Get the json store value for fields of this type
-     * @param mixed $value
-     * @param bool $include_binary_data If true, then include any binary data if available
-     * @return mixed
-     */
-    public function getJSONValue($value, $include_binary_data = false) {
-        return $value;
     }
     
     /**

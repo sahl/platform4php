@@ -399,16 +399,6 @@ class SingleReferenceType extends IntegerType {
     }
     
     /**
-     * Get the json store value for fields of this type
-     * @param mixed $value
-     * @param bool $include_binary_data If true, then include any binary data if available
-     * @return mixed
-     */
-    public function getJSONValue($value, $include_binary_data = false) {
-        return $value;
-    }
-    
-    /**
      * Do an integrity check of this field
      * @return array
      */

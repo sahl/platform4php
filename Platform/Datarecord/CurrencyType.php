@@ -50,6 +50,7 @@ class CurrencyType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_localvalue` >= '.((double)$value['localvalue']);
 
             case self::STORE_METADATA:
@@ -81,6 +82,7 @@ class CurrencyType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_localvalue` > '.((double)$value['localvalue']);
 
             case self::STORE_METADATA:
@@ -108,6 +110,7 @@ class CurrencyType extends Type {
     public function filterIsSetSQL() {
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_localvalue` IS NOT NULL';
 
             case self::STORE_METADATA:
@@ -190,6 +193,7 @@ class CurrencyType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_localvalue` < '.((double)$value['localvalue']);
 
             case self::STORE_METADATA:
@@ -221,6 +225,7 @@ class CurrencyType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_localvalue` = '.((double)$value['localvalue']);
 
             case self::STORE_METADATA:
@@ -260,6 +265,7 @@ class CurrencyType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_localvalue` IN ('.implode(',', $array).')';
 
             case self::STORE_METADATA:

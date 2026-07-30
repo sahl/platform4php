@@ -719,7 +719,7 @@ class Type {
      * @return mixed
      */
     public function getJSONValue($value, $include_binary_data = false) {
-        return $value;
+        return $this->parseValue($value);
     }
     
     /**

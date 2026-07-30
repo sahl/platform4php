@@ -79,6 +79,7 @@ class AddressType extends Type {
     public function filterIsSetSQL() {
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '`'.$this->name.'_address` IS NOT NULL AND `'.$this->name.'_address` <> \'\'';
 
             case self::STORE_METADATA:
@@ -113,6 +114,7 @@ class AddressType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '(`'.$this->name.'_address` LIKE \'%'.$value.'%\' OR '.
                        '`'.$this->name.'_address2` LIKE \'%'.$value.'%\' OR '.
                        '`'.$this->name.'_city` LIKE \'%'.$value.'%\' OR '.
@@ -194,6 +196,7 @@ class AddressType extends Type {
 
         switch ($this->store_location) {
             case self::STORE_DATABASE:
+            case self::STORE_SUBFIELDS:
                 return '(`'.$this->name.'_address` = \''.
                         \Platform\Utilities\Database::escape($value['address']).'\' AND '.
                        '`'.$this->name.'_address2` = \''.
