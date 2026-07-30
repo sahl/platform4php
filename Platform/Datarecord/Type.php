@@ -333,9 +333,9 @@ class Type {
     public function filterLikeSQL($value) {
         switch ($this->store_location) {
             case self::STORE_DATABASE:
-                return '`'.$this->name.'` LIKE \''.\Platform\Utilities\Database::escape($value).'\'';
+                return '`'.$this->name.'` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\'';
             case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' LIKE \''.\Platform\Utilities\Database::escape($value).'\'';
+                return '`metadata`->>\'$.'.$this->name.'\' LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\'';
             default:
                 return false;
         }

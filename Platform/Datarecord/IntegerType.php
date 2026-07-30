@@ -242,7 +242,7 @@ class IntegerType extends Type {
     }
     
     public function validateValue($value) {
-        if ($value !== null && ! is_int($value)) return false;
+        if ($value !== null && filter_var($value, FILTER_VALIDATE_INT) === false) return false;
         return true;
     }
     
