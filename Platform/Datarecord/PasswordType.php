@@ -61,16 +61,7 @@ class PasswordType extends TextType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IS NOT NULL';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IS NOT NULL';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**

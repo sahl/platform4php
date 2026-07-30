@@ -80,16 +80,7 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IS NOT NULL';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IS NOT NULL';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**
@@ -99,10 +90,7 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterLike($value, $other_value) {
-        foreach ($this->enumeration as $id => $title) {
-            if (mb_strtolower($other_value) == mb_strtolower($title)) return $this->filterMatch($value, $id);
-        }
-        return false;
+        return $this->filterMatch($value, $other_value);
     }
     
     /**
@@ -111,10 +99,7 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        foreach ($this->enumeration as $id => $title) {
-            if (mb_strtolower($value) == mb_strtolower($title)) return $this->filterMatchSQL($id);
-        }
-        return "FALSE";
+        return $this->filterMatchSQL($value);
     }
     
     /**
@@ -173,18 +158,9 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` = '.((int)$value);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' = '.((int)$value);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` = '.((int)$value);
     }
-
+    
     /**
      * Filter if a value is one of an array of other values
      * @param mixed $value Value of this
@@ -205,27 +181,14 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function filterOneOfSQL(array|Collection $values) {
-        if (!count($values)) return 'FALSE';
-
+        if (! count($values)) return 'FALSE';
         $final_values = [];
         foreach ($values as $value) {
-            $parsed = $this->parseValue($value);
-            if ($parsed !== null) $final_values[] = $parsed;
+            $final_values[] = $this->parseValue($value);
         }
-
-        if (!count($final_values)) return 'FALSE';
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IN ('.implode(',', $final_values).')';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IN ('.implode(',', $final_values).')';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IN ('.implode(',',$final_values).')';
     }    
+    
     /**
      * Check the enumeration of this field
      * @return bool

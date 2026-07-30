@@ -16,8 +16,10 @@ class ConditionMatch extends Condition {
     }
     
     public function getSQLFragment(): string {
-        // If we don't provide a valid value for this field, it will not match anything
-        if (! $this->type->validateValue($this->value)) return 'FALSE';
+        if (! in_array($this->type->getStoreLocation(), [\Platform\Datarecord\Type::STORE_DATABASE, \Platform\Datarecord\Type::STORE_SUBFIELDS])) {
+            $this->setNoSQL();
+            return 'TRUE';
+        }
         $sql = $this->type->filterMatchSQL($this->type->parseValue($this->value));
         if ($sql === false) {
             $this->setNoSQL();

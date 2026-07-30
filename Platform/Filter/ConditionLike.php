@@ -17,6 +17,10 @@ class ConditionLike extends Condition {
     }
     
     public function getSQLFragment(): string {
+        if (! in_array($this->type->getStoreLocation(), [\Platform\Datarecord\Type::STORE_DATABASE, \Platform\Datarecord\Type::STORE_SUBFIELDS])) {
+            $this->setNoSQL();
+            return true;
+        }
         $sql = $this->type->filterLikeSQL($this->value);
         if ($sql === false) {
             $this->setNoSQL();

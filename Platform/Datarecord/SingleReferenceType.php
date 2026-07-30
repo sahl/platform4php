@@ -91,16 +91,7 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IS NOT NULL';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IS NOT NULL';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     /**
@@ -184,18 +175,8 @@ class SingleReferenceType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                if ($value === null) return '`'.$this->name.'` IS NULL';
-                return '`'.$this->name.'` = '.((int)$value);
-
-            case self::STORE_METADATA:
-                if ($value === null) return '`metadata`->>\'$.'.$this->name.'\' IS NULL';
-                return '`metadata`->>\'$.'.$this->name.'\' = '.((int)$value);
-
-            default:
-                return false;
-        }
+        if ($value === null) return '`'.$this->name.'` IS NULL';
+        return '`'.$this->name.'` = '.((int)$value);
     }
     
     /**
@@ -219,22 +200,11 @@ class SingleReferenceType extends IntegerType {
      */
     public function filterOneOfSQL(array|Collection $values) {
         if (! count($values)) return 'FALSE';
-
         $final_values = [];
         foreach ($values as $value) {
             $final_values[] = $this->parseValue($value);
         }
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IN ('.implode(',',$final_values).')';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IN ('.implode(',',$final_values).')';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IN ('.implode(',',$final_values).')';
     }
     
     /**

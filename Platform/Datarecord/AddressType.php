@@ -77,16 +77,7 @@ class AddressType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_address` IS NOT NULL AND `'.$this->name.'_address` <> \'\'';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'.address\' IS NOT NULL AND `metadata`->>\'$.'.$this->name.'.address\' <> \'\'';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_address` IS NOT NULL';
     }
     
     /**
@@ -109,26 +100,11 @@ class AddressType extends Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        $value = \Platform\Utilities\Database::escape($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '(`'.$this->name.'_address` LIKE \'%'.$value.'%\' OR '.
-                       '`'.$this->name.'_address2` LIKE \'%'.$value.'%\' OR '.
-                       '`'.$this->name.'_city` LIKE \'%'.$value.'%\' OR '.
-                       '`'.$this->name.'_zip` LIKE \'%'.$value.'%\' OR '.
-                       '`'.$this->name.'_countrycode` LIKE \'%'.$value.'%\')';
-
-            case self::STORE_METADATA:
-                return '(`metadata`->>\'$.'.$this->name.'_address\' LIKE \'%'.$value.'%\' OR '.
-                       '`metadata`->>\'$.'.$this->name.'_address2\' LIKE \'%'.$value.'%\' OR '.
-                       '`metadata`->>\'$.'.$this->name.'_city\' LIKE \'%'.$value.'%\' OR '.
-                       '`metadata`->>\'$.'.$this->name.'_zip\' LIKE \'%'.$value.'%\' OR '.
-                       '`metadata`->>\'$.'.$this->name.'_countrycode\' LIKE \'%'.$value.'%\')';
-
-            default:
-                return false;
-        }
+        return '(`'.$this->name.'_address` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_address2` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_city` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_zip` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\' OR '.
+                '`'.$this->name.'_countrycode` LIKE \'%'.\Platform\Utilities\Database::escape($value).'%\')';
     }
     
     /**
@@ -187,40 +163,13 @@ class AddressType extends Type {
      */
     public function filterMatchSQL($value) {
         $value = $this->parseValue($value);
-
-        if ($value === null) {
-            return 'FALSE';
-        }
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '(`'.$this->name.'_address` = \''.
-                        \Platform\Utilities\Database::escape($value['address']).'\' AND '.
-                       '`'.$this->name.'_address2` = \''.
-                        \Platform\Utilities\Database::escape($value['address2']).'\' AND '.
-                       '`'.$this->name.'_city` = \''.
-                        \Platform\Utilities\Database::escape($value['city']).'\' AND '.
-                       '`'.$this->name.'_zip` = \''.
-                        \Platform\Utilities\Database::escape($value['zip']).'\' AND '.
-                       '`'.$this->name.'_countrycode` = \''.
-                        \Platform\Utilities\Database::escape($value['countrycode']).'\')';
-
-            case self::STORE_METADATA:
-                return '(`metadata`->>\'$.'.$this->name.'_address\' = \''.
-                        \Platform\Utilities\Database::escape($value['address']).'\' AND '.
-                       '`metadata`->>\'$.'.$this->name.'_address2\' = \''.
-                        \Platform\Utilities\Database::escape($value['address2']).'\' AND '.
-                       '`metadata`->>\'$.'.$this->name.'_city\' = \''.
-                        \Platform\Utilities\Database::escape($value['city']).'\' AND '.
-                       '`metadata`->>\'$.'.$this->name.'_zip\' = \''.
-                        \Platform\Utilities\Database::escape($value['zip']).'\' AND '.
-                       '`metadata`->>\'$.'.$this->name.'_countrycode\' = \''.
-                        \Platform\Utilities\Database::escape($value['countrycode']).'\')';
-
-            default:
-                return false;
-        }
-    }    
+        if ($value === null) return 'FALSE';
+        return '(`'.$this->name.'_address` = \''.\Platform\Utilities\Database::escape($value['address']).'\' AND '.
+                '`'.$this->name.'_address2` = \''.\Platform\Utilities\Database::escape($value['address2']).'\' AND '.
+                '`'.$this->name.'_city` = \''.\Platform\Utilities\Database::escape($value['city']).'\' AND '.
+                '`'.$this->name.'_zip` = \''.\Platform\Utilities\Database::escape($value['zip']).'\' AND '.
+                '`'.$this->name.'_countrycode` = \''.\Platform\Utilities\Database::escape($value['countrycode']).'\')';
+    }
     
     /**
      * Filter if a value is one of an array of other values

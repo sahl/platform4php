@@ -3,6 +3,7 @@ namespace Platform\Datarecord;
 
 use Countable;
 use Iterator;
+use Platform\Filter\ConditionOneOf;
 use Platform\Filter\Filter;
 
 class Collection implements Iterator,Countable {

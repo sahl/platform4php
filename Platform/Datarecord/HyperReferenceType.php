@@ -80,16 +80,7 @@ class HyperReferenceType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_foreign_class` IS NOT NULL AND `'.$this->name.'_foreign_class` <> \'\'';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_foreign_class\' IS NOT NULL AND `metadata`->>\'$.'.$this->name.'_foreign_class\' <> \'\'';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_foreign_class` IS NOT NULL';
     }
     
     /**
@@ -108,7 +99,6 @@ class HyperReferenceType extends Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        if (! $this->validateValue($value)) return 'FALSE';
         return $this->filterMatchSQL($value);
     }
     
@@ -169,17 +159,7 @@ class HyperReferenceType extends Type {
      */
     public function filterMatchSQL($value) {
         $value = $this->parseValue($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_foreign_class` = \''.\Platform\Utilities\Database::escape($value['foreign_class']).'\' AND `'.$this->name.'_reference` = '.((int)$value['reference']);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_foreign_class\' = \''.\Platform\Utilities\Database::escape($value['foreign_class']).'\' AND `metadata`->>\'$.'.$this->name.'_reference\' = '.((int)$value['reference']);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_foreign_class` = \''.\Platform\Utilities\Database::escape($value['foreign_class']).'\' AND `'.$this->name.'_reference` = '.((int)$value['reference']);
     }
     
     /**

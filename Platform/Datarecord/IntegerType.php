@@ -33,14 +33,7 @@ class IntegerType extends Type {
     
     public function filterGreaterEqualSQL($value) {
         if ($value === null) return 'FALSE';
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` >= '.(double)\Platform\Utilities\Database::escape($value);
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' >= '.(double)\Platform\Utilities\Database::escape($value);
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` >= '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterGreater($value, $other_value) {
@@ -50,14 +43,7 @@ class IntegerType extends Type {
     
     public function filterGreaterSQL($value) {
         if ($value === null) return 'FALSE';
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` > '.(double)\Platform\Utilities\Database::escape($value);
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' > '.(double)\Platform\Utilities\Database::escape($value);
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` > '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterIsSet($value) {
@@ -65,14 +51,7 @@ class IntegerType extends Type {
     }
     
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IS NOT NULL';
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IS NOT NULL';
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IS NOT NULL';
     }
     
     public function filterLike($value, $other_value) {
@@ -80,7 +59,6 @@ class IntegerType extends Type {
     }
     
     public function filterLikeSQL($value) {
-        if (! $this->validateValue($value)) return 'FALSE';
         return $this->filterMatchSQL($value);
     }
     
@@ -90,15 +68,8 @@ class IntegerType extends Type {
     }
     
     public function filterLesserEqualSQL($value) {
-        if ($value === null) return 'FALSE';
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` <= '.(double)\Platform\Utilities\Database::escape($value);
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' <= '.(double)\Platform\Utilities\Database::escape($value);
-            default:
-                return false;
-        }
+        if ($value === null) return false;
+        return '`'.$this->name.'` <= '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterLesser($value, $other_value) {
@@ -108,14 +79,7 @@ class IntegerType extends Type {
     
     public function filterLesserSQL($value) {
         if ($value === null) return 'FALSE';
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` < '.(double)\Platform\Utilities\Database::escape($value);
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' < '.(double)\Platform\Utilities\Database::escape($value);
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` < '.(double)\Platform\Utilities\Database::escape($value);
     }
     
     public function filterMatch($value, $other_value) {
@@ -123,20 +87,10 @@ class IntegerType extends Type {
     }
     
     public function filterMatchSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                if ($value === null) return '`'.$this->name.'` IS NULL';
-                return '`'.$this->name.'` = '.(double)\Platform\Utilities\Database::escape($value);
-
-            case self::STORE_METADATA:
-                if ($value === null) return '`metadata`->>\'$.'.$this->name.'\' IS NULL';
-                return '`metadata`->>\'$.'.$this->name.'\' = '.(double)\Platform\Utilities\Database::escape($value);
-
-            default:
-                return false;
-        }
+        if ($value === null) return '`'.$this->name.'` IS NULL';
+        return '`'.$this->name.'` = '.(double)\Platform\Utilities\Database::escape($value);
     }
-
+    
     public function filterOneOf($value, array|Collection $other_values) {
         return in_array($value, $other_values);
     }
@@ -145,16 +99,9 @@ class IntegerType extends Type {
         if (! count($values)) return 'FALSE';
         $array = [];
         foreach ($values as $value) {
-            $array[] = (double)\Platform\Utilities\Database::escape($value);
+            $array[] = (int)\Platform\Utilities\Database::escape($value);
         }
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IN ('.implode(',',$array).')';
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IN ('.implode(',',$array).')'; 
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IN ('.implode(',',$array).')';
     }    
 
     public function getFieldForDatabase($value) : string {
@@ -229,7 +176,7 @@ class IntegerType extends Type {
     }
     
     public function parseValue($value, $existing_value = null) {
-        if ($value === null || $value === '' || ! is_numeric($value)) return null;
+        if ($value === null || $value === '') return null;
         return (int)$value;
     }    
     

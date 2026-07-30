@@ -47,17 +47,7 @@ class CurrencyType extends Type {
      */
     public function filterGreaterEqualSQL($value) {
         $value = $this->parseValue($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` >= '.((double)$value['localvalue']);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' >= '.((double)$value['localvalue']);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_localvalue` >= '.((double)$value['localvalue']);
     }
     
     /**
@@ -78,17 +68,7 @@ class CurrencyType extends Type {
      */
     public function filterGreaterSQL($value) {
         $value = $this->parseValue($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` > '.((double)$value['localvalue']);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' > '.((double)$value['localvalue']);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_localvalue` >= '.((double)$value['localvalue']);
     }
     
     /**
@@ -106,16 +86,7 @@ class CurrencyType extends Type {
      * @return bool
      */
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` IS NOT NULL';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' IS NOT NULL';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_localvalue` IS NOT NULL';
     }
     
     /**
@@ -134,7 +105,6 @@ class CurrencyType extends Type {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        if (! $this->validateValue($value)) return 'FALSE';
         return $this->filterMatchSQL($value);
     }
     
@@ -156,17 +126,7 @@ class CurrencyType extends Type {
      */
     public function filterLesserEqualSQL($value) {
         $value = $this->parseValue($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` <= '.((double)$value['localvalue']);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' <= '.((double)$value['localvalue']);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_localvalue` <= '.((double)$value['localvalue']);
     }
     
     /**
@@ -187,17 +147,7 @@ class CurrencyType extends Type {
      */
     public function filterLesserSQL($value) {
         $value = $this->parseValue($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` < '.((double)$value['localvalue']);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' < '.((double)$value['localvalue']);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_localvalue` < '.((double)$value['localvalue']);
     }
     
     /**
@@ -218,17 +168,7 @@ class CurrencyType extends Type {
      */
     public function filterMatchSQL($value) {
         $value = $this->parseValue($value);
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` = '.((double)$value['localvalue']);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' = '.((double)$value['localvalue']);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'_localvalue` = '.(double)$value['localvalue'];
     }
     
     /**
@@ -251,24 +191,13 @@ class CurrencyType extends Type {
      * @return bool
      */
     public function filterOneOfSQL(array|Collection $values) {
-        if (!count($values)) return 'FALSE';
-
+        if (! count($values)) return 'FALSE';
         $array = [];
         foreach ($values as $value) {
             $array[] = (double)(is_array($value) ? $value['localvalue'] : $value);
         }
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'_localvalue` IN ('.implode(',', $array).')';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'_localvalue\' IN ('.implode(',', $array).')';
-
-            default:
-                return false;
-        }
-    }
+        return '`'.$this->name.'_localvalue` IN ('.implode(',',$array).')';
+    }    
     
     /**
      * Get a form field for editing fields of this type

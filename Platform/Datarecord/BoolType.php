@@ -15,16 +15,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterGreaterEqualSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` >= '.((int)$value);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' >= '.((int)$value);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` >= '.((int)$value);
     }
     
     /**
@@ -43,16 +34,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterGreaterSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` > '.((int)$value);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' > '.((int)$value);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` > '.((int)$value);
     }
     
     /**
@@ -71,7 +53,6 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterLikeSQL($value) {
-        if (! $this->validateValue($value)) return 'FALSE';
         return $this->filterMatchSQL($value);
     }
     
@@ -81,34 +62,16 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterLesserEqualSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` <= '.((int)$value);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' <= '.((int)$value);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` <= '.((int)$value);
     }
-
+    
     /**
      * Get SQL to determine if a field of this type is lesser than another value
      * @param mixed $value The other value
      * @return bool
      */
     public function filterLesserSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` < '.((int)$value);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' < '.((int)$value);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` < '.((int)$value);
     }
     
     /**
@@ -127,16 +90,7 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterMatchSQL($value) {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` = '.((int)$value);
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' = '.((int)$value);
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` = '.((int)$value);
     }
     
     /**
@@ -155,42 +109,23 @@ class BoolType extends IntegerType {
      * @return bool
      */
     public function filterOneOfSQL(array|Collection $values) {
-        if (!count($values)) return 'FALSE';
-
+        if (! count($values)) return 'FALSE';
         $array = [];
         foreach ($values as $value) {
-            $array[] = (int)$value;
+            $array[] = '\''.\Platform\Utilities\Database::escape($value).'\'';
         }
-
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` IN ('.implode(',', $array).')';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' IN ('.implode(',', $array).')';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` IN ('.implode(',',$array).')';
     }    
+    
 
     public function filterIsSet($value) {
         return $value;
     }
     
     public function filterIsSetSQL() {
-        switch ($this->store_location) {
-            case self::STORE_DATABASE:
-                return '`'.$this->name.'` = TRUE';
-
-            case self::STORE_METADATA:
-                return '`metadata`->>\'$.'.$this->name.'\' = TRUE';
-
-            default:
-                return false;
-        }
+        return '`'.$this->name.'` = TRUE';
     }
-
+    
     public function getFieldForDatabase($value) : string {
         return $value ? 'true' : 'false';
     }
