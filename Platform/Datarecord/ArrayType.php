@@ -339,7 +339,7 @@ class ArrayType extends Type {
      */
     public function validateValue($value) {
         if ($value === null) return true;
-        return is_array($value);
+        return is_array($value) ?: \Platform\Utilities\Translation::translateForUser('Value must be an array');
     }
 }
 

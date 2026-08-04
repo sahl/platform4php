@@ -248,7 +248,7 @@ class BoolType extends IntegerType {
      * @return mixed True if no problem or otherwise a string explaining the problem
      */
     public function validateValue($value) {
-        return $value === 1 || $value === 0 || $value === true || $value === false;
+        return ($value === 1 || $value === 0 || $value === true || $value === false) ?: \Platform\Utilities\Translation::translateForUser('Invalid field value');
     }
 }
 

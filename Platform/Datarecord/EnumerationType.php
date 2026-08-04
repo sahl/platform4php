@@ -396,7 +396,9 @@ class EnumerationType extends IntegerType {
      * @return bool
      */
     public function validateValue($value) {
-        return $value === null || array_key_exists($value, $this->enumeration);
+        if ($value === null) return true;
+        if (! array_key_exists($value, $this->enumeration)) return \Platform\Utilities\Translation::translateForUser('No such enumeration');
+        return true;
     }
     
 }

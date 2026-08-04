@@ -126,7 +126,7 @@ class FloatType extends IntegerType {
     }
 
     public function validateValue($value) {
-        if ($value !== null && !is_numeric($value)) return false;
+        if ($value !== null && !is_numeric($value)) return \Platform\Utilities\Translation::translateForUser('Invalid number.');
         return true;
     }
     

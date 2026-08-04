@@ -78,7 +78,7 @@ class DateType extends DateTimeType {
     public function validateValue($value) {
         if ($value === null || $value instanceof \Platform\Utilities\Time) return true; 
         $time = new \Platform\Utilities\Time($value);
-        return ! $time->isNull();
+        return $time->isNull() ? \Platform\Utilities\Translation::translateForUser('Invalid date') : true;
     }
     
 }

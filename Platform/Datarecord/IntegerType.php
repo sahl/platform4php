@@ -242,7 +242,7 @@ class IntegerType extends Type {
     }
     
     public function validateValue($value) {
-        if ($value !== null && filter_var($value, FILTER_VALIDATE_INT) === false) return false;
+        if ($value !== null && filter_var($value, FILTER_VALIDATE_INT) === false) return \Platform\Utilities\Translation::translateForUser('Value must be an integer');
         return true;
     }
     

@@ -472,8 +472,14 @@ class SingleReferenceType extends IntegerType {
             if (! $value instanceof $this->foreign_class) return \Platform\Utilities\Translation::translateForUser('Incompatible object passed');
             return $value->isInDatabase();
         }
+        if (is_array($value)) {
+            if (!array_key_exists('id', $value)) return \Platform\Utilities\Translation::translateForUser('Array must contain an id');
+            $value = $value['id'];
+        }
+        if (filter_var($value, FILTER_VALIDATE_INT) === false) \Platform\Utilities\Translation::translateForUser('When passing a value it must be an integer');
+        
         $object = new $this->foreign_class();
-        $object->loadForRead($value, false);
+        $object->loadForRead((int)$value, false);
         if (! $object->isInDatabase()) return \Platform\Utilities\Translation::translateForUser('Invalid reference id %1', $value);
         return true;
     }
