@@ -72,6 +72,7 @@ class Mail extends Datarecord {
             new ArrayType('additional_to', Translation::translateForUser('Additional receivers'), ['is_invisible' => true]),
             new ArrayType('cc', Translation::translateForUser('CC addresses'), ['is_invisible' => true]),
             new ArrayType('bcc', Translation::translateForUser('BCC addresses'), ['is_invisible' => true]),
+            new ArrayType('custom_headers', Translation::translateForUser('Custom headers'), ['is_invisible' => true]),
             new TextType('subject', Translation::translateForUser('Subject'), ['is_required' => true, 'is_title' => true, 'is_searchable' => true]),
             new BigTextType('body', Translation::translateForUser('Body'), ['is_required' => true]),
             new ObjectType('attachment_data', '', ['is_required' => true]),
@@ -167,6 +168,13 @@ class Mail extends Datarecord {
                             $mailer->addBCC($contact['email'], $contact['name']);
                         }
                     }
+
+                    // Custom headers
+                    if (count($mail->custom_headers)) {
+                        foreach ($mail->custom_headers as $header) {
+                            $mailer->addCustomHeader($header);
+                        }
+                    }
                     
                     // Handle attachments
                     $attachment_data = $mail->attachment_data;
@@ -174,14 +182,14 @@ class Mail extends Datarecord {
                         foreach ($attachment_data['attachments'] as $file_id) {
                             $file = new File();
                             $file->loadForRead((int)$file_id, false);
-                            if ($file->isInDatabase()) $mailer->addAttachment($file->getCompleteFilename(), $file->filename);
+                            if ($file->isInDatabase()) $mailer->addAttachment($file->getCompleteFilename(), $file->filename, PHPMailer::ENCODING_BASE64, $file->mimetype);
                         }
                     }
                     if ($attachment_data['inline_attachments']) {
                         foreach ($attachment_data['inline_attachments'] as $identifier => $file_id) {
                             $file = new File();
                             $file->loadForRead((int)$file_id, false);
-                            if ($file->isInDatabase()) $mailer->addEmbeddedImage($file->getCompleteFilename(), $identifier);
+                            if ($file->isInDatabase()) $mailer->addEmbeddedImage($file->getCompleteFilename(), $identifier, $file->filename, PHPMailer::ENCODING_BASE64, $file->mimetype);
                         }
                     }
                     
@@ -331,6 +339,16 @@ class Mail extends Datarecord {
             'name' => $name
         ];
         $this->bcc = $bcc;
+    }
+    
+    /**
+     * Add a custom header to the mail
+     * @param string $custom_header Complete custom header
+     */
+    public function addCustomHeader(string $custom_header) {
+        $custom_headers = $this->custom_headers;
+        $custom_headers[] = $custom_header;
+        $this->custom_headers = $custom_headers;
     }
     
     /**
