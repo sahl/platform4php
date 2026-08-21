@@ -19,6 +19,8 @@ class Property extends Datarecord {
     protected static $title_field = false;
     protected static $location = self::LOCATION_INSTANCE;
     
+    private static $cache = [], $in_cache = [];
+    
     protected static function buildStructure() {
         static::addStructure([
             new \Platform\Datarecord\KeyType('property_id'),
@@ -41,6 +43,16 @@ class Property extends Datarecord {
         if ($subproperty !== null) $filter->conditionMatch('subproperty', $subproperty);
         $properties = $filter->execute();
         $properties->deleteAll();
+        // Destroy from cache
+        if (count(static::$in_cache)) {
+            foreach (static::$in_cache as $uid => $cache_property) {
+                if ($subproperty !== null) {
+                    unset(static::$in_cache[$uid][$property][$subproperty]);
+                } else {
+                    unset(static::$in_cache[$uid][$property]);
+                }
+            }
+        }
     }
     
     /**
@@ -74,10 +86,15 @@ class Property extends Datarecord {
      */
     public static function getForUser(int $userid, string $property, string $subproperty = '') {
         if (Instance::getActiveInstanceID() === false) return false;
+        // Try the cache
+        if (isset(static::$in_cache[$userid][$property][$subproperty])) return static::$cache[$userid][$property][$subproperty];
         $qr = Database::instanceFastQuery("SELECT value FROM ".static::$database_table." WHERE user_ref = ".((int)$userid)." AND property = '".Database::escape($property)."' AND subproperty = '".Database::escape($subproperty)."'");
         // As we can need to get a property to construct the property object, we need to
         // get it directly from the DB
-        return $qr ? unserialize($qr['value']) : null;
+        $value = $qr ? unserialize($qr['value']) : null;
+        static::$in_cache[$userid][$property][$subproperty] = true;
+        static::$cache[$userid][$property][$subproperty] = $value;
+        return $value;
     }
     
     /**
@@ -115,7 +132,11 @@ class Property extends Datarecord {
         $userproperty = new Property();
         $userproperty->loadFromDatabaseRow($qr);
         $userproperty->forceWritemode();
-        if ($value === null) $userproperty->delete();
+        if ($value === null) {
+            $userproperty->delete();
+            // Clear from cache
+            unset(static::$in_cache[$userid][$property][$subproperty]);
+        }
         else {
             if (! $userproperty->isInDatabase()) {
                 $userproperty->user_ref = $userid;
@@ -124,6 +145,9 @@ class Property extends Datarecord {
             }
             $userproperty->value = $value;
             $userproperty->save(true);
+            // Add to cache
+            static::$cache[$userid][$property][$subproperty] = $value;
+            static::$in_cache[$userid][$property][$subproperty] = true;
         }
     }
 }
