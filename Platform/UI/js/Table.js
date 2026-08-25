@@ -28,10 +28,15 @@ Platform.Table = class extends Platform.Component {
     
     tabulator = null;
     
+    stripper_element = null;
+    
     initialize() {
         var component = this;
         
         this.initializeTabulator();
+        
+        // Used for stripping entities
+        this.stripper_element = $('<div>');
         
         this.tabulator.on('tableBuilt', function() {
             component.initializeTable();
@@ -127,17 +132,22 @@ Platform.Table = class extends Platform.Component {
             table_configuration.data = [];
         
         // Inject tags stripper in all columns when using download functions
+        var _this = this;
         for (var i in table_configuration.columns) {
             var column = table_configuration.columns[i];
             column.accessorDownload = function(value, data, type, params, column) {
-                if (typeof value != 'string')  return '';
-                return value.replace(/<\/?[^>]+(>|$)/g, "").replace(/<!--[\s\S]*?-->/g, "");
+                return _this.removeHTML(value);
             };
         }
-        
 
         // And now we can initialize the table
         this.tabulator = new Tabulator('#'+dom_node.attr('id')+'_table', table_configuration);
+    }
+    
+    removeHTML(value) {
+        if (typeof value != 'string') return value;
+        this.stripper_element.html(value.replace(/<\/?[^>]+(>|$)/g, "").replace(/<!--[\s\S]*?-->/g, ""));
+        return this.stripper_element.text();
     }
     
     initializeFilterField() {
