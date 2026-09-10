@@ -16,6 +16,7 @@ $preload_list = array(
     '/UI/Serializable.php',
     '/Datarecord/Datarecord.php',
     '/Server/Instance.php',
+    '/File/File.php',
     '/Utilities/Translation.php',
 );
 // Load scripts
@@ -95,8 +96,8 @@ function PlatformAutoLoad($class) {
     // Find wanted filename
     $requested_file = $root.'/'.str_replace('\\', '/', $class).'.php';
     if (file_exists($requested_file)) {
-        require_once $requested_file;
         if (Translation::isEnabled()) Translation::prepareTranslationsForFile ($requested_file);
+        require_once $requested_file;
         return;
     }
 }
