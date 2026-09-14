@@ -7,7 +7,7 @@ Platform.NumberFormat = class {
      */
     static isValid(number) {
         var number_string = new String(number);
-        var validation_regexp = new RegExp('^(\\d{1,3}\\'+Platform.NumberFormat.getThousandSeparator()+'?)(\\d{3}\\'+Platform.NumberFormat.getThousandSeparator()+'?)*('+Platform.NumberFormat.getDecimalSeparator()+'\\d+)?$', 'g')
+        var validation_regexp = new RegExp('^-?(\\d{1,3}\\'+Platform.NumberFormat.getThousandSeparator()+'?)(\\d{3}\\'+Platform.NumberFormat.getThousandSeparator()+'?)*('+Platform.NumberFormat.getDecimalSeparator()+'\\d+)?$', 'g')
         return validation_regexp.test(number_string);
     }
     

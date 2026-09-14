@@ -107,6 +107,6 @@ class NumberFormat {
      * @return type
      */
     public static function isValid(string $value) {
-        return preg_match('/^(\\d{1,3}\\'.static::getThousandSeparator().'?)(\\d{3}\\'.static::getThousandSeparator().'?)*('.static::getDecimalSeparator().'\\d+)?$/', $value) != 0;
+        return preg_match('/^-?(\\d{1,3}\\'.static::getThousandSeparator().'?)(\\d{3}\\'.static::getThousandSeparator().'?)*('.static::getDecimalSeparator().'\\d+)?$/', $value) != 0;
     }
 }
