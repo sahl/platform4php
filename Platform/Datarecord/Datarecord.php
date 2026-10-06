@@ -1880,17 +1880,12 @@ class Datarecord implements DatarecordReferable {
     public function save(bool $force_save = false, bool $keep_open_for_write = false) : bool {
         $debug = $_SESSION['c'] == 2994 && get_called_class() == 'Microbizz\Data\Mail\Mail';
         if ($debug)   $log = new \Log('system');
-        if ($debug)   $log->warn("Mail save() 1");
 
         if ($this->access_mode != self::MODE_WRITE) trigger_error('Tried to save object '.static::$database_table.' in read mode', E_USER_ERROR);
         
         $is_new_object = ! $this->isInDatabase();
         
-        if ($debug)   $log->warn("Mail save() 2");
-        
         $changed_fields = $this->getChangedFields();
-
-        if ($debug)   $log->warn("Mail save() 3");
 
         // Event handlers
         if ($is_new_object && ! $this->onCreate()) return false;
@@ -1912,7 +1907,6 @@ class Datarecord implements DatarecordReferable {
                 if ($row !== null) trigger_error('Key '.$this->getKeyValue().' is already in use, when saving '.static::$database_table, E_USER_ERROR);
             }
         }
-        if ($debug)   $log->warn("Mail save() 4");
         
         if (! $force_save && $this->isInDatabase()) {
             // We don't save if nothing is changed?
@@ -1922,11 +1916,9 @@ class Datarecord implements DatarecordReferable {
                 return false;
             }
         }
-        if ($debug)   $log->warn("Mail save() 5");
         
         $this->encodeMetadata();
         $this->setValue('change_date', new Time('now'));
-        if ($debug)   $log->warn("Mail save() 6");
         if ($this->isInDatabase()) {
             // Prepare update.
             $fielddefinitions = array();
@@ -1950,7 +1942,6 @@ class Datarecord implements DatarecordReferable {
                     $fieldvalues[] = ($type->isPrimaryKey() && ! static::$manual_key) ? 'NULL' : $type->getFieldForDatabase($this->values[$field]);
                 }
             }
-            if ($debug)   $log->warn("Mail save() 7");
 
             $sql = 'INSERT INTO '.static::$database_table.' ('.implode(',',$fieldlist).') VALUES ('.implode(',',$fieldvalues).')';
             self::query($sql);
@@ -1964,20 +1955,21 @@ class Datarecord implements DatarecordReferable {
                 $this->forceWritemode();
             }
         }
-        if ($debug)   $log->warn("Mail save() 8");
+        if ($debug)   $log->warn("Mail save()");
 
         if (static::$log_changes) $this->logChange();
+        if ($debug)   $log->warn("Mail save() after logChange");
         
         // This is now in the database
         $this->is_in_database = true;
 
         // Perform on after handlers
         if ($is_new_object) $this->onAfterCreate();
+        if ($debug)   $log->warn("Mail save() after onAfterCreate");
         $this->onAfterSave($changed_fields);
-        if ($debug)   $log->warn("Mail save() 9");
+        if ($debug)   $log->warn("Mail save() after onAfterSave");
 
         $this->values_on_load = $this->values;
-        if ($debug)   $log->warn("Mail save() 10");
 
         // Update reference buffer
         TitleBuffer::updateBuffer(get_called_class(), $this->getKeyValue(), $this->getTitle());
